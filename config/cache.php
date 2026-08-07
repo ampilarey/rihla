@@ -105,4 +105,27 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the classes that can be unserialized from cache
+    | storage. By default, no PHP classes will be unserialized from your
+    | cache to prevent gadget chain attacks if your APP_KEY is leaked.
+    |
+    */
+
+    // Allowlisted for HomeController's why-section cache (Eloquent models + relations).
+    'serializable_classes' => [
+        App\Models\WhySection::class,
+        App\Models\WhyFeature::class,
+        Illuminate\Database\Eloquent\Collection::class,
+        Illuminate\Support\Collection::class,
+        Carbon\Carbon::class,
+        Carbon\CarbonImmutable::class,
+        DateTime::class,
+        DateTimeImmutable::class,
+    ],
+
 ];

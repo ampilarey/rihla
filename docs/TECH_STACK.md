@@ -7,7 +7,7 @@ The Rihla Travels platform is built using modern web technologies with a focus o
 ## 🏗️ Architecture Overview
 
 ### Backend Architecture
-- **Framework**: Laravel 11 (PHP 8.2+)
+- **Framework**: Laravel 13 (PHP 8.3+)
 - **Pattern**: Model-View-Controller (MVC)
 - **Database**: MySQL 8.0+ / PostgreSQL 10+
 - **Authentication**: Laravel Breeze

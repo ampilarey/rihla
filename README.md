@@ -1,6 +1,6 @@
-# Rihla Travels - Laravel 11 Travel Website
+# Rihla Travels - Laravel 13 Travel Website
 
-A beautiful, responsive travel website built with Laravel 11, TailwindCSS, and modern web technologies. Features include trip management, media gallery, social media integration, and WhatsApp communication.
+A beautiful, responsive travel website built with Laravel 13, TailwindCSS, and modern web technologies. Features include trip management, media gallery, social media integration, and WhatsApp communication.
 
 ## 🌟 Features
 
@@ -14,7 +14,7 @@ A beautiful, responsive travel website built with Laravel 11, TailwindCSS, and m
 
 ## 🚀 Tech Stack
 
-- **Backend**: Laravel 11, PHP 8.2+
+- **Backend**: Laravel 13, PHP 8.3+
 - **Frontend**: TailwindCSS, Vite, Alpine.js
 - **Database**: MySQL/PostgreSQL
 - **Image Processing**: Intervention Image v3
@@ -23,7 +23,7 @@ A beautiful, responsive travel website built with Laravel 11, TailwindCSS, and m
 
 ## 📋 Requirements
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - Node.js & NPM
 - MySQL/PostgreSQL
@@ -117,7 +117,7 @@ Custom components and utilities are defined in `resources/css/app.css`
    - Set document root to `/public`
 
 2. **Server Requirements**
-   - PHP 8.2+
+   - PHP 8.3+
    - MySQL/PostgreSQL
    - Composer support
 
@@ -243,4 +243,4 @@ This project is proprietary software developed for Rihla Travels.
 
 ---
 
-**Built with ❤️ using Laravel 11 and TailwindCSS**
+**Built with ❤️ using Laravel 13 and TailwindCSS**
