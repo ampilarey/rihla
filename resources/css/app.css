@@ -1,0 +1,304 @@
+/* Import Dhivehi Fonts */
+@import './dhivehi-fonts.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles to fix mobile overflow issues */
+@layer base {
+    html {
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+
+    body {
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Ensure containers don't overflow on mobile */
+    .container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Fix floating buttons on mobile */
+    @media (max-width: 768px) {
+        .fixed {
+            right: 0.5rem !important; /* Adjusted from 1rem to 0.5rem */
+        }
+        
+        /* Prevent horizontal scrolling on mobile */
+        .max-w-screen-xl {
+            max-width: 100% !important;
+        }
+        
+        /* Ensure proper padding on mobile */
+        .px-4 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        /* Mobile-specific grid adjustments */
+        .grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        /* Mobile-friendly button sizes */
+        button, 
+        .btn-primary, 
+        .btn-secondary {
+            min-height: 44px !important; /* iOS minimum touch target */
+            touch-action: manipulation;
+        }
+        
+        /* Override for hero dots to prevent stretching */
+        .hero-dot {
+            min-height: 0.75rem !important;
+            height: 0.75rem !important;
+            width: 0.75rem !important;
+        }
+        
+        /* Mobile-friendly input sizes */
+        input, select, textarea {
+            font-size: 16px !important; /* Prevents zoom on iOS */
+        }
+        
+        /* Mobile-friendly spacing */
+        .space-y-6 > * + * {
+            margin-top: 1.5rem !important;
+        }
+        
+        .space-y-8 > * + * {
+            margin-top: 2rem !important;
+        }
+        
+        /* Mobile-friendly shadows */
+        .shadow-sm, .shadow-lg {
+            box-shadow: none !important;
+        }
+        
+        /* Mobile-friendly borders */
+        .border {
+            border-width: 1px !important;
+        }
+    }
+    
+    /* Extra small mobile devices */
+    @media (max-width: 480px) {
+        .px-4 {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        
+        .py-6:not(.hero-slider *) {
+            padding-top: 1.5rem !important;
+            padding-bottom: 1.5rem !important;
+        }
+        
+        .py-8:not(.hero-slider *) {
+            padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
+        }
+        
+        /* Smaller text on very small screens - but exclude hero slider */
+        .text-lg:not(.hero-slider *) {
+            font-size: 1rem !important;
+        }
+        
+        .text-xl:not(.hero-slider *) {
+            font-size: 1.125rem !important;
+        }
+        
+        .text-2xl:not(.hero-slider *) {
+            font-size: 1.25rem !important;
+        }
+    }
+}
+
+/* Custom components with Rihla Travels brand colors */
+@layer components {
+    .btn-primary {
+        @apply bg-brand-emerald hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2;
+    }
+
+    .btn-secondary {
+        @apply border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-amber-500 focus:ring-offset-2;
+    }
+
+    .btn-sky {
+        @apply bg-brand-sky-blue hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    }
+
+    .btn-outline {
+        @apply border-2 border-brand-dark-grey text-brand-dark-grey hover:bg-brand-dark-grey hover:text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+    }
+
+    .card {
+        @apply bg-white rounded-2xl border border-gray-200 shadow-soft p-6;
+    }
+
+    .card-hover {
+        @apply card hover:shadow-lg transition-shadow duration-300;
+    }
+
+    .section-light {
+        @apply bg-brand-light-beige;
+    }
+
+    .section-dark {
+        @apply bg-brand-dark-grey text-white;
+    }
+
+    .section-gradient {
+        @apply bg-gradient-to-r from-brand-sky-blue to-brand-gold/70;
+    }
+
+    .text-brand-heading {
+        @apply text-brand-black;
+    }
+
+    .text-brand-body {
+        @apply text-brand-dark-grey;
+    }
+
+    .badge-gold {
+        @apply bg-brand-gold text-white px-3 py-1 rounded-full text-sm font-medium;
+    }
+
+    .badge-sky {
+        @apply bg-brand-sky-blue text-white px-3 py-1 rounded-full text-sm font-medium;
+    }
+
+    .badge-emerald {
+        @apply bg-brand-emerald text-white px-3 py-1 rounded-full text-sm font-medium;
+    }
+
+    .container-fluid {
+        @apply max-w-screen-xl mx-auto px-4;
+    }
+
+    .divider-gold {
+        @apply border-t border-brand-gold/40;
+    }
+
+    .divider-sky {
+        @apply border-t border-brand-sky-blue/40;
+    }
+
+    .aspect-video {
+        aspect-ratio: 16 / 9;
+    }
+
+    .aspect-square {
+        aspect-ratio: 1 / 1;
+    }
+
+    .aspect-4-3 {
+        aspect-ratio: 4 / 3;
+    }
+}
+
+/* CTA and Layout Utility Classes */
+.btn-primary { 
+    @apply inline-flex items-center justify-center px-5 py-3 rounded-2xl bg-brand-sky-blue text-white font-semibold hover:opacity-90 focus:ring focus:ring-brand-sky-blue/40; 
+}
+
+.btn-secondary { 
+    @apply inline-flex items-center justify-center px-5 py-3 rounded-2xl border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-white focus:ring focus:ring-brand-gold/30; 
+}
+
+.badge-gold { 
+    @apply inline-flex items-center px-2.5 py-1 rounded-full bg-brand-gold text-white text-xs font-medium; 
+}
+
+.section { 
+    @apply max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8; 
+}
+
+.card { 
+    @apply bg-white rounded-2xl shadow-soft overflow-hidden; 
+}
+
+/* RTL Support */
+@layer utilities {
+    [dir="rtl"] .rtl-flip {
+        transform: scaleX(-1);
+    }
+
+    [dir="rtl"] .rtl-mirror {
+        transform: scaleX(-1);
+    }
+
+    [dir="rtl"] .rtl-text-right {
+        text-align: right;
+    }
+
+    [dir="rtl"] .rtl-text-left {
+        text-align: left;
+    }
+
+    [dir="rtl"] .rtl-float-right {
+        float: right;
+    }
+
+    [dir="rtl"] .rtl-float-left {
+        float: left;
+    }
+
+    [dir="rtl"] .rtl-ml-auto {
+        margin-left: auto;
+    }
+
+    [dir="rtl"] .rtl-mr-auto {
+        margin-right: auto;
+    }
+}
+
+/* Locale-specific typography */
+@layer base {
+    [lang="dv"] {
+        font-family: 'Faruma', 'MV Waheed', 'Cairo', 'Tajawal', 'sans-serif';
+    }
+
+    [lang="en"] {
+        font-family: 'Inter', 'Arial', sans-serif;
+    }
+}
+
+/* Dhivehi Font Utility Classes - Faruma Primary */
+@layer utilities {
+    .font-dhivehi {
+        font-family: 'Faruma', 'MV Waheed', 'sans-serif';
+    }
+    
+    .font-dhivehi-faruma {
+        font-family: 'Faruma', 'sans-serif';
+    }
+    
+    .font-dhivehi-waheed {
+        font-family: 'MV Waheed', 'sans-serif';
+    }
+    
+    .font-dhivehi-cairo {
+        font-family: 'Cairo', 'sans-serif';
+    }
+    
+    .font-dhivehi-elegant {
+        font-family: 'Tajawal', 'sans-serif';
+    }
+    
+    .font-inter {
+        font-family: 'Inter', 'Arial', sans-serif;
+    }
+    
+    /* Automatic font switching based on locale */
+    .font-auto {
+        font-family: var(--font-family, 'Inter');
+    }
+}

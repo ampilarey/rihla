@@ -1,0 +1,44 @@
+{
+    "name": "Rihla Travels - Umrah Guide",
+    "short_name": "Umrah Guide",
+    "description": "Complete step-by-step guide for performing Umrah with proper etiquette and supplications",
+    "start_url": "/guide",
+    "display": "standalone",
+    "background_color": "#1C9FE2",
+    "theme_color": "#1C9FE2",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/images/logo-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/images/logo-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["travel", "education", "religion"],
+    "lang": "en",
+    "dir": "ltr",
+    "scope": "/guide",
+    "prefer_related_applications": false,
+    "related_applications": [],
+    "screenshots": [
+        {
+            "src": "/images/guide-screenshot-1.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/images/guide-screenshot-2.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ]
+}
