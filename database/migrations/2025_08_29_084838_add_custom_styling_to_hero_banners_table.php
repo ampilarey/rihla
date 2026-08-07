@@ -29,7 +29,9 @@ return new class extends Migration
             $table->string('primary_cta_radius', 20)->default('rounded-lg')->after('primary_cta_size');
             
             // Secondary CTA styling
-            $table->string('secondary_cta_bg_color', 20)->default('rgba(255,255,255,0.2)')->after('primary_cta_radius');
+            // Use an 8-digit hex default (not rgba(...)): MariaDB/MySQL rejects comma-containing defaults,
+            // and rgba(255,255,255,0.2) is longer than string(20).
+            $table->string('secondary_cta_bg_color', 32)->default('#ffffff33')->after('primary_cta_radius');
             $table->string('secondary_cta_text_color', 20)->default('#ffffff')->after('secondary_cta_bg_color');
             $table->string('secondary_cta_size', 20)->default('text-base')->after('secondary_cta_text_color');
             $table->string('secondary_cta_radius', 20)->default('rounded-lg')->after('secondary_cta_size');
