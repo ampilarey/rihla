@@ -12,6 +12,12 @@ Rihla Travels is a Laravel 13 (PHP 8.3+) travel website using TailwindCSS + Vite
 - Tests: `php artisan test` (PHPUnit; uses in-memory SQLite via `phpunit.xml`).
 
 ### Non-obvious gotchas
+### TEST auto-deploy (like Bake & Grill)
+- On push to `main`, GitHub Actions calls `POST https://test.rihla.mv/api/deploy/test-pull` (see `.github/workflows/deploy-test-immediate.yml`).
+- Server script: `scripts/pull-deploy-test.sh` (path `/home/rihla/test.rihla.mv`). Production is never auto-deployed.
+- Setup: `docs/TEST_AUTO_DEPLOY.md`. Requires GitHub environment `test` secret `TEST_DEPLOY_WEBHOOK_SECRET` and the same value in TEST `.env`. Cron fallback: `scripts/install-self-update-cron-test.sh`.
+- Webhook needs public DNS for `test.rihla.mv`; cron works on-server without it.
+
 - Blade layouts use `@vite`, so views require either the Vite dev server running OR a prior `npm run build`. Without one of these, page rendering (and any feature test that renders a view) throws "Vite manifest not found".
 - Admin users are NOT seeded. Create one with `php artisan admin:create <email> <password>` (sets `is_admin=true`). `/admin` is gated by an admin check and redirects to `/login` when unauthenticated.
 - `php artisan migrate --seed` seeds trips, media, settings, and the Umrah guide — needed for the homepage, which queries the `trips` table.
