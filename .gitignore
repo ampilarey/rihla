@@ -1,7 +1,7 @@
 /.phpunit.cache
 /node_modules
-/public/build
 /public/hot
+# public/build is committed for cPanel/shared hosting deploys without Node.
 /public/storage
 /storage/*.key
 /storage/pail
