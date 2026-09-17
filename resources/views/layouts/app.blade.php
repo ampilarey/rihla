@@ -73,13 +73,6 @@
         {{ __('Skip to main content') }}
     </a>
 
-    {{-- TEMP auto-deploy proof on TEST only — remove after confirmation. Inline styles so it renders without an asset rebuild. --}}
-    @if(str_contains((string) config('app.url'), 'test.rihla.mv'))
-    <div id="auto-deploy-live-test" style="position:relative;z-index:9999;background:#7f1d1d;color:#fee2e2;text-align:center;padding:0.7rem 1rem;font:600 0.95rem/1.3 system-ui,sans-serif;">
-        RED HOOK · CODE <span style="color:#fca5a5;">RED-HOOK-0917</span> · auto-deploy check {{ now()->toDateString() }}
-    </div>
-    @endif
-
     <div class="min-h-screen bg-gray-50 overflow-x-hidden">
         <!-- Topbar -->
         <div class="bg-brand-dark-grey text-white py-2 overflow-x-hidden">
