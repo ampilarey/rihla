@@ -5,6 +5,7 @@
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
 **Scope:** rihla.mv (production) and test.rihla.mv (staging)
+**Companion:** [`DOMAIN_MODEL_AND_BOOKING_ENGINE.md`](DOMAIN_MODEL_AND_BOOKING_ENGINE.md) — the detailed domain/booking-engine design that §5 and §8 depend on. Amendments R-1…R-8 from that document's §28.4 are applied here and marked **[R-n]**.
 
 ---
 
@@ -123,7 +124,7 @@ Third omission: **payments actually available in the Maldives.** The thread's fi
 
 ## 3. P0: production defects to fix first
 
-Nothing in §4–§9 should start before this section is done. Estimated total: **3–5 developer-days.**
+Nothing in §4–§9 should start before this section is done. Estimated total: **4–7 developer-days** (was 3–5 before P0.7 was added by **[R-1]**).
 
 ### P0.1 — Fix the broken translations (D1)
 
@@ -144,6 +145,8 @@ Remove the resort/island-hopping seed rows from production. Publish real Umrah p
 
 Add `.github/workflows/ci.yml` running on pull requests and pushes to `main`: `composer install`, `npm ci && npm run build`, `php artisan test`, `composer lint:php`, `composer analyse`.
 
+**[R-2]** Add a **second job running the suite against a MySQL service container**, not just the in-memory SQLite in `phpunit.xml`. The booking engine's capacity guarantee rests on `SELECT … FOR UPDATE` row locking, which SQLite cannot exercise — a concurrency test that only ever runs on SQLite reports green while proving nothing (see the companion document §8.4, §25.6).
+
 Because `main` auto-deploys to test, CI must be **required to pass before merge**. Fix or delete the known-failing Breeze tests (D7) in the same PR so the suite is green and stays meaningful — a permanently red suite trains everyone to ignore it.
 
 **Acceptance:** CI green on `main`; branch protection requires it; `AGENTS.md`'s "pre-existing test failures" paragraph is deleted because it is no longer true.
@@ -156,6 +159,8 @@ Because `main` auto-deploys to test, CI must be **required to pass before merge*
 
 ### P0.5 — SEO essentials (D3)
 
+> **[R-1] Depends on P0.7.** `hreflang`, per-locale canonicals and a two-locale sitemap are inert while locale lives in the session and both languages share one URL. Do P0.7 first.
+
 - `sitemap.xml` (route-generated, cached): home, trips index, each published trip, guide, gallery, contact — both locales.
 - `hreflang` alternates for `en` / `dv` in `layouts/app.blade.php`, plus `x-default`.
 - JSON-LD in the layout: `Organization` (with `identifier` = Reg. No. C11452023, licence, contact), `BreadcrumbList` on content pages, `FAQPage` on `/guide`, and `Product` + `Offer` + `AggregateRating` on each trip page (`TouristTrip` in addition — no rich result today, but AI search surfaces read it).
@@ -165,6 +170,14 @@ Because `main` auto-deploys to test, CI must be **required to pass before merge*
 ### P0.6 — Finish the PWA wiring (D4)
 
 Link `manifest.json` from the main layout, register the service worker site-wide (not only `/guide`), and define an explicit offline strategy: app shell + guide + Ziyarah content cached, everything else network-first with the existing `offline.html` fallback.
+
+### P0.7 — Locale-prefixed routing **[R-1, new]**
+
+`app/Http/Middleware/SetLocale.php` resolves the locale from `session('app_locale')`, so `/trips/hajj-2026` serves English or Dhivehi depending on a cookie. There is no distinct URL per language, which means a crawler cannot index the Dhivehi site, `hreflang` has nothing to point at, and the canonical tag already emitted (`url()->current()`) is identical for both languages.
+
+Move locale into the URL: a locale-prefixed route group (`/en/…`, `/dv/…`), with `/` redirecting on stored preference or `Accept-Language`, and every current path kept as a 301. `SetLocale` then reads the route parameter, falling back to the session only for the bare root.
+
+**Acceptance:** `/en/trips` and `/dv/trips` both resolve and render their own language; `hreflang` alternates point at real URLs; canonical differs per locale; both appear in the sitemap. Estimated 1–2 days.
 
 ---
 
@@ -275,21 +288,33 @@ Rules to encode explicitly: seat holds with expiry (15 min), overbooking prevent
 - **Instalments:** deposit + scheduled instalments with automated reminders (email + WhatsApp), late-payment escalation to CRM tasks, and a hard rule that final documents/permits are gated on full payment.
 - **Offline methods:** bank transfer with slip upload and manual reconciliation — this will remain a large share of Maldivian payments; do not treat it as an afterthought.
 - **Outputs:** invoices, receipts, statements as PDFs (the app already has `barryvdh/laravel-dompdf`), plus a customer-facing payment history in the portal.
+- **[R-7] Store all money as integer minor units** (laari for MVR, cents for USD) — never floats, never decimals-as-strings. A booking carries one currency, fixed at creation; any FX rate applied is stored on the line item, never recomputed later. Retrofitting this after the first real payments is painful and error-prone.
+- **Provider independence:** `Booking → Payment → PaymentTransaction → provider driver`; BML appears in exactly one class. Callback idempotency rests on a unique constraint over the provider event ID. Full design: companion document §10.
 
-### 5.4 Visa & Nusuk permit tracking
+### 5.4 Visa and Nusuk permits — **two deliverables, not one [R-4]**
 
-This replaces the thread's simpler "visa tracker":
+This replaces the thread's simpler "visa tracker". The end-to-end sequence is:
 
 ```
 Documents collected → Nusuk account linked → Accommodation & transport recorded (Nusuk-compliant)
  → Visa applied → Visa issued → Umrah permit issued → Rawdah slot booked → Ready to travel
 ```
 
-Each stage: owner, timestamp, evidence document, pilgrim-visible status, and an SLA alert to operations when it stalls. **Gate:** a departure cannot be marked "ready" while any traveller lacks a permit.
+…but it must be built as **two independent workflows**, because they are different authorisations from different systems with different failure modes. Under the 2026 rules a traveller can hold a **valid visa and still be barred from the Mataf and the Rawdah** without a Nusuk permit; one combined status field cannot represent that state — and that is precisely the state that strands a pilgrim.
+
+**5.4a — Visa applications.** One per traveller per booking, with its own state machine, assigned visa officer, evidence document and audit trail. Re-application after rejection is a first-class path.
+
+**5.4b — Nusuk permits.** Separate records for the Umrah permit and any Rawdah slot, with a prerequisite gate (Nusuk-compliant accommodation and transport recorded) before a request can be made. **All Saudi requirements — passport validity window, prerequisites, permitted visa types, slot lead times — live in versioned configuration, never as constants in code**, so a mid-season policy change is a config edit rather than a deployment.
+
+Each stage: owner, timestamp, evidence document, pilgrim-visible status, and an SLA alert to operations when it stalls. **Gate:** a departure cannot be marked "ready" while any traveller lacks a permit. Travel readiness is **computed** from these records, never stored as a booking field.
+
+Full design: companion document §13 (visa) and §14 (permits).
 
 ### 5.5 Digital document wallet
 
-Per-traveller secure storage with categories (travel, identity, financial, learning, medical-optional), verification workflow, expiry alerts (passport < 6 months validity is a blocker — check it automatically), QR codes for check-in, offline access on mobile, and a full audit trail. Apple/Google Wallet passes for the boarding-style journey card are a nice Phase 5 addition.
+Per-traveller secure storage with categories (travel, identity, financial, learning, medical-optional), verification workflow, expiry alerts (passport < 6 months validity is a blocker — check it automatically, with the window configurable), QR codes for check-in, offline access on mobile, and a full audit trail.
+
+**[R-8] Document versioning is in scope for Phase 3, not later.** A replaced passport creates version 2 and supersedes version 1; it never overwrites it. Files are checksummed, stored on a private disk, and reachable only through short-lived signed URLs, with every *download* audited. This is a schema decision, not a feature toggle — retrofitting versioning onto flat document rows means migrating live passport data. Apple/Google Wallet passes for the boarding-style journey card are a nice Phase 5 addition.
 
 ---
 
@@ -539,10 +564,10 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
-| **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI, cleanups, SEO essentials, PWA wiring | **3–5 days** |
-| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), roles/permissions (§9.3), Filament adoption (§9.2), design-system pass, hosting decision + move (§9.1), media library, observability | **4–6 weeks** |
+| **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
+| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), **roles/permissions + policies (§9.3) — moved earlier: policies must exist before the first booking screen**, audit-log foundation, Filament adoption (§9.2), design-system pass, hosting decision + move (§9.1), media library, observability | **4–6 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
-| **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet (§5.5), **visa & Nusuk permit tracker** (§5.4), minimal CRM (§8.1), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
+| **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |
 | **5 — Knowledge & learning** | The differentiator ships | Knowledge Centre (§7.1), Ziyarah Guide with offline (§7.2), Learning Academy (§7.3), Scholar Portal (§6.4), readiness score, full CRM + finance (§8.1, §8.4) | **10–12 weeks** |
 | **6 — Intelligence** | Decisions from data | BI dashboards (§8.5), forecasting, pilgrim AI assistant (§9.6), staff drafting assistant, personalisation | **6–8 weeks** |
@@ -562,8 +587,10 @@ These block or reshape the plan; everything else I can proceed on with stated as
 2. **Admin (§9.2)** — adopt Filament, or keep hand-rolled Blade admin? *Recommendation: Filament.*
 3. **Scope ambition** — the MVP-in-four-months path, or the full Phase 1–6 programme (~10–12 months at one developer)?
 4. **Payments** — is BML merchant onboarding already in progress? It gates Phase 3 and has the longest external lead time.
-5. **Nusuk (§2.3)** — is Rihla integrating with / operating through Nusuk today, and who owns permit issuance operationally? This shapes §5.4 substantially.
+5. **Nusuk (§2.3, §5.4b)** — **[R-6]** is Rihla an approved Nusuk-integrated operator, or does it work through a licensed intermediary, and who owns permit issuance operationally? This decides whether 5.4b is a staff workflow with forms or a system integration, and it materially changes the Phase 3 estimate. Currently modelled as a manual staff workflow with an optional API later.
 6. **Content ownership** — who writes and who *religiously reviews* the Knowledge Centre and Academy? Phase 5 is content-bound, not code-bound.
+7. **[R-5] Production database version** — which MySQL/MariaDB version does the cPanel account run? The capacity invariant `capacity_held + capacity_confirmed <= capacity_total` is enforced with a CHECK constraint, which needs MySQL 8.0.16+ or MariaDB 10.2+. On an older engine the row lock becomes the sole defence and that must be recorded deliberately. Verify before the booking tables are created.
+8. **[R-1] Locale in the URL (P0.7)** — approve moving locale into the route. Without it the P0.5 SEO work ships tags that do nothing.
 
 ---
 
@@ -696,40 +723,16 @@ Every document from the ChatGPT thread, mapped. "Deferred" means deliberately no
 
 ## Appendix C — Proposed data model
 
-Core tables for Phases 2–4. Conventions follow A01/A02 (snake_case, plural tables, `id` PK, public ULID where an identifier is exposed).
-
-```
-packages            id, slug, type, title*, summary*, details*, inclusions*, exclusions*,
-                    difficulty, accessibility_notes*, is_published
-departures          id, package_id, code, date_start, date_end, airline, route,
-                    capacity, seats_held, seats_sold, status, tour_leader_id, scholar_id
-price_tiers         id, departure_id, room_type(quad|triple|double|single), price_mvr, price_usd
-hotels              id, city(makkah|madinah), name*, stars, lat, lng,
-                    distance_to_haram_m, walk_minutes, gallery
-departure_hotels    departure_id, hotel_id, city, nights, room_block
-itinerary_items     id, departure_id, day_no, time, title*, description*, location_id
-bookings            id, reference, departure_id, payer_user_id, status,
-                    total_mvr, paid_mvr, balance_mvr, source, agent_id
-travellers          id, booking_id, user_id?, full_name, passport_no, passport_expiry,
-                    dob, gender, mahram_traveller_id?, room_assignment, meal_notes, medical_notes
-documents           id, traveller_id, type, file_path, status(pending|verified|rejected),
-                    expires_at, verified_by, verified_at
-permits             id, traveller_id, nusuk_linked_at, visa_status, visa_issued_at,
-                    umrah_permit_at, rawdah_slot_at, notes
-payments            id, booking_id, method, gateway_ref, amount, currency, status, paid_at
-payment_plans       id, booking_id, due_date, amount, status, reminder_sent_at
-invoices            id, booking_id, number, issued_at, pdf_path
-leads               id, name, contact, source, package_interest, status, owner_id, next_action_at
-locations           id, slug, city, name*, lat, lng, category, significance*, references*
-articles            id, slug, type(history|learning|blog), title*, body*, reviewed_by, reviewed_at
-lessons             id, path_id, order, title*, body*, media, quiz_id
-progress            id, user_id, lesson_id, completed_at, score
-incidents           id, departure_id, traveller_id?, severity, category, status, reported_by
-```
-
-`*` = translatable field (JSON per §9.4).
-
-**Key constraints:** unique `(departure_id, traveller passport_no)`; `seats_sold + seats_held <= capacity` enforced at the database level; documents and permits cascade-audit rather than hard-delete.
+> **[R-3] Superseded.** The sketch that stood here has been replaced in full by
+> [`DOMAIN_MODEL_AND_BOOKING_ENGINE.md`](DOMAIN_MODEL_AND_BOOKING_ENGINE.md), which specifies every entity,
+> its fields, the aggregate boundaries, the booking state machine, capacity locking, the payment model and a
+> Mermaid ERD. Keeping a second, shorter model here would only drift out of step with it.
+>
+> Three corrections that document makes to the original sketch, worth knowing without opening it:
+>
+> - `visa_status` no longer lives on a combined `permits` table — **visa applications and Nusuk permits are separate aggregates** (§5.4a / §5.4b above).
+> - `bookings` gains **snapshot fields** (`package_snapshot`, `terms_version`, and per-traveller identity with a *masked* passport number), so later edits to a package cannot alter a contract already agreed.
+> - Booking status covers the **commercial lifecycle only**; document, visa and permit readiness is a computed projection over their own records, never a stored booking field.
 
 ---
 
