@@ -1,7 +1,7 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.0
-**Date:** 2026-09-17
+**Version:** 1.1
+**Date:** 2026-09-17 (re-audited same day — see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
 **Scope:** rihla.mv (production) and test.rihla.mv (staging)
@@ -20,6 +20,13 @@ This plan has three sources:
 The source thread is an *enterprise architecture manual*. It is excellent as a reference library and unusable as a build plan: it describes a 22-module platform with ~50 enterprise standards documents for what is today a 6-table brochure site run by a small Maldivian agency. **This plan keeps all of its ideas but re-sequences them by business value and cost**, and adds the things it missed — most importantly Nusuk compliance, which as of 2026 is not optional.
 
 Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you read only one section, read §1 (what is broken now) and §12 (the sequence).
+
+**Revision history**
+
+| Version | Change |
+|---|---|
+| 1.0 | Initial plan |
+| 1.1 | Re-audit. **Corrected D1/P0.1**: Laravel 13 falls back to `resources/lang` when it exists (`Illuminate\Foundation\Application::bindPathsInContainer`), so the directory location was *not* a bug — the dotless `__()` keys are the sole root cause. Filament recommendation moved from v4 to v5 (current). Package compatibility with Laravel 13 verified on Packagist. Roles and i18n aligned with the companion document. Added staging-PII rule, backup-before-migrate, email authentication, uptime monitoring, historical data import, and a waitlist entity. |
 
 ---
 
@@ -71,7 +78,7 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 
 | # | Severity | Finding | Evidence | Root cause |
 |---|---|---|---|---|
-| D1 | **Critical** | The production homepage renders raw translation keys to visitors: `hero_title`, `hero_sub`, `cta_trips`, `cta_whatsapp`, `section_upcoming`, `section_memories`, `memories_sub`, `join_next_title`, `contact_whatsapp` | Live HTML of `rihla.mv` | Translations live in `resources/lang/{en,dv}/messages.php`, but Laravel 9+ (so Laravel 13) reads the **root** `lang/` directory, and no `useLangPath()` override exists. Separately, all 21 calls are dotless — `__('hero_title')` — which is JSON-file syntax; the PHP array files would need `__('messages.hero_title')`. Two independent bugs, either alone breaks it. |
+| D1 | **Critical** | The production homepage renders raw translation keys to visitors: `hero_title`, `hero_sub`, `cta_trips`, `cta_whatsapp`, `section_upcoming`, `section_memories`, `memories_sub`, `join_next_title`, `contact_whatsapp` | Live HTML of `rihla.mv` | All 21 calls are **dotless** — `__('hero_title')`. A dotless key is a *JSON* translation lookup (`lang/en.json`), and no JSON translation file exists anywhere in the repo; the strings live in PHP array files (`resources/lang/{en,dv}/messages.php`) and can only be reached as `__('messages.hero_title')`. So Laravel returns the key itself. *(v1.1 correction: the directory location is **not** a factor — Laravel 13 explicitly falls back to `resources/lang` when that directory exists; verified in `Illuminate\Foundation\Application`.)* |
 | D2 | **High** | Production is advertising demo seed data — "Maldives Island Hopping Adventure", "Luxury Resort Experience" — instead of Umrah packages, on a site whose `<title>` is "Islamic Travel & Umrah Services" | Live HTML | `TripSeeder` demo rows were seeded to production and never replaced |
 | D3 | **High** | No structured data (`ld+json`) anywhere; no `sitemap.xml`; no `hreflang` tags despite two locales | `grep` across `resources/views`, `routes/`, `public/` | Never implemented |
 | D4 | **Medium** | PWA is half-wired: `public/sw.js`, `public/manifest.json` and `public/offline.html` exist, but the service worker is registered **only** on `/guide` and the manifest is not linked from `layouts/app.blade.php` | `resources/views/pages/guide.blade.php:78` | Partial implementation |
@@ -128,22 +135,23 @@ Nothing in §4–§9 should start before this section is done. Estimated total: 
 
 ### P0.1 — Fix the broken translations (D1)
 
-Two-part fix, both parts required:
+One fix, applied once:
 
-1. **Move the files.** `resources/lang/{en,dv}/` → `lang/{en,dv}/`. (Alternatively call `->useLangPath(resource_path('lang'))` in `bootstrap/app.php`, but moving matches Laravel 13 convention and is less surprising.)
-2. **Fix the call sites.** Convert all 21 dotless calls to namespaced keys: `__('hero_title')` → `__('messages.hero_title')`. Do it as one mechanical pass over `resources/views/`.
+1. **Namespace the call sites.** Convert all 21 dotless calls to the file they live in: `__('hero_title')` → `__('messages.hero_title')` (check `app.php` and `guide.php` too — three PHP translation files exist per locale). One mechanical pass over `resources/views/`.
+2. *Optional, cosmetic:* move `resources/lang/` → `lang/` to match current Laravel convention. **This is not part of the fix** — Laravel 13 already reads `resources/lang` when it exists — so do it only if you want the conventional layout, and do it in its own commit.
+3. **Prevent recurrence:** add a lightweight test that walks `resources/views/` and fails on any `__('…')` call without a dot — a one-line regex that would have caught this before it shipped.
 
 **Acceptance:** `curl -s https://test.rihla.mv/ | grep -c 'hero_title'` returns 0; the Dhivehi homepage renders Thaana for every one of the 21 keys; a feature test asserts the homepage contains the translated string, not the key, in both locales. **Add that test** — this bug reached production precisely because nothing asserted it.
 
 ### P0.2 — Replace demo content (D2)
 
-Remove the resort/island-hopping seed rows from production. Publish real Umrah packages, or if none are ready, an honest "next departures announced soon" state. Guard the seeder so `TripSeeder` demo data cannot run in production (`if (app()->isProduction()) return;`).
+Remove the resort/island-hopping seed rows from production. Publish real Umrah packages, or if none are ready, an honest "next departures announced soon" state. Guard **every demo seeder** — `TripSeeder`, `MediaSeeder`, `HeroBannerSeeder`, `WhySectionSeeder` — so demo data cannot run in production (`if (app()->isProduction()) return;`). `SettingsSeeder` and the Umrah guide seeders carry real content and may stay unguarded.
 
 **Acceptance:** no non-Umrah package appears on rihla.mv; seeders are environment-guarded.
 
 ### P0.3 — Stand up CI (D6, D7)
 
-Add `.github/workflows/ci.yml` running on pull requests and pushes to `main`: `composer install`, `npm ci && npm run build`, `php artisan test`, `composer lint:php`, `composer analyse`.
+Add `.github/workflows/ci.yml` running on pull requests and pushes to `main`: `composer install`, `npm ci && npm run build`, `php artisan test`, `composer lint:php`, `composer analyse`, plus `composer audit` and `npm audit --audit-level=high` for dependency vulnerabilities.
 
 **[R-2]** Add a **second job running the suite against a MySQL service container**, not just the in-memory SQLite in `phpunit.xml`. The booking engine's capacity guarantee rests on `SELECT … FOR UPDATE` row locking, which SQLite cannot exercise — a concurrency test that only ever runs on SQLite reports green while proving nothing (see the companion document §8.4, §25.6).
 
@@ -155,6 +163,7 @@ Because `main` auto-deploys to test, CI must be **required to pass before merge*
 
 - Delete the `admin/media/{medium}/debug` route and `admin/test-video` route + view.
 - Delete `tailwind copy.config.js`.
+- Stop caching Eloquent models. `HomeController` caches `WhySection`/`WhyFeature` model instances, which is why `config/cache.php` carries a `serializable_classes` allowlist that must be maintained by hand (per `AGENTS.md`). Cache plain arrays or DTOs instead and drop the allowlist — it is a fragility waiting for the next model added to the homepage.
 - Resolve the Tailwind version conflict: commit to v4 (remove `tailwindcss ^3`, migrate `tailwind.config.js` to the v4 CSS-first config) **or** to v3 (remove `@tailwindcss/vite`). Do not ship both. Recommendation: **v4**, since the Vite plugin is already in place and v4 builds faster; budget a day for the theme migration and a visual diff pass over the Dhivehi/RTL pages.
 
 ### P0.5 — SEO essentials (D3)
@@ -261,16 +270,18 @@ This is where the business value is. Today every booking is a WhatsApp conversat
 
 ### 5.1 Domain model
 
-Replace the single `trips` table with a proper package/departure split (full schema in Appendix C):
+Replace the single `trips` table with a proper package/departure split. The full design — every entity, field, aggregate boundary and the ERD — is the companion document's §4; the shape is:
 
-- `packages` — the sellable product (title, type, inclusions, exclusions, itinerary template, hotel set, difficulty/accessibility)
-- `departures` — a dated instance of a package (dates, airline, capacity, seats sold, price tiers, tour leader, scholar, status)
-- `bookings` — one per party, with a reference (`RIH-2026-0001`)
-- `travellers` — one per person, with passport, Nusuk linkage, room assignment, meal/medical notes
-- `payments`, `payment_plans`, `invoices`, `refunds`
-- `documents` — passport, photo, vaccination, visa, permit; with verification state and expiry
+- `packages` + `package_translations` — the reusable product (type, duration, difficulty/accessibility; per-locale title, summary, inclusions, exclusions, slug and SEO)
+- `departures` — a dated instance (dates, airline, `capacity_total/held/confirmed`, status, tour leader, scholar) with `price_tiers` per occupancy × pax type, `departure_hotels`, `itinerary_items`
+- `customers` and `travellers` — separate entities; a customer manages many travellers, a traveller may have no login
+- `bookings` (reference `RIH-B-2026-0417`) as the aggregate root over `booking_travellers`, `booking_lines`, `seat_holds`, `booking_status_transitions`, with a **package snapshot** so later edits cannot change what was sold
+- `waitlist_entries` — per departure, with auto-promotion when a seat is released
+- `payments` → `payment_transactions` → provider driver; `payment_plans`, `refunds`
+- `documents` → `document_versions`; `visa_applications`; `nusuk_permits`
+- `notifications`, `notification_templates`, `audit_logs`
 
-**Migration path:** keep `trips` as a view/alias through Phase 2 so the existing public pages keep working while the new model is populated.
+**Migration path:** additive and reversible — companion §25. `trips` stays readable through the transition, each row backfilled into one package + one departure with lineage recorded, `/trips/{slug}` kept as a 301, and `trips` retired only after a full season runs on the new model.
 
 ### 5.2 Booking flow
 
@@ -425,15 +436,17 @@ That is a perfectly reasonable arrangement for a brochure site. It will not carr
 
 The hand-rolled Blade admin is ~20 view files for six models. The plan adds 25+ models. Rebuilding that by hand is months of CRUD.
 
-**Recommendation: Filament v4.** MIT-licensed, actively maintained, the default choice for Laravel admin in 2026, and it collapses standard CRUD from days to hours. Cost: the team must learn Livewire. Migrate incrementally — new modules (bookings, travellers, payments, journeys) in Filament first, existing trip/media/settings CRUD ported afterwards.
+**Recommendation: Filament v5** (current line — v5.8.x as of September 2026; requires Livewire 4 and supports Laravel 13, verified on Packagist). MIT-licensed, actively maintained, the default choice for Laravel admin in 2026, and it collapses standard CRUD from days to hours. Cost: the team must learn Livewire. Migrate incrementally — new modules (bookings, travellers, payments, journeys) in Filament first, existing trip/media/settings CRUD ported afterwards. *(v1.0 said v4; v4.13 also supports Laravel 13 but is the previous major — start on v5.)*
 
 ### 9.3 Authorisation
 
-Replace the `is_admin` boolean with real roles and permissions (`spatie/laravel-permission`): pilgrim, family member, tour leader, scholar, agent, operations, finance, marketing, admin, super-admin. The portals in §6 each imply a distinct permission set; a boolean cannot express them.
+Replace the `is_admin` boolean with real roles and permissions (`spatie/laravel-permission`). **Staff roles** (nine, each a real Rihla job function — companion §17.1): Super Admin, Operations Manager, Booking Staff, Finance, Visa Staff, Pilgrim Support, Content Manager, Tour Leader, Reporting (read-only). Permissions are verbs (`booking.create`, `refund.approve`, `document.verify`, …) with separation of duties enforced in code — the same person may not request and approve one refund.
+
+**Customer-side access is not role-based.** What a customer, traveller or family member can see is decided by their *relationship* to a booking (payer, participant, invited family) through policies, not by assigning them a role. A boolean cannot express any of this; neither can a flat role list that mixes staff functions with customer relationships.
 
 ### 9.4 Internationalisation — redesign now, cheaply
 
-The current `*_dv` column pattern does not survive contact with packages, itineraries, learning modules, Ziyarah locations and articles. Move to a **translations table** (`spatie/laravel-translatable` with JSON columns is the lighter option and works well on MySQL 8). Support en / dv / ar with full RTL, per-locale slugs and per-locale SEO metadata. Doing this in Phase 1, while there are eight models, costs days; doing it in Phase 5 costs weeks.
+The current `*_dv` column pattern does not survive contact with packages, itineraries, learning modules, Ziyarah locations and articles. Adopt the **hybrid** the companion document settles on (§19): **translation tables** for the content entities that need per-locale slugs, SEO metadata or independent publication state (`packages`, `articles`, `locations`, `notification_templates`), and **JSON translatable columns** via `spatie/laravel-translatable` for CMS furniture (hero banners, why-features, guide steps, itinerary titles). Names already language-specific (`name_latin`, `name_dhivehi`, `name_arabic`) are data, not translations. Support en / dv / ar with full RTL. Doing this in Phase 1, while there are eight models, costs days; doing it in Phase 5 costs weeks. **Locale-in-URL (P0.7) is the prerequisite.**
 
 ### 9.5 Architecture standards — the useful 10% of appendices A01–A33
 
@@ -498,6 +511,13 @@ Roles/permissions (§9.3); MFA for staff; session security and device management
 
 Personal data: passports, photos, medical notes and payment records for minors and adults. Define retention and deletion policy, and honour deletion requests.
 
+**Added in v1.1:**
+- **Staging never holds unmasked production data.** `test.rihla.mv` auto-deploys from `main` and is reachable on the public internet. Once real passports and payments exist, production data must never be copied to it except through an anonymising export (fake names, scrubbed passport numbers, masked contacts). Write that export before Phase 3 ships, not after the first request to "just copy prod to test".
+- **Backup before every production migration.** `pull-deploy-test.sh` runs `migrate --force` automatically, which is fine for test. The production promotion procedure must take a database snapshot first, and every migration in the booking domain must be either reversible or explicitly forward-fix-only in its ADR.
+- **Email authentication.** Booking confirmations and payment receipts that land in spam are a support cost and a trust cost. Set SPF, DKIM and DMARC for `rihla.mv` before the first transactional email is sent from the platform, and send through a dedicated transactional provider, not the cPanel mail server.
+- **Uptime monitoring on production.** The deploy workflow smoke-tests `test.rihla.mv` only. Point an external monitor (BetterStack / UptimeRobot free tier) at `https://rihla.mv/up` — the health route already exists in `bootstrap/app.php` — with WhatsApp/email alerts.
+- **Dependency scanning** in CI (`composer audit`, `npm audit`) — added to P0.3.
+
 ### 10.5 The KPIs worth instrumenting
 
 Booking conversion rate (visit → enquiry → booking); enquiry response time; deposit-to-full-payment conversion; seats sold per departure vs capacity; document-verification cycle time; permit-issued-before-departure rate (target 100%); learning-module completion among booked pilgrims; portal weekly-active pilgrims; family-portal engagement; repeat + referral share of bookings; NPS after return; per-journey margin.
@@ -529,14 +549,17 @@ Google Maps Platform for hotel location, walking distance/time to the Haram, Ziy
 
 ### 11.5 Laravel packages worth adopting
 
-| Need | Package |
-|---|---|
-| Admin panel | `filament/filament` v4 |
-| Roles & permissions | `spatie/laravel-permission` |
-| Translations | `spatie/laravel-translatable` |
-| Media conversions | `spatie/laravel-medialibrary` (replaces the hand-rolled `Media` model; also fixes D9) |
-| Sitemap | `spatie/laravel-sitemap` |
-| Backups | `spatie/laravel-backup` |
+Laravel 13 compatibility verified against Packagist on 2026-09-17:
+
+| Need | Package | Laravel 13 | Note |
+|---|---|---|---|
+| Admin panel | `filament/filament` **v5** (5.8.x) | ✓ (`illuminate/contracts ^11.28\|^12\|^13`) | Livewire 4 |
+| Roles & permissions | `spatie/laravel-permission` 8.x | ✓ | PHP ^8.3 |
+| Translations (JSON) | `spatie/laravel-translatable` 6.x | ✓ | For CMS furniture only — see §9.4 |
+| Media conversions | `spatie/laravel-medialibrary` 11.x | ✓ | Replaces the hand-rolled `Media` model; also fixes D9 |
+| Sitemap | `spatie/laravel-sitemap` 8.x | ✓ | **Requires PHP ^8.4.** `composer.json` says `^8.3`; the deploy scripts put `ea-php84` on the PATH, suggesting the server already runs 8.4 — confirm, then bump `composer.json`, or pin sitemap 7.x |
+| Backups | `spatie/laravel-backup` 10.x | ✓ | Ship backups off-box (S3-compatible), not to the same cPanel disk |
+| Payments | `javaabu/bml-connect-laravel` 0.7 | ✓ | Broad constraint (`^5.5 … ^13`) — read the source before trusting edge cases |
 | Search | Laravel Scout + Meilisearch (VPS) or MySQL full-text (shared hosting) |
 | Monitoring | Laravel Pulse + Sentry |
 | PDFs | `barryvdh/laravel-dompdf` (already present) |
@@ -567,7 +590,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
 | **1 — Foundations** | Ready to build on | i18n redesign (§9.4), **roles/permissions + policies (§9.3) — moved earlier: policies must exist before the first booking screen**, audit-log foundation, Filament adoption (§9.2), design-system pass, hosting decision + move (§9.1), media library, observability | **4–6 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
-| **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
+| **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |
 | **5 — Knowledge & learning** | The differentiator ships | Knowledge Centre (§7.1), Ziyarah Guide with offline (§7.2), Learning Academy (§7.3), Scholar Portal (§6.4), readiness score, full CRM + finance (§8.1, §8.4) | **10–12 weeks** |
 | **6 — Intelligence** | Decisions from data | BI dashboards (§8.5), forecasting, pilgrim AI assistant (§9.6), staff drafting assistant, personalisation | **6–8 weeks** |
@@ -589,7 +612,7 @@ These block or reshape the plan; everything else I can proceed on with stated as
 4. **Payments** — is BML merchant onboarding already in progress? It gates Phase 3 and has the longest external lead time.
 5. **Nusuk (§2.3, §5.4b)** — **[R-6]** is Rihla an approved Nusuk-integrated operator, or does it work through a licensed intermediary, and who owns permit issuance operationally? This decides whether 5.4b is a staff workflow with forms or a system integration, and it materially changes the Phase 3 estimate. Currently modelled as a manual staff workflow with an optional API later.
 6. **Content ownership** — who writes and who *religiously reviews* the Knowledge Centre and Academy? Phase 5 is content-bound, not code-bound.
-7. **[R-5] Production database version** — which MySQL/MariaDB version does the cPanel account run? The capacity invariant `capacity_held + capacity_confirmed <= capacity_total` is enforced with a CHECK constraint, which needs MySQL 8.0.16+ or MariaDB 10.2+. On an older engine the row lock becomes the sole defence and that must be recorded deliberately. Verify before the booking tables are created.
+7. **[R-5] Production runtime versions** — which MySQL/MariaDB version does the cPanel account run, and is PHP really 8.4 (the deploy scripts reference `ea-php84`)? The DB version matters because The capacity invariant `capacity_held + capacity_confirmed <= capacity_total` is enforced with a CHECK constraint, which needs MySQL 8.0.16+ or MariaDB 10.2+. On an older engine the row lock becomes the sole defence and that must be recorded deliberately. Verify before the booking tables are created.
 8. **[R-1] Locale in the URL (P0.7)** — approve moving locale into the route. Without it the P0.5 SEO work ships tags that do nothing.
 
 ---
@@ -607,6 +630,9 @@ These block or reshape the plan; everything else I can proceed on with stated as
 | Personal data breach (passports) | High | Encryption at rest, signed URLs, audit log, least privilege, tested restores |
 | Auto-deploy pushes a broken `main` to test | Medium | CI required before merge (P0.3) — currently the gap that lets this happen |
 | WhatsApp cost change Oct 2026 | Low–Medium | Model costs before committing; keep email/SMS fallbacks |
+| Real passport data copied to the public staging site | High | Anonymising export only (§10.4); never a raw dump |
+| Historical pilgrim data imported with duplicates and bad passports | Medium | Import in dry-run mode with a review queue; duplicate detection with human merge (companion §5.3) |
+| Package major-version churn (Filament v5, Livewire 4, sitemap needing PHP 8.4) | Low | Versions pinned in `composer.json`; upgrade in their own PRs with CI green |
 
 ---
 
@@ -653,7 +679,7 @@ Every document from the ChatGPT thread, mapped. "Deferred" means deliberately no
 | `32-EXECUTIVE-MANAGEMENT-OKR-STRATEGY` | §8.6 — *deferred* |
 | `33-CONFIGURATION-FEATURE-FLAGS-BUSINESS-RULES` | §9.5 — *feature flags yes; full rules engine deferred* |
 | `34-WORKFLOW-PROCESS-ORCHESTRATION` | §5.4, §8.3 as explicit state machines — *generic engine deferred* |
-| `35-MASTER-DATA-MANAGEMENT-DOMAIN-MODEL` | Appendix C |
+| `35-MASTER-DATA-MANAGEMENT-DOMAIN-MODEL` | Companion document §3–§4 (Appendix C is superseded) |
 | `36-PLATFORM-ARCHITECTURE-STANDARDS` | §9.5 |
 | `37-EVENT-DRIVEN-ARCHITECTURE-MESSAGING` | *Deferred* — Laravel events/queues suffice at this scale |
 | `38-IDENTITY-ACCESS-MANAGEMENT` | §9.3, §10.4 |

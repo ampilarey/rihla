@@ -23,7 +23,7 @@ Welcome to the comprehensive documentation for the Rihla Travels website. This d
 
 ## 🏗️ Project Overview
 
-**Rihla Travels** is a comprehensive travel website built with Laravel 11, featuring:
+**Rihla Travels** is a comprehensive travel website built with Laravel 13, featuring:
 
 ### ✨ Key Features
 - **Multi-language Support** - English and Dhivehi with RTL support
@@ -40,7 +40,7 @@ Welcome to the comprehensive documentation for the Rihla Travels website. This d
 - **Social Integration** - YouTube, Facebook, Instagram, TikTok support
 
 ### 🌐 Technology Stack
-- **Backend**: Laravel 11, PHP 8.2+
+- **Backend**: Laravel 13, PHP 8.3+
 - **Frontend**: TailwindCSS, Alpine.js, Vite
 - **Database**: MySQL/PostgreSQL with optimized schema
 - **Image Processing**: Intervention Image with WebP conversion
@@ -91,14 +91,11 @@ php artisan serve
 
 ### Admin Access
 - **URL**: `/admin`
-- **Default Email**: admin@rihlatravels.mv
-- **Default Password**: password
-
-**⚠️ Important**: Change default credentials immediately after deployment.
+- Admin users are **not seeded**. Create one with `php artisan admin:create <email> <password>` (see `AGENTS.md`).
 
 ## 🔗 External Resources
 
-- **Laravel Documentation**: https://laravel.com/docs/11.x
+- **Laravel Documentation**: https://laravel.com/docs/13.x
 - **TailwindCSS Documentation**: https://tailwindcss.com/docs
 - **Alpine.js Documentation**: https://alpinejs.dev/
 - **Intervention Image**: https://image.intervention.io/
@@ -115,6 +112,6 @@ This project is proprietary software developed for Rihla Travels.
 
 ---
 
-**Last Updated**: December 2024  
-**Version**: 1.0.0  
-**Laravel Version**: 11.x
+**Last Updated**: September 2026  
+**Version**: 1.1.0  
+**Laravel Version**: 13.x
