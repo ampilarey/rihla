@@ -5,6 +5,7 @@ Welcome to the comprehensive documentation for the Rihla Travels website. This d
 ## 📋 Documentation Structure
 
 ### 🎯 Core Documentation
+- **[Website Upgrade Plan](WEBSITE_UPGRADE_PLAN.md)** - Audited current state, phased roadmap, and the full upgrade backlog
 - **[Project Overview](PROJECT_OVERVIEW.md)** - Vision, goals, target audience, and key differentiators
 - **[Tech Stack](TECH_STACK.md)** - Complete technology stack and dependencies
 - **[Database Schema](DATABASE_SCHEMA.md)** - Database structure, relationships, and migrations
