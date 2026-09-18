@@ -8,15 +8,18 @@
     <div class="flex justify-center mb-8">
         <div class="bg-white rounded-2xl p-1 shadow-soft">
             <a href="{{ route('gallery') }}" 
-               class="filter-pill {{ !$type ? 'active' : '' }} px-6 py-3 rounded-xl font-medium transition-colors">
+               class="filter-pill {{ !$type ? 'active' : '' }} px-6 py-3 rounded-xl font-medium transition-colors"
+               @if(!$type) aria-current="page" @endif>
                 {{ __('All') }}
             </a>
             <a href="{{ route('gallery', ['type' => 'photo']) }}" 
-               class="filter-pill {{ $type === 'photo' ? 'active' : '' }} px-6 py-3 rounded-xl font-medium transition-colors">
+               class="filter-pill {{ $type === 'photo' ? 'active' : '' }} px-6 py-3 rounded-xl font-medium transition-colors"
+               @if($type === 'photo') aria-current="page" @endif>
                 {{ __('Photos') }}
             </a>
             <a href="{{ route('gallery', ['type' => 'video']) }}" 
-               class="filter-pill {{ $type === 'video' ? 'active' : '' }} px-6 py-3 rounded-xl font-medium transition-colors">
+               class="filter-pill {{ $type === 'video' ? 'active' : '' }} px-6 py-3 rounded-xl font-medium transition-colors"
+               @if($type === 'video') aria-current="page" @endif>
                 {{ __('Videos') }}
             </a>
         </div>
@@ -37,7 +40,7 @@
                             @if($item->title || $item->caption)
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                                 @if($item->title)
-                                <h3 class="text-white font-semibold mb-1">{{ $item->title }}</h3>
+                                <h2 class="text-white font-semibold mb-1">{{ $item->title }}</h2>
                                 @endif
                                 @if($item->caption)
                                 <p class="text-white/90 text-sm">{{ $item->caption }}</p>
@@ -53,7 +56,7 @@
                                      class="w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
                                     <div class="bg-white/90 rounded-full p-3">
-                                        <svg class="w-8 h-8 text-wine-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <svg aria-hidden="true" focusable="false" class="w-8 h-8 text-wine-500" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M8 5v14l11-7z"/>
                                         </svg>
                                     </div>
@@ -63,7 +66,7 @@
                             @if($item->title || $item->caption)
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                                 @if($item->title)
-                                <h3 class="text-white font-semibold mb-1">{{ $item->title }}</h3>
+                                <h2 class="text-white font-semibold mb-1">{{ $item->title }}</h2>
                                 @endif
                                 @if($item->caption)
                                 <p class="text-white/90 text-sm">{{ $item->caption }}</p>

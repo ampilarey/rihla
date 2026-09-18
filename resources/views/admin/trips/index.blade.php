@@ -5,7 +5,7 @@
     <div class="flex justify-between items-center mb-8">
         <div class="flex items-center space-x-4">
             <a href="{{ route('admin.dashboard') }}" class="text-wine-500 hover:text-wine-600 flex items-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg aria-hidden="true" focusable="false" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
                 <span>{{ __('Back to Dashboard') }}</span>
