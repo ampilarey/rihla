@@ -80,16 +80,19 @@ class Trip extends Model
         static::deleted($bustSitemap);
     }
 
+    /** @return HasMany<Media, $this> */
     public function media(): HasMany
     {
         return $this->hasMany(Media::class)->orderBy('sort_order');
     }
 
+    /** @return HasMany<Media, $this> */
     public function photos(): HasMany
     {
         return $this->hasMany(Media::class)->where('type', 'photo')->orderBy('sort_order');
     }
 
+    /** @return HasMany<Media, $this> */
     public function videos(): HasMany
     {
         return $this->hasMany(Media::class)->where('type', 'video')->orderBy('sort_order');

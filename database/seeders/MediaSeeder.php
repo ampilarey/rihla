@@ -16,7 +16,7 @@ class MediaSeeder extends Seeder
         // Demo content. It reached production once and advertised resort
         // holidays on an Umrah site; never let it run there again.
         if (app()->isProduction()) {
-            $this->command?->warn(static::class.' skipped: demo data is not seeded in production.');
+            $this->command->warn(static::class.' skipped: demo data is not seeded in production.');
 
             return;
         }

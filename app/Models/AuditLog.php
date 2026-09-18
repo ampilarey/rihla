@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
+ * @property-read User|null $user The account that made the change, or null
+ *     once it is deleted: the foreign key is nulled rather than cascaded so
+ *     the record outlives the account.
+ *
  * An immutable record of one change.
  *
  * Deliberately has no fillable list and no update path: entries are written
@@ -35,6 +39,7 @@ class AuditLog extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -57,13 +62,16 @@ class AuditLog extends Model
     }
 
     /**
-     * Who did it, falling back to the snapshot when the account is gone and
-     * finally to a plain statement that it was not a person.
+     * Who did it, at the time they did it.
+     *
+     * Reads the snapshot rather than the live relation deliberately. The
+     * observer writes user_name on every row, so it is always there; and if
+     * someone later changes their name, an audit trail that showed the new one
+     * against an old action would be rewriting history. Null means the change
+     * did not come from a signed-in person.
      */
     public function getActorAttribute(): string
     {
-        return $this->user?->name
-            ?? $this->user_name
-            ?? __('System');
+        return $this->user_name ?? __('System');
     }
 }

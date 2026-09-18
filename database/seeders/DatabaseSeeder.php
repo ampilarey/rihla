@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
         $this->call(self::CONTENT);
 
         if (app()->isProduction()) {
-            $this->command?->warn('Demo seeders skipped in production.');
+            $this->command->warn('Demo seeders skipped in production.');
 
             return;
         }

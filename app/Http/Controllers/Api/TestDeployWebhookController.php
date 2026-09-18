@@ -62,14 +62,14 @@ class TestDeployWebhookController extends Controller
 
     private function extractSecret(Request $request): string
     {
+        // header() returns a string when given a string default.
         $header = $request->header('Authorization', '');
-        if (is_string($header) && str_starts_with($header, 'Bearer ')) {
+
+        if (str_starts_with($header, 'Bearer ')) {
             return trim(substr($header, 7));
         }
 
-        $headerSecret = $request->header('X-Deploy-Secret', '');
-
-        return is_string($headerSecret) ? trim($headerSecret) : '';
+        return trim($request->header('X-Deploy-Secret', ''));
     }
 
     private function isTestHost(Request $request): bool

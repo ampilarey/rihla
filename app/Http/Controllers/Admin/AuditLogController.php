@@ -20,7 +20,6 @@ class AuditLogController extends Controller
         ]);
 
         $logs = AuditLog::query()
-            ->with('user')
             ->when($filters['event'] ?? null, fn ($query, $event) => $query->where('event', $event))
             ->when(
                 $filters['subject'] ?? null,

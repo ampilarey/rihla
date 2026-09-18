@@ -153,8 +153,8 @@ class Seo
             '@type' => 'TouristTrip',
             'name' => $trip->title,
             'url' => $url,
-            'startDate' => $trip->date_start?->toDateString(),
-            'endDate' => $trip->date_end?->toDateString(),
+            'startDate' => $trip->date_start->toDateString(),
+            'endDate' => $trip->date_end->toDateString(),
             'provider' => ['@id' => url('/').'#organization'],
         ];
 
@@ -185,7 +185,7 @@ class Seo
             ];
         }
 
-        return array_filter($schema, fn ($value) => $value !== null);
+        return $schema;
     }
 
     /**

@@ -88,11 +88,11 @@ class AuditObserver
             'auditable_id' => $model->getKey(),
             'old_values' => $old,
             'new_values' => $new,
-            // Absent in console context, which is itself worth being able to
-            // tell apart from a change made through the panel.
-            'ip_address' => $request?->ip(),
-            'user_agent' => substr((string) $request?->userAgent(), 0, 255) ?: null,
-            'url' => $request?->fullUrl(),
+            // Present even on the console, where ip() and userAgent() report
+            // the local values rather than nothing.
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255) ?: null,
+            'url' => $request->fullUrl(),
         ]);
     }
 

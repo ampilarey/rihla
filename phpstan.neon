@@ -1,0 +1,17 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+
+    paths:
+        - app
+        - config
+        - database
+        - routes
+
+    # Blade compiles to PHP in this directory; analysing generated output
+    # reports errors in code nobody wrote and cannot fix.
+    excludePaths:
+        - storage
+        - bootstrap/cache

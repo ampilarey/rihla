@@ -92,7 +92,11 @@ class GuideStepController extends Controller
     {
         $this->authorize('view', $guideStep);
 
-        return view('admin.guide-steps.show', compact('guideStep'));
+        // There is no admin.guide-steps.show view and never has been, so this
+        // returned "View [admin.guide-steps.show] not found" — a 500 on every
+        // attempt to open a step. Editing is what the panel is for, and the
+        // edit screen already shows everything a read-only one would.
+        return redirect()->route('admin.guide-steps.edit', $guideStep);
     }
 
     /**
