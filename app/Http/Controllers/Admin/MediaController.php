@@ -162,25 +162,21 @@ class MediaController extends Controller
 
         try {
             // Log the deletion attempt
-            \Log::info('Attempting to delete media', ['id' => $medium->id, 'title' => $medium->title]);
 
             // Delete files if they exist
             if ($medium->file_path) {
                 if (Storage::disk('public')->exists($medium->file_path)) {
                     Storage::disk('public')->delete($medium->file_path);
-                    \Log::info('Deleted file', ['path' => $medium->file_path]);
                 }
             }
 
             if ($medium->thumb_path) {
                 if (Storage::disk('public')->exists($medium->thumb_path)) {
                     Storage::disk('public')->delete($medium->thumb_path);
-                    \Log::info('Deleted thumbnail', ['path' => $medium->thumb_path]);
                 }
             }
 
             $medium->delete();
-            \Log::info('Media deleted successfully', ['id' => $medium->id]);
 
             return redirect()->route('admin.media.index')->with('success', 'Media deleted successfully.');
 

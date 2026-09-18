@@ -34,7 +34,9 @@ class TripController extends Controller
         $this->authorize('create', Trip::class);
 
         $validated = $request->validated();
-        $validated['slug'] = Str::slug($validated['title']);
+        // Derived from the title only when the form leaves it blank; the field
+        // is validated for uniqueness, so an editor who sets one means it.
+        $validated['slug'] = Str::slug(filled($validated['slug'] ?? null) ? $validated['slug'] : $validated['title']);
         $validated['is_published'] = $request->has('is_published');
         $validated['locale'] = app()->getLocale();
 
@@ -71,7 +73,18 @@ class TripController extends Controller
         $this->authorize('update', $trip);
 
         $validated = $request->validated();
-        $validated['slug'] = Str::slug($validated['title']);
+
+        // The slug is the trip's public URL. Regenerating it from the title on
+        // every save meant that correcting a typo in "Ramadan Umrah 2026"
+        // moved /en/trips/ramadan-umrah-2026 out from under every link that
+        // had ever been shared, every bookmark, and everything indexed — and
+        // it overwrote a slug the editor had deliberately set, even though the
+        // form validates that field for uniqueness. It changes only when the
+        // editor changes it.
+        $validated['slug'] = filled($validated['slug'] ?? null)
+            ? Str::slug($validated['slug'])
+            : $trip->slug;
+
         $validated['is_published'] = $request->has('is_published');
 
         if ($request->hasFile('cover_image')) {
