@@ -98,6 +98,21 @@ return [
     '24/7 Support' => '24/7 އަގުންނަށްވާނެވެ',
     'We\'re here for you before, during, and after your trip.' => 'އަހަރުންނާއަށްވާނެވެ',
 
+    // Error pages
+    // Awaiting a Dhivehi translator. English placeholders — see the note in
+    // resources/lang/en/messages.php. Replace the right-hand side only.
+    'error_home' => 'Back to home',
+    'error_404_title' => 'We could not find that page',
+    'error_404_message' => 'The link may be out of date, or the page may have moved. Our trips and the Umrah guide are still where they were.',
+    'error_403_title' => 'This page is not open to you',
+    'error_403_message' => 'You are signed in, but this page is restricted. If you think that is wrong, message us and we will sort it out.',
+    'error_419_title' => 'Your session expired',
+    'error_419_message' => 'The page sat open long enough that we closed the session for safety. Go back, reload, and try once more.',
+    'error_500_title' => 'Something broke on our side',
+    'error_500_message' => 'This one is ours, not yours. Please try again in a few minutes, and message us on WhatsApp if it keeps happening.',
+    'error_503_title' => 'Back in a few minutes',
+    'error_503_message' => 'Rihla Travels is down for brief maintenance. Nothing is lost — please try again shortly.',
+
     // Admin
     'Admin Dashboard' => 'އަދިމިން ޑޭޝްބޯޑް',
     'Total Trips' => 'ހުރިހާ ދަތުރުތައް',
@@ -195,8 +210,8 @@ return [
     'Call us' => 'މިއްޔަރަށް ގުޅުންކުރާށެވެ',
     'Browse our catalog' => 'އަހަރުގެ ޕައްކޭޖްތައް ބަލާށެވެ',
     'Browse Catalog' => 'ޕައްކޭޖްތައް ބަލާށެވެ',
-            'admin_login' => 'އަދިމިން ލޮގިން',
-        'Login' => 'ލޮގިން',
+    'admin_login' => 'އަދިމިން ލޮގިން',
+    'Login' => 'ލޮގިން',
     'admin_dashboard' => 'އަދިމިން ޑޭޝްބޯޑް',
     'manage_trips' => 'ދަތުރުތައް ބަލާލުން',
     'manage_media' => 'މީޑިއާ ބަލާލުން',
@@ -236,12 +251,12 @@ return [
     'Forgot your password?' => 'ތިޔަބޭފުޅުގެ ޕާސްވޯޑް ހައްލުވަނީތޯއްވާށެވެ',
     'Log in' => 'ލޮގިންކުރާށެވެ',
     '← Back to Home' => '← ނިޒާމަށްވަނީތޯއްވާށެވެ',
-    
+
     // Accessibility
     'Skip to main content' => 'މައިންކުރަށްވާނެވެ',
     'Toggle mobile menu' => 'މޯބައިލްމެންއިއަށްވާނެވެ',
     'Main navigation' => 'މައިންނަވިގޭޝަންއަށްވާނެވެ',
-    
+
     // Common
     'Our Trips' => 'އަހަރުގެދަތުރުތައް',
     'Malé, Maldives' => 'މާލޭއަށްވާނެވެ',
@@ -282,10 +297,10 @@ return [
     'Created' => 'އައުންނަށްވާނެވެ',
     'Last Updated' => 'މިހާރުވާންވާނެވެ',
     'Delete Media' => 'މީޑިއާއްޓަށްވާނެވެ',
-            'Are you sure you want to delete this media?' => 'މީޑިއާއްޓަށްވާނެވެ',
-        'Manage Trips' => 'ދަތުރުތައް ބަލާލުން',
-        'Manage Media' => 'މީޑިއާ ބަލާލުން',
-        'Guide Steps' => 'ގައިޑް ސްޓެޕްސް',
-        'Settings' => 'ސެޓިންގްތައް',
-        'View Site' => 'ސައިޓް ބަލާށެވެ',
-    ];
+    'Are you sure you want to delete this media?' => 'މީޑިއާއްޓަށްވާނެވެ',
+    'Manage Trips' => 'ދަތުރުތައް ބަލާލުން',
+    'Manage Media' => 'މީޑިއާ ބަލާލުން',
+    'Guide Steps' => 'ގައިޑް ސްޓެޕްސް',
+    'Settings' => 'ސެޓިންގްތައް',
+    'View Site' => 'ސައިޓް ބަލާށެވެ',
+];

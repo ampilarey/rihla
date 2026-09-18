@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.17
+**Version:** 1.18
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.18 | D44 fixed: every error status rendered Laravel's unbranded default page — no logo, no colour, no navigation, and English under `/dv/`. D45 found while fixing it: the exception handler never resolved the locale, because a URL that matches no route never reaches the web middleware group. Error page text is English in both locales and needs a translator. |
 | 1.17 | D43 fixed: the Dhivehi guide PDF referenced a Thaana font that did not exist, so it downloaded as boxes. An alt-text finding was investigated and withdrawn — it was a false positive from a regex broken by Blade's `->`. |
 | 1.16 | **Image upload was broken on every path** (D9, re-rated from Low to Critical) — Laravel 13 requires intervention/image ^4 and the project had ^2. Upgraded, and the call sites moved onto the framework's own `Image` facade. D42: filename collisions. Defect register corrected: D1–D8, D10, D12 and D13 were fixed during P0 but never struck through. |
 | 1.15 | Write-path and schema tests added. D40 found by them: renaming a trip moved its public URL. D41: debug logging on every admin write, superseded by the audit log. |
@@ -137,6 +138,8 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D41 | ~~**Low**~~ **fixed** | Nine `Log::info` debug calls fired on every admin write, one of them logging `$request->all()`. Superseded by the audit log, which records the same events with the actor and without the whole request body. | `app/Http/Controllers/Admin/{HeroBanner,Media}Controller.php` | Debug scaffolding left in |
 | D42 | ~~**Medium**~~ **fixed** | Guide-step image filenames were `step_` . `time()` . `.webp`, so two images uploaded in the same second resolved to the same path and the second silently overwrote the first — leaving one step showing another step's picture. Media filenames used `time()` plus the client's own filename, which is attacker-supplied. Both now carry a random component and the client filename is not used. | `app/Http/Controllers/Admin/{GuideStep,Media}Controller.php` | Timestamp treated as unique |
 | D43 | ~~**High**~~ **fixed** | **The Dhivehi guide PDF had no Thaana font.** Its stylesheet pointed at `storage/fonts/Faruma.ttf`, a file that has never existed — and neither had the directory, so dompdf's font cache was unwritable too. dompdf does not report a missing `@font-face` source; it falls back, and the fallback has no Thaana glyphs, so the download was boxes. Unlike a web page, a PDF is what a pilgrim carries with them and cannot be fixed by reloading. | `resources/views/pdf/guide.blade.php`, `storage/fonts/` | Font path written for a file that was never added |
+| D44 | ~~**Medium**~~ **fixed** | **Every error page was Laravel's default.** A 404 returned `<title>Not Found</title>` in a grey box: no logo, no brand colour, no navigation, and nothing to click — a visitor from a stale link had to retype the domain. Grepping the response for `Rihla`, `rihla-logo` and `WhatsApp` returned zero of each. The 301s and the sitemap shipped in 1.12 make arriving at a 404 a normal event, not an edge case. The replacements are deliberately self-contained — no parent layout, no bundled CSS, no database — because `layouts.app` now emits Organization JSON-LD that reads the settings table, and a 500 page must not need the database to explain that the database is down. | `resources/views/errors/` | Framework default left in place |
+| D45 | ~~**Medium**~~ **fixed** | **Error pages ignored the locale in the URL.** Route middleware never runs for a URL that matches no route, so `SetLocale` had not fired by the time an error rendered: `/dv/anything-misspelt` came back as an English, `dir="ltr"` document with both of its links back into the site pointing at `/en`. Found by writing the test for D44. | `bootstrap/app.php`, `app/Http/Middleware/SetLocale.php` | Locale resolution tied to route matching |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 

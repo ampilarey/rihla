@@ -51,6 +51,23 @@ class SetLocale
         return $next($request);
     }
 
+    /**
+     * The locale a URL names in its own path, or null if it names none.
+     *
+     * Route middleware never runs for a URL that matches no route, so on a
+     * 404 this middleware has not fired by the time the error page renders:
+     * /dv/anything-misspelt came back in English, with both its links back
+     * into the site pointing at /en. The exception handler calls this, which
+     * is why it is static and takes a path rather than a Request — at that
+     * point there is no matched route to read a parameter from.
+     */
+    public static function localeInPath(string $path): ?string
+    {
+        $first = explode('/', trim($path, '/'))[0];
+
+        return in_array($first, self::SUPPORTED, true) ? $first : null;
+    }
+
     private function resolve(Request $request): string
     {
         $fromPath = $request->route()?->parameter('locale');
