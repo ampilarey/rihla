@@ -447,9 +447,12 @@
                                             {{ __('Fiqh Notes') }}
                                         </h4>
                                         <div class="p-3 bg-warning/10 border-l-4 border-warning rounded-r">
-                                            <p class="text-gray-700 text-sm leading-relaxed">
-                                                {{ $step->fiqh_notes }}
-                                            </p>
+                                            {{-- fiqh_notes is a JSON array: one note per school of thought. --}}
+                                            <ul class="text-gray-700 text-sm leading-relaxed list-disc list-inside space-y-1">
+                                                @foreach ((array) $step->fiqh_notes as $fiqhNote)
+                                                    <li>{{ $fiqhNote }}</li>
+                                                @endforeach
+                                            </ul>
                                         </div>
                                     </div>
                                 @endif

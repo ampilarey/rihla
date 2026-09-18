@@ -17,7 +17,7 @@ class GuideTest extends TestCase
             'locale' => 'en',
             'step_number' => 1,
             'title' => 'Test Step 1',
-            'description' => 'Test summary 1',
+            'summary' => 'Test summary 1',
             'is_published' => true,
         ]);
 
@@ -25,7 +25,7 @@ class GuideTest extends TestCase
             'locale' => 'en',
             'step_number' => 2,
             'title' => 'Test Step 2',
-            'description' => 'Test summary 2',
+            'summary' => 'Test summary 2',
             'is_published' => true,
         ]);
 
@@ -41,7 +41,7 @@ class GuideTest extends TestCase
             'locale' => 'en',
             'step_number' => 1,
             'title' => 'Test Step',
-            'description' => 'Test summary',
+            'summary' => 'Test summary',
             'is_published' => true,
         ]);
 
@@ -56,7 +56,7 @@ class GuideTest extends TestCase
             'locale' => 'en',
             'step_number' => 1,
             'title' => 'Test Step',
-            'description' => 'Test summary',
+            'summary' => 'Test summary',
             'is_published' => true,
         ]);
 

@@ -210,7 +210,7 @@ class Seo
                 '@type' => 'HowToStep',
                 'position' => $step->step_number,
                 'name' => $step->title,
-                'text' => $step->summary ?: ($step->details ?: $step->description),
+                'text' => $step->summary ?: $step->details,
                 'url' => $url.'#step-'.$step->step_number,
             ], fn ($value) => ! in_array($value, [null, ''], true));
         }

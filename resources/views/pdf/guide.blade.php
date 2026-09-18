@@ -253,7 +253,9 @@
                                 ފިޤްހްތައް:
                             @endif
                         </strong><br>
-                        {{ $step->fiqh_notes }}
+                        @foreach ((array) $step->fiqh_notes as $fiqhNote)
+                            {{ $fiqhNote }}<br>
+                        @endforeach
                     </div>
                 @endif
                 

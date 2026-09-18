@@ -170,19 +170,13 @@ class SeoTest extends TestCase
 
     public function test_the_guide_is_described_as_ordered_steps(): void
     {
-        $step = new GuideStep([
+        GuideStep::create([
             'step_number' => 1,
             'locale' => 'en',
             'title' => 'Ihram',
+            'summary' => 'Enter the state of Ihram at the miqat.',
             'is_published' => true,
         ]);
-
-        // Assigned outside the constructor because `description` — the only
-        // body-text column guide_steps actually has — is missing from the
-        // model's $fillable, while the four names that are there (summary,
-        // details, video_url, image_path) are not columns at all.
-        $step->description = 'Enter the state of Ihram at the miqat.';
-        $step->save();
 
         $html = $this->get('/en/guide')->assertOk()->getContent();
         $guide = $this->schemaOfType($html, 'HowTo');

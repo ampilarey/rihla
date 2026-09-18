@@ -44,7 +44,8 @@ class GuideStepController extends Controller
             'details' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
             'dua_text' => 'nullable|string',
-            'fiqh_notes' => 'nullable|string',
+            'fiqh_notes' => 'nullable|array',
+            'fiqh_notes.*' => 'string|max:500',
             'video_url' => 'nullable|url|max:255',
             'checklist' => 'nullable|array',
             'checklist.*' => 'string|max:255',
@@ -53,18 +54,18 @@ class GuideStepController extends Controller
 
         $data = $request->only([
             'step_number', 'locale', 'title', 'summary', 'details',
-            'dua_text', 'fiqh_notes', 'video_url', 'is_published'
+            'dua_text', 'fiqh_notes', 'video_url', 'is_published',
         ]);
-        
+
         // Process checklist and fiqh_notes
         if ($request->has('checklist')) {
             $data['checklist'] = array_filter($request->input('checklist', []));
         }
-        
+
         if ($request->has('fiqh_notes')) {
             $data['fiqh_notes'] = array_filter($request->input('fiqh_notes', []));
         }
-        
+
         $data['is_published'] = $request->has('is_published');
 
         if ($request->hasFile('image')) {
@@ -107,7 +108,8 @@ class GuideStepController extends Controller
             'details' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
             'dua_text' => 'nullable|string',
-            'fiqh_notes' => 'nullable|string',
+            'fiqh_notes' => 'nullable|array',
+            'fiqh_notes.*' => 'string|max:500',
             'video_url' => 'nullable|url|max:255',
             'checklist' => 'nullable|array',
             'checklist.*' => 'string|max:255',
@@ -116,18 +118,18 @@ class GuideStepController extends Controller
 
         $data = $request->only([
             'step_number', 'locale', 'title', 'summary', 'details',
-            'dua_text', 'fiqh_notes', 'video_url', 'is_published'
+            'dua_text', 'fiqh_notes', 'video_url', 'is_published',
         ]);
-        
+
         // Process checklist and fiqh_notes
         if ($request->has('checklist')) {
             $data['checklist'] = array_filter($request->input('checklist', []));
         }
-        
+
         if ($request->has('fiqh_notes')) {
             $data['fiqh_notes'] = array_filter($request->input('fiqh_notes', []));
         }
-        
+
         $data['is_published'] = $request->has('is_published');
 
         if ($request->hasFile('image')) {
@@ -184,11 +186,11 @@ class GuideStepController extends Controller
      */
     public function toggleStatus(GuideStep $guideStep)
     {
-        $guideStep->update(['is_published' => !$guideStep->is_published]);
-        
+        $guideStep->update(['is_published' => ! $guideStep->is_published]);
+
         return response()->json([
             'success' => true,
-            'is_published' => $guideStep->is_published
+            'is_published' => $guideStep->is_published,
         ]);
     }
 
@@ -207,7 +209,7 @@ class GuideStepController extends Controller
             ->update(['is_published' => $request->input('status')]);
 
         $action = $request->input('status') ? 'published' : 'unpublished';
-        
+
         return redirect()->route('admin.guide-steps.index')
             ->with('success', "Selected guide steps {$action} successfully.");
     }

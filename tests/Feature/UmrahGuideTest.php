@@ -17,7 +17,7 @@ class UmrahGuideTest extends TestCase
             'step_number' => 1,
             'locale' => 'en',
             'title' => 'Test Step 1',
-            'description' => 'Test description 1',
+            'summary' => 'Test description 1',
             'is_published' => true,
         ]);
 
@@ -25,7 +25,7 @@ class UmrahGuideTest extends TestCase
             'step_number' => 2,
             'locale' => 'en',
             'title' => 'Test Step 2',
-            'description' => 'Test description 2',
+            'summary' => 'Test description 2',
             'is_published' => false,
         ]);
 
@@ -43,7 +43,7 @@ class UmrahGuideTest extends TestCase
             'step_number' => 1,
             'locale' => 'en',
             'title' => 'English Step',
-            'description' => 'English description',
+            'summary' => 'English description',
             'is_published' => true,
         ]);
 
@@ -52,7 +52,7 @@ class UmrahGuideTest extends TestCase
             'step_number' => 1,
             'locale' => 'dv',
             'title' => 'ދިވެހިންނަށްޓަކައިންނެވެ',
-            'description' => 'ދިވެހިންނަށްޓަކައިންނެވެ',
+            'summary' => 'ދިވެހިންނަށްޓަކައިންނެވެ',
             'is_published' => true,
         ]);
 
@@ -76,7 +76,7 @@ class UmrahGuideTest extends TestCase
             'step_number' => 3,
             'locale' => 'en',
             'title' => 'Step 3',
-            'description' => 'Third step',
+            'summary' => 'Third step',
             'is_published' => true,
         ]);
 
@@ -84,7 +84,7 @@ class UmrahGuideTest extends TestCase
             'step_number' => 1,
             'locale' => 'en',
             'title' => 'Step 1',
-            'description' => 'First step',
+            'summary' => 'First step',
             'is_published' => true,
         ]);
 
@@ -92,7 +92,7 @@ class UmrahGuideTest extends TestCase
             'step_number' => 2,
             'locale' => 'en',
             'title' => 'Step 2',
-            'description' => 'Second step',
+            'summary' => 'Second step',
             'is_published' => true,
         ]);
 
