@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.13
+**Version:** 1.14
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.14 | `RouteSmokeTest` added — it walks every GET route and found three more admin screens returning 500 on its first run (D37–D39), including the entire Umrah guide admin. |
 | 1.13 | D18 fixed: the scholarly reference on each guide step is rendered on the page and in the PDF, and the admin form can finally edit it. |
 | 1.12 | D36 added and fixed: security response headers, with CSP deliberately deferred rather than shipped permissive. |
 | 1.11 | D35 added and fixed: rate limits on the five unthrottled auth endpoints, closing the mail vector that D32 opened. |
@@ -126,6 +127,9 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D34 | ~~**Medium**~~ **fixed** | **The palette reached the stylesheets and stopped.** `components/section-why.blade.php` still fell back to `#2563eb`, so the live homepage rendered a blue call-to-action; the trips tabs and gallery filters used a pre-rebrand green (`#0e7a57`); and the admin colour pickers offered the old palette as their starting value, so choosing "the default" put blue back. | `resources/views/components/section-why.blade.php`, `resources/views/trips/index.blade.php`, `resources/views/media/gallery.blade.php`, `resources/views/admin/why/edit.blade.php` | Colours held in the database and in inline styles, out of reach of a Tailwind class sweep |
 | D35 | ~~**High**~~ **fixed** | **Five auth endpoints had no rate limit.** Registration and password-reset request both send mail to whatever address the request names, so an unauthenticated caller could deliver to an arbitrary inbox as fast as the server answered; reset-submission, password-confirmation and password-update accept credentials and could be guessed without a cap. Login was already throttled by `LoginRequest`, which is why the gap was easy to miss. Registration's half only became a mail vector when `User` took on `MustVerifyEmail` (D32). | `routes/auth.php`, `app/Providers/AppServiceProvider.php` | Breeze throttles login only |
 | D36 | ~~**Medium**~~ **fixed** | **No security headers at all.** No `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` or HSTS — verified against the live response. Every response also carried `x-powered-by: PHP/8.4.24`, naming the exact patch version. Framing matters most for the admin panel, where a framed page can be used to trick a signed-in member of staff. | `app/Http/Middleware/SecurityHeaders.php` | Never configured |
+| D37 | ~~**High**~~ **fixed** | **The whole Umrah guide admin was unreachable.** Its three views extend `layouts.admin`, a layout that has never existed, so index, create and edit each returned "View [layouts.admin] not found" — a 500. Every other admin view extends `layouts.app`, and these use only the `title` and `content` sections that layout provides. | `resources/views/admin/guide-steps/*.blade.php` | Layout referenced but never written |
+| D38 | ~~**Medium**~~ **fixed** | `GET /admin/why-sections/{section}/features` was registered by the resource route but `WhyFeatureController` has no `index()` method, so it returned a 500. Features are listed and added from the section's own edit screen, so there is nothing for a separate index to show. | `routes/web.php` | `->except()` list missed one |
+| D39 | ~~**Medium**~~ **fixed** | The guide-step edit form rendered `fiqh_notes` — a JSON array — straight into a textarea, raising `htmlspecialchars(): must be of type string, array given`. The matching half: validation required an `array` while the form posts a newline-separated string, so every note an editor typed was rejected. The form now takes one note per line and the controller converts. | `resources/views/admin/guide-steps/{create,edit}.blade.php`, `app/Http/Controllers/Admin/GuideStepController.php` | Form written against a string column that was cast to an array |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 

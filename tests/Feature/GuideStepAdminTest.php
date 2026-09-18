@@ -129,6 +129,37 @@ class GuideStepAdminTest extends TestCase
         $this->get('/en/guide/pdf')->assertOk();
     }
 
+    /**
+     * The admin form is a textarea, one note per line; the column is a JSON
+     * array. Validating as `array` while the form posts a string rejected
+     * every note an editor typed, and rendering the array straight back into
+     * the textarea raised "htmlspecialchars(): must be of type string, array
+     * given" — a 500 on the edit screen.
+     */
+    public function test_fiqh_notes_round_trip_through_the_form(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.guide-steps.store'), $this->validStep([
+                'fiqh_notes' => "Hanafi: before departure\nShafi'i: at the miqat\n\n",
+            ]))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $step = GuideStep::sole();
+
+        // Split per line, blank lines dropped.
+        $this->assertSame(
+            ['Hanafi: before departure', "Shafi'i: at the miqat"],
+            $step->fiqh_notes,
+        );
+
+        // And the edit screen renders them back without throwing.
+        $this->actingAs($this->admin())
+            ->get(route('admin.guide-steps.edit', $step))
+            ->assertOk()
+            ->assertSee('Hanafi: before departure');
+    }
+
     public function test_the_public_guide_renders_a_step_body_not_just_its_title(): void
     {
         GuideStep::factory()->create([

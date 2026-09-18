@@ -133,9 +133,13 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
         ->only(['index', 'edit', 'update'])
         ->parameters(['why-sections' => 'section']);
 
+    // `index` is excluded alongside show and create because
+    // WhyFeatureController has no such method — the route existed and
+    // returned a 500. Features are listed and added from the section's own
+    // edit screen, so there is nothing for a separate index to show.
     Route::resource('why-sections.features', WhyFeatureController::class)
         ->shallow()
-        ->except(['show', 'create'])
+        ->except(['show', 'create', 'index'])
         ->parameters(['why-sections' => 'section', 'features' => 'feature']);
 });
 
