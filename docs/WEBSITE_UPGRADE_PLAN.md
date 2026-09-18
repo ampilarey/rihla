@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.14
+**Version:** 1.15
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.15 | Write-path and schema tests added. D40 found by them: renaming a trip moved its public URL. D41: debug logging on every admin write, superseded by the audit log. |
 | 1.14 | `RouteSmokeTest` added — it walks every GET route and found three more admin screens returning 500 on its first run (D37–D39), including the entire Umrah guide admin. |
 | 1.13 | D18 fixed: the scholarly reference on each guide step is rendered on the page and in the PDF, and the admin form can finally edit it. |
 | 1.12 | D36 added and fixed: security response headers, with CSP deliberately deferred rather than shipped permissive. |
@@ -130,6 +131,8 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D37 | ~~**High**~~ **fixed** | **The whole Umrah guide admin was unreachable.** Its three views extend `layouts.admin`, a layout that has never existed, so index, create and edit each returned "View [layouts.admin] not found" — a 500. Every other admin view extends `layouts.app`, and these use only the `title` and `content` sections that layout provides. | `resources/views/admin/guide-steps/*.blade.php` | Layout referenced but never written |
 | D38 | ~~**Medium**~~ **fixed** | `GET /admin/why-sections/{section}/features` was registered by the resource route but `WhyFeatureController` has no `index()` method, so it returned a 500. Features are listed and added from the section's own edit screen, so there is nothing for a separate index to show. | `routes/web.php` | `->except()` list missed one |
 | D39 | ~~**Medium**~~ **fixed** | The guide-step edit form rendered `fiqh_notes` — a JSON array — straight into a textarea, raising `htmlspecialchars(): must be of type string, array given`. The matching half: validation required an `array` while the form posts a newline-separated string, so every note an editor typed was rejected. The form now takes one note per line and the controller converts. | `resources/views/admin/guide-steps/{create,edit}.blade.php`, `app/Http/Controllers/Admin/GuideStepController.php` | Form written against a string column that was cast to an array |
+| D40 | ~~**High**~~ **fixed** | **Renaming a trip moved its public URL.** `TripController::update()` regenerated the slug from the title on every save, so correcting a typo took `/en/trips/ramadan-umrah-2026` out from under every shared link, bookmark and indexed page — and overwrote a slug an editor had deliberately set, though the form validates that field for uniqueness. Directly undermines the sitemap and canonical work in `031351c`. | `app/Http/Controllers/Admin/TripController.php` | Slug treated as derived rather than as the page's address |
+| D41 | ~~**Low**~~ **fixed** | Nine `Log::info` debug calls fired on every admin write, one of them logging `$request->all()`. Superseded by the audit log, which records the same events with the actor and without the whole request body. | `app/Http/Controllers/Admin/{HeroBanner,Media}Controller.php` | Debug scaffolding left in |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 

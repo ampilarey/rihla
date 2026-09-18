@@ -43,13 +43,6 @@ class HeroBannerController extends Controller
     {
         $this->authorize('create', HeroBanner::class);
 
-        // Debug: Log the request data
-        \Log::info('HeroBanner store request', [
-            'data' => $request->all(),
-            'files' => $request->allFiles(),
-            'user_id' => auth()->id(),
-        ]);
-
         $validator = Validator::make($request->all(), [
             'locale' => 'required|in:en,dv',
             'title' => 'required|string|max:120',
@@ -93,19 +86,15 @@ class HeroBannerController extends Controller
             $data['is_active'] = $request->has('is_active');
 
             // Debug: Log the validated data
-            \Log::info('HeroBanner validated data', $data);
 
             // Handle image upload
             if ($request->hasFile('image')) {
-                \Log::info('Processing image upload');
                 $imagePath = $this->processImage($request->file('image'));
                 $data['image_path'] = $imagePath;
-                \Log::info('Image processed', ['path' => $imagePath]);
             }
 
             // Create the banner
             $banner = HeroBanner::create($data);
-            \Log::info('HeroBanner created successfully', ['id' => $banner->id]);
 
             return redirect()->route('admin.hero-banners.index')
                 ->with('success', 'Hero banner created successfully.');
