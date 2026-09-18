@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.6
+**Version:** 1.7
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.7 | Authorisation replaced (`456abd6`) — roles, permissions and policies for the staff side, scoped to functionality that exists. D22 and D23 added and fixed: the base controller could not authorise at all, and four high-severity advisories sat in `league/commonmark`. |
 | 1.6 | P0.6 implemented (`d9f60c9`) — **P0 is complete**. D19–D21 added and fixed: the layout rendered no styles/scripts stacks, the service worker could never install, and five referenced icons did not exist. |
 | 1.5 | D14/D15 fixed (`86cbc7a`) — guide_steps migrated to the schema the application expects. D17 added and fixed (the fiqh-notes accessor shadowed its own cast). D18 added: `reference_text` is stored but never rendered. |
 | 1.4 | P0.5 implemented. D14–D16 added: the Umrah guide admin is broken against its own schema (D14/D15), and registration is open (D16). Recorded the three places the implemented structured data deliberately differs from the plan. |
@@ -104,6 +105,8 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D19 | ~~**Medium**~~ **fixed** (`d9f60c9`) | `layouts/app.blade.php` rendered no `@stack('styles')` or `@stack('scripts')`, while `pages/guide.blade.php` pushed to both. The guide's print stylesheet and all of its scripts — including the only service-worker registration in the codebase — were silently discarded. | `resources/views/layouts/app.blade.php` | Stack never added to the layout |
 | D20 | ~~**High**~~ **fixed** (`d9f60c9`) | `sw.js` precached `/css/app.css`, `/js/app.js` and `'/images/guide/'`, none of which exist. `cache.addAll()` rejects the whole batch on one 404, so the worker never installed and offline support never worked. It was also cache-first for navigations, which would serve stale trip pages indefinitely. | `public/sw.js` | Written against a pre-Vite asset layout |
 | D21 | ~~**Medium**~~ **fixed** (`d9f60c9`) | `apple-touch-icon.png`, `favicon-32x32.png`, `favicon-16x16.png` and the manifest's two icons were referenced but absent — four 404s on every page load. | `public/`, `public/manifest.json` | Referenced before being produced |
+| D22 | ~~**High**~~ **fixed** (`456abd6`) | `app/Http/Controllers/Controller.php` did not use `AuthorizesRequests`, so `$this->authorize()` was an undefined method — any controller that tried to check a permission would have fataled instead. Nothing had tried yet. | `app/Http/Controllers/Controller.php` | Laravel 11+ ships a bare base controller |
+| D23 | ~~**High**~~ **fixed** (`b1f91ed`) | `league/commonmark` 2.9.0 carried four high-severity advisories — three DoS and one XSS where the `AttributesExtension`'s `on*` filter is bypassed with a U+000C form feed. Pre-existing, transitive via laravel/framework, and enough to fail CI's dependency-audit job on `main`. | `composer.lock` | Never audited before CI existed |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -534,6 +537,16 @@ Replace the `is_admin` boolean with real roles and permissions (`spatie/laravel-
 
 **Customer-side access is not role-based.** What a customer, traveller or family member can see is decided by their *relationship* to a booking (payer, participant, invited family) through policies, not by assigning them a role. A boolean cannot express any of this; neither can a flat role list that mixes staff functions with customer relationships.
 
+**Status: staff side done** (commit `456abd6`). `spatie/laravel-permission` added; `App\Support\Access` holds the nine roles and the permission verbs; policies cover all seven models; every admin action authorises explicitly. A migration backfills Super Admin from `is_admin` and seeds the roles first, because a fresh database runs migrations before seeders.
+
+Scoped deliberately: **only verbs for functionality that exists are defined.** Booking, refund, payment, visa and permit permissions belong with the features that introduce them — defining them now would produce inert strings that look enforced and are not. Booking Staff, Finance, Visa Staff and Pilgrim Support therefore hold nothing but `admin.access` today. They are seeded anyway so staff can be assigned now, and so the gap between a job function and what the software supports stays visible.
+
+Two things found while doing it. The base `Controller` had no `AuthorizesRequests` trait, so `$this->authorize()` was an undefined method — a fatal error at the exact moment a permission check should happen (**D22**). And `authorizeResource()` is unusable on Laravel 13, because it calls `$this->middleware()`, which the framework removed from the base controller; each action authorises explicitly instead.
+
+`is_admin` is **not dropped**. Until the backfill has run against production it is the only way back. Nothing reads it — a test asserts the flag alone grants nothing, so it cannot become a second source of truth that keeps access alive after a role is removed. Dropping it is a follow-up once production is confirmed migrated.
+
+**Still open:** the customer side. It needs bookings to exist first, so it belongs with Phase 3.
+
 ### 9.4 Internationalisation — redesign now, cheaply
 
 The current `*_dv` column pattern does not survive contact with packages, itineraries, learning modules, Ziyarah locations and articles. Adopt the **hybrid** the companion document settles on (§19): **translation tables** for the content entities that need per-locale slugs, SEO metadata or independent publication state (`packages`, `articles`, `locations`, `notification_templates`), and **JSON translatable columns** via `spatie/laravel-translatable` for CMS furniture (hero banners, why-features, guide steps, itinerary titles). Names already language-specific (`name_latin`, `name_dhivehi`, `name_arabic`) are data, not translations. Support en / dv / ar with full RTL. Doing this in Phase 1, while there are eight models, costs days; doing it in Phase 5 costs weeks. **Locale-in-URL (P0.7) is the prerequisite.**
@@ -680,7 +693,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), **roles/permissions + policies (§9.3) — moved earlier: policies must exist before the first booking screen**, audit-log foundation, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5), typography and spacing remain**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
+| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, audit-log foundation, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5), typography and spacing remain**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |
