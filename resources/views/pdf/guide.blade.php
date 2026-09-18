@@ -6,11 +6,16 @@
     <title>{{ $locale === 'en' ? 'How to Perform Umrah' : 'އުމްރަހް ކުރުންނަށްޓަކައި' }}</title>
     <style>
         @if($locale === 'dv')
+            {{-- storage/fonts/Faruma.ttf has never existed. dompdf silently
+                 fell back to a font with no Thaana glyphs, so the Dhivehi
+                 guide downloaded as boxes — and unlike a web page, a PDF is
+                 what a pilgrim carries with them. The real font ships at
+                 public/fonts/A_faruma.ttf. --}}
             @font-face {
-                font-family: 'Faruma';
-                src: url('{{ storage_path('fonts/Faruma.ttf') }}') format('truetype');
+                font-family: 'A_Faruma';
+                src: url('{{ public_path('fonts/A_faruma.ttf') }}') format('truetype');
             }
-            body { font-family: 'Faruma', 'MV Waheed', sans-serif; }
+            body { font-family: 'A_Faruma', 'MV Waheed', sans-serif; }
         @else
             body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         @endif
