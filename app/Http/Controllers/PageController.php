@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use App\Models\GuideStep;
+use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PageController extends Controller
@@ -51,20 +51,23 @@ class PageController extends Controller
             ->get();
 
         $pdf = Pdf::loadView('pdf.guide', compact('guideSteps', 'locale'));
-        
-        $filename = 'umrah-guide-' . $locale . '-' . now()->format('Y-m-d') . '.pdf';
-        
+
+        $filename = 'umrah-guide-'.$locale.'-'.now()->format('Y-m-d').'.pdf';
+
         return $pdf->download($filename);
     }
 
     public function guideStepsApi()
     {
         $locale = request()->get('locale', app()->getLocale());
-        
-        if (!in_array($locale, ['en', 'dv'])) {
-            return request()->json(['error' => 'Invalid locale'], 400);
+
+        if (! in_array($locale, ['en', 'dv'], true)) {
+            // `request()->json()` reads the *request* body; it never produces a
+            // response. The guard therefore fell through and an unknown locale
+            // was answered with 200 and an empty step list.
+            return response()->json(['error' => 'Invalid locale'], 400);
         }
-        
+
         $guideSteps = GuideStep::published()
             ->forLocale($locale)
             ->ordered()
@@ -82,11 +85,11 @@ class PageController extends Controller
                     'video_url' => $step->video_url,
                 ];
             });
-        
+
         return response()->json([
             'locale' => $locale,
             'total_steps' => $guideSteps->count(),
-            'steps' => $guideSteps
+            'steps' => $guideSteps,
         ]);
     }
 }

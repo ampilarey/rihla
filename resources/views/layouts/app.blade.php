@@ -327,7 +327,21 @@
 
         <!-- Main Content -->
         <main id="main-content" class="flex-1" role="main">
+            {{-- Most views @extends this layout and fill @section('content').
+                 The Breeze views (dashboard, profile) render it as
+                 <x-app-layout> and pass their body as $slot, which nothing
+                 echoed, so those pages came out blank. Both are supported. --}}
             @yield('content')
+
+            @isset($header)
+                <div class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </div>
+            @endisset
+
+            {{ $slot ?? '' }}
         </main>
 
         <!-- Footer -->
