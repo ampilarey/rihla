@@ -51,7 +51,7 @@ class GuideStepController extends Controller
     private function normaliseFiqhNotes(mixed $notes): array
     {
         if (is_array($notes)) {
-            return array_values(array_filter(array_map('trim', $notes), 'strlen'));
+            return array_values(array_filter(array_map('trim', $notes), static fn (string $note): bool => $note !== ''));
         }
 
         if (! is_string($notes)) {
@@ -60,7 +60,7 @@ class GuideStepController extends Controller
 
         return array_values(array_filter(
             array_map('trim', preg_split('/\r\n|\r|\n/', $notes) ?: []),
-            'strlen',
+            static fn (string $note): bool => $note !== '',
         ));
     }
 

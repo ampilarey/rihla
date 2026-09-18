@@ -47,6 +47,9 @@ class RouteSmokeTest extends TestCase
         'guide.pdf' => 'covered directly, and slow to render twice',
     ];
 
+    /** @var array<string, int|string> */
+    private array $parameters = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -173,30 +176,26 @@ class RouteSmokeTest extends TestCase
     {
         $uri = $route->uri();
 
-        foreach ([
-            '{locale}' => 'en',
-            '{code}' => 'dv',
-            '{slug}' => 'a-seeded-trip',
-            '{trip}' => '1',
-            '{medium}' => '1',
-            '{guide_step}' => '1',
-            '{hero_banner}' => '1',
-            '{section}' => '1',
-            '{feature}' => '1',
-            '{token}' => 'a-token',
-            '{id}' => '1',
-            '{hash}' => 'a-hash',
-        ] as $placeholder => $value) {
-            $uri = str_replace($placeholder, $value, $uri);
+        foreach ($this->parameters as $placeholder => $value) {
+            $uri = str_replace('{'.$placeholder.'}', (string) $value, $uri);
         }
 
         return '/'.ltrim($uri, '/');
     }
 
-    /** One row per model, so no route 404s for want of a record. */
+    /**
+     * One row per model, and the real keys they were given.
+     *
+     * Ids are read back rather than assumed to start at 1. MySQL does not
+     * reset an auto-increment counter when a transaction rolls back, so under
+     * RefreshDatabase the second test in a class sees ids starting at 2 —
+     * while SQLite, which rebuilds the database each time, always starts at 1.
+     * Hardcoding 1 passes locally and fails against the engine production
+     * actually runs.
+     */
     private function seedOneOfEverything(): void
     {
-        Trip::create([
+        $trip = Trip::create([
             'title' => 'A Seeded Trip',
             'slug' => 'a-seeded-trip',
             'date_start' => '2026-03-01',
@@ -205,22 +204,41 @@ class RouteSmokeTest extends TestCase
             'is_published' => true,
         ]);
 
-        Media::create([
-            'trip_id' => 1,
+        $media = Media::create([
+            'trip_id' => $trip->id,
             'type' => 'photo',
-            'path' => 'media/example.jpg',
+            'file_path' => 'media/example.jpg',
             'is_published' => true,
         ]);
 
-        GuideStep::factory()->create(['step_number' => 1, 'locale' => 'en', 'is_published' => true]);
+        $step = GuideStep::factory()->create([
+            'step_number' => 1,
+            'locale' => 'en',
+            'is_published' => true,
+        ]);
 
-        HeroBanner::create(['locale' => 'en', 'title' => 'A Seeded Banner']);
+        $banner = HeroBanner::create(['locale' => 'en', 'title' => 'A Seeded Banner']);
 
         $section = WhySection::create(['locale' => 'en', 'title' => 'Why Rihla']);
 
-        WhyFeature::create([
+        $feature = WhyFeature::create([
             'why_section_id' => $section->id,
             'title' => 'A Seeded Feature',
         ]);
+
+        $this->parameters = [
+            'locale' => 'en',
+            'code' => 'dv',
+            'slug' => $trip->slug,
+            'trip' => $trip->id,
+            'medium' => $media->id,
+            'guide_step' => $step->id,
+            'hero_banner' => $banner->id,
+            'section' => $section->id,
+            'feature' => $feature->id,
+            'token' => 'a-token',
+            'id' => 1,
+            'hash' => 'a-hash',
+        ];
     }
 }
