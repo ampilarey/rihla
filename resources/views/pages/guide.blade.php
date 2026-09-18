@@ -2,6 +2,16 @@
 
 @section('title', __('Umrah Guide'))
 
+@push('schema')
+@if ($guideSchema = \App\Support\Seo::guide($guideSteps, url()->current()))
+<script type="application/ld+json">{!! \App\Support\Seo::json($guideSchema) !!}</script>
+@endif
+<script type="application/ld+json">{!! \App\Support\Seo::json(\App\Support\Seo::breadcrumbs([
+    ['name' => config('app.name'), 'url' => route('home')],
+    ['name' => __('guide.How to Perform Umrah'), 'url' => null],
+])) !!}</script>
+@endpush
+
 @push('styles')
 <style>
     @media print {

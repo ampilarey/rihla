@@ -1,2 +1,17 @@
 User-agent: *
-Disallow:
+
+# Authenticated areas. Crawlers cannot reach these anyway, but saying so keeps
+# them out of the crawl budget and out of any accidental link discovery.
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /confirm-password
+
+# The language switcher is a redirect, not a page.
+Disallow: /lang/
+
+Sitemap: https://rihla.mv/sitemap.xml

@@ -11,6 +11,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TripController;
 use App\Models\GuideStep;
 use App\Models\Media;
@@ -58,6 +59,11 @@ foreach ([
 }
 
 Route::get('trips/{slug}', fn (string $slug) => redirect()->route('trips.show', $slug, 301));
+
+// One sitemap covering both languages, each entry carrying xhtml:link
+// alternates so the two locales are read as one page in two languages rather
+// than as duplicate content competing with each other.
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Not localised in the path: the caller states the language it wants with
 // ?locale=, and the response is JSON rather than a page to be indexed.

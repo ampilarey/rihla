@@ -41,7 +41,7 @@ class TranslationTest extends TestCase
         }
 
         $this->assertSame([], $offenders, implode("\n", array_merge(
-            ["Blade views contain dotless short keys, which resolve to themselves.",
+            ['Blade views contain dotless short keys, which resolve to themselves.',
                 "Namespace them to their file, e.g. __('messages.hero_title'):"],
             $offenders,
         )));
@@ -96,6 +96,15 @@ class TranslationTest extends TestCase
             preg_match_all("/__\('([^']*\s[^']*)'/", File::get($file), $matches);
 
             foreach ($matches[1] as $sentence) {
+                // Group files key their strings by the English sentence, so
+                // __('guide.How to Perform Umrah') matches the pattern above
+                // while being exactly what this test is asking people to do.
+                // Those resolve in every locale — the other assertion proves
+                // it — and must not count against the untranslated surface.
+                if (in_array(explode('.', $sentence)[0], self::GROUPS, true)) {
+                    continue;
+                }
+
                 $sentences[$sentence] = true;
             }
         }
@@ -103,9 +112,9 @@ class TranslationTest extends TestCase
         $count = count($sentences);
 
         $this->assertLessThanOrEqual($ceiling, $count, sprintf(
-            "Untranslatable sentence keys rose to %d (ceiling %d). These render ".
-            "in English regardless of locale because no JSON translation file ".
-            "exists. Add the string to resources/lang/{en,dv}/messages.php and ".
+            'Untranslatable sentence keys rose to %d (ceiling %d). These render '.
+            'in English regardless of locale because no JSON translation file '.
+            'exists. Add the string to resources/lang/{en,dv}/messages.php and '.
             "call it as __('messages.key') instead.",
             $count,
             $ceiling,

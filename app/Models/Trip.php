@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Trip extends Model
 {
@@ -63,6 +64,14 @@ class Trip extends Model
                 $trip->slug = \Str::slug($trip->title);
             }
         });
+
+        // The sitemap lists every published trip and is cached for an hour.
+        // Without this, publishing a trip would leave it out of the sitemap
+        // for up to an hour after it went live.
+        $bustSitemap = fn () => Cache::forget('sitemap.xml');
+
+        static::saved($bustSitemap);
+        static::deleted($bustSitemap);
     }
 
     public function media(): HasMany

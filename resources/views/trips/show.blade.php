@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@push('schema')
+<script type="application/ld+json">{!! \App\Support\Seo::json(\App\Support\Seo::trip($trip, url()->current())) !!}</script>
+<script type="application/ld+json">{!! \App\Support\Seo::json(\App\Support\Seo::breadcrumbs([
+    ['name' => config('app.name'), 'url' => route('home')],
+    ['name' => __('messages.Trips'), 'url' => route('trips.index')],
+    ['name' => $trip->title, 'url' => null],
+])) !!}</script>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- Trip Header -->

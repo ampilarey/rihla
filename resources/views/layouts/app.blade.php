@@ -30,6 +30,22 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">
 
+    {{-- Each language has its own URL, so tell crawlers they are translations
+         of one page rather than duplicates competing with each other. Emitted
+         only for locale-prefixed URLs; admin and auth pages have no alternate
+         and claiming one would point at a page that does not exist. --}}
+    @php($seoAlternates = \App\Support\Seo::alternates(request()))
+    @if ($seoAlternates)
+        @foreach ($seoAlternates as $seoLocale => $seoUrl)
+            <link rel="alternate" hreflang="{{ $seoLocale }}" href="{{ $seoUrl }}">
+        @endforeach
+        <link rel="alternate" hreflang="x-default" href="{{ $seoAlternates['en'] }}">
+    @endif
+
+    <!-- Structured data -->
+    <script type="application/ld+json">{!! \App\Support\Seo::json(\App\Support\Seo::organization()) !!}</script>
+    @stack('schema')
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
