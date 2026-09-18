@@ -7,6 +7,7 @@ Welcome to the comprehensive documentation for the Rihla Travels website. This d
 ### 🎯 Core Documentation
 - **[Website Upgrade Plan](WEBSITE_UPGRADE_PLAN.md)** - Audited current state, phased roadmap, and the full upgrade backlog
 - **[Domain Model & Booking Engine](DOMAIN_MODEL_AND_BOOKING_ENGINE.md)** - Target domain model, booking lifecycle, capacity, payments, documents, visa and permits
+- **[Brand & Design System](BRAND.md)** - Colour palette, component classes, contrast reference and the open logo decision
 - **[Project Overview](PROJECT_OVERVIEW.md)** - Vision, goals, target audience, and key differentiators
 - **[Tech Stack](TECH_STACK.md)** - Complete technology stack and dependencies
 - **[Database Schema](DATABASE_SCHEMA.md)** - Database structure, relationships, and migrations

@@ -1,11 +1,11 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.1
-**Date:** 2026-09-17 (re-audited same day — see revision history)
+**Version:** 1.2
+**Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
 **Scope:** rihla.mv (production) and test.rihla.mv (staging)
-**Companion:** [`DOMAIN_MODEL_AND_BOOKING_ENGINE.md`](DOMAIN_MODEL_AND_BOOKING_ENGINE.md) — the detailed domain/booking-engine design that §5 and §8 depend on. Amendments R-1…R-8 from that document's §28.4 are applied here and marked **[R-n]**.
+**Companions:** [`BRAND.md`](BRAND.md) — the implemented colour system and the open logo decision. [`DOMAIN_MODEL_AND_BOOKING_ENGINE.md`](DOMAIN_MODEL_AND_BOOKING_ENGINE.md) — the detailed domain/booking-engine design that §5 and §8 depend on. Amendments R-1…R-8 from that document's §28.4 are applied here and marked **[R-n]**.
 
 ---
 
@@ -25,8 +25,9 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
-| 1.0 | Initial plan |
+| 1.2 | Colour system implemented (`488ffee`). D5 corrected — the Tailwind v4 package is unused, not a live conflict. D11–D13 added from the implementation pass. Phase 1's design-system item marked done, and §4.5 added recording the palette. |
 | 1.1 | Re-audit. **Corrected D1/P0.1**: Laravel 13 falls back to `resources/lang` when it exists (`Illuminate\Foundation\Application::bindPathsInContainer`), so the directory location was *not* a bug — the dotless `__()` keys are the sole root cause. Filament recommendation moved from v4 to v5 (current). Package compatibility with Laravel 13 verified on Packagist. Roles and i18n aligned with the companion document. Added staging-PII rule, backup-before-migrate, email authentication, uptime monitoring, historical data import, and a waitlist entity. |
+| 1.0 | Initial plan |
 
 ---
 
@@ -82,12 +83,15 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D2 | **High** | Production is advertising demo seed data — "Maldives Island Hopping Adventure", "Luxury Resort Experience" — instead of Umrah packages, on a site whose `<title>` is "Islamic Travel & Umrah Services" | Live HTML | `TripSeeder` demo rows were seeded to production and never replaced |
 | D3 | **High** | No structured data (`ld+json`) anywhere; no `sitemap.xml`; no `hreflang` tags despite two locales | `grep` across `resources/views`, `routes/`, `public/` | Never implemented |
 | D4 | **Medium** | PWA is half-wired: `public/sw.js`, `public/manifest.json` and `public/offline.html` exist, but the service worker is registered **only** on `/guide` and the manifest is not linked from `layouts/app.blade.php` | `resources/views/pages/guide.blade.php:78` | Partial implementation |
-| D5 | **Medium** | `package.json` carries both `tailwindcss ^3.1.0` and `@tailwindcss/vite ^4.0.0` | `package.json` | Half-finished Tailwind v4 migration; a fragile build |
+| D5 | **Low** *(was Medium)* | `package.json` carries both `tailwindcss ^3.1.0` and `@tailwindcss/vite ^4.0.0` | `package.json` | **Corrected in v1.2:** not a live conflict. `vite.config.js` never loads `@tailwindcss/vite` and `app.css` uses v3 `@tailwind` directives, so v3 builds and `tailwind.config.js` is authoritative. The v4 package is an unused dependency to drop, not a broken build. |
 | D6 | **Medium** | No CI. Nothing runs tests, Pint or Larastan before code reaches `main` — and `main` auto-deploys to test | `.github/workflows/` contains only `deploy-test-immediate.yml` | Never set up |
 | D7 | **Medium** | Known-failing tests are documented as acceptable in `AGENTS.md` (Breeze `Auth`/`Profile` tests reference removed routes; `ExampleTest` lacks `RefreshDatabase`) | `AGENTS.md` | Drift after customisation |
 | D8 | **Low** | Debug scaffolding is routed in production: `admin/media/{medium}/debug` and `admin/test-video` | `routes/web.php` | Leftovers |
 | D9 | **Low** | `intervention/image ^2.7` is a major version behind (v3) | `composer.json` | Deferred upgrade |
 | D10 | **Low** | `tailwind copy.config.js` is committed at the repo root | repo root | Stray file |
+| D11 | **Medium** | Hero banner colours are stored **in the database**, not in CSS. `hero_banners.primary_cta_bg_color` defaults to `#0ea5e9` at the schema level, so existing rows still carry the old sky blue after the palette change | migration default | Colours made admin-editable per row |
+| D12 | **Medium** | A `debug-info` banner renders on mobile on the public `/guide` page | `resources/views/pages/guide.blade.php:142` | Debug scaffolding left in |
+| D13 | **Low** | `welcome.blade.php` is a dead, unrouted Laravel starter page carrying an inlined Tailwind **v4** build and 43 instances of starter orange | `resources/views/welcome.blade.php` | Never deleted after scaffolding |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -164,7 +168,9 @@ Because `main` auto-deploys to test, CI must be **required to pass before merge*
 - Delete the `admin/media/{medium}/debug` route and `admin/test-video` route + view.
 - Delete `tailwind copy.config.js`.
 - Stop caching Eloquent models. `HomeController` caches `WhySection`/`WhyFeature` model instances, which is why `config/cache.php` carries a `serializable_classes` allowlist that must be maintained by hand (per `AGENTS.md`). Cache plain arrays or DTOs instead and drop the allowlist — it is a fragility waiting for the next model added to the homepage.
-- Resolve the Tailwind version conflict: commit to v4 (remove `tailwindcss ^3`, migrate `tailwind.config.js` to the v4 CSS-first config) **or** to v3 (remove `@tailwindcss/vite`). Do not ship both. Recommendation: **v4**, since the Vite plugin is already in place and v4 builds faster; budget a day for the theme migration and a visual diff pass over the Dhivehi/RTL pages.
+- **[v1.2 correction]** Drop the unused `@tailwindcss/vite` dependency. The earlier recommendation to migrate to v4 was based on a misreading: `vite.config.js` never loads the v4 plugin and `app.css` uses v3 directives, so the project is cleanly on v3 and `tailwind.config.js` is live. A v4 migration is optional housekeeping, not a fix — and now that the colour system is implemented against v3, it should not be attempted casually.
+- Delete `welcome.blade.php` (D13) — unrouted, and it ships a second inlined Tailwind build.
+- Remove the `debug-info` banner from `/guide` (D12).
 
 ### P0.5 — SEO essentials (D3)
 
@@ -259,6 +265,39 @@ From the thread, ranked by impact-per-effort:
 ### 4.4 CMS
 
 The current hand-rolled admin cannot carry blog, destination pages, landing pages and a page builder. See §9.2 — the recommendation is to move admin to Filament and treat CMS as resources within it rather than building a visual page builder (the thread's `24-MARKETING-CMS` proposes one; it is a multi-month project and Rihla does not need it).
+
+### 4.5 The colour system — **implemented** ✅
+
+Full specification: [`BRAND.md`](BRAND.md).
+
+The old palette failed accessibility at the two jobs it did most. White text on the sky blue
+scored **2.95:1** and on the gold **2.62:1**, against the 4.5:1 this plan commits to in §10.2 —
+so every primary button on the site was below standard. It has been replaced:
+
+| Role | Token | Hex |
+|---|---|---|
+| Primary — CTAs, active nav, links | `wine-500` | `#8E2653` |
+| Accent — rules, icons, premium detail | `gold-500` | `#D2A03C` |
+| Body text and dark UI | `ink` | `#2E2621` |
+| Warm background | `cream` | `#FBF6EC` |
+| Semantic | `success` / `warning` / `error` | `#0F7A54` / `#9E6A0D` / `#D92D20` |
+
+White on wine now measures **8.23:1**. Hierarchy runs **cream → wine → gold → ink**.
+
+**Shipped in `488ffee`:** tokens in `tailwind.config.js`; Tailwind's cool default `gray` scale
+overridden with a warm ramp matched step-for-step to the original lightness, which warmed ~800
+existing `gray-*` classes with no markup change and no contrast change; the component layer in
+`app.css` consolidated (`.btn-primary`, `.card` and `.badge-gold` had each been declared twice,
+with the later plain-CSS rule silently winning); three competing primary buttons reduced to one;
+and all `brand-*`, blue, red and green usages migrated across 48 Blade views.
+
+**Two fixes worth noting.** Gold fills carried white text at 2.4:1 in the header CTAs and a home
+badge — gold fills now take ink text at 6.2:1. And the sky-to-gold and sky-to-amber gradients are
+now single-hue wine.
+
+**Still open:** hero banner colours live in the database (D11) and must be updated through
+`/admin/hero-banners`; the logo is deliberately untouched and its asset gaps are unresolved
+(`BRAND.md` §4).
 
 ---
 
@@ -495,6 +534,8 @@ Governance, in one page not forty: approved use cases, prohibited behaviours (no
 
 Keyboard navigation throughout, visible focus states, screen-reader labels, adjustable text size, high-contrast mode, reduced-motion support, correct `lang`/`dir` per locale (the layout already switches `dir` — good), and Thaana font legibility at small sizes. The `skip to main content` link already present is a good sign; extend the discipline.
 
+**Colour contrast is now done** (§4.5). Every interactive combination in the palette is verified against WCAG 2.2 AA, and the focus ring is a single consistent wine across the whole site — previously it was sky blue, green, gold, blue, indigo and grey depending on the screen. The contrast reference table is in [`BRAND.md`](BRAND.md) §3. What remains in this section is the non-colour half: keyboard order, ARIA labelling, and a screen-reader pass in both locales.
+
 ### 10.3 Testing
 
 | Level | Target |
@@ -588,7 +629,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), **roles/permissions + policies (§9.3) — moved earlier: policies must exist before the first booking screen**, audit-log foundation, Filament adoption (§9.2), design-system pass, hosting decision + move (§9.1), media library, observability | **4–6 weeks** |
+| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), **roles/permissions + policies (§9.3) — moved earlier: policies must exist before the first booking screen**, audit-log foundation, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5), typography and spacing remain**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |
@@ -614,6 +655,7 @@ These block or reshape the plan; everything else I can proceed on with stated as
 6. **Content ownership** — who writes and who *religiously reviews* the Knowledge Centre and Academy? Phase 5 is content-bound, not code-bound.
 7. **[R-5] Production runtime versions** — which MySQL/MariaDB version does the cPanel account run, and is PHP really 8.4 (the deploy scripts reference `ea-php84`)? The DB version matters because The capacity invariant `capacity_held + capacity_confirmed <= capacity_total` is enforced with a CHECK constraint, which needs MySQL 8.0.16+ or MariaDB 10.2+. On an older engine the row lock becomes the sole defence and that must be recorded deliberately. Verify before the booking tables are created.
 8. **[R-1] Locale in the URL (P0.7)** — approve moving locale into the route. Without it the P0.5 SEO work ships tags that do nothing.
+9. **Logo** — the colour system is live but the mark is untouched. Three candidates exist (`BRAND.md` §4): recolour the current mark, the dhoni with the Kaaba, or the two-sail dhoni alone. Whichever is chosen, the asset set is the same job and it clears six broken references — an empty `favicon.ico` and five 404s. Independent of everything else in this plan.
 
 ---
 
