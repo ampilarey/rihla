@@ -81,66 +81,6 @@
 </style>
 @endpush
 
-@push('scripts')
-<script>
-    // Register service worker for PWA offline support
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js')
-                .then(function(registration) {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    
-                    // Show offline notification
-                    if (registration.active) {
-                        showOfflineNotification();
-                    }
-                })
-                .catch(function(error) {
-                    console.log('ServiceWorker registration failed: ', error);
-                });
-        });
-    }
-    
-    function showOfflineNotification() {
-        // Check if this is the first visit
-        if (!localStorage.getItem('guideOfflineNotified')) {
-            setTimeout(() => {
-                const notification = document.createElement('div');
-                notification.className = 'fixed top-4 right-4 bg-success text-white px-4 py-2 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full';
-                notification.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span>This guide will be available offline after first visit</span>
-                        <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white/80 hover:text-white">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                document.body.appendChild(notification);
-                
-                // Animate in
-                setTimeout(() => {
-                    notification.classList.remove('translate-x-full');
-                }, 100);
-                
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    notification.classList.add('translate-x-full');
-                    setTimeout(() => notification.remove(), 300);
-                }, 5000);
-                
-                // Mark as notified
-                localStorage.setItem('guideOfflineNotified', 'true');
-            }, 2000);
-        }
-    }
-</script>
-@endpush
-
 @section('content')
 <div class="min-h-screen bg-gray-50" 
      x-data="umrahGuide()" 

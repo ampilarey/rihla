@@ -52,6 +52,15 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
 
+    {{-- Installable app. The manifest was never linked from any page, so the
+         site could not be installed at all, and it declared a scope of /guide
+         which would have covered one page of it. --}}
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#2E2621">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rihla">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet" />
@@ -82,6 +91,8 @@
     
     <!-- Video Player Script -->
     <script src="{{ asset('js/video-player.js') }}"></script>
+
+    @stack('styles')
 </head>
 <body class="font-sans antialiased overflow-x-hidden">
     <!-- Skip to main content link for accessibility -->
@@ -487,6 +498,22 @@
                 button.setAttribute('aria-expanded', 'false');
             }
         });
+    </script>
+    @stack('scripts')
+
+    {{-- Registered here rather than on /guide, so the whole site is available
+         offline and the install prompt can appear anywhere. The registration
+         on the guide page was pushed to a 'scripts' stack that no layout
+         rendered, so it never ran at all. --}}
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('{{ asset('sw.js') }}')
+                    .catch(function (error) {
+                        console.error('Service worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
