@@ -291,7 +291,9 @@
                                     <div class="aspect-video rounded-lg overflow-hidden bg-gray-100 mb-4">
                                         <img src="{{ $step->image_url }}" 
                                              alt="{{ $step->title }}"
-                                             class="w-full h-full object-cover">
+                                             class="w-full h-full object-cover"
+         loading="lazy"
+         decoding="async">
                                     </div>
                                 @endif
                                 

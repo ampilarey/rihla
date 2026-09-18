@@ -17,7 +17,9 @@
         <div class="relative mb-8">
             <img src="{{ Storage::url($trip->cover_image) }}" 
                  alt="{{ $trip->title }}" 
-                 class="w-full h-96 object-cover rounded-2xl">
+                 class="w-full h-96 object-cover rounded-2xl"
+         loading="lazy"
+         decoding="async">
             <div class="absolute top-4 left-4">
                 @if($trip->status === 'current')
                     <span class="bg-wine-500 text-white px-4 py-2 rounded-full text-sm font-medium">
@@ -98,7 +100,8 @@
                             <img src="{{ Storage::url($item->thumb_path ?? $item->file_path) }}" 
                                  alt="{{ $item->title }}" 
                                  class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                                 loading="lazy">
+                                 loading="lazy"
+         decoding="async">
                             
                             @if($item->title || $item->caption)
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
@@ -116,7 +119,9 @@
                             <div class="w-full h-64 bg-gray-200 flex items-center justify-center relative">
                                 <img src="{{ $item->thumbnail_url }}" 
                                      alt="{{ $item->title }}" 
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-cover"
+         loading="lazy"
+         decoding="async">
                                 <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
                                     <div class="bg-white/90 rounded-full p-3">
                                         <svg aria-hidden="true" focusable="false" class="w-8 h-8 text-wine-500" fill="currentColor" viewBox="0 0 24 24">

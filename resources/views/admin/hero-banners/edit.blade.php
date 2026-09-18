@@ -150,7 +150,9 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Current Image</label>
                             <img src="{{ $heroBanner->image_url }}" 
                                  alt="{{ $heroBanner->title }}"
-                                 class="w-64 h-36 object-cover rounded-lg border">
+                                 class="w-64 h-36 object-cover rounded-lg border"
+         loading="lazy"
+         decoding="async">
                         </div>
                     @endif
                     

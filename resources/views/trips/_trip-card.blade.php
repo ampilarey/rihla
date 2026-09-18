@@ -3,7 +3,9 @@
     <div class="relative mb-4">
         <img src="{{ Storage::url($trip->cover_image) }}" 
              alt="{{ $trip->title }}" 
-             class="w-full h-48 object-cover rounded-2xl">
+             class="w-full h-48 object-cover rounded-2xl"
+         loading="lazy"
+         decoding="async">
         <div class="absolute top-3 left-3">
             @if($trip->status === 'current')
                 <span class="bg-wine-500 text-white px-3 py-1 rounded-full text-sm font-medium">

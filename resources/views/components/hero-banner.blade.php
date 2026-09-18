@@ -26,7 +26,9 @@
                     <div class="hero-bg" aria-hidden="true">
                         <img src="{{ $banner->image_url ?? asset($banner->image_path) }}" 
                              alt=""
-                             class="hero-bg-image">
+                             class="hero-bg-image"
+         loading="lazy"
+         decoding="async">
                     </div>
                     @endunless
                     

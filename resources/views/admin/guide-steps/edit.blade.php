@@ -84,7 +84,9 @@
                     <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Step Image (Optional)</label>
                     @if($guideStep->image_path)
                         <div class="mb-3">
-                            <img src="{{ $guideStep->image_url }}" alt="Current image" class="w-32 h-24 object-cover rounded-lg border">
+                            <img src="{{ $guideStep->image_url }}" alt="Current image" class="w-32 h-24 object-cover rounded-lg border"
+         loading="lazy"
+         decoding="async">
                         </div>
                     @endif
                     <input type="file" name="image" id="image" accept="image/*" 

@@ -57,7 +57,9 @@
                         <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Section Image</label>
                         @if($section->image_path)
                             <div class="mb-2">
-                                <img src="{{ Storage::url($section->image_path) }}" alt="Current image" class="w-32 h-24 object-cover rounded">
+                                <img src="{{ Storage::url($section->image_path) }}" alt="Current image" class="w-32 h-24 object-cover rounded"
+         loading="lazy"
+         decoding="async">
                             </div>
                         @endif
                         <input type="file" id="image" name="image" accept="image/*" 
@@ -405,7 +407,9 @@
                         <div class="flex items-start justify-between">
                             <div class="flex items-start space-x-3 flex-1">
                                 @if($feature->image_path)
-                                    <img src="{{ Storage::url($feature->image_path) }}" alt="{{ $feature->title }}" class="w-12 h-12 object-cover rounded">
+                                    <img src="{{ Storage::url($feature->image_path) }}" alt="{{ $feature->title }}" class="w-12 h-12 object-cover rounded"
+         loading="lazy"
+         decoding="async">
                                 @elseif($feature->icon)
                                     <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                                         <span class="text-gray-500 text-lg">{{ $feature->icon }}</span>

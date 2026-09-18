@@ -21,7 +21,9 @@
                     <div class="relative">
                         <img src="{{ Storage::url($currentTrip->cover_image) }}" 
                              alt="{{ $currentTrip->title }}" 
-                             class="w-full h-64 object-cover rounded-2xl">
+                             class="w-full h-64 object-cover rounded-2xl"
+         loading="lazy"
+         decoding="async">
                         <div class="absolute top-4 left-4 bg-wine-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                             {{ __('Now') }}
                         </div>
@@ -112,7 +114,9 @@
                     <div class="relative">
                         <img src="{{ Storage::url($upcomingTrip->cover_image) }}" 
                              alt="{{ $upcomingTrip->title }}" 
-                             class="w-full h-64 object-cover rounded-2xl">
+                             class="w-full h-64 object-cover rounded-2xl"
+         loading="lazy"
+         decoding="async">
                         <div class="absolute top-4 left-4 bg-gold-500 text-ink px-3 py-1 rounded-full text-sm font-medium">
                             {{ __('Coming Soon') }}
                         </div>
@@ -147,7 +151,8 @@
                     <img src="{{ Storage::url($media->thumb_path ?? $media->file_path) }}" 
                          alt="{{ $media->title }}" 
                          class="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-110"
-                         loading="lazy">
+                         loading="lazy"
+         decoding="async">
                 @else
                     <div class="w-full h-32 bg-gray-200 flex items-center justify-center">
                         <svg aria-hidden="true" focusable="false" class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">

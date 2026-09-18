@@ -6,7 +6,9 @@
                 <div class="mb-6">
                     <img src="{{ Storage::url($why->image_path) }}" 
                          alt="{{ $why->title }}" 
-                         class="mx-auto max-w-md h-auto rounded-lg shadow-lg">
+                         class="mx-auto max-w-md h-auto rounded-lg shadow-lg"
+         loading="lazy"
+         decoding="async">
                 </div>
             @endif
             
@@ -54,7 +56,9 @@
                             @if($feature->image_path)
                                 <img src="{{ Storage::url($feature->image_path) }}" 
                                      alt="{{ $feature->title }}" 
-                                     class="w-16 h-16 mx-auto object-cover rounded-lg">
+                                     class="w-16 h-16 mx-auto object-cover rounded-lg"
+         loading="lazy"
+         decoding="async">
                             @elseif($feature->icon)
                                 <div class="w-16 h-16 mx-auto bg-wine-50 rounded-lg flex items-center justify-center">
                                     <span class="text-2xl text-wine-500">{{ $feature->icon }}</span>

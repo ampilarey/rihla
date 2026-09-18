@@ -16,7 +16,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('og_title', config('app.name', 'Rihla Travels'))">
     <meta property="og:description" content="@yield('og_description', 'Islamic travel services, Umrah packages, and spiritual journeys to Makkah and Madinah.')">
-    <meta property="og:image" content="@yield('og_image', asset('images/rihla-logo.png'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/rihla-logo-600.png'))">
     <meta property="og:site_name" content="Rihla Travels">
     <meta property="og:locale" content="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -25,7 +25,7 @@
     <meta property="twitter:url" content="{{ url()->current() }}">
     <meta property="twitter:title" content="@yield('twitter_title', config('app.name', 'Rihla Travels'))">
     <meta property="twitter:description" content="@yield('twitter_description', 'Islamic travel services, Umrah packages, and spiritual journeys to Makkah and Madinah.')">
-    <meta property="twitter:image" content="@yield('twitter_image', asset('images/rihla-logo.png'))">
+    <meta property="twitter:image" content="@yield('twitter_image', asset('images/rihla-logo-600.png'))">
 
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">
@@ -165,9 +165,11 @@
                     <div class="flex items-center">
                         <a href="{{ route('home') }}" class="flex items-center focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 rounded">
                             <!-- Logo Image -->
-                            <img src="{{ asset('images/rihla-logo.png') }}" 
-                                 alt="Rihla Travels Logo" 
-                                 class="h-20 w-50">
+                            {{-- Was `h-20 w-50`. Tailwind's spacing scale has no 50,
+                                 so `w-50` compiled to nothing at all and the logo
+                                 fell back to its intrinsic width. `w-auto` is what
+                                 it was already doing, said out loud. --}}
+                            <x-brand-logo class="h-20 w-auto" />
                         </a>
                     </div>
 
@@ -376,9 +378,7 @@
                     <!-- Company Info -->
                     <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center mb-4">
-                            <img src="{{ asset('images/rihla-logo.png') }}" 
-                                 alt="Rihla Travels Logo" 
-                                 class="h-16 w-auto">
+                            <x-brand-logo class="h-16 w-auto" loading="lazy" />
                         </div>
                         <p class="text-gray-300 mb-4 max-w-md">
                             {{ __('Rihla Travels provides exceptional Islamic travel services, specializing in Umrah packages and spiritual journeys to the holy cities of Makkah and Madinah.') }}

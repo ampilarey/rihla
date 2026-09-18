@@ -55,7 +55,9 @@
                             <div class="flex items-center">
                                 @if($trip->cover_image)
                                 <div class="flex-shrink-0 h-12 w-12">
-                                    <img class="h-12 w-12 rounded-lg object-cover" src="{{ Storage::url($trip->cover_image) }}" alt="{{ $trip->title }}">
+                                    <img class="h-12 w-12 rounded-lg object-cover" src="{{ Storage::url($trip->cover_image) }}" alt="{{ $trip->title }}"
+         loading="lazy"
+         decoding="async">
                                 </div>
                                 @endif
                                 <div class="ml-4">
