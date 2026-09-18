@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\GuideStep;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Illuminate\Support\Str;
 
 class GuideStepController extends Controller
 {
@@ -269,41 +271,36 @@ class GuideStepController extends Controller
     /**
      * Process uploaded image
      */
-    private function processImage($image)
+    /**
+     * Resize, convert to WebP and store, with a thumbnail alongside.
+     *
+     * Uses the framework's own image facade rather than Intervention's. Both
+     * bind the container key `image`, and on Laravel 13 the framework's
+     * binding wins — so `Image::make()` from Intervention v2 resolved
+     * Laravel's driver and died on a v3-only method. Going through
+     * Illuminate\Support\Facades\Image means the next Intervention major is
+     * the framework's problem rather than this application's.
+     */
+    private function processImage(UploadedFile $image): string
     {
-        $filename = 'step_'.time().'.webp';
-        $path = 'guide/'.$filename;
+        // A random component, not just time(): 'step_'.time() collides for any
+        // two images uploaded in the same second, and the second silently
+        // overwrote the first, leaving one step showing another's picture.
+        $name = 'step_'.now()->format('Ymd_His').'_'.Str::random(8);
 
-        // Create guide directory if it doesn't exist
-        if (! Storage::disk('public')->exists('guide')) {
-            Storage::disk('public')->makeDirectory('guide');
-        }
+        Image::fromUpload($image)
+            ->scale(width: 1200)
+            ->toWebp()
+            ->quality(85)
+            ->storeAs('guide', $name.'.webp', 'public');
 
-        // Process and save large image (max 1200px wide)
-        $img = Image::make($image);
-        if ($img->width() > 1200) {
-            $img->resize(1200, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-        }
-        $img->encode('webp', 85);
-        Storage::disk('public')->put($path, $img);
+        Image::fromUpload($image)
+            ->scale(width: 400)
+            ->toWebp()
+            ->quality(85)
+            ->storeAs('guide', $name.'-thumb.webp', 'public');
 
-        // Create thumbnail (400px wide)
-        $thumbnail = Image::make($image);
-        if ($thumbnail->width() > 400) {
-            $thumbnail->resize(400, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-        }
-        $thumbnail->encode('webp', 85);
-
-        $thumbnailPath = 'guide/'.pathinfo($filename, PATHINFO_FILENAME).'-thumb.webp';
-        Storage::disk('public')->put($thumbnailPath, $thumbnail);
-
-        return $path;
+        return 'guide/'.$name.'.webp';
     }
 
     /**
