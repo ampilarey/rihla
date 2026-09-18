@@ -29,7 +29,7 @@ class ViewServiceProvider extends ServiceProvider
                 'isRTL' => LocaleService::isRTL(),
                 'currentLocale' => LocaleService::getCurrentLocale(),
                 'availableLocales' => LocaleService::getAvailableLocales(),
-                'localeInfo' => LocaleService::getLocaleInfo(LocaleService::getCurrentLocale())
+                'localeInfo' => LocaleService::getLocaleInfo(LocaleService::getCurrentLocale()),
             ]);
         });
     }

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\AuditLog;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
 use App\Models\Media;
@@ -9,6 +10,7 @@ use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
+use App\Policies\AuditLogPolicy;
 use App\Policies\GuideStepPolicy;
 use App\Policies\HeroBannerPolicy;
 use App\Policies\MediaPolicy;
@@ -33,6 +35,7 @@ class AuthServiceProvider extends ServiceProvider
         WhySection::class => WhySectionPolicy::class,
         WhyFeature::class => WhyFeaturePolicy::class,
         Setting::class => SettingPolicy::class,
+        AuditLog::class => AuditLogPolicy::class,
     ];
 
     public function boot(): void

@@ -92,6 +92,9 @@ final class Access
 
         'setting.view',
         'setting.update',
+
+        // Reading the audit trail is an oversight function, not a content one.
+        'audit.viewAny',
     ];
 
     /**
@@ -113,7 +116,8 @@ final class Access
         $content = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => $permission !== 'admin.access'
-                && ! str_starts_with($permission, 'setting.'),
+                && ! str_starts_with($permission, 'setting.')
+                && ! str_starts_with($permission, 'audit.'),
         ));
 
         $readOnly = array_values(array_filter(
@@ -126,7 +130,7 @@ final class Access
 
             // Runs the operation: all content, plus settings.
             self::OPERATIONS_MANAGER => array_merge(
-                ['admin.access', 'setting.view', 'setting.update'],
+                ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny'],
                 $content,
             ),
 

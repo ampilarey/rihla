@@ -68,7 +68,13 @@ class Trip extends Model
         // The sitemap lists every published trip and is cached for an hour.
         // Without this, publishing a trip would leave it out of the sitemap
         // for up to an hour after it went live.
-        $bustSitemap = fn () => Cache::forget('sitemap.xml');
+        // Must return nothing. Cache::forget() returns false when the key is
+        // not cached, and a model-event listener returning false halts the
+        // rest of the listeners for that event — which silently suppressed
+        // every later listener on Trip's saved and deleted events.
+        $bustSitemap = function (): void {
+            Cache::forget('sitemap.xml');
+        };
 
         static::saved($bustSitemap);
         static::deleted($bustSitemap);

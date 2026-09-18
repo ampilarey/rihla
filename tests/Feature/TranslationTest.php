@@ -74,33 +74,82 @@ class TranslationTest extends TestCase
     }
 
     /**
-     * Records the size of the untranslated surface so it cannot quietly grow.
+     * Records the size of the untranslated *public* surface so it cannot grow.
      *
-     * ~208 distinct English sentences are passed to __() with no JSON
-     * translation files present. They render correctly in English because the
-     * key is the text, and can never render in Dhivehi. Fixing that needs
-     * resources/lang/dv.json and a translator, which is a content task.
+     * These sentences are passed to __() with no JSON translation files
+     * present. They render correctly in English because the key is the text,
+     * and can never render in Dhivehi. On a public page that is a defect a
+     * Maldivian visitor sees; fixing it needs resources/lang/dv.json and a
+     * translator, which is a content task.
      *
-     * This asserts the count has not increased. Lower the ceiling as strings
-     * are migrated; do not raise it.
+     * Lower the ceiling as strings are migrated; do not raise it.
      */
-    public function test_untranslatable_sentence_keys_do_not_increase(): void
+    public function test_untranslatable_sentence_keys_on_public_pages_do_not_increase(): void
     {
-        // Ratchet: the exact count at the time of writing. Any new sentence
-        // key fails the build, which is the point — use the group pattern.
-        $ceiling = 209;
+        // Ratchet: the exact count at the time of writing.
+        $ceiling = 98;
 
+        $count = count($this->sentenceKeys(admin: false));
+
+        $this->assertLessThanOrEqual($ceiling, $count, sprintf(
+            'Untranslatable sentence keys on public pages rose to %d (ceiling %d). '.
+            'These render in English regardless of locale because no JSON '.
+            'translation file exists, so a Dhivehi visitor sees English. Add the '.
+            'string to resources/lang/{en,dv}/messages.php and call it as '.
+            "__('messages.key') instead.",
+            $count,
+            $ceiling,
+        ));
+    }
+
+    /**
+     * The same measure for the admin panel, tracked separately because it is a
+     * different problem with a different answer.
+     *
+     * The admin panel is entirely English today and is used by Rihla staff,
+     * not by customers. Whether it should be translated at all is an open
+     * decision. Holding it to one shared ceiling with the public site meant a
+     * new admin screen consumed budget that belongs to customer-facing text,
+     * and hid how tight the public number actually is.
+     */
+    public function test_untranslatable_sentence_keys_in_the_admin_panel_do_not_increase(): void
+    {
+        $ceiling = 120;
+
+        $count = count($this->sentenceKeys(admin: true));
+
+        $this->assertLessThanOrEqual($ceiling, $count, sprintf(
+            'Untranslatable sentence keys in admin views rose to %d (ceiling %d).',
+            $count,
+            $ceiling,
+        ));
+    }
+
+    /**
+     * English sentences passed to __() with no group prefix, in one half of
+     * the views or the other.
+     *
+     * @return list<string>
+     */
+    private function sentenceKeys(bool $admin): array
+    {
         $sentences = [];
 
         foreach ($this->bladeFiles() as $file) {
-            preg_match_all("/__\('([^']*\s[^']*)'/", File::get($file), $matches);
+            $isAdmin = str_contains(str_replace('\\', '/', $file), '/views/admin/');
+
+            if ($isAdmin !== $admin) {
+                continue;
+            }
+
+            preg_match_all("/__\\('([^']*\\s[^']*)'/", File::get($file), $matches);
 
             foreach ($matches[1] as $sentence) {
                 // Group files key their strings by the English sentence, so
                 // __('guide.How to Perform Umrah') matches the pattern above
-                // while being exactly what this test is asking people to do.
-                // Those resolve in every locale — the other assertion proves
-                // it — and must not count against the untranslated surface.
+                // while being exactly what this test asks people to do. Those
+                // resolve in every locale — the assertion above proves it —
+                // and must not count against the untranslated surface.
                 if (in_array(explode('.', $sentence)[0], self::GROUPS, true)) {
                     continue;
                 }
@@ -109,16 +158,7 @@ class TranslationTest extends TestCase
             }
         }
 
-        $count = count($sentences);
-
-        $this->assertLessThanOrEqual($ceiling, $count, sprintf(
-            'Untranslatable sentence keys rose to %d (ceiling %d). These render '.
-            'in English regardless of locale because no JSON translation file '.
-            'exists. Add the string to resources/lang/{en,dv}/messages.php and '.
-            "call it as __('messages.key') instead.",
-            $count,
-            $ceiling,
-        ));
+        return array_keys($sentences);
     }
 
     /** @return list<string> */
