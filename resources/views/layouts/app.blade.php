@@ -62,29 +62,28 @@
     <meta name="apple-mobile-web-app-title" content="Rihla">
 
     <!-- Fonts -->
+    {{-- Five stylesheet requests used to sit here. Two asked Google Fonts for
+         "Faruma", which does not exist there and returned 400 every time — one
+         of them from an @import inside a <style> block, which blocks rendering
+         until it fails. Tajawal loaded seven weights that no view used. Cairo
+         loaded nine for the same reason.
+
+         What is left: Inter for Latin, self-hosted A_Faruma for Thaana, and
+         Cairo in two weights, now actually applied to du'a text. --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet" />
-    
-    <!-- Dhivehi Fonts - Faruma (Maldives Native) + Premium Fallbacks -->
+    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet">
+
+    {{-- Arabic, for supplications. Two weights, not nine. --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Primary: Faruma (Beautiful Dhivehi Font from Maldives) -->
-    <link href="https://fonts.googleapis.com/css2?family=Faruma:wght@400&display=swap" rel="stylesheet">
-    
-    <!-- Alternative: Direct font loading -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Faruma:wght@400&display=swap');
-    </style>
-    
-    <!-- Fallback 1: MV Waheed (Traditional Maldivian Font) -->
-    <!-- Note: MV Waheed is a system font available on most Maldivian devices -->
-    
-    <!-- Fallback 2: Cairo (Modern Arabic Support) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Fallback 3: Tajawal (Professional Arabic) -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap">
+
+    @if (app()->getLocale() === 'dv')
+        {{-- Only on Dhivehi pages: an English page never renders a Thaana
+             character, so the face's unicode-range means it would not be
+             fetched anyway — preloading it there would be a wasted request. --}}
+        <link rel="preload" href="{{ asset('fonts/A_faruma.woff2') }}" as="font" type="font/woff2" crossorigin>
+    @endif
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -8,13 +8,30 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Dhivehi Font Options - Faruma Primary
-        'dhivehi': ['Faruma', 'MV Waheed', 'sans-serif'], // Beautiful Dhivehi font from Maldives
-        'dhivehi-faruma': ['Faruma', 'sans-serif'], // Primary Faruma font
-        'dhivehi-waheed': ['MV Waheed', 'sans-serif'], // Traditional Maldivian font
-        'dhivehi-cairo': ['Cairo', 'sans-serif'], // Modern Arabic support
-        'dhivehi-elegant': ['Tajawal', 'sans-serif'], // Professional Arabic
+        // One family per script, and nothing that is not loaded.
+        //
+        // The names dropped from here — 'dhivehi-faruma', 'dhivehi-waheed',
+        // 'dhivehi-cairo', 'dhivehi-elegant' — pointed at a Google "Faruma"
+        // that does not exist and at Arabic families that cannot render
+        // Thaana at all. No view used any of them.
+        'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // A_Faruma is self-hosted and limited to the Thaana range, so Latin
+        // inside Dhivehi text falls through to Inter.
+        'dhivehi': ['A_Faruma', 'MV Waheed', 'Inter', 'sans-serif'],
+        // Arabic, for du'a and Qur'anic text.
+        'arabic': ['Cairo', 'Segoe UI', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
+      },
+
+      // Display sizes, added rather than redefining Tailwind's text-* scale:
+      // overriding those keys would silently resize every heading on the site.
+      // Each pairs a size with the line height and tracking it needs, so a
+      // hero heading cannot be set at body line height by accident.
+      fontSize: {
+        'display-sm': ['2rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+        'display-md': ['2.5rem', { lineHeight: '1.15', letterSpacing: '-0.015em' }],
+        'display-lg': ['3.25rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'display-xl': ['4rem', { lineHeight: '1.05', letterSpacing: '-0.025em' }],
       },
       colors: {
         // ── Rihla colour system ────────────────────────────────────────────

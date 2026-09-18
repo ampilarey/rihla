@@ -123,7 +123,7 @@
         .step-dua {
             margin-bottom: 10px;
             padding: 10px;
-            background: #f0f8ff;
+            background: #FBF6EC;
             border-left: 3px solid #D2A03C;
         }
         

@@ -282,8 +282,12 @@
 
 /* Locale-specific typography */
 @layer base {
+    /* A_Faruma is restricted to the Thaana range by its unicode-range, so
+       Latin characters and digits inside Dhivehi text still come from Inter
+       rather than from the three Latin glyphs the Thaana face happens to
+       carry. Listing both is what makes that split work. */
     [lang="dv"] {
-        font-family: 'Faruma', 'MV Waheed', 'Cairo', 'Tajawal', 'sans-serif';
+        font-family: 'A_Faruma', 'MV Waheed', 'Inter', sans-serif;
     }
 
     [lang="en"] {
@@ -291,34 +295,19 @@
     }
 }
 
-/* Dhivehi Font Utility Classes - Faruma Primary */
+/* Script-specific type. The `font-dhivehi-waheed`, `-cairo` and `-elegant`
+   variants that used to live here named fonts the site no longer loads and
+   were referenced by no view. */
 @layer utilities {
     .font-dhivehi {
-        font-family: 'Faruma', 'MV Waheed', 'sans-serif';
+        font-family: 'A_Faruma', 'MV Waheed', 'Inter', sans-serif;
     }
-    
-    .font-dhivehi-faruma {
-        font-family: 'Faruma', 'sans-serif';
-    }
-    
-    .font-dhivehi-waheed {
-        font-family: 'MV Waheed', 'sans-serif';
-    }
-    
-    .font-dhivehi-cairo {
-        font-family: 'Cairo', 'sans-serif';
-    }
-    
-    .font-dhivehi-elegant {
-        font-family: 'Tajawal', 'sans-serif';
-    }
-    
-    .font-inter {
-        font-family: 'Inter', 'Arial', sans-serif;
-    }
-    
-    /* Automatic font switching based on locale */
-    .font-auto {
-        font-family: var(--font-family, 'Inter');
+
+    /* Arabic, for du'a and Qur'anic text. Thaana fonts do not cover Arabic
+       and Inter does not either, so without this a supplication falls back to
+       whatever the device happens to have. */
+    .font-arabic {
+        font-family: 'Cairo', 'Segoe UI', sans-serif;
+        line-height: 2;
     }
 }

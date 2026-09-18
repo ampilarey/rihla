@@ -370,7 +370,10 @@
                                             {{ __('Du\'a') }}
                                         </h4>
                                         <div class="p-3 bg-gold-500/10 border-l-4 border-gold-500 rounded-r">
-                                            <p class="text-gray-700 text-sm leading-relaxed">
+                                            {{-- Arabic: neither Inter nor the Thaana face covers it,
+                                                 so without font-arabic a supplication renders in
+                                                 whatever the device happens to have. --}}
+                                            <p class="font-arabic text-gray-700 text-base" dir="rtl" lang="ar">
                                                 {{ $step->dua_text }}
                                             </p>
                                         </div>
