@@ -37,16 +37,7 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
     Route::resource('trips', AdminTripController::class);
     Route::resource('media', AdminMediaController::class);
     
-    // Debug route for testing DELETE method
-    Route::delete('media/{medium}/debug', function($medium) {
-        \Log::info('Debug DELETE route called', ['medium' => $medium]);
-        return response()->json(['success' => true, 'message' => 'DELETE method working', 'medium' => $medium]);
-    })->name('admin.media.debug-delete');
     
-    // Video player test page
-    Route::get('test-video', function() {
-        return view('test-video');
-    })->name('test-video');
     Route::resource('guide-steps', AdminGuideStepController::class);
     Route::resource('hero-banners', \App\Http\Controllers\Admin\HeroBannerController::class);
     

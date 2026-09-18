@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold text-center mb-12 text-gray-800">{{ __('section_memories') }}</h1>
+    <h1 class="text-4xl font-bold text-center mb-12 text-gray-800">{{ __('messages.section_memories') }}</h1>
     
     <!-- Social Media Buttons -->
     <div class="max-w-4xl mx-auto mb-16">
         <div class="text-center mb-12">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ __('Connect With Us') }}</h2>
             <p class="text-gray-600 max-w-2xl mx-auto">
-                {{ __('social_follow') }}
+                {{ __('messages.social_follow') }}
             </p>
         </div>
         

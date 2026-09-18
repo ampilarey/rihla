@@ -71,7 +71,7 @@
 <section class="py-16 bg-gray-50">
     <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
-            {{ __('section_upcoming') }}
+            {{ __('messages.section_upcoming') }}
         </h2>
         <div class="max-w-4xl mx-auto">
             <div class="card">
@@ -133,10 +133,10 @@
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">
-                {{ __('section_memories') }}
+                {{ __('messages.section_memories') }}
             </h2>
             <p class="text-gray-600 max-w-2xl mx-auto">
-                {{ __('memories_sub') }}
+                {{ __('messages.memories_sub') }}
             </p>
         </div>
         
@@ -177,10 +177,10 @@
 <section class="py-16 bg-wine-500 text-white">
     <div class="container mx-auto px-4 text-center">
         <h2 class="text-3xl font-bold mb-6">
-            {{ __('join_next_title') }}
+            {{ __('messages.join_next_title') }}
         </h2>
         <p class="text-xl mb-8 text-gray-100 max-w-2xl mx-auto">
-            {{ __('contact_whatsapp') }}
+            {{ __('messages.contact_whatsapp') }}
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="{{ route('contact') }}" class="btn-secondary text-lg px-8 py-4">
@@ -190,7 +190,7 @@
                target="_blank" 
                rel="noopener"
                class="btn-primary text-lg px-8 py-4">
-                {{ __('cta_whatsapp') }}
+                {{ __('messages.cta_whatsapp') }}
             </a>
         </div>
     </div>

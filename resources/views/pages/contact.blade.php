@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold text-center mb-12 text-gray-800">{{ __('join_next_title') }}</h1>
+    <h1 class="text-4xl font-bold text-center mb-12 text-gray-800">{{ __('messages.join_next_title') }}</h1>
     
     <div class="max-w-6xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -11,7 +11,7 @@
                 <div class="card mb-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">{{ __('Get in Touch') }}</h2>
                     <p class="text-gray-600 mb-8">
-                        {{ __('contact_prompt') }}
+                        {{ __('messages.contact_prompt') }}
                     </p>
                     
                     <div class="space-y-6">

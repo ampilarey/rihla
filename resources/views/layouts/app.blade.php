@@ -413,7 +413,7 @@
                 </div>
 
                 <div class="border-t border-gray-700 mt-8 pt-8 text-center">
-                    <p class="text-gray-600 mb-2">{{ __('footer_tagline') }}</p>
+                    <p class="text-gray-600 mb-2">{{ __('messages.footer_tagline') }}</p>
                     <p class="text-gray-400">
                         &copy; {{ date('Y') }} {{ config('app.name', 'Rihla Travels') }}. {{ __('All rights reserved.') }}
                     </p>

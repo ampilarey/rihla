@@ -10,7 +10,6 @@
         .mobile-actions,
         .sticky,
         .whatsapp-fab,
-        .debug-info,
         .action-buttons,
         .table-of-contents {
             display: none !important;
@@ -138,15 +137,6 @@
      x-init="init({{ $guideSteps->count() }})"
      dir="{{ app()->getLocale() === 'dv' ? 'rtl' : 'ltr' }}">
 
-    <!-- Debug Info (Mobile Only) -->
-    <div class="lg:hidden bg-warning/10 border-b border-warning/40 p-2 text-xs text-warning-dark debug-info">
-        <div class="max-w-screen-xl mx-auto">
-            <strong>Debug:</strong> 
-            Alpine.js Status: <span x-text="typeof Alpine !== 'undefined' ? 'Loaded' : 'Not Loaded'"></span> | 
-            Steps: {{ $guideSteps->count() }} | 
-            Locale: {{ app()->getLocale() }}
-        </div>
-    </div>
 
     <!-- Page Header -->
     <div class="bg-gradient-to-r from-wine-600 to-wine-500 text-white">
@@ -162,7 +152,7 @@
                 <!-- Progress Bar -->
                 <div class="mt-4 md:mt-6 max-w-2xl mx-auto px-4 mobile-progress">
                     <div class="flex items-center justify-between text-xs md:text-sm mb-2">
-                        <span x-text="`${__('Step')} ${currentStep} ${__('of')} {{ $guideSteps->count() }}`"></span>
+                        <span x-text="`${__('Step')} ${currentStep} ${__('guide.of')} {{ $guideSteps->count() }}`"></span>
                         <span x-text="`${Math.round((currentStep / {{ $guideSteps->count() }}) * 100)}%`"></span>
                     </div>
                     <div class="w-full bg-white/20 rounded-full h-2">
@@ -182,7 +172,7 @@
                     <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span x-text="`${__('Step')} ${currentStep} ${__('of')} {{ $guideSteps->count() }}`"></span>
+                    <span x-text="`${__('Step')} ${currentStep} ${__('guide.of')} {{ $guideSteps->count() }}`"></span>
                 </div>
                 
                 <div class="flex items-center gap-2 md:gap-3 mobile-actions">
@@ -266,7 +256,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                                 </svg>
                                 <span class="font-medium text-gray-900">{{ __('Table of Contents') }}</span>
-                                <span class="text-sm text-gray-500">({{ $guideSteps->count() }} {{ __('steps') }})</span>
+                                <span class="text-sm text-gray-500">({{ $guideSteps->count() }} {{ __('guide.steps') }})</span>
                             </div>
                             <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" 
                                  :class="{ 'rotate-180': mobileTocOpen }"

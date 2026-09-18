@@ -1,0 +1,201 @@
+name: CI
+
+# Nothing verified this repository before now, while `main` auto-deploys to
+# test.rihla.mv. Make this a required check before merge.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 8.3 is the composer floor; the cPanel deploy scripts put ea-php84 on
+        # PATH, so production is verified too.
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, json, tokenizer, pdo, pdo_sqlite, gd
+          coverage: none
+
+      - name: Cache composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ matrix.php }}-
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Blade layouts use @vite, so views cannot render without a build.
+      - run: npm ci
+      - run: npm run build
+
+      - run: php artisan test
+
+  mysql:
+    name: Tests (MySQL)
+    runs-on: ubuntu-latest
+    # The booking engine's capacity guarantee rests on SELECT ... FOR UPDATE
+    # row locking, which SQLite cannot exercise. A concurrency test that only
+    # ever runs on SQLite reports green while proving nothing, so the suite
+    # also runs against the engine production uses.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: rihla_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, tokenizer, pdo, pdo_mysql, gd
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: Run tests against MySQL
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: rihla_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan test
+
+  static:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      # Pint runs on changed files only. The existing codebase carries many
+      # pre-existing style violations, and reformatting it wholesale would
+      # bury real changes in noise. This ratchets: new and edited files must
+      # be clean. Widen to the whole tree once the backlog is cleared.
+      - name: Pint (changed files)
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            echo "No usable base commit; checking files changed in HEAD."
+            BASE="HEAD~1"
+          fi
+          FILES=$(git diff --name-only --diff-filter=ACM "$BASE" HEAD -- '*.php' | tr '\n' ' ')
+          if [ -z "$FILES" ]; then
+            echo "No PHP files changed."
+            exit 0
+          fi
+          echo "Checking: $FILES"
+          vendor/bin/pint --test $FILES
+
+      # If this is red on its first run, generate a baseline rather than
+      # weakening the level:
+      #   vendor/bin/phpstan analyse --generate-baseline
+      - name: Larastan
+        run: composer analyse
+
+  assets:
+    name: Committed build is current
+    runs-on: ubuntu-latest
+    # public/build is committed because the cPanel host has no Node, and the
+    # deploy script serves exactly what is in git. A stale build therefore
+    # ships silently: edit a stylesheet, forget to rebuild, and production
+    # keeps serving the old CSS.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Fail if the committed assets differ from a fresh build
+        run: |
+          if ! git diff --quiet -- public/build; then
+            echo "::error::public/build is out of date. Run 'npm run build' and commit the result."
+            git diff --stat -- public/build
+            exit 1
+          fi
+          echo "Committed build matches a fresh build."
+
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: composer audit
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
