@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.10
+**Version:** 1.11
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.11 | D35 added and fixed: rate limits on the five unthrottled auth endpoints, closing the mail vector that D32 opened. |
 | 1.10 | D11 and D34 fixed — the database-held and inline-style colours finally migrated, and `App\Support\Brand` added so the next palette change cannot leave a component behind. D30–D33 recorded from the first CI runs. |
 | 1.9 | Typography pass (`f30291b`). D26–D29 added and fixed — the headline one being that **Dhivehi never rendered in a Dhivehi font**, because the layout requested a Google font that does not exist while the real one sat unused in the repository. |
 | 1.8 | Audit-log foundation (`2e81a34`). D24 and D25 added and fixed. TranslationTest's ratchet split by surface: 98 public / 120 admin, replacing one ceiling of 209 — the public number now binds more than twice as hard. |
@@ -121,6 +122,7 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D32 | ~~**Medium**~~ **fixed** (`b29ba77`) | `User` never implemented `MustVerifyEmail`, though the column, routes, view and a test for the flow all shipped, so `verified` middleware would have passed anyone through unchecked. **Side effect of the fix: registration now sends a verification email**, because Laravel's listener keys off exactly that interface. | `app/Models/User.php` | Marker interface never added |
 | D33 | ~~**Critical**~~ **fixed** (`9d2af43`) | 16 npm advisories (2 critical, 11 high) across vite, rollup, postcss, shell-quote and others. Most were build-time, but **axios was shipped to every visitor** — imported in `bootstrap.js`, assigned to `window.axios`, and called by nothing: every AJAX path in the codebase uses `fetch()`. Removing it took `app.js` from 79.94 kB to 44.27 kB. | `package.json`, `resources/js/bootstrap.js` | Breeze scaffolding never taken up; no audit before CI existed |
 | D34 | ~~**Medium**~~ **fixed** | **The palette reached the stylesheets and stopped.** `components/section-why.blade.php` still fell back to `#2563eb`, so the live homepage rendered a blue call-to-action; the trips tabs and gallery filters used a pre-rebrand green (`#0e7a57`); and the admin colour pickers offered the old palette as their starting value, so choosing "the default" put blue back. | `resources/views/components/section-why.blade.php`, `resources/views/trips/index.blade.php`, `resources/views/media/gallery.blade.php`, `resources/views/admin/why/edit.blade.php` | Colours held in the database and in inline styles, out of reach of a Tailwind class sweep |
+| D35 | ~~**High**~~ **fixed** | **Five auth endpoints had no rate limit.** Registration and password-reset request both send mail to whatever address the request names, so an unauthenticated caller could deliver to an arbitrary inbox as fast as the server answered; reset-submission, password-confirmation and password-update accept credentials and could be guessed without a cap. Login was already throttled by `LoginRequest`, which is why the gap was easy to miss. Registration's half only became a mail vector when `User` took on `MustVerifyEmail` (D32). | `routes/auth.php`, `app/Providers/AppServiceProvider.php` | Breeze throttles login only |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -661,7 +663,7 @@ Keyboard navigation throughout, visible focus states, screen-reader labels, adju
 
 ### 10.4 Security
 
-Roles/permissions (§9.3) **— done**; audit log **— foundation done (`2e81a34`): create/update/delete on all eight models, secrets excluded, actor snapshotted so it survives staff deletion, read-only viewer behind `audit.viewAny`. Bookings, payments and documents join the audited list when they exist**; MFA for staff; session security and device management; encryption at rest for passport/identity documents; signed, expiring URLs for document access (never public storage paths); rate limiting on auth, booking and payment endpoints; CSRF on all forms (Laravel default — verify on the new AJAX paths); audit log for every admin action on bookings, payments and documents; dependency scanning in CI; secrets only in `.env` (the deploy webhook secret pattern already in place is the right model); documented backup **and tested restore**.
+Roles/permissions (§9.3) **— done**; audit log **— foundation done (`2e81a34`): create/update/delete on all eight models, secrets excluded, actor snapshotted so it survives staff deletion, read-only viewer behind `audit.viewAny`. Bookings, payments and documents join the audited list when they exist**; MFA for staff; session security and device management; encryption at rest for passport/identity documents; signed, expiring URLs for document access (never public storage paths); rate limiting on auth **— done (D35): registration, password reset (capped per caller *and* per address), reset submission, password confirmation and password update; login was already covered by `LoginRequest`**, booking and payment endpoints; CSRF on all forms (Laravel default — verify on the new AJAX paths); audit log for every admin action on bookings, payments and documents; dependency scanning in CI; secrets only in `.env` (the deploy webhook secret pattern already in place is the right model); documented backup **and tested restore**.
 
 Personal data: passports, photos, medical notes and payment records for minors and adults. Define retention and deletion policy, and honour deletion requests.
 

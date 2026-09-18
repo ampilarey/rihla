@@ -11,8 +11,12 @@ use App\Models\User;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Observers\AuditObserver;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -50,9 +54,40 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->defineRateLimits();
+
         foreach (self::AUDITED as $model) {
             $model::observe(AuditObserver::class);
         }
 
+    }
+
+    /**
+     * Rate limits for the endpoints that send mail or accept credentials.
+     *
+     * Login was already throttled by LoginRequest, and the email-verification
+     * routes carry throttle middleware. Registration and password reset had
+     * neither — and both send a message to whatever address the request names,
+     * so an unauthenticated caller could use them to deliver mail to an
+     * arbitrary inbox, as fast as the server would answer. Registration only
+     * began sending mail when User took on the MustVerifyEmail contract, which
+     * is what makes this worth closing now.
+     *
+     * Password reset is limited twice over: by caller, which stops one source
+     * flooding many addresses, and by the address itself, which stops many
+     * sources flooding one inbox. Neither limit alone covers the other case.
+     */
+    private function defineRateLimits(): void
+    {
+        RateLimiter::for('register', fn (Request $request) => Limit::perHour(5)->by($request->ip()));
+
+        RateLimiter::for('password-reset', fn (Request $request) => [
+            Limit::perHour(5)->by($request->ip()),
+            Limit::perHour(3)->by(Str::lower((string) $request->input('email'))),
+        ]);
+
+        // Guessing a reset token, or a password from inside a session.
+        RateLimiter::for('credentials', fn (Request $request) => Limit::perMinute(6)
+            ->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
     }
 }
