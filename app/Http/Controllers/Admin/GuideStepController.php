@@ -50,6 +50,7 @@ class GuideStepController extends Controller
             'details' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
             'dua_text' => 'nullable|string',
+            'reference_text' => 'nullable|string|max:500',
             'fiqh_notes' => 'nullable|array',
             'fiqh_notes.*' => 'string|max:500',
             'video_url' => 'nullable|url|max:255',
@@ -60,7 +61,7 @@ class GuideStepController extends Controller
 
         $data = $request->only([
             'step_number', 'locale', 'title', 'summary', 'details',
-            'dua_text', 'fiqh_notes', 'video_url', 'is_published',
+            'dua_text', 'reference_text', 'fiqh_notes', 'video_url', 'is_published',
         ]);
 
         // Process checklist and fiqh_notes
@@ -124,6 +125,7 @@ class GuideStepController extends Controller
             'details' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
             'dua_text' => 'nullable|string',
+            'reference_text' => 'nullable|string|max:500',
             'fiqh_notes' => 'nullable|array',
             'fiqh_notes.*' => 'string|max:500',
             'video_url' => 'nullable|url|max:255',
@@ -134,7 +136,7 @@ class GuideStepController extends Controller
 
         $data = $request->only([
             'step_number', 'locale', 'title', 'summary', 'details',
-            'dua_text', 'fiqh_notes', 'video_url', 'is_published',
+            'dua_text', 'reference_text', 'fiqh_notes', 'video_url', 'is_published',
         ]);
 
         // Process checklist and fiqh_notes

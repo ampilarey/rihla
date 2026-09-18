@@ -40,6 +40,7 @@ class GuideStepAdminTest extends TestCase
             'summary' => 'Enter the state of Ihram at the miqat.',
             'details' => 'Bathe, wear the two white sheets, and make your intention.',
             'dua_text' => 'Labbayka Allahumma labbayk.',
+            'reference_text' => 'Quran 2:196 and authentic hadith.',
             'fiqh_notes' => ['Obligatory in all four schools'],
             'checklist' => ['Perform ghusl', 'Recite the Talbiyah'],
             'is_published' => '1',
@@ -61,6 +62,9 @@ class GuideStepAdminTest extends TestCase
             'Bathe, wear the two white sheets, and make your intention.',
             $step->details,
         );
+        // The column existed and was seeded from the start, but no request
+        // could reach it: the admin form had no field for it.
+        $this->assertSame('Quran 2:196 and authentic hadith.', $step->reference_text);
     }
 
     public function test_an_admin_can_update_a_guide_step(): void
@@ -101,6 +105,28 @@ class GuideStepAdminTest extends TestCase
             $step->fiqh_notes,
         );
         $this->assertTrue($step->hasFiqhNotes());
+    }
+
+    /**
+     * `reference_text` was seeded for every step, is in $fillable, and has a
+     * translated label — and no view rendered it. Content stored and never
+     * shown. For a licensed Umrah operator, the source of each ritual
+     * instruction is the credibility.
+     */
+    public function test_the_guide_shows_the_source_of_each_step(): void
+    {
+        GuideStep::factory()->create([
+            'step_number' => 1,
+            'locale' => 'en',
+            'reference_text' => 'Quran 2:196 and authentic hadith about Ihram.',
+            'is_published' => true,
+        ]);
+
+        $this->get('/en/guide')
+            ->assertOk()
+            ->assertSee('Quran 2:196 and authentic hadith about Ihram.');
+
+        $this->get('/en/guide/pdf')->assertOk();
     }
 
     public function test_the_public_guide_renders_a_step_body_not_just_its_title(): void

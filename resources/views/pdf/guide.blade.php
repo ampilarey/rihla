@@ -120,6 +120,14 @@
             border-left: 3px solid #8E2653;
         }
         
+        .step-reference {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-style: italic;
+            color: #5B524D;
+            border-left: 3px solid #D2A03C;
+        }
+
         .step-dua {
             margin-bottom: 10px;
             padding: 10px;
@@ -256,6 +264,19 @@
                         @foreach ((array) $step->fiqh_notes as $fiqhNote)
                             {{ $fiqhNote }}<br>
                         @endforeach
+                    </div>
+                @endif
+
+                @if($step->reference_text)
+                    <div class="step-reference">
+                        <strong>
+                            @if($locale === 'en')
+                                Reference:
+                            @else
+                                {{ __('guide.Reference') }}:
+                            @endif
+                        </strong><br>
+                        {{ $step->reference_text }}
                     </div>
                 @endif
                 

@@ -25,6 +25,7 @@ class GuideStepFactory extends Factory
             'details' => $this->faker->optional()->paragraphs(3, true),
             'image_path' => $this->faker->optional()->imageUrl(),
             'dua_text' => $this->faker->optional()->sentence(),
+            'reference_text' => $this->faker->optional()->sentence(),
             // A JSON array, one note per school of thought — matching the
             // model's cast, the seeder and what the admin panel submits.
             'fiqh_notes' => $this->faker->optional()->randomElements([
