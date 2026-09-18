@@ -150,8 +150,8 @@
             <h3 class="text-2xl font-bold text-gray-800 mb-4">{{ __('Interested in This Trip?') }}</h3>
             <p class="text-gray-600 mb-6">{{ __('messages.trip_inquiry') }}</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="https://wa.me/{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" 
-                   target="_blank" 
+                <a href="{{ \App\Support\Contact::whatsappUrl() }}" 
+                   target="_blank" rel="noopener noreferrer" 
                    class="btn-primary">
                     {{ __('messages.cta_whatsapp') }}
                 </a>

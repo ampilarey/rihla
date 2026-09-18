@@ -1,7 +1,7 @@
 <!-- Floating Action Buttons -->
 <div class="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50 flex flex-col space-y-3">
     <!-- WhatsApp Button -->
-    <a href="https://wa.me/9607972434" 
+    <a href="{{ \App\Support\Contact::whatsappUrl() }}"
        target="_blank" 
        rel="noopener"
        class="btn-primary shadow-soft w-14 h-14 rounded-full flex items-center justify-center text-white hover:opacity-90 transition-all duration-200 transform hover:scale-105"
@@ -12,7 +12,7 @@
     </a>
 
     <!-- Call Button -->
-    <a href="tel:9607972434" 
+    <a href="{{ \App\Support\Contact::telUrl() }}"
        class="btn-secondary shadow-soft w-14 h-14 rounded-full flex items-center justify-center text-gold-700 hover:bg-gold-500 hover:text-ink transition-all duration-200 transform hover:scale-105"
        title="{{ __('Call us') }}">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,7 +21,7 @@
     </a>
 
     <!-- Catalog Button -->
-    <a href="https://wa.me/c/9607972434" 
+    <a href="{{ \App\Support\Contact::catalogUrl() }}"
        target="_blank" 
        rel="noopener"
        class="bg-wine-500 text-white shadow-soft w-14 h-14 rounded-full flex items-center justify-center hover:opacity-90 transition-all duration-200 transform hover:scale-105"

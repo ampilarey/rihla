@@ -186,7 +186,7 @@
             <a href="{{ route('contact') }}" class="btn-secondary text-lg px-8 py-4">
                 {{ __('Get in Touch') }}
             </a>
-            <a href="https://wa.me/{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" 
+            <a href="{{ \App\Support\Contact::whatsappUrl() }}" 
                target="_blank" 
                rel="noopener"
                class="btn-primary text-lg px-8 py-4">

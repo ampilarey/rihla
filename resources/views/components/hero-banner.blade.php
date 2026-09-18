@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a href="{{ route('trips.index') }}" class="btn-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4">
                     {{ __('messages.cta_trips') }}
                 </a>
-                <a href="https://wa.me/{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" 
+                <a href="{{ \App\Support\Contact::whatsappUrl() }}" 
                    target="_blank" 
                    rel="noopener"
                    class="btn-secondary text-base md:text-lg px-6 md:px-8 py-3 md:py-4">

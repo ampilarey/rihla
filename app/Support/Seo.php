@@ -22,9 +22,21 @@ class Seo
     /** Maldives Ministry of Economic Development registration, shown in the header and footer. */
     public const REGISTRATION_NUMBER = 'C11452023';
 
-    public const CONTACT_PHONE = '+9607972434';
-
     public const CONTACT_EMAIL = 'info@rihlatravels.mv';
+
+    /**
+     * The number search engines are told to call.
+     *
+     * This was a hard-coded constant, so the structured data kept publishing
+     * +9607972434 no matter what the WhatsApp number in Admin → Settings
+     * said. Of the fourteen places the number was written by hand, this was
+     * the one with the longest reach: Google caches it and shows it in the
+     * knowledge panel, well beyond the site itself.
+     */
+    public static function contactPhone(): string
+    {
+        return '+'.Contact::whatsappNumber();
+    }
 
     /**
      * The same page in each language, keyed by locale, for hreflang.
@@ -82,7 +94,7 @@ class Seo
             'url' => url('/'),
             'logo' => asset('images/rihla-logo.png'),
             'identifier' => self::REGISTRATION_NUMBER,
-            'telephone' => self::CONTACT_PHONE,
+            'telephone' => self::contactPhone(),
             'email' => self::CONTACT_EMAIL,
             'address' => [
                 '@type' => 'PostalAddress',
