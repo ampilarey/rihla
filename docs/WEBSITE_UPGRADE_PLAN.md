@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.3
+**Version:** 1.4
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.4 | P0.5 implemented. D14–D16 added: the Umrah guide admin is broken against its own schema (D14/D15), and registration is open (D16). Recorded the three places the implemented structured data deliberately differs from the plan. |
 | 1.3 | P0.7 implemented. Recorded the four production defects the first CI run surfaced (`route('dashboard')` undefined, `ProfileController` unrouted, `<x-app-layout>` rendering blank, the guide API's locale guard never firing). |
 | 1.2 | Colour system implemented (`488ffee`). D5 corrected — the Tailwind v4 package is unused, not a live conflict. D11–D13 added from the implementation pass. Phase 1's design-system item marked done, and §4.5 added recording the palette. |
 | 1.1 | Re-audit. **Corrected D1/P0.1**: Laravel 13 falls back to `resources/lang` when it exists (`Illuminate\Foundation\Application::bindPathsInContainer`), so the directory location was *not* a bug — the dotless `__()` keys are the sole root cause. Filament recommendation moved from v4 to v5 (current). Package compatibility with Laravel 13 verified on Packagist. Roles and i18n aligned with the companion document. Added staging-PII rule, backup-before-migrate, email authentication, uptime monitoring, historical data import, and a waitlist entity. |
@@ -93,6 +94,9 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D11 | **Medium** | Hero banner colours are stored **in the database**, not in CSS. `hero_banners.primary_cta_bg_color` defaults to `#0ea5e9` at the schema level, so existing rows still carry the old sky blue after the palette change | migration default | Colours made admin-editable per row |
 | D12 | **Medium** | A `debug-info` banner renders on mobile on the public `/guide` page | `resources/views/pages/guide.blade.php:142` | Debug scaffolding left in |
 | D13 | **Low** | `welcome.blade.php` is a dead, unrouted Laravel starter page carrying an inlined Tailwind **v4** build and 43 instances of starter orange | `resources/views/welcome.blade.php` | Never deleted after scaffolding |
+| D14 | **Critical** *(found during P0.5)* | **The Umrah guide admin cannot save a step.** `guide_steps` has one body-text column, `description`. `GuideStep::$fillable` does not list it, and instead lists four names that are not columns at all (`summary`, `details`, `video_url`, `image_path`). `Admin\GuideStepController` validates `summary` as **required** and writes `summary`/`details`, so creating or editing a guide step throws `SQLSTATE[HY000]: no column named summary` — a hard 500. | `app/Models/GuideStep.php`, `app/Http/Controllers/Admin/GuideStepController.php:43,55,106,118`, `database/migrations/*_guide_steps_table.php` | Model and controller written against a schema that was never migrated |
+| D15 | **Medium** *(same root cause as D14)* | The public guide page renders `$step->summary`, `$step->details`, `$step->video_url` and `$step->image_url`, all of which read `null` because the columns do not exist. Every step therefore shows its title and nothing else. `/api/guide-steps` returns the same four keys as `null` for every step. | `resources/views/pages/guide.blade.php`, `app/Http/Controllers/PageController.php` | As D14 |
+| D16 | **Low** *(found during P0.5)* | Registration is open to anyone and creates a non-admin account. Until `3a72d0a` every such signup 500'd, which hid it. | `routes/auth.php` | Breeze default, never closed |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -193,6 +197,16 @@ All 51 tests now pass. Note that CI triggers on `pull_request` and `push: main`,
 - JSON-LD in the layout: `Organization` (with `identifier` = Reg. No. C11452023, licence, contact), `BreadcrumbList` on content pages, `FAQPage` on `/guide`, and `Product` + `Offer` + `AggregateRating` on each trip page (`TouristTrip` in addition — no rich result today, but AI search surfaces read it).
 
 **Acceptance:** Rich Results Test passes for a trip page; Search Console shows both locales; dates emitted as ISO 8601.
+
+**Status: done** (commit `031351c`), with three deliberate departures, each because the honest output differs from the one specified above:
+
+- **No `AggregateRating`.** The site holds no reviews. A rating in structured data that no visitor can see on the page is a Google structured-data policy violation and a lie to customers. `SeoTest` asserts no page claims one, so it cannot be added back without the reviews to support it. Revisit when the review system in Workstream C exists.
+- **`AggregateOffer` with `lowPrice`, not `Offer` with `price`.** `price_from_mvr` is a "from" figure; as an exact price it would put a number in search results that no customer can actually book at.
+- **`HowTo`, not `FAQPage`, for the guide.** Its entries are ordered ritual steps, not questions with answers — `Question`/`acceptedAnswer` would describe content the page does not contain. Google retired the HowTo rich result in 2023, so this wins no carousel either way; it is there because AI search surfaces read it and because it is what the page is.
+
+Also: `Seo::json()` uses `JSON_HEX_TAG`, because every string in these blocks is author-supplied through the admin panel and a title containing `</script>` would otherwise close the block. The first version of that method shipped an escaping call that was a silent no-op; the test is what caught it.
+
+**Still open:** the Rich Results Test and Search Console halves of the acceptance need the site deployed and the property verified — neither can be checked from the repository.
 
 ### P0.6 — Finish the PWA wiring (D4)
 
