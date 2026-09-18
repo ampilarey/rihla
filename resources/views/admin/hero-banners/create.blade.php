@@ -226,7 +226,7 @@
                                 <input type="color" 
                                        id="subheading_color" 
                                        name="subheading_color" 
-                                       value="#f3f4f6"
+                                       value="{{ \App\Support\Brand::CREAM }}"
                                        class="w-full h-10 border border-gray-300 rounded-md">
                             </div>
                             <div>

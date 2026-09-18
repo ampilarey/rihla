@@ -53,13 +53,13 @@
             <div class="hero-content">
                 <div class="hero-content-inner">
                     <h1 class="hero-title {{ $banner->heading_size ?? 'text-2xl' }} {{ $banner->heading_weight ?? 'font-bold' }}"
-                        style="color: {{ $banner->heading_color ?? '#ffffff' }} !important;">
+                        style="color: {{ $banner->heading_color ?? \App\Support\Brand::WHITE }} !important;">
                         {{ $banner->title }}
                     </h1>
                     
                     @if($banner->subtitle)
                     <p class="hero-subtitle {{ $banner->subheading_size ?? 'text-lg' }} {{ $banner->subheading_weight ?? 'font-normal' }}"
-                       style="color: {{ $banner->subheading_color ?? '#f3f4f6' }} !important;">
+                       style="color: {{ $banner->subheading_color ?? \App\Support\Brand::CREAM }} !important;">
                         {{ $banner->subtitle }}
                     </p>
                     @endif
@@ -69,7 +69,7 @@
                         @if($banner->primary_cta_text && $banner->primary_cta_url)
                         <a href="{{ $banner->primary_cta_url }}" 
                            class="hero-cta-primary {{ $banner->primary_cta_size ?? 'text-base' }} {{ $banner->primary_cta_radius ?? 'rounded-lg' }}"
-                           style="background-color: {{ $banner->primary_cta_bg_color ?? '#8E2653' }} !important; color: {{ $banner->primary_cta_text_color ?? '#ffffff' }} !important;">
+                           style="background-color: {{ $banner->primary_cta_bg_color ?? \App\Support\Brand::WINE }} !important; color: {{ $banner->primary_cta_text_color ?? \App\Support\Brand::WHITE }} !important;">
                             {{ $banner->primary_cta_text }}
                         </a>
                         @endif
@@ -77,7 +77,7 @@
                         @if($banner->secondary_cta_text && $banner->secondary_cta_url)
                         <a href="{{ $banner->secondary_cta_url }}" 
                            class="hero-cta-secondary {{ $banner->secondary_cta_size ?? 'text-base' }} {{ $banner->secondary_cta_radius ?? 'rounded-lg' }}"
-                           style="background-color: {{ $banner->secondary_cta_bg_color ?? 'rgba(255,255,255,0.2)' }} !important; color: {{ $banner->secondary_cta_text_color ?? '#ffffff' }} !important;">
+                           style="background-color: {{ $banner->secondary_cta_bg_color ?? 'rgba(255,255,255,0.2)' }} !important; color: {{ $banner->secondary_cta_text_color ?? \App\Support\Brand::WHITE }} !important;">
                             {{ $banner->secondary_cta_text }}
                         </a>
                         @endif

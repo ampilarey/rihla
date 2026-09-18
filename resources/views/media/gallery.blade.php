@@ -89,16 +89,16 @@
 
 <style>
 .filter-pill.active {
-    background-color: #0e7a57;
+    background-color: {{ \App\Support\Brand::WINE }};
     color: white;
 }
 
 .filter-pill:not(.active) {
-    color: #6b7280;
+    color: {{ \App\Support\Brand::INK_MUTED }};
 }
 
 .filter-pill:not(.active):hover {
-    color: #0e7a57;
+    color: {{ \App\Support\Brand::WINE }};
 }
 </style>
 @endsection

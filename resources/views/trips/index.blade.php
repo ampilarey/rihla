@@ -73,16 +73,16 @@
 
 <style>
 .tab-button.active {
-    background-color: #0e7a57;
+    background-color: {{ \App\Support\Brand::WINE }};
     color: white;
 }
 
 .tab-button:not(.active) {
-    color: #6b7280;
+    color: {{ \App\Support\Brand::INK_MUTED }};
 }
 
 .tab-button:not(.active):hover {
-    color: #0e7a57;
+    color: {{ \App\Support\Brand::WINE }};
 }
 </style>
 

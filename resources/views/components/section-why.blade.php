@@ -10,10 +10,10 @@
                 </div>
             @endif
             
-            <h2 class="text-4xl font-bold mb-4" style="color: {{ $why->title_color ?? '#1f2937' }};">{{ $why->title }}</h2>
+            <h2 class="text-4xl font-bold mb-4" style="color: {{ $why->title_color ?? \App\Support\Brand::INK }};">{{ $why->title }}</h2>
             
             @if($why->subtitle)
-                <p class="text-xl max-w-3xl mx-auto" style="color: {{ $why->subtitle_color ?? '#6b7280' }};">{{ $why->subtitle }}</p>
+                <p class="text-xl max-w-3xl mx-auto" style="color: {{ $why->subtitle_color ?? \App\Support\Brand::INK_MUTED }};">{{ $why->subtitle }}</p>
             @endif
             
                             @if($why->primary_cta_text || $why->secondary_cta_text)
@@ -21,7 +21,7 @@
                         @if($why->primary_cta_text && $why->primary_cta_url)
                             <a href="{{ $why->primary_cta_url }}" 
                                class="inline-flex items-center px-6 py-3 font-semibold rounded-lg transition-colors duration-200"
-                               style="background-color: {{ $why->primary_cta_bg_color ?? '#2563eb' }}; color: {{ $why->primary_cta_text_color ?? '#ffffff' }};">
+                               style="background-color: {{ $why->primary_cta_bg_color ?? \App\Support\Brand::WINE }}; color: {{ $why->primary_cta_text_color ?? \App\Support\Brand::WHITE }};">
                                 {{ $why->primary_cta_text }}
                             </a>
                         @endif
@@ -29,7 +29,7 @@
                         @if($why->secondary_cta_text && $why->secondary_cta_url)
                             <a href="{{ $why->secondary_cta_url }}" 
                                class="inline-flex items-center px-6 py-3 border-2 font-semibold rounded-lg transition-colors duration-200"
-                               style="background-color: {{ $why->secondary_cta_bg_color ?? '#ffffff' }}; color: {{ $why->secondary_cta_text_color ?? '#374151' }}; border-color: {{ $why->secondary_cta_bg_color ?? '#d1d5db' }};">
+                               style="background-color: {{ $why->secondary_cta_bg_color ?? \App\Support\Brand::WHITE }}; color: {{ $why->secondary_cta_text_color ?? \App\Support\Brand::INK }}; border-color: {{ $why->secondary_cta_bg_color ?? \App\Support\Brand::BORDER }};">
                                 {{ $why->secondary_cta_text }}
                             </a>
                         @endif
@@ -43,11 +43,11 @@
                     @if($feature->link_url)
                         <a href="{{ $feature->link_url }}" 
                            class="block rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-all duration-200 hover:scale-105"
-                           style="background-color: {{ $feature->background_color ?? '#ffffff' }};"
+                           style="background-color: {{ $feature->background_color ?? \App\Support\Brand::WHITE }};"
                            target="_blank" rel="noopener noreferrer">
                     @else
                         <div class="rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-200"
-                             style="background-color: {{ $feature->background_color ?? '#ffffff' }};">
+                             style="background-color: {{ $feature->background_color ?? \App\Support\Brand::WHITE }};">
                     @endif
                     
                         <div class="mb-4">
