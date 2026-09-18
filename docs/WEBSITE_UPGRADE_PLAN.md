@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.4
+**Version:** 1.5
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.5 | D14/D15 fixed (`86cbc7a`) — guide_steps migrated to the schema the application expects. D17 added and fixed (the fiqh-notes accessor shadowed its own cast). D18 added: `reference_text` is stored but never rendered. |
 | 1.4 | P0.5 implemented. D14–D16 added: the Umrah guide admin is broken against its own schema (D14/D15), and registration is open (D16). Recorded the three places the implemented structured data deliberately differs from the plan. |
 | 1.3 | P0.7 implemented. Recorded the four production defects the first CI run surfaced (`route('dashboard')` undefined, `ProfileController` unrouted, `<x-app-layout>` rendering blank, the guide API's locale guard never firing). |
 | 1.2 | Colour system implemented (`488ffee`). D5 corrected — the Tailwind v4 package is unused, not a live conflict. D11–D13 added from the implementation pass. Phase 1's design-system item marked done, and §4.5 added recording the palette. |
@@ -94,9 +95,11 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D11 | **Medium** | Hero banner colours are stored **in the database**, not in CSS. `hero_banners.primary_cta_bg_color` defaults to `#0ea5e9` at the schema level, so existing rows still carry the old sky blue after the palette change | migration default | Colours made admin-editable per row |
 | D12 | **Medium** | A `debug-info` banner renders on mobile on the public `/guide` page | `resources/views/pages/guide.blade.php:142` | Debug scaffolding left in |
 | D13 | **Low** | `welcome.blade.php` is a dead, unrouted Laravel starter page carrying an inlined Tailwind **v4** build and 43 instances of starter orange | `resources/views/welcome.blade.php` | Never deleted after scaffolding |
-| D14 | **Critical** *(found during P0.5)* | **The Umrah guide admin cannot save a step.** `guide_steps` has one body-text column, `description`. `GuideStep::$fillable` does not list it, and instead lists four names that are not columns at all (`summary`, `details`, `video_url`, `image_path`). `Admin\GuideStepController` validates `summary` as **required** and writes `summary`/`details`, so creating or editing a guide step throws `SQLSTATE[HY000]: no column named summary` — a hard 500. | `app/Models/GuideStep.php`, `app/Http/Controllers/Admin/GuideStepController.php:43,55,106,118`, `database/migrations/*_guide_steps_table.php` | Model and controller written against a schema that was never migrated |
-| D15 | **Medium** *(same root cause as D14)* | The public guide page renders `$step->summary`, `$step->details`, `$step->video_url` and `$step->image_url`, all of which read `null` because the columns do not exist. Every step therefore shows its title and nothing else. `/api/guide-steps` returns the same four keys as `null` for every step. | `resources/views/pages/guide.blade.php`, `app/Http/Controllers/PageController.php` | As D14 |
+| D14 | ~~**Critical**~~ **fixed** (`86cbc7a`) | **The Umrah guide admin cannot save a step.** `guide_steps` has one body-text column, `description`. `GuideStep::$fillable` does not list it, and instead lists four names that are not columns at all (`summary`, `details`, `video_url`, `image_path`). `Admin\GuideStepController` validates `summary` as **required** and writes `summary`/`details`, so creating or editing a guide step throws `SQLSTATE[HY000]: no column named summary` — a hard 500. | `app/Models/GuideStep.php`, `app/Http/Controllers/Admin/GuideStepController.php:43,55,106,118`, `database/migrations/*_guide_steps_table.php` | Model and controller written against a schema that was never migrated |
+| D15 | ~~**Medium**~~ **fixed** (`86cbc7a`) | The public guide page renders `$step->summary`, `$step->details`, `$step->video_url` and `$step->image_url`, all of which read `null` because the columns do not exist. Every step therefore shows its title and nothing else. `/api/guide-steps` returns the same four keys as `null` for every step. | `resources/views/pages/guide.blade.php`, `app/Http/Controllers/PageController.php` | As D14 |
 | D16 | **Low** *(found during P0.5)* | Registration is open to anyone and creates a non-admin account. Until `3a72d0a` every such signup 500'd, which hid it. | `routes/auth.php` | Breeze default, never closed |
+| D17 | ~~**High**~~ **fixed** (`86cbc7a`) | `GuideStep::getFiqhNotesAttribute()` read `$this->fiqh_notes` — its own attribute — shadowing the `array` cast and always returning `[]`. Fiqh notes were written to the database and could never be read back. The admin controller also validated `fiqh_notes` as a string while the form submits an array, rejecting every multi-note entry. | `app/Models/GuideStep.php`, `app/Http/Controllers/Admin/GuideStepController.php` | Accessor written as if it wrapped a different attribute |
+| D18 | **Medium** | `reference_text` is a real column, is written by `UmrahGuideSeeder`, and has a translated label (`guide.Reference`), but no view renders it. Content is stored and never shown. | `resources/views/pages/guide.blade.php`, `database/seeders/UmrahGuideSeeder.php` | Feature half-built |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
