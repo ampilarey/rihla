@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.9
+**Version:** 1.10
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.10 | D11 and D34 fixed — the database-held and inline-style colours finally migrated, and `App\Support\Brand` added so the next palette change cannot leave a component behind. D30–D33 recorded from the first CI runs. |
 | 1.9 | Typography pass (`f30291b`). D26–D29 added and fixed — the headline one being that **Dhivehi never rendered in a Dhivehi font**, because the layout requested a Google font that does not exist while the real one sat unused in the repository. |
 | 1.8 | Audit-log foundation (`2e81a34`). D24 and D25 added and fixed. TranslationTest's ratchet split by surface: 98 public / 120 admin, replacing one ceiling of 209 — the public number now binds more than twice as hard. |
 | 1.7 | Authorisation replaced (`456abd6`) — roles, permissions and policies for the staff side, scoped to functionality that exists. D22 and D23 added and fixed: the base controller could not authorise at all, and four high-severity advisories sat in `league/commonmark`. |
@@ -96,7 +97,7 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D8 | **Low** | Debug scaffolding is routed in production: `admin/media/{medium}/debug` and `admin/test-video` | `routes/web.php` | Leftovers |
 | D9 | **Low** | `intervention/image ^2.7` is a major version behind (v3) | `composer.json` | Deferred upgrade |
 | D10 | **Low** | `tailwind copy.config.js` is committed at the repo root | repo root | Stray file |
-| D11 | **Medium** | Hero banner colours are stored **in the database**, not in CSS. `hero_banners.primary_cta_bg_color` defaults to `#0ea5e9` at the schema level, so existing rows still carry the old sky blue after the palette change | migration default | Colours made admin-editable per row |
+| D11 | ~~**Medium**~~ **fixed** | Hero banner colours are stored **in the database**, not in CSS. `hero_banners.primary_cta_bg_color` defaults to `#0ea5e9` at the schema level, so existing rows still carry the old sky blue after the palette change | migration default | Colours made admin-editable per row |
 | D12 | **Medium** | A `debug-info` banner renders on mobile on the public `/guide` page | `resources/views/pages/guide.blade.php:142` | Debug scaffolding left in |
 | D13 | **Low** | `welcome.blade.php` is a dead, unrouted Laravel starter page carrying an inlined Tailwind **v4** build and 43 instances of starter orange | `resources/views/welcome.blade.php` | Never deleted after scaffolding |
 | D14 | ~~**Critical**~~ **fixed** (`86cbc7a`) | **The Umrah guide admin cannot save a step.** `guide_steps` has one body-text column, `description`. `GuideStep::$fillable` does not list it, and instead lists four names that are not columns at all (`summary`, `details`, `video_url`, `image_path`). `Admin\GuideStepController` validates `summary` as **required** and writes `summary`/`details`, so creating or editing a guide step throws `SQLSTATE[HY000]: no column named summary` — a hard 500. | `app/Models/GuideStep.php`, `app/Http/Controllers/Admin/GuideStepController.php:43,55,106,118`, `database/migrations/*_guide_steps_table.php` | Model and controller written against a schema that was never migrated |
@@ -115,6 +116,11 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D27 | ~~**Medium**~~ **fixed** (`f30291b`) | Cairo (9 weights) and Tajawal (7) loaded on every page as Dhivehi "fallbacks". Arabic families carry no Thaana, so they could never render a Dhivehi character, and no view referenced either. | `resources/views/layouts/app.blade.php` | Fallback stack assembled by script family name rather than by coverage |
 | D28 | ~~**Low**~~ **fixed** (`f30291b`) | `.font-test-afruama` — a debug rule forcing red 24px text — shipped in the production CSS bundle, alongside `html[lang="dv"] *` with `!important`, which made the font unoverridable anywhere in the Dhivehi UI. | `resources/css/dhivehi-fonts.css` | Debug scaffolding left in |
 | D29 | ~~**Low**~~ **fixed** (`f30291b`) | Du'a text had no Arabic face: neither Inter nor a Thaana font covers Arabic, so supplications rendered in whatever the device happened to have, and carried no `lang="ar"` for screen readers. | `resources/views/pages/guide.blade.php` | Never specified |
+| D30 | ~~**High**~~ **fixed** (`b29ba77`) | **Static analysis had never run.** `composer analyse` invoked `vendor/bin/larastan`, which Larastan v3 does not ship — it is a PHPStan extension — so the script exited 127. There was also no `phpstan.neon` at all, so even the right command had no configuration, paths or extension to load. | `composer.json`, `phpstan.neon` | Script written against Larastan v2 |
+| D31 | ~~**High**~~ **fixed** (`b29ba77`) | `/admin/guide-steps/{id}` returned a 500: it renders `admin.guide-steps.show`, a view that has never existed. Found by Larastan's view-string check on its first run. | `app/Http/Controllers/Admin/GuideStepController.php` | Resource controller scaffolded without the view |
+| D32 | ~~**Medium**~~ **fixed** (`b29ba77`) | `User` never implemented `MustVerifyEmail`, though the column, routes, view and a test for the flow all shipped, so `verified` middleware would have passed anyone through unchecked. **Side effect of the fix: registration now sends a verification email**, because Laravel's listener keys off exactly that interface. | `app/Models/User.php` | Marker interface never added |
+| D33 | ~~**Critical**~~ **fixed** (`9d2af43`) | 16 npm advisories (2 critical, 11 high) across vite, rollup, postcss, shell-quote and others. Most were build-time, but **axios was shipped to every visitor** — imported in `bootstrap.js`, assigned to `window.axios`, and called by nothing: every AJAX path in the codebase uses `fetch()`. Removing it took `app.js` from 79.94 kB to 44.27 kB. | `package.json`, `resources/js/bootstrap.js` | Breeze scaffolding never taken up; no audit before CI existed |
+| D34 | ~~**Medium**~~ **fixed** | **The palette reached the stylesheets and stopped.** `components/section-why.blade.php` still fell back to `#2563eb`, so the live homepage rendered a blue call-to-action; the trips tabs and gallery filters used a pre-rebrand green (`#0e7a57`); and the admin colour pickers offered the old palette as their starting value, so choosing "the default" put blue back. | `resources/views/components/section-why.blade.php`, `resources/views/trips/index.blade.php`, `resources/views/media/gallery.blade.php`, `resources/views/admin/why/edit.blade.php` | Colours held in the database and in inline styles, out of reach of a Tailwind class sweep |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -357,8 +363,20 @@ and all `brand-*`, blue, red and green usages migrated across 48 Blade views.
 badge — gold fills now take ink text at 6.2:1. And the sky-to-gold and sky-to-amber gradients are
 now single-hue wine.
 
-**Still open:** hero banner colours live in the database (D11) and must be updated through
-`/admin/hero-banners`; the logo is deliberately untouched and its asset gaps are unresolved
+**Completed since (D11, D34).** The palette had reached the stylesheets and stopped there.
+`hero_banners`' column defaults were still sky blue, so every banner created after the rebrand
+arrived in the old brand; those defaults and the rows still holding them are migrated, while
+colours an editor chose deliberately are left alone. `components/section-why.blade.php` had been
+missed entirely — its fallback was `blue-600`, which is what the live homepage was rendering —
+along with a pre-rebrand green on the trips tabs and gallery filters, and the admin colour
+pickers, which offered the old palette as their starting value.
+
+`App\Support\Brand` now names the hex values once, for the two places a Tailwind class cannot
+reach: inline styles and database defaults. `BrandColourTest` asserts that no view carries a
+retired colour, that the constants match `tailwind.config.js`, that a new banner defaults to the
+brand, and that white-on-wine and ink-on-gold clear 4.5:1 while white-on-gold does not.
+
+**Still open:** the logo is deliberately untouched and its asset gaps are unresolved
 (`BRAND.md` §4).
 
 ### 4.6 Typography — **implemented** ✅

@@ -121,10 +121,10 @@
                                 <label for="title_color" class="block text-sm font-medium text-gray-700 mb-2">Title Color</label>
                                 <div class="flex items-center space-x-3">
                                     <input type="color" id="title_color" name="title_color" 
-                                           value="{{ old('title_color', $section->title_color) ?: '#1f2937' }}"
+                                           value="{{ old('title_color', $section->title_color) ?: \App\Support\Brand::INK }}"
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
-                                    <input type="text" id="title_color_text" placeholder="#1f2937" 
-                                           value="{{ old('title_color', $section->title_color) ?: '#1f2937' }}"
+                                    <input type="text" id="title_color_text" placeholder="{{ \App\Support\Brand::INK }}" 
+                                           value="{{ old('title_color', $section->title_color) ?: \App\Support\Brand::INK }}"
                                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('title_color')
@@ -135,10 +135,10 @@
                                 <label for="subtitle_color" class="block text-sm font-medium text-gray-700 mb-2">Subtitle Color</label>
                                 <div class="flex items-center space-x-3">
                                     <input type="color" id="subtitle_color" name="subtitle_color" 
-                                           value="{{ old('subtitle_color', $section->subtitle_color) ?: '#6b7280' }}"
+                                           value="{{ old('subtitle_color', $section->subtitle_color) ?: \App\Support\Brand::INK_MUTED }}"
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
-                                    <input type="text" id="subtitle_color_text" placeholder="#6b7280" 
-                                           value="{{ old('subtitle_color', $section->subtitle_color) ?: '#6b7280' }}"
+                                    <input type="text" id="subtitle_color_text" placeholder="{{ \App\Support\Brand::INK_MUTED }}" 
+                                           value="{{ old('subtitle_color', $section->subtitle_color) ?: \App\Support\Brand::INK_MUTED }}"
                                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('subtitle_color')
@@ -153,10 +153,10 @@
                                 <label for="primary_cta_bg_color" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA Background</label>
                                 <div class="flex items-center space-x-3">
                                     <input type="color" id="primary_cta_bg_color" name="primary_cta_bg_color" 
-                                           value="{{ old('primary_cta_bg_color', $section->primary_cta_bg_color) ?: '#2563eb' }}"
+                                           value="{{ old('primary_cta_bg_color', $section->primary_cta_bg_color) ?: \App\Support\Brand::WINE }}"
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
-                                    <input type="text" id="primary_cta_bg_color_text" placeholder="#2563eb" 
-                                           value="{{ old('primary_cta_bg_color', $section->primary_cta_bg_color) ?: '#2563eb' }}"
+                                    <input type="text" id="primary_cta_bg_color_text" placeholder="{{ \App\Support\Brand::WINE }}" 
+                                           value="{{ old('primary_cta_bg_color', $section->primary_cta_bg_color) ?: \App\Support\Brand::WINE }}"
                                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('primary_cta_bg_color')
@@ -199,10 +199,10 @@
                                 <label for="secondary_cta_text_color" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA Text</label>
                                 <div class="flex items-center space-x-3">
                                     <input type="color" id="secondary_cta_text_color" name="secondary_cta_text_color" 
-                                           value="{{ old('secondary_cta_text_color', $section->secondary_cta_text_color) ?: '#374151' }}"
+                                           value="{{ old('secondary_cta_text_color', $section->secondary_cta_text_color) ?: \App\Support\Brand::INK }}"
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
-                                    <input type="text" id="secondary_cta_text_color_text" placeholder="#374151" 
-                                           value="{{ old('secondary_cta_text_color', $section->secondary_cta_text_color) ?: '#374151' }}"
+                                    <input type="text" id="secondary_cta_text_color_text" placeholder="{{ \App\Support\Brand::INK }}" 
+                                           value="{{ old('secondary_cta_text_color', $section->secondary_cta_text_color) ?: \App\Support\Brand::INK }}"
                                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('secondary_cta_text_color')
