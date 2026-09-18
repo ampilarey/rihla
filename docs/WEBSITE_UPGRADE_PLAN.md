@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.2
+**Version:** 1.3
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.3 | P0.7 implemented. Recorded the four production defects the first CI run surfaced (`route('dashboard')` undefined, `ProfileController` unrouted, `<x-app-layout>` rendering blank, the guide API's locale guard never firing). |
 | 1.2 | Colour system implemented (`488ffee`). D5 corrected — the Tailwind v4 package is unused, not a live conflict. D11–D13 added from the implementation pass. Phase 1's design-system item marked done, and §4.5 added recording the palette. |
 | 1.1 | Re-audit. **Corrected D1/P0.1**: Laravel 13 falls back to `resources/lang` when it exists (`Illuminate\Foundation\Application::bindPathsInContainer`), so the directory location was *not* a bug — the dotless `__()` keys are the sole root cause. Filament recommendation moved from v4 to v5 (current). Package compatibility with Laravel 13 verified on Packagist. Roles and i18n aligned with the companion document. Added staging-PII rule, backup-before-migrate, email authentication, uptime monitoring, historical data import, and a waitlist entity. |
 | 1.0 | Initial plan |
@@ -163,6 +164,17 @@ Because `main` auto-deploys to test, CI must be **required to pass before merge*
 
 **Acceptance:** CI green on `main`; branch protection requires it; `AGENTS.md`'s "pre-existing test failures" paragraph is deleted because it is no longer true.
 
+**Status: done** (commits `fc94a4e`, `3a72d0a`). Five jobs: tests on PHP 8.3/8.4, tests against MySQL 8, Pint on changed files plus Larastan, a check that the committed `public/build` matches a fresh build, and `composer audit` / `npm audit`.
+
+Running the suite for the first time surfaced four defects that were live in production, not merely test failures:
+
+- `dashboard` was never a defined route name — the only dashboard route is named `admin.dashboard` because it sits inside the `admin.` group. Five auth controllers redirect to `route('dashboard')`, so registration, email verification and password confirmation each threw `RouteNotFoundException` and returned a 500.
+- `ProfileController` and `resources/views/profile/` shipped with the app but were never routed, so the controller was unreachable and `profile.edit` — referenced by the profile forms themselves — did not resolve.
+- `layouts/app.blade.php` echoed only `@yield('content')`. The Breeze views render it as `<x-app-layout>` and pass their body as `$slot`, which nothing echoed, so those pages came out blank.
+- The guide API's locale guard called `request()->json(...)`, which reads the *request* body and never produces a response. An unknown locale fell through the guard and was answered with 200 and an empty step list instead of 400.
+
+All 51 tests now pass. Note that CI triggers on `pull_request` and `push: main`, so it does not run on feature-branch pushes — it will first execute when this branch is opened as a PR.
+
 ### P0.4 — Clean up (D8, D10, D5)
 
 - Delete the `admin/media/{medium}/debug` route and `admin/test-video` route + view.
@@ -193,6 +205,8 @@ Link `manifest.json` from the main layout, register the service worker site-wide
 Move locale into the URL: a locale-prefixed route group (`/en/…`, `/dv/…`), with `/` redirecting on stored preference or `Accept-Language`, and every current path kept as a 301. `SetLocale` then reads the route parameter, falling back to the session only for the bare root.
 
 **Acceptance:** `/en/trips` and `/dv/trips` both resolve and render their own language; `hreflang` alternates point at real URLs; canonical differs per locale; both appear in the sitemap. Estimated 1–2 days.
+
+**Status: done** (commit `f4c41cc`). Public routes sit under a `{locale}` prefix constrained to `en|dv`. `SetLocale` resolves path → session → `Accept-Language`, calls `URL::defaults(['locale' => …])` so no view had to change, and drops the parameter so controllers keep their signatures. `/` forwards with a 302 (a 301 would be cached and pin the visitor to one language); the six pre-prefix paths and `/trips/{slug}` return 301. The switcher's route parameter was renamed `{locale}` → `{code}`, which is load-bearing: `URL::defaults()` is substituted before positional arguments, so left as `{locale}` both switcher links would have pointed at the language already being read. Admin, auth and the JSON API stay unprefixed. Covered by `tests/Feature/LocaleRoutingTest.php`, verified against cached routes too. The `hreflang`/canonical/sitemap half of the acceptance belongs to P0.5 and is still open.
 
 ---
 
