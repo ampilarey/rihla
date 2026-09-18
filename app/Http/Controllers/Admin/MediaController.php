@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Models\Trip;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Illuminate\Support\Str;
 
 class MediaController extends Controller
 {
@@ -49,31 +50,27 @@ class MediaController extends Controller
 
         if ($request->type === 'photo' && $request->hasFile('file_path')) {
             $file = $request->file('file_path');
-            $filename = time().'_'.$file->getClientOriginalName();
 
-            // Store original file
-            $originalPath = $file->store('media/original', 'public');
+            // The client's own filename is not used: it is attacker-supplied,
+            // and time() alone collides for two uploads in the same second.
+            $name = now()->format('Ymd_His').'_'.Str::random(8);
 
-            // Create large version (1600px max width) as WebP
-            $largeImage = Image::make($file);
-            $largeImage->resize(1600, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $largePath = 'media/large/'.pathinfo($filename, PATHINFO_FILENAME).'.webp';
-            Storage::disk('public')->put($largePath, $largeImage->encode('webp', 80));
+            $file->store('media/original', 'public');
 
-            // Create thumbnail (400px width) as WebP
-            $thumbImage = Image::make($file);
-            $thumbImage->resize(400, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $thumbPath = 'media/thumbs/'.pathinfo($filename, PATHINFO_FILENAME).'.webp';
-            Storage::disk('public')->put($thumbPath, $thumbImage->encode('webp', 80));
+            Image::fromUpload($file)
+                ->scale(width: 1600)
+                ->toWebp()
+                ->quality(80)
+                ->storeAs('media/large', $name.'.webp', 'public');
 
-            $validated['file_path'] = $largePath;
-            $validated['thumb_path'] = $thumbPath;
+            Image::fromUpload($file)
+                ->scale(width: 400)
+                ->toWebp()
+                ->quality(80)
+                ->storeAs('media/thumbs', $name.'.webp', 'public');
+
+            $validated['file_path'] = 'media/large/'.$name.'.webp';
+            $validated['thumb_path'] = 'media/thumbs/'.$name.'.webp';
         }
 
         Media::create($validated);
@@ -124,31 +121,27 @@ class MediaController extends Controller
             }
 
             $file = $request->file('file_path');
-            $filename = time().'_'.$file->getClientOriginalName();
 
-            // Store original file
-            $originalPath = $file->store('media/original', 'public');
+            // The client's own filename is not used: it is attacker-supplied,
+            // and time() alone collides for two uploads in the same second.
+            $name = now()->format('Ymd_His').'_'.Str::random(8);
 
-            // Create large version (1600px max width) as WebP
-            $largeImage = Image::make($file);
-            $largeImage->resize(1600, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $largePath = 'media/large/'.pathinfo($filename, PATHINFO_FILENAME).'.webp';
-            Storage::disk('public')->put($largePath, $largeImage->encode('webp', 80));
+            $file->store('media/original', 'public');
 
-            // Create thumbnail (400px width) as WebP
-            $thumbImage = Image::make($file);
-            $thumbImage->resize(400, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $thumbPath = 'media/thumbs/'.pathinfo($filename, PATHINFO_FILENAME).'.webp';
-            Storage::disk('public')->put($thumbPath, $thumbImage->encode('webp', 80));
+            Image::fromUpload($file)
+                ->scale(width: 1600)
+                ->toWebp()
+                ->quality(80)
+                ->storeAs('media/large', $name.'.webp', 'public');
 
-            $validated['file_path'] = $largePath;
-            $validated['thumb_path'] = $thumbPath;
+            Image::fromUpload($file)
+                ->scale(width: 400)
+                ->toWebp()
+                ->quality(80)
+                ->storeAs('media/thumbs', $name.'.webp', 'public');
+
+            $validated['file_path'] = 'media/large/'.$name.'.webp';
+            $validated['thumb_path'] = 'media/thumbs/'.$name.'.webp';
         }
 
         $medium->update($validated);

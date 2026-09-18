@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HeroBanner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Intervention\Image\Facades\Image;
 
 class HeroBannerController extends Controller
 {
@@ -269,16 +269,13 @@ class HeroBannerController extends Controller
         ];
 
         foreach ($sizes as $suffix => [$width, $height]) {
-            $variant = Image::make($image)
-                ->fit($width, $height, function ($constraint) {
-                    $constraint->upsize();
-                })
-                ->encode('webp', 85);
-
-            Storage::disk('public')->put(
-                'hero/'.$filename.'_'.$suffix.'.webp',
-                $variant
-            );
+            // cover(), not contain(): a hero is a fixed frame, and letterboxing
+            // it would leave bars where the photograph should be.
+            Image::fromUpload($image)
+                ->cover($width, $height)
+                ->toWebp()
+                ->quality(85)
+                ->storeAs('hero', $filename.'_'.$suffix.'.webp', 'public');
         }
     }
 

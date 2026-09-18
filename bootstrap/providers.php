@@ -1,8 +1,11 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\ViewServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\AuthServiceProvider::class,
-    App\Providers\ViewServiceProvider::class,
-    Intervention\Image\ImageServiceProvider::class,
+    AppServiceProvider::class,
+    AuthServiceProvider::class,
+    ViewServiceProvider::class,
 ];
