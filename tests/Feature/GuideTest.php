@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\GuideStep;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class GuideTest extends TestCase
 {
@@ -18,7 +18,7 @@ class GuideTest extends TestCase
             'step_number' => 1,
             'title' => 'Test Step 1',
             'description' => 'Test summary 1',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
         GuideStep::factory()->create([
@@ -26,10 +26,10 @@ class GuideTest extends TestCase
             'step_number' => 2,
             'title' => 'Test Step 2',
             'description' => 'Test summary 2',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
-        $response = $this->get('/guide');
+        $response = $this->get('/en/guide');
         $response->assertStatus(200);
         $response->assertSee('Test Step 1');
         $response->assertSee('Test Step 2');
@@ -42,10 +42,10 @@ class GuideTest extends TestCase
             'step_number' => 1,
             'title' => 'Test Step',
             'description' => 'Test summary',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
-        $response = $this->get('/guide/pdf');
+        $response = $this->get('/en/guide/pdf');
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/pdf');
     }
@@ -57,14 +57,14 @@ class GuideTest extends TestCase
             'step_number' => 1,
             'title' => 'Test Step',
             'description' => 'Test summary',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
         $response = $this->get('/api/guide-steps?locale=en');
         $response->assertStatus(200);
         $response->assertJson([
             'locale' => 'en',
-            'total_steps' => 1
+            'total_steps' => 1,
         ]);
         $response->assertJsonPath('steps.0.title', 'Test Step');
     }
@@ -82,26 +82,26 @@ class GuideTest extends TestCase
             'locale' => 'en',
             'step_number' => 3,
             'title' => 'Step 3',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
         GuideStep::factory()->create([
             'locale' => 'en',
             'step_number' => 1,
             'title' => 'Step 1',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
         GuideStep::factory()->create([
             'locale' => 'en',
             'step_number' => 2,
             'title' => 'Step 2',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
-        $response = $this->get('/guide');
+        $response = $this->get('/en/guide');
         $response->assertStatus(200);
-        
+
         // Check order in response
         $response->assertSeeInOrder(['Step 1', 'Step 2', 'Step 3']);
     }
@@ -112,17 +112,17 @@ class GuideTest extends TestCase
             'locale' => 'en',
             'step_number' => 1,
             'title' => 'Published Step',
-            'is_published' => true
+            'is_published' => true,
         ]);
 
         GuideStep::factory()->create([
             'locale' => 'en',
             'step_number' => 2,
             'title' => 'Unpublished Step',
-            'is_published' => false
+            'is_published' => false,
         ]);
 
-        $response = $this->get('/guide');
+        $response = $this->get('/en/guide');
         $response->assertStatus(200);
         $response->assertSee('Published Step');
         $response->assertDontSee('Unpublished Step');

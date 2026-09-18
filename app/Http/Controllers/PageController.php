@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\SetLocale;
 use App\Models\GuideStep;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
@@ -33,13 +36,48 @@ class PageController extends Controller
         return view('pages.guide', compact('guideSteps'));
     }
 
-    public function setLocale($locale)
+    /**
+     * Send the bare domain to a localised URL.
+     *
+     * Not a permanent redirect: the target depends on the visitor's session and
+     * Accept-Language header, so caching it would lock them to one language.
+     */
+    public function root(): RedirectResponse
     {
-        if (in_array($locale, ['en', 'dv'])) {
-            session(['app_locale' => $locale]);
+        // SetLocale has already resolved this from the session, or on a first
+        // visit from Accept-Language.
+        return redirect('/'.app()->getLocale());
+    }
+
+    /**
+     * Switch language and move the visitor to the same page in it.
+     *
+     * Now that public URLs carry their locale in the path, updating the session
+     * alone is not enough — it would leave the visitor sitting on /en/guide
+     * reading Dhivehi, and a refresh would put the page back into English.
+     */
+    public function setLocale(Request $request, string $code): RedirectResponse
+    {
+        if (! in_array($code, SetLocale::SUPPORTED, true)) {
+            return back();
         }
 
-        return redirect()->back();
+        session(['app_locale' => $code]);
+
+        $referer = (string) $request->headers->get('referer');
+        $path = '/'.ltrim((string) (parse_url($referer, PHP_URL_PATH) ?: '/'), '/');
+
+        $stripped = preg_replace('#^/(?:en|dv)(?=/|$)#', '', $path, 1, $count);
+
+        // Admin and auth pages are not localised in the path. The session is
+        // updated and the visitor stays where they are.
+        if ($count === 0) {
+            return back();
+        }
+
+        $query = (string) (parse_url($referer, PHP_URL_QUERY) ?: '');
+
+        return redirect('/'.$code.$stripped.($query !== '' ? '?'.$query : ''));
     }
 
     public function guidePdf()

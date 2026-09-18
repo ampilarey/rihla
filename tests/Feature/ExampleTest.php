@@ -11,13 +11,12 @@ class ExampleTest extends TestCase
     // against whatever happens to be in the developer's database.
     use RefreshDatabase;
 
-    /**
-     * A basic test example.
-     */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('/');
+        // The bare domain forwards to a localised URL; the homepage itself
+        // lives at /en.
+        $this->get('/')->assertRedirect('/en');
 
-        $response->assertStatus(200);
+        $this->get('/en')->assertStatus(200);
     }
 }
