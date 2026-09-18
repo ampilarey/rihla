@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.7
+**Version:** 1.8
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.8 | Audit-log foundation (`2e81a34`). D24 and D25 added and fixed. TranslationTest's ratchet split by surface: 98 public / 120 admin, replacing one ceiling of 209 — the public number now binds more than twice as hard. |
 | 1.7 | Authorisation replaced (`456abd6`) — roles, permissions and policies for the staff side, scoped to functionality that exists. D22 and D23 added and fixed: the base controller could not authorise at all, and four high-severity advisories sat in `league/commonmark`. |
 | 1.6 | P0.6 implemented (`d9f60c9`) — **P0 is complete**. D19–D21 added and fixed: the layout rendered no styles/scripts stacks, the service worker could never install, and five referenced icons did not exist. |
 | 1.5 | D14/D15 fixed (`86cbc7a`) — guide_steps migrated to the schema the application expects. D17 added and fixed (the fiqh-notes accessor shadowed its own cast). D18 added: `reference_text` is stored but never rendered. |
@@ -107,6 +108,8 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D21 | ~~**Medium**~~ **fixed** (`d9f60c9`) | `apple-touch-icon.png`, `favicon-32x32.png`, `favicon-16x16.png` and the manifest's two icons were referenced but absent — four 404s on every page load. | `public/`, `public/manifest.json` | Referenced before being produced |
 | D22 | ~~**High**~~ **fixed** (`456abd6`) | `app/Http/Controllers/Controller.php` did not use `AuthorizesRequests`, so `$this->authorize()` was an undefined method — any controller that tried to check a permission would have fataled instead. Nothing had tried yet. | `app/Http/Controllers/Controller.php` | Laravel 11+ ships a bare base controller |
 | D23 | ~~**High**~~ **fixed** (`b1f91ed`) | `league/commonmark` 2.9.0 carried four high-severity advisories — three DoS and one XSS where the `AttributesExtension`'s `on*` filter is bypassed with a U+000C form feed. Pre-existing, transitive via laravel/framework, and enough to fail CI's dependency-audit job on `main`. | `composer.lock` | Never audited before CI existed |
+| D24 | ~~**High**~~ **fixed** (`2e81a34`) | `Trip::boot()`'s sitemap-busting listener was `fn () => Cache::forget('sitemap.xml')`. `Cache::forget()` returns **false** when the key is not cached, and a model-event listener returning false halts the remaining listeners — so that closure silently suppressed every later listener on Trip's `saved` and `deleted` events. Introduced in `031351c`; found because the audit observer stopped firing. | `app/Models/Trip.php` | Arrow function returning the cache call's result |
+| D25 | ~~**Medium**~~ **fixed** (`2e81a34`) | Deleting the acting user (the "delete my account" route, which exists today) wrote an audit row whose foreign key pointed at the row just deleted, so the insert was rejected — a 500 on a live route once auditing was on. | `app/Observers/AuditObserver.php` | Ordering of the `deleted` event against the delete itself |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -612,7 +615,7 @@ Keyboard navigation throughout, visible focus states, screen-reader labels, adju
 
 ### 10.4 Security
 
-Roles/permissions (§9.3); MFA for staff; session security and device management; encryption at rest for passport/identity documents; signed, expiring URLs for document access (never public storage paths); rate limiting on auth, booking and payment endpoints; CSRF on all forms (Laravel default — verify on the new AJAX paths); audit log for every admin action on bookings, payments and documents; dependency scanning in CI; secrets only in `.env` (the deploy webhook secret pattern already in place is the right model); documented backup **and tested restore**.
+Roles/permissions (§9.3) **— done**; audit log **— foundation done (`2e81a34`): create/update/delete on all eight models, secrets excluded, actor snapshotted so it survives staff deletion, read-only viewer behind `audit.viewAny`. Bookings, payments and documents join the audited list when they exist**; MFA for staff; session security and device management; encryption at rest for passport/identity documents; signed, expiring URLs for document access (never public storage paths); rate limiting on auth, booking and payment endpoints; CSRF on all forms (Laravel default — verify on the new AJAX paths); audit log for every admin action on bookings, payments and documents; dependency scanning in CI; secrets only in `.env` (the deploy webhook secret pattern already in place is the right model); documented backup **and tested restore**.
 
 Personal data: passports, photos, medical notes and payment records for minors and adults. Define retention and deletion policy, and honour deletion requests.
 
@@ -693,7 +696,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, audit-log foundation, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5), typography and spacing remain**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
+| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5), typography and spacing remain**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |
