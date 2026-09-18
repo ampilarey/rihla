@@ -38,9 +38,37 @@ class GuideStepController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    /**
+     * The textarea sends one note per line; the column is a JSON array.
+     *
+     * Without this the `array` rule rejects everything an editor types into
+     * the form, and without the rule the raw string would be stored where the
+     * guide expects a list. An array is accepted unchanged, so a test or a
+     * future API can post one directly.
+     *
+     * @return list<string>
+     */
+    private function normaliseFiqhNotes(mixed $notes): array
+    {
+        if (is_array($notes)) {
+            return array_values(array_filter(array_map('trim', $notes), 'strlen'));
+        }
+
+        if (! is_string($notes)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map('trim', preg_split('/\r\n|\r|\n/', $notes) ?: []),
+            'strlen',
+        ));
+    }
+
     public function store(Request $request)
     {
         $this->authorize('create', GuideStep::class);
+
+        $request->merge(['fiqh_notes' => $this->normaliseFiqhNotes($request->input('fiqh_notes'))]);
 
         $request->validate([
             'step_number' => 'required|integer|min:1',
@@ -69,9 +97,7 @@ class GuideStepController extends Controller
             $data['checklist'] = array_filter($request->input('checklist', []));
         }
 
-        if ($request->has('fiqh_notes')) {
-            $data['fiqh_notes'] = array_filter($request->input('fiqh_notes', []));
-        }
+        $data['fiqh_notes'] = $request->input('fiqh_notes', []);
 
         $data['is_published'] = $request->has('is_published');
 
@@ -117,6 +143,8 @@ class GuideStepController extends Controller
     {
         $this->authorize('update', $guideStep);
 
+        $request->merge(['fiqh_notes' => $this->normaliseFiqhNotes($request->input('fiqh_notes'))]);
+
         $request->validate([
             'step_number' => 'required|integer|min:1',
             'locale' => 'required|in:en,dv',
@@ -144,9 +172,7 @@ class GuideStepController extends Controller
             $data['checklist'] = array_filter($request->input('checklist', []));
         }
 
-        if ($request->has('fiqh_notes')) {
-            $data['fiqh_notes'] = array_filter($request->input('fiqh_notes', []));
-        }
+        $data['fiqh_notes'] = $request->input('fiqh_notes', []);
 
         $data['is_published'] = $request->has('is_published');
 

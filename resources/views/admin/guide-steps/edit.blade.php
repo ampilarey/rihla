@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Edit Guide Step')
 
@@ -124,7 +124,8 @@
                         <label for="fiqh_notes" class="block text-sm font-medium text-gray-700 mb-2">Fiqh Notes (Optional)</label>
                         <textarea name="fiqh_notes" id="fiqh_notes" rows="3" 
                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
-                                  placeholder="Fiqh differences and notes for this step...">{{ old('fiqh_notes', $guideStep->fiqh_notes) }}</textarea>
+                                  placeholder="One note per line, e.g. Hanafi: ...">{{ implode("\n", (array) old('fiqh_notes', $guideStep->fiqh_notes ?? [])) }}</textarea>
+                        <p class="mt-1 text-xs text-gray-500">One note per line — each is shown as a separate point.</p>
                         @error('fiqh_notes')
                             <p class="mt-1 text-sm text-error">{{ $message }}</p>
                         @enderror
