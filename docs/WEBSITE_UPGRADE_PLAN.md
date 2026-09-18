@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.5
+**Version:** 1.6
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.6 | P0.6 implemented (`d9f60c9`) — **P0 is complete**. D19–D21 added and fixed: the layout rendered no styles/scripts stacks, the service worker could never install, and five referenced icons did not exist. |
 | 1.5 | D14/D15 fixed (`86cbc7a`) — guide_steps migrated to the schema the application expects. D17 added and fixed (the fiqh-notes accessor shadowed its own cast). D18 added: `reference_text` is stored but never rendered. |
 | 1.4 | P0.5 implemented. D14–D16 added: the Umrah guide admin is broken against its own schema (D14/D15), and registration is open (D16). Recorded the three places the implemented structured data deliberately differs from the plan. |
 | 1.3 | P0.7 implemented. Recorded the four production defects the first CI run surfaced (`route('dashboard')` undefined, `ProfileController` unrouted, `<x-app-layout>` rendering blank, the guide API's locale guard never firing). |
@@ -100,6 +101,9 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D16 | **Low** *(found during P0.5)* | Registration is open to anyone and creates a non-admin account. Until `3a72d0a` every such signup 500'd, which hid it. | `routes/auth.php` | Breeze default, never closed |
 | D17 | ~~**High**~~ **fixed** (`86cbc7a`) | `GuideStep::getFiqhNotesAttribute()` read `$this->fiqh_notes` — its own attribute — shadowing the `array` cast and always returning `[]`. Fiqh notes were written to the database and could never be read back. The admin controller also validated `fiqh_notes` as a string while the form submits an array, rejecting every multi-note entry. | `app/Models/GuideStep.php`, `app/Http/Controllers/Admin/GuideStepController.php` | Accessor written as if it wrapped a different attribute |
 | D18 | **Medium** | `reference_text` is a real column, is written by `UmrahGuideSeeder`, and has a translated label (`guide.Reference`), but no view renders it. Content is stored and never shown. | `resources/views/pages/guide.blade.php`, `database/seeders/UmrahGuideSeeder.php` | Feature half-built |
+| D19 | ~~**Medium**~~ **fixed** (`d9f60c9`) | `layouts/app.blade.php` rendered no `@stack('styles')` or `@stack('scripts')`, while `pages/guide.blade.php` pushed to both. The guide's print stylesheet and all of its scripts — including the only service-worker registration in the codebase — were silently discarded. | `resources/views/layouts/app.blade.php` | Stack never added to the layout |
+| D20 | ~~**High**~~ **fixed** (`d9f60c9`) | `sw.js` precached `/css/app.css`, `/js/app.js` and `'/images/guide/'`, none of which exist. `cache.addAll()` rejects the whole batch on one 404, so the worker never installed and offline support never worked. It was also cache-first for navigations, which would serve stale trip pages indefinitely. | `public/sw.js` | Written against a pre-Vite asset layout |
+| D21 | ~~**Medium**~~ **fixed** (`d9f60c9`) | `apple-touch-icon.png`, `favicon-32x32.png`, `favicon-16x16.png` and the manifest's two icons were referenced but absent — four 404s on every page load. | `public/`, `public/manifest.json` | Referenced before being produced |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -214,6 +218,22 @@ Also: `Seo::json()` uses `JSON_HEX_TAG`, because every string in these blocks is
 ### P0.6 — Finish the PWA wiring (D4)
 
 Link `manifest.json` from the main layout, register the service worker site-wide (not only `/guide`), and define an explicit offline strategy: app shell + guide + Ziyarah content cached, everything else network-first with the existing `offline.html` fallback.
+
+**Status: done** (commit `d9f60c9`). Every part existed; none of it was connected.
+
+- **The manifest was never linked from any page**, so the site could not be installed at all — and it declared `scope`/`start_url` of `/guide`, which since P0.7 is a 301 rather than a page.
+- **Its two icons did not exist** (`logo-192.png`, `logo-512.png`), nor did its two screenshots. Chrome refuses to install a manifest whose icons 404, so even a linked manifest would have failed.
+- **The service worker was never registered.** Its registration sat in a `@push('scripts')` block on the guide page, and the layout renders no `scripts` stack. The same layout renders no `styles` stack, so the guide's print stylesheet never reached a page either (**D19**). Both stacks now exist and registration moved to the layout.
+- **The worker could not install.** `cache.addAll()` rejects the whole batch on a single 404 and three of its five entries were wrong — `/css/app.css` and `/js/app.js` (Vite emits hashed files under `/build/assets/`) and `'/images/guide/'`, a directory. Every install threw and the cache stayed empty, so nothing ever worked offline (**D20**).
+- It was cache-first for navigations, which would serve a stale trip page — wrong prices, dates and seat counts — indefinitely.
+
+Rewritten to network-first for navigations (cached page, then `offline.html`, as fallbacks), cache-first for hashed build assets, and untouched for non-GET, cross-origin and `/admin`, `/dashboard` requests — the last so a cached response cannot be shown to the wrong user after logout.
+
+Icons are generated from the mark in the **existing** logo, not redrawn, per the standing instruction to preserve the logo: separate `any` and `maskable` sets, the maskable ones inset to 60% on cream so Android's circular crop does not cut the mark. This also supplies `apple-touch-icon.png`, `favicon-32x32.png` and `favicon-16x16.png`, which the layout has referenced all along without them existing — every page was requesting four 404s (**D21**).
+
+`theme_color` and `background_color` move from the pre-rebrand blue to ink and cream. **The logo itself is untouched**; it remains the original blue/gold/black and is still the open decision noted in §13.
+
+**Deferred:** caching Ziyarah content, which does not exist yet (Workstream D).
 
 ### P0.7 — Locale-prefixed routing **[R-1, new]**
 
