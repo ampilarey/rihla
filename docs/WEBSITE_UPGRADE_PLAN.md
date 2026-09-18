@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.12
+**Version:** 1.13
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.13 | D18 fixed: the scholarly reference on each guide step is rendered on the page and in the PDF, and the admin form can finally edit it. |
 | 1.12 | D36 added and fixed: security response headers, with CSP deliberately deferred rather than shipped permissive. |
 | 1.11 | D35 added and fixed: rate limits on the five unthrottled auth endpoints, closing the mail vector that D32 opened. |
 | 1.10 | D11 and D34 fixed — the database-held and inline-style colours finally migrated, and `App\Support\Brand` added so the next palette change cannot leave a component behind. D30–D33 recorded from the first CI runs. |
@@ -106,7 +107,7 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D15 | ~~**Medium**~~ **fixed** (`86cbc7a`) | The public guide page renders `$step->summary`, `$step->details`, `$step->video_url` and `$step->image_url`, all of which read `null` because the columns do not exist. Every step therefore shows its title and nothing else. `/api/guide-steps` returns the same four keys as `null` for every step. | `resources/views/pages/guide.blade.php`, `app/Http/Controllers/PageController.php` | As D14 |
 | D16 | **Low** *(found during P0.5)* | Registration is open to anyone and creates a non-admin account. Until `3a72d0a` every such signup 500'd, which hid it. | `routes/auth.php` | Breeze default, never closed |
 | D17 | ~~**High**~~ **fixed** (`86cbc7a`) | `GuideStep::getFiqhNotesAttribute()` read `$this->fiqh_notes` — its own attribute — shadowing the `array` cast and always returning `[]`. Fiqh notes were written to the database and could never be read back. The admin controller also validated `fiqh_notes` as a string while the form submits an array, rejecting every multi-note entry. | `app/Models/GuideStep.php`, `app/Http/Controllers/Admin/GuideStepController.php` | Accessor written as if it wrapped a different attribute |
-| D18 | **Medium** | `reference_text` is a real column, is written by `UmrahGuideSeeder`, and has a translated label (`guide.Reference`), but no view renders it. Content is stored and never shown. | `resources/views/pages/guide.blade.php`, `database/seeders/UmrahGuideSeeder.php` | Feature half-built |
+| D18 | ~~**Medium**~~ **fixed** | `reference_text` is a real column, is written by `UmrahGuideSeeder`, and has a translated label (`guide.Reference`), but no view renders it. Content is stored and never shown. | `resources/views/pages/guide.blade.php`, `database/seeders/UmrahGuideSeeder.php` | Feature half-built |
 | D19 | ~~**Medium**~~ **fixed** (`d9f60c9`) | `layouts/app.blade.php` rendered no `@stack('styles')` or `@stack('scripts')`, while `pages/guide.blade.php` pushed to both. The guide's print stylesheet and all of its scripts — including the only service-worker registration in the codebase — were silently discarded. | `resources/views/layouts/app.blade.php` | Stack never added to the layout |
 | D20 | ~~**High**~~ **fixed** (`d9f60c9`) | `sw.js` precached `/css/app.css`, `/js/app.js` and `'/images/guide/'`, none of which exist. `cache.addAll()` rejects the whole batch on one 404, so the worker never installed and offline support never worked. It was also cache-first for navigations, which would serve stale trip pages indefinitely. | `public/sw.js` | Written against a pre-Vite asset layout |
 | D21 | ~~**Medium**~~ **fixed** (`d9f60c9`) | `apple-touch-icon.png`, `favicon-32x32.png`, `favicon-16x16.png` and the manifest's two icons were referenced but absent — four 404s on every page load. | `public/`, `public/manifest.json` | Referenced before being produced |

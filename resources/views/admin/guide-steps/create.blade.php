@@ -105,6 +105,16 @@
                     </div>
                     
                     <div>
+                        <label for="reference_text" class="block text-sm font-medium text-gray-700 mb-2">Reference (Optional)</label>
+                        <textarea name="reference_text" id="reference_text" rows="2"
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
+                                  placeholder="Qur'an and hadith this step is based on...">{{ old('reference_text') }}</textarea>
+                        @error('reference_text')
+                            <p class="mt-1 text-sm text-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="fiqh_notes" class="block text-sm font-medium text-gray-700 mb-2">Fiqh Notes (Optional)</label>
                         <textarea name="fiqh_notes" id="fiqh_notes" rows="3" 
                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
