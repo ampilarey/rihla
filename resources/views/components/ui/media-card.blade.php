@@ -27,7 +27,7 @@
                 <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-20 transition-all">
                     <div class="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform"
                          onclick="loadVideo({{ $media->id }}, '{{ $media->video_url }}')">
-                        <svg class="w-8 h-8 text-brand-dark-grey ml-1" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-8 h-8 text-ink ml-1" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M8 5v10l8-5-8-5z"/>
                         </svg>
                     </div>
@@ -48,7 +48,7 @@
     @endif
     
     <div class="space-y-3">
-        <h3 class="text-lg font-bold text-brand-heading group-hover:text-brand-sky-blue transition-colors">
+        <h3 class="text-lg font-bold text-brand-heading group-hover:text-wine-500 transition-colors">
             {{ $media->title }}
         </h3>
         
@@ -73,7 +73,7 @@
                 <div class="flex gap-2">
                     <button 
                         onclick="loadVideo({{ $media->id }}, '{{ $media->video_url }}')"
-                        class="btn-outline text-sm py-2 px-4 hover:bg-brand-sky-blue hover:text-white transition-colors">
+                        class="btn-outline text-sm py-2 px-4 hover:bg-wine-500 hover:text-white transition-colors">
                         <svg class="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M8 5v10l8-5-8-5z"/>
                         </svg>
@@ -82,7 +82,7 @@
                     <a href="{{ $media->video_url }}" 
                        target="_blank" 
                        rel="noopener noreferrer"
-                       class="btn-outline text-sm py-2 px-4 hover:bg-brand-gold hover:text-white transition-colors">
+                       class="btn-outline text-sm py-2 px-4 hover:bg-gold-500 hover:text-ink transition-colors">
                         <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                         </svg>
@@ -99,7 +99,7 @@
                 <!-- Test Button (remove in production) -->
                 <button 
                     onclick="testVideoPlayer({{ $media->id }}, '{{ $media->video_url }}')"
-                    class="text-xs bg-red-500 text-white px-2 py-1 rounded mt-1 hover:bg-red-600">
+                    class="text-xs bg-error/100 text-white px-2 py-1 rounded mt-1 hover:bg-error">
                     Test Player
                 </button>
             @endif

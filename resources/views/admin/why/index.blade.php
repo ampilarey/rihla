@@ -5,7 +5,7 @@
     <div class="text-center">
         <h1 class="text-2xl font-bold text-gray-900 mb-4">Why Section Management</h1>
         <p class="text-gray-600 mb-6">Redirecting to edit page...</p>
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-wine-500 mx-auto"></div>
     </div>
 </div>
 

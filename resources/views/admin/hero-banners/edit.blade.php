@@ -8,7 +8,7 @@
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Edit Hero Banner</h1>
             <a href="{{ route('admin.hero-banners.index') }}" 
-               class="text-brand-sky-blue hover:text-blue-600 font-medium">
+               class="text-wine-500 hover:text-wine-600 font-medium">
                 ← Back to Banners
             </a>
         </div>
@@ -27,13 +27,13 @@
                         <div>
                             <label for="locale" class="block text-sm font-medium text-gray-700 mb-2">Language *</label>
                             <select id="locale" name="locale" required 
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent">
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                                 <option value="">Select Language</option>
                                 <option value="en" {{ old('locale', $heroBanner->locale) == 'en' ? 'selected' : '' }}>English</option>
                                 <option value="dv" {{ old('locale', $heroBanner->locale) == 'dv' ? 'selected' : '' }}>ދިވެހިބަހުން</option>
                             </select>
                             @error('locale')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -42,11 +42,11 @@
                             <label for="sort_order" class="block text-sm font-medium text-gray-700 mb-2">Sort Order</label>
                             <input type="number" id="sort_order" name="sort_order" 
                                    value="{{ old('sort_order', $heroBanner->sort_order) }}" min="0"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                    placeholder="0">
                             <p class="mt-1 text-sm text-gray-500">Lower numbers appear first</p>
                             @error('sort_order')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
@@ -62,11 +62,11 @@
                             <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
                             <input type="text" id="title" name="title" 
                                    value="{{ old('title', $heroBanner->title) }}" maxlength="120" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                    placeholder="Enter banner title">
                             <p class="mt-1 text-sm text-gray-500">Maximum 120 characters</p>
                             @error('title')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -74,11 +74,11 @@
                         <div>
                             <label for="subtitle" class="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
                             <textarea id="subtitle" name="subtitle" rows="3" maxlength="200"
-                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent"
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                       placeholder="Enter banner subtitle (optional)">{{ old('subtitle', $heroBanner->subtitle) }}</textarea>
                             <p class="mt-1 text-sm text-gray-500">Maximum 200 characters</p>
                             @error('subtitle')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
@@ -94,11 +94,11 @@
                             <label for="primary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA Text</label>
                             <input type="text" id="primary_cta_text" name="primary_cta_text" 
                                    value="{{ old('primary_cta_text', $heroBanner->primary_cta_text) }}" maxlength="60"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                    placeholder="e.g., Explore Trips">
                             <p class="mt-1 text-sm text-gray-500">Maximum 60 characters</p>
                             @error('primary_cta_text')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -106,11 +106,11 @@
                             <label for="primary_cta_url" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA URL</label>
                             <input type="text" id="primary_cta_url" name="primary_cta_url" 
                                    value="{{ old('primary_cta_url', $heroBanner->primary_cta_url) }}"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                    placeholder="e.g., /trips or https://example.com">
                             <p class="mt-1 text-sm text-gray-500">Internal path or full URL</p>
                             @error('primary_cta_url')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -119,11 +119,11 @@
                             <label for="secondary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA Text</label>
                             <input type="text" id="secondary_cta_text" name="secondary_cta_text" 
                                    value="{{ old('secondary_cta_text', $heroBanner->secondary_cta_text) }}" maxlength="60"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                    placeholder="e.g., Contact Us">
                             <p class="mt-1 text-sm text-gray-500">Maximum 60 characters</p>
                             @error('secondary_cta_text')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -131,11 +131,11 @@
                             <label for="secondary_cta_url" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA URL</label>
                             <input type="text" id="secondary_cta_url" name="secondary_cta_url" 
                                    value="{{ old('secondary_cta_url', $heroBanner->secondary_cta_url) }}"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                    placeholder="e.g., /contact or https://example.com">
                             <p class="mt-1 text-sm text-gray-500">Internal path or full URL</p>
                             @error('secondary_cta_url')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
@@ -157,10 +157,10 @@
                     <div>
                         <label for="image" class="block text-sm font-medium text-gray-700 mb-2">New Image File</label>
                         <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp"
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent">
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image. Supported formats: JPEG, PNG, WebP. Max size: 8MB.</p>
                         @error('image')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -373,10 +373,10 @@
                             <label for="start_at" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
                             <input type="datetime-local" id="start_at" name="start_at" 
                                    value="{{ old('start_at', $heroBanner->start_at ? $heroBanner->start_at->format('Y-m-d\TH:i') : '') }}"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent">
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                             <p class="mt-1 text-sm text-gray-500">Leave empty to show immediately</p>
                             @error('start_at')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -384,10 +384,10 @@
                             <label for="end_at" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
                             <input type="datetime-local" id="end_at" name="end_at" 
                                    value="{{ old('end_at', $heroBanner->end_at ? $heroBanner->end_at->format('Y-m-d\TH:i') : '') }}"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-transparent">
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                             <p class="mt-1 text-sm text-gray-500">Leave empty to show indefinitely</p>
                             @error('end_at')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
@@ -400,7 +400,7 @@
                     <div class="flex items-center">
                         <input type="checkbox" id="is_active" name="is_active" 
                                {{ old('is_active', $heroBanner->is_active) ? 'checked' : '' }}
-                               class="h-4 w-4 text-brand-sky-blue focus:ring-brand-sky-blue border-gray-300 rounded">
+                               class="h-4 w-4 text-wine-500 focus:ring-wine-500 border-gray-300 rounded">
                         <label for="is_active" class="ml-2 block text-sm text-gray-900">
                             Publish immediately
                         </label>
@@ -410,11 +410,11 @@
                 <!-- Submit Buttons -->
                 <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                     <a href="{{ route('admin.hero-banners.index') }}" 
-                       class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-sky-blue">
+                       class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-wine-500">
                         Cancel
                     </a>
                     <button type="submit" 
-                            class="px-6 py-2 bg-brand-sky-blue text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-sky-blue">
+                            class="px-6 py-2 bg-wine-500 text-white rounded-lg hover:bg-wine-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-wine-500">
                         Update Banner
                     </button>
                 </div>

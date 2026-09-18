@@ -10,7 +10,7 @@
             <p class="mt-2 text-gray-600">Create and manage step-by-step Umrah guide content</p>
         </div>
         <a href="{{ route('admin.guide-steps.create') }}" 
-           class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-brand-sky-blue hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200">
+           class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-wine-500 hover:bg-wine-600 text-white font-medium rounded-lg transition-colors duration-200">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
@@ -19,7 +19,7 @@
     </div>
 
     @if(session('success'))
-        <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+        <div class="mb-6 p-4 bg-success/10 border border-success/40 text-success-dark rounded-lg">
             {{ session('success') }}
         </div>
     @endif
@@ -46,7 +46,7 @@
         @if(isset($guideSteps[$locale]) && $guideSteps[$locale]->count() > 0)
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $locale === 'en' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $locale === 'en' ? 'bg-wine-50 text-wine-600' : 'bg-success/10 text-success-dark' }}">
                         {{ strtoupper($locale) }}
                     </span>
                     {{ $localeName }} Guide Steps
@@ -58,7 +58,7 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        <input type="checkbox" class="bulk-select-all rounded border-gray-300 text-brand-sky-blue focus:ring-brand-sky-blue">
+                                        <input type="checkbox" class="bulk-select-all rounded border-gray-300 text-wine-500 focus:ring-wine-500">
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Step</th>
@@ -71,7 +71,7 @@
                                 @foreach($guideSteps[$locale] as $step)
                                     <tr data-id="{{ $step->id }}" class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <input type="checkbox" name="ids[]" value="{{ $step->id }}" class="bulk-select rounded border-gray-300 text-brand-sky-blue focus:ring-brand-sky-blue">
+                                            <input type="checkbox" name="ids[]" value="{{ $step->id }}" class="bulk-select rounded border-gray-300 text-wine-500 focus:ring-wine-500">
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center gap-2">
@@ -91,7 +91,7 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="w-8 h-8 bg-brand-sky-blue text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                            <div class="w-8 h-8 bg-wine-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                                                 {{ $step->step_number }}
                                             </div>
                                         </td>
@@ -103,20 +103,20 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <button onclick="toggleStatus({{ $step->id }})" 
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors duration-200 {{ $step->is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors duration-200 {{ $step->is_published ? 'bg-success/10 text-success-dark' : 'bg-gray-100 text-gray-800' }}">
                                                 {{ $step->is_published ? 'Published' : 'Draft' }}
                                             </button>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex items-center gap-2">
                                                 <a href="{{ route('admin.guide-steps.edit', $step) }}" 
-                                                   class="text-brand-sky-blue hover:text-blue-600 transition-colors duration-200">
+                                                   class="text-wine-500 hover:text-wine-600 transition-colors duration-200">
                                                     Edit
                                                 </a>
                                                 <form action="{{ route('admin.guide-steps.destroy', $step) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this step?')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-800 transition-colors duration-200">
+                                                    <button type="submit" class="text-error hover:text-error-dark transition-colors duration-200">
                                                         Delete
                                                     </button>
                                                 </form>
@@ -141,7 +141,7 @@
             <p class="mt-1 text-sm text-gray-500">Get started by creating your first guide step.</p>
             <div class="mt-6">
                 <a href="{{ route('admin.guide-steps.create') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-brand-sky-blue hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200">
+                   class="inline-flex items-center px-4 py-2 bg-wine-500 hover:bg-wine-600 text-white font-medium rounded-lg transition-colors duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>

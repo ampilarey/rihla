@@ -5,7 +5,7 @@
     <div class="max-w-4xl mx-auto">
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-3xl font-bold text-gray-800">{{ __('Edit Trip') }}</h1>
-            <a href="{{ route('admin.trips.index') }}" class="text-brand-green hover:text-brand-green/80">
+            <a href="{{ route('admin.trips.index') }}" class="text-wine-500 hover:text-wine-600">
                 {{ __('← Back to Trips') }}
             </a>
         </div>
@@ -31,9 +31,9 @@
                             {{ __('Trip Title') }} *
                         </label>
                         <input type="text" name="title" id="title" value="{{ old('title', $trip->title) }}" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         @error('title')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -42,9 +42,9 @@
                             {{ __('Location') }}
                         </label>
                         <input type="text" name="location" id="location" value="{{ old('location', $trip->location) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         @error('location')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -53,9 +53,9 @@
                             {{ __('Start Date') }} *
                         </label>
                         <input type="date" name="date_start" id="date_start" value="{{ old('date_start', $trip->date_start->format('Y-m-d')) }}" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         @error('date_start')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -64,9 +64,9 @@
                             {{ __('End Date') }} *
                         </label>
                         <input type="date" name="date_end" id="date_end" value="{{ old('date_end', $trip->date_end->format('Y-m-d')) }}" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         @error('date_end')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -75,13 +75,13 @@
                             {{ __('Status') }} *
                         </label>
                         <select name="status" id="status" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                             <option value="upcoming" {{ old('status', $trip->status) === 'upcoming' ? 'selected' : '' }}>{{ __('Upcoming') }}</option>
                             <option value="current" {{ old('status', $trip->status) === 'current' ? 'selected' : '' }}>{{ __('Current') }}</option>
                             <option value="past" {{ old('status', $trip->status) === 'past' ? 'selected' : '' }}>{{ __('Past') }}</option>
                         </select>
                         @error('status')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -90,9 +90,9 @@
                             {{ __('Price From (MVR)') }}
                         </label>
                         <input type="number" name="price_from_mvr" id="price_from_mvr" value="{{ old('price_from_mvr', $trip->price_from_mvr) }}" min="0"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         @error('price_from_mvr')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -102,9 +102,9 @@
                         {{ __('Summary') }}
                     </label>
                     <textarea name="summary" id="summary" rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">{{ old('summary', $trip->summary) }}</textarea>
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('summary', $trip->summary) }}</textarea>
                     @error('summary')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-error text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -113,9 +113,9 @@
                         {{ __('Trip Details') }}
                     </label>
                     <textarea name="details" id="details" rows="6"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">{{ old('details', $trip->details) }}</textarea>
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('details', $trip->details) }}</textarea>
                     @error('details')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-error text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -130,9 +130,9 @@
                                 {{ __('Trip Title (Dhivehi)') }}
                             </label>
                             <input type="text" name="title_dv" id="title_dv" value="{{ old('title_dv', $trip->title_dv) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                             @error('title_dv')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -141,9 +141,9 @@
                                 {{ __('Location (Dhivehi)') }}
                             </label>
                             <input type="text" name="location_dv" id="location_dv" value="{{ old('location_dv', $trip->location_dv) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                             @error('location_dv')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
@@ -153,9 +153,9 @@
                             {{ __('Summary (Dhivehi)') }}
                         </label>
                         <textarea name="summary_dv" id="summary_dv" rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">{{ old('summary_dv', $trip->summary_dv) }}</textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('summary_dv', $trip->summary_dv) }}</textarea>
                         @error('summary_dv')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -164,9 +164,9 @@
                             {{ __('Trip Details (Dhivehi)') }}
                         </label>
                         <textarea name="details_dv" id="details_dv" rows="6"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">{{ old('details_dv', $trip->details_dv) }}</textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('details_dv', $trip->details_dv) }}</textarea>
                         @error('details_dv')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -185,17 +185,17 @@
                     @endif
                     
                     <input type="file" name="cover_image" id="cover_image" accept="image/*"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                     <p class="text-sm text-gray-500 mt-1">{{ __('Accepted formats: JPEG, PNG, WebP. Max size: 6MB') }}</p>
                     @error('cover_image')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-error text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="mt-6">
                     <label class="flex items-center">
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', $trip->is_published) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-brand-green focus:ring-brand-green">
+                               class="rounded border-gray-300 text-wine-500 focus:ring-wine-500">
                         <span class="ml-2 text-sm text-gray-700">{{ __('Publish this trip') }}</span>
                     </label>
                 </div>

@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
         <div class="flex items-center space-x-4">
-            <a href="{{ route('admin.dashboard') }}" class="text-brand-green hover:text-brand-green/80 flex items-center space-x-2">
+            <a href="{{ route('admin.dashboard') }}" class="text-wine-500 hover:text-wine-600 flex items-center space-x-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -18,7 +18,7 @@
     </div>
 
     @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+        <div class="bg-success/10 border border-success/40 text-success-dark px-4 py-3 rounded mb-6">
             {{ session('success') }}
         </div>
     @endif
@@ -69,37 +69,37 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                @if($trip->status === 'current') bg-green-100 text-green-800
-                                @elseif($trip->status === 'upcoming') bg-yellow-100 text-yellow-800
+                                @if($trip->status === 'current') bg-success/10 text-success-dark
+                                @elseif($trip->status === 'upcoming') bg-warning/10 text-warning-dark
                                 @else bg-gray-100 text-gray-800
                                 @endif">
                                 {{ ucfirst($trip->status) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-wine-50 text-wine-600">
                                 {{ strtoupper($trip->locale) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             @if($trip->is_published)
-                                <span class="text-green-600">{{ __('Yes') }}</span>
+                                <span class="text-success">{{ __('Yes') }}</span>
                             @else
-                                <span class="text-red-600">{{ __('No') }}</span>
+                                <span class="text-error">{{ __('No') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
-                                <a href="{{ route('admin.trips.edit', $trip) }}" class="text-brand-green hover:text-brand-green/80">
+                                <a href="{{ route('admin.trips.edit', $trip) }}" class="text-wine-500 hover:text-wine-600">
                                     {{ __('Edit') }}
                                 </a>
-                                <a href="{{ route('admin.trips.show', $trip) }}" class="text-blue-600 hover:text-blue-800">
+                                <a href="{{ route('admin.trips.show', $trip) }}" class="text-wine-500 hover:text-wine-600">
                                     {{ __('View') }}
                                 </a>
                                 <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this trip?') }}')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800">
+                                    <button type="submit" class="text-error hover:text-error-dark">
                                         {{ __('Delete') }}
                                     </button>
                                 </form>

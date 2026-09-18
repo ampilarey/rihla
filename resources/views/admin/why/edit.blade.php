@@ -8,7 +8,7 @@
     </div>
 
     @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+        <div class="bg-success/10 border border-success/40 text-success-dark px-4 py-3 rounded mb-6">
             {{ session('success') }}
         </div>
     @endif
@@ -26,30 +26,30 @@
                     <div>
                         <label for="locale" class="block text-sm font-medium text-gray-700 mb-2">Language *</label>
                         <select id="locale" name="locale" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500" required>
                             <option value="en" {{ $section->locale === 'en' ? 'selected' : '' }}>English</option>
                             <option value="dv" {{ $section->locale === 'dv' ? 'selected' : '' }}>ދިވެހި (Dhivehi)</option>
                         </select>
                         @error('locale')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
                         <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
                         <input type="text" id="title" name="title" value="{{ old('title', $section->title) }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500" required>
                         @error('title')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
                         <label for="subtitle" class="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
                         <textarea id="subtitle" name="subtitle" rows="3" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('subtitle', $section->subtitle) }}</textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">{{ old('subtitle', $section->subtitle) }}</textarea>
                         @error('subtitle')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -61,9 +61,9 @@
                             </div>
                         @endif
                         <input type="file" id="image" name="image" accept="image/*" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
                         @error('image')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            <p class="text-error text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -71,17 +71,17 @@
                         <div>
                             <label for="primary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA Text</label>
                             <input type="text" id="primary_cta_text" name="primary_cta_text" value="{{ old('primary_cta_text', $section->primary_cta_text) }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
                             @error('primary_cta_text')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label for="primary_cta_url" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA URL</label>
                             <input type="url" id="primary_cta_url" name="primary_cta_url" value="{{ old('primary_cta_url', $section->primary_cta_url) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
                             @error('primary_cta_url')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
@@ -90,24 +90,24 @@
                         <div>
                             <label for="secondary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA Text</label>
                             <input type="text" id="secondary_cta_text" name="secondary_cta_text" value="{{ old('secondary_cta_text', $section->secondary_cta_text) }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
                             @error('secondary_cta_text')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label for="secondary_cta_url" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA URL</label>
                             <input type="url" id="secondary_cta_url" name="secondary_cta_url" value="{{ old('secondary_cta_url', $section->secondary_cta_url) }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
                             @error('secondary_cta_url')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
 
                     <div class="flex items-center">
                         <input type="checkbox" id="is_active" name="is_active" value="1" {{ $section->is_active ? 'checked' : '' }} 
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                               class="h-4 w-4 text-wine-500 focus:ring-wine-500 border-gray-300 rounded">
                         <label for="is_active" class="ml-2 block text-sm text-gray-900">Active</label>
                     </div>
                     
@@ -125,10 +125,10 @@
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
                                     <input type="text" id="title_color_text" placeholder="#1f2937" 
                                            value="{{ old('title_color', $section->title_color) ?: '#1f2937' }}"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('title_color')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
@@ -139,10 +139,10 @@
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
                                     <input type="text" id="subtitle_color_text" placeholder="#6b7280" 
                                            value="{{ old('subtitle_color', $section->subtitle_color) ?: '#6b7280' }}"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('subtitle_color')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -157,10 +157,10 @@
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
                                     <input type="text" id="primary_cta_bg_color_text" placeholder="#2563eb" 
                                            value="{{ old('primary_cta_bg_color', $section->primary_cta_bg_color) ?: '#2563eb' }}"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('primary_cta_bg_color')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
@@ -171,10 +171,10 @@
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
                                     <input type="text" id="primary_cta_text_color_text" placeholder="#ffffff" 
                                            value="{{ old('primary_cta_text_color', $section->primary_cta_text_color) ?: '#ffffff' }}"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('primary_cta_text_color')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -189,10 +189,10 @@
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
                                     <input type="text" id="secondary_cta_bg_color_text" placeholder="#ffffff" 
                                            value="{{ old('secondary_cta_bg_color', $section->secondary_cta_bg_color) ?: '#ffffff' }}"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('secondary_cta_bg_color')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
@@ -203,17 +203,17 @@
                                            class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
                                     <input type="text" id="secondary_cta_text_color_text" placeholder="#374151" 
                                            value="{{ old('secondary_cta_text_color', $section->secondary_cta_text_color) ?: '#374151' }}"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 </div>
                                 @error('secondary_cta_text_color')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" class="w-full bg-wine-500 text-white px-4 py-2 rounded-md hover:bg-wine-700 focus:outline-none focus:ring-2 focus:ring-wine-500">
                             Update Section
                         </button>
                     </div>
@@ -263,13 +263,13 @@
                     @csrf
                     <input type="hidden" name="why_section_id" value="{{ $section->id }}">
                     @error('why_section_id')
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        <div class="bg-error/10 border border-error/40 text-error-dark px-4 py-3 rounded mb-4">
                             <p class="text-sm">{{ $message }}</p>
                         </div>
                     @enderror
                     
                     @if($errors->any())
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        <div class="bg-error/10 border border-error/40 text-error-dark px-4 py-3 rounded mb-4">
                             <ul class="list-disc list-inside">
                                 @foreach($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -283,17 +283,17 @@
                             <div>
                                 <label for="feature_title" class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
                                 <input type="text" id="feature_title" name="title" required
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 @error('title')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
                                 <label for="feature_icon" class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
                                 <input type="text" id="feature_icon" name="icon" placeholder="e.g., star, heart, shield"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 @error('icon')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -301,9 +301,9 @@
                         <div>
                             <label for="feature_text" class="block text-sm font-medium text-gray-700 mb-1">Text</label>
                             <textarea id="feature_text" name="text" rows="2"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm"></textarea>
                             @error('text')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         
@@ -311,17 +311,17 @@
                             <div>
                                 <label for="feature_link_url" class="block text-sm font-medium text-gray-700 mb-1">Link URL (Optional)</label>
                                 <input type="url" id="feature_link_url" name="link_url" placeholder="https://example.com"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 @error('link_url')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
                                 <label for="feature_link_text" class="block text-sm font-medium text-gray-700 mb-1">Link Text (Optional)</label>
                                 <input type="text" id="feature_link_text" name="link_text" placeholder="e.g., Learn More, Book Now, View Details"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 @error('link_text')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -330,17 +330,17 @@
                             <div>
                                 <label for="feature_image" class="block text-sm font-medium text-gray-700 mb-1">Image</label>
                                 <input type="file" id="feature_image" name="image" accept="image/*"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 @error('image')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
                                 <label for="feature_sort_order" class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
                                 <input type="number" id="feature_sort_order" name="sort_order" value="{{ $section->features->count() }}" min="0"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
                                 @error('sort_order')
-                                    <p class="text-sm mt-1 text-red-600">{{ $message }}</p>
+                                    <p class="text-sm mt-1 text-error">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -351,25 +351,25 @@
                                 <input type="color" id="feature_background_color" name="background_color" value="#ffffff"
                                        class="w-16 h-10 border border-gray-300 rounded-md cursor-pointer">
                                 <input type="text" id="feature_background_color_text" placeholder="#ffffff" 
-                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm"
                                        pattern="^#[0-9A-Fa-f]{6}$">
                                 <span class="text-xs text-gray-500">or type hex code</span>
                             </div>
                             @error('background_color')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         
                         <div class="flex items-center">
                             <input type="checkbox" id="feature_is_active" name="is_active" value="1" checked
-                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                   class="h-4 w-4 text-wine-500 focus:ring-wine-500 border-gray-300 rounded">
                             <label for="feature_is_active" class="ml-2 block text-sm text-gray-900">Active</label>
                             @error('is_active')
-                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         
-                        <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-base font-semibold shadow-md" style="background-color: #059669 !important; color: #ffffff !important;">
+                        <button type="submit" class="w-full bg-success text-white px-6 py-3 rounded-lg hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-success text-base font-semibold shadow-md" style="background-color: #059669 !important; color: #ffffff !important;">
                             Add New Feature
                         </button>
                         
@@ -423,11 +423,11 @@
                                     @endif
                                     <div class="flex items-center space-x-2 mt-1">
                                         <span class="text-xs text-gray-500">Order: {{ $feature->sort_order }}</span>
-                                        <span class="text-xs px-2 py-1 rounded {{ $feature->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        <span class="text-xs px-2 py-1 rounded {{ $feature->is_active ? 'bg-success/10 text-success-dark' : 'bg-error/10 text-error-dark' }}">
                                             {{ $feature->is_active ? 'Active' : 'Inactive' }}
                                         </span>
                                         @if($feature->link_url)
-                                            <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
+                                            <span class="text-xs px-2 py-1 rounded bg-wine-50 text-wine-600">
                                                 🔗 {{ $feature->link_text ?: 'Linked' }}
                                             </span>
                                         @endif
@@ -444,13 +444,13 @@
                             
                             <div class="flex items-center space-x-2">
                                 <a href="{{ route('admin.features.edit', $feature) }}" 
-                                   class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</a>
+                                   class="text-wine-500 hover:text-wine-600 text-sm font-medium">Edit</a>
                                 
                                 <form action="{{ route('admin.features.destroy', $feature) }}" method="POST" class="inline" 
                                       onsubmit="return confirm('Are you sure you want to delete this feature?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
+                                    <button type="submit" class="text-error hover:text-error-dark text-sm font-medium">Delete</button>
                                 </form>
                             </div>
                         </div>

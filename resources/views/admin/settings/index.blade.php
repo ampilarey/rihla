@@ -6,7 +6,7 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ __('Manage Settings') }}</h1>
 
         @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <div class="bg-success/10 border border-success/40 text-success-dark px-4 py-3 rounded mb-6">
                 {{ session('success') }}
             </div>
         @endif
@@ -24,7 +24,7 @@
                         </label>
                         <input type="url" name="facebook_url" id="facebook_url" value="{{ $socialSettings['facebook_url'] ?? '' }}"
                                placeholder="https://facebook.com/rihlatravels"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                     </div>
 
                     <div>
@@ -33,7 +33,7 @@
                         </label>
                         <input type="url" name="instagram_url" id="instagram_url" value="{{ $socialSettings['instagram_url'] ?? '' }}"
                                placeholder="https://instagram.com/rihlatravels"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                     </div>
 
                     <div>
@@ -42,7 +42,7 @@
                         </label>
                         <input type="url" name="tiktok_url" id="tiktok_url" value="{{ $socialSettings['tiktok_url'] ?? '' }}"
                                placeholder="https://tiktok.com/@rihlatravels"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                     </div>
 
                     <div>
@@ -51,7 +51,7 @@
                         </label>
                         <input type="url" name="viber_url" id="viber_url" value="{{ $socialSettings['viber_url'] ?? '' }}"
                                placeholder="https://viber.com/rihlatravels"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                     </div>
                 </div>
 
@@ -64,7 +64,7 @@
                         </label>
                         <input type="text" name="whatsapp_number" id="whatsapp_number" value="{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" required
                                placeholder="9607972434"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         <p class="text-sm text-gray-500 mt-1">{{ __('Enter number without + or country code') }}</p>
                     </div>
 
@@ -74,7 +74,7 @@
                         </label>
                         <input type="text" name="youtube_playlist_id" id="youtube_playlist_id" value="{{ $socialSettings['youtube_playlist_id'] ?? '' }}"
                                placeholder="PLxxxxxxxxxx"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-green focus:border-transparent">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                         <p class="text-sm text-gray-500 mt-1">{{ __('Found in YouTube playlist URL after "list="') }}</p>
                     </div>
                 </div>

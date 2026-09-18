@@ -13,7 +13,7 @@
 
     <!-- Call Button -->
     <a href="tel:9607972434" 
-       class="btn-secondary shadow-soft w-14 h-14 rounded-full flex items-center justify-center text-brand-gold hover:bg-brand-gold hover:text-white transition-all duration-200 transform hover:scale-105"
+       class="btn-secondary shadow-soft w-14 h-14 rounded-full flex items-center justify-center text-gold-700 hover:bg-gold-500 hover:text-ink transition-all duration-200 transform hover:scale-105"
        title="{{ __('Call us') }}">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
@@ -24,7 +24,7 @@
     <a href="https://wa.me/c/9607972434" 
        target="_blank" 
        rel="noopener"
-       class="bg-brand-emerald text-white shadow-soft w-14 h-14 rounded-full flex items-center justify-center hover:opacity-90 transition-all duration-200 transform hover:scale-105"
+       class="bg-wine-500 text-white shadow-soft w-14 h-14 rounded-full flex items-center justify-center hover:opacity-90 transition-all duration-200 transform hover:scale-105"
        title="{{ __('Browse our catalog') }}">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
