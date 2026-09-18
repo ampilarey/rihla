@@ -112,7 +112,7 @@
                                              class="w-full h-24 object-cover rounded-lg">
                                     @else
                                         <div class="w-full h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <svg aria-hidden="true" focusable="false" class="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
                                             </svg>
                                         </div>
