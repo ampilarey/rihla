@@ -2,14 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class GuideStep extends Model
 {
     use HasFactory;
 
+    /**
+     * Kept deliberately in step with the table. Four of these names were
+     * previously listed without existing as columns, while `description` —
+     * the only body-text column there was — was missing, so every write of it
+     * was silently discarded.
+     */
     protected $fillable = [
         'step_number',
         'locale',
@@ -17,18 +23,19 @@ class GuideStep extends Model
         'summary',
         'details',
         'dua_text',
+        'reference_text',
         'fiqh_notes',
         'video_url',
         'image_path',
         'checklist',
-        'is_published'
+        'is_published',
     ];
 
     protected $casts = [
         'step_number' => 'integer',
         'is_published' => 'boolean',
         'checklist' => 'array',
-        'fiqh_notes' => 'array'
+        'fiqh_notes' => 'array',
     ];
 
     /**
@@ -60,7 +67,7 @@ class GuideStep extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+        return $this->image_path ? asset('storage/'.$this->image_path) : null;
     }
 
     /**
@@ -71,20 +78,18 @@ class GuideStep extends Model
         return $this->checklist ?? [];
     }
 
-    /**
-     * Get Fiqh notes as array
-     */
-    public function getFiqhNotesAttribute(): array
-    {
-        return $this->fiqh_notes ?? [];
-    }
+    // There is deliberately no getFiqhNotesAttribute() accessor. The one that
+    // used to be here read `$this->fiqh_notes` — its own attribute — and so
+    // shadowed the `array` cast and always returned []. Fiqh notes were saved
+    // to the database and could never be read back, which is why they never
+    // appeared on the guide. The cast alone does the right thing.
 
     /**
      * Check if step has checklist
      */
     public function hasChecklist(): bool
     {
-        return !empty($this->checklist);
+        return ! empty($this->checklist);
     }
 
     /**
@@ -92,7 +97,7 @@ class GuideStep extends Model
      */
     public function hasFiqhNotes(): bool
     {
-        return !empty($this->fiqh_notes);
+        return ! empty($this->fiqh_notes);
     }
 
     /**
@@ -100,7 +105,7 @@ class GuideStep extends Model
      */
     public function hasDua(): bool
     {
-        return !empty($this->dua_text);
+        return ! empty($this->dua_text);
     }
 
     /**
@@ -108,7 +113,7 @@ class GuideStep extends Model
      */
     public function hasDetails(): bool
     {
-        return !empty($this->details);
+        return ! empty($this->details);
     }
 
     /**
@@ -116,7 +121,7 @@ class GuideStep extends Model
      */
     public function hasVideo(): bool
     {
-        return !empty($this->video_url);
+        return ! empty($this->video_url);
     }
 
     /**
@@ -124,7 +129,7 @@ class GuideStep extends Model
      */
     public function hasImage(): bool
     {
-        return !empty($this->image_path);
+        return ! empty($this->image_path);
     }
 
     /**
@@ -132,12 +137,14 @@ class GuideStep extends Model
      */
     public function getThumbnailUrlAttribute(): ?string
     {
-        if (!$this->image_path) return null;
-        
+        if (! $this->image_path) {
+            return null;
+        }
+
         $pathInfo = pathinfo($this->image_path);
-        $thumbnailPath = $pathInfo['dirname'] . '/thumb_' . $pathInfo['basename'];
-        
-        return asset('storage/' . $thumbnailPath);
+        $thumbnailPath = $pathInfo['dirname'].'/thumb_'.$pathInfo['basename'];
+
+        return asset('storage/'.$thumbnailPath);
     }
 
     /**
@@ -145,11 +152,13 @@ class GuideStep extends Model
      */
     public function getLargeImageUrlAttribute(): ?string
     {
-        if (!$this->image_path) return null;
-        
+        if (! $this->image_path) {
+            return null;
+        }
+
         $pathInfo = pathinfo($this->image_path);
-        $largePath = $pathInfo['dirname'] . '/large_' . $pathInfo['basename'];
-        
-        return asset('storage/' . $largePath);
+        $largePath = $pathInfo['dirname'].'/large_'.$pathInfo['basename'];
+
+        return asset('storage/'.$largePath);
     }
 }

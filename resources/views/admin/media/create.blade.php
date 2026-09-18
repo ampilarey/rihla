@@ -40,13 +40,13 @@
                 <div class="space-y-4">
                     <div>
                         <label for="file_path" class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ __('Photo File') }} <span class="text-red-500">*</span>
+                            {{ __('Photo File') }} <span class="text-error">*</span>
                         </label>
                         <input type="file" 
                                id="file_path" 
                                name="file_path" 
                                accept="image/jpeg,image/png,image/webp"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500"
                                required>
                         <p class="text-sm text-gray-500 mt-1">{{ __('Supported formats: JPEG, PNG, WebP. Max size: 6MB') }}</p>
                     </div>
@@ -59,13 +59,13 @@
                 <div class="space-y-4">
                     <div>
                         <label for="video_url" class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ __('Video URL') }} <span class="text-red-500">*</span>
+                            {{ __('Video URL') }} <span class="text-error">*</span>
                         </label>
                         <input type="url" 
                                id="video_url" 
                                name="video_url" 
                                placeholder="https://www.youtube.com/watch?v=..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500">
                         <p class="text-sm text-gray-500 mt-1">{{ __('Enter YouTube, Vimeo, or other video platform URL') }}</p>
                     </div>
                 </div>
@@ -83,7 +83,7 @@
                                id="title" 
                                name="title" 
                                value="{{ old('title') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500"
                                placeholder="{{ __('Enter media title') }}">
                     </div>
 
@@ -93,7 +93,7 @@
                         </label>
                         <select id="trip_id" 
                                 name="trip_id" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500">
                             <option value="">{{ __('No trip (standalone media)') }}</option>
                             @foreach($trips as $trip)
                                 <option value="{{ $trip->id }}" {{ old('trip_id') == $trip->id ? 'selected' : '' }}>
@@ -110,7 +110,7 @@
                         <textarea id="caption" 
                                   name="caption" 
                                   rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500"
                                   placeholder="{{ __('Enter media description or caption') }}">{{ old('caption') }}</textarea>
                     </div>
 
@@ -123,7 +123,7 @@
                                name="sort_order" 
                                value="{{ old('sort_order', 0) }}"
                                min="0"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500">
                         <p class="text-sm text-gray-500 mt-1">{{ __('Lower numbers appear first') }}</p>
                     </div>
 
@@ -133,7 +133,7 @@
                                name="is_published" 
                                value="1"
                                {{ old('is_published', true) ? 'checked' : '' }}
-                               class="h-4 w-4 text-brand-sky-blue focus:ring-brand-sky-blue border-gray-300 rounded">
+                               class="h-4 w-4 text-wine-500 focus:ring-wine-500 border-gray-300 rounded">
                         <label for="is_published" class="ml-2 block text-sm text-gray-700">
                             {{ __('Publish immediately') }}
                         </label>

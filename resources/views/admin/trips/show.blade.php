@@ -9,7 +9,7 @@
                 <a href="{{ route('admin.trips.edit', $trip) }}" class="btn-primary">
                     {{ __('Edit Trip') }}
                 </a>
-                <a href="{{ route('admin.trips.index') }}" class="text-brand-green hover:text-brand-green/80">
+                <a href="{{ route('admin.trips.index') }}" class="text-wine-500 hover:text-wine-600">
                     {{ __('← Back to Trips') }}
                 </a>
             </div>
@@ -40,19 +40,19 @@
                             @endif
                             <div class="flex items-center space-x-4">
                                 <span class="px-3 py-1 text-sm font-semibold rounded-full 
-                                    @if($trip->status === 'current') bg-green-100 text-green-800
-                                    @elseif($trip->status === 'upcoming') bg-yellow-100 text-yellow-800
+                                    @if($trip->status === 'current') bg-success/10 text-success-dark
+                                    @elseif($trip->status === 'upcoming') bg-warning/10 text-warning-dark
                                     @else bg-gray-100 text-gray-800
                                     @endif">
                                     {{ ucfirst($trip->status) }}
                                 </span>
                                 <span class="px-3 py-1 text-sm font-semibold rounded-full 
-                                    @if($trip->is_published) bg-blue-100 text-blue-800
-                                    @else bg-red-100 text-red-800
+                                    @if($trip->is_published) bg-wine-50 text-wine-600
+                                    @else bg-error/10 text-error-dark
                                     @endif">
                                     {{ $trip->is_published ? __('Published') : __('Draft') }}
                                 </span>
-                                <span class="px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-800">
+                                <span class="px-3 py-1 text-sm font-semibold rounded-full bg-wine-50 text-wine-600">
                                     {{ strtoupper($trip->locale) }}
                                 </span>
                             </div>
@@ -136,15 +136,15 @@
                             <h3 class="text-sm font-medium text-gray-500 mb-3">{{ __('Trip Statistics') }}</h3>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                                 <div>
-                                    <p class="text-2xl font-bold text-brand-green">{{ $trip->media->count() }}</p>
+                                    <p class="text-2xl font-bold text-wine-500">{{ $trip->media->count() }}</p>
                                     <p class="text-sm text-gray-500">{{ __('Media Items') }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-2xl font-bold text-blue-600">{{ $trip->photos->count() }}</p>
+                                    <p class="text-2xl font-bold text-wine-500">{{ $trip->photos->count() }}</p>
                                     <p class="text-sm text-gray-500">{{ __('Photos') }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-2xl font-bold text-purple-600">{{ $trip->videos->count() }}</p>
+                                    <p class="text-2xl font-bold text-wine-500">{{ $trip->videos->count() }}</p>
                                     <p class="text-sm text-gray-500">{{ __('Videos') }}</p>
                                 </div>
                                 <div>
@@ -163,7 +163,7 @@
                     <a href="{{ route('admin.trips.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         {{ __('Back to Trips') }}
                     </a>
-                    <a href="{{ route('admin.media.create', ['trip_id' => $trip->id]) }}" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <a href="{{ route('admin.media.create', ['trip_id' => $trip->id]) }}" class="px-6 py-2 bg-wine-500 text-white rounded-lg hover:bg-wine-700 transition-colors">
                         {{ __('Add Media') }}
                     </a>
                 </div>
@@ -171,7 +171,7 @@
                 <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this trip? This action cannot be undone.') }}')">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    <button type="submit" class="px-6 py-2 bg-error text-white rounded-lg hover:bg-error-dark transition-colors">
                         {{ __('Delete Trip') }}
                     </button>
                 </form>

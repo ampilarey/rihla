@@ -53,7 +53,7 @@
                                      class="w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
                                     <div class="bg-white/90 rounded-full p-3">
-                                        <svg class="w-8 h-8 text-brand-green" fill="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-8 h-8 text-wine-500" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M8 5v14l11-7z"/>
                                         </svg>
                                     </div>

@@ -34,7 +34,7 @@
             </div>
         @endif
         
-        <h3 class="text-xl font-bold text-brand-heading group-hover:text-brand-sky-blue transition-colors">
+        <h3 class="text-xl font-bold text-brand-heading group-hover:text-wine-500 transition-colors">
             <a href="{{ route('trips.show', $trip) }}">
                 {{ $trip->title }}
             </a>
@@ -59,7 +59,7 @@
         
         @if($showPrice && $trip->price_from_mvr)
             <div class="pt-2">
-                <span class="text-lg font-bold text-brand-emerald">
+                <span class="text-lg font-bold text-wine-500">
                     From MVR {{ number_format($trip->price_from_mvr) }}
                 </span>
             </div>

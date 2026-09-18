@@ -56,7 +56,7 @@
                                id="file_path" 
                                name="file_path" 
                                accept="image/jpeg,image/png,image/webp"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500">
                         <p class="text-sm text-gray-500 mt-1">{{ __('Leave empty to keep current photo. Supported formats: JPEG, PNG, WebP. Max size: 6MB') }}</p>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                                name="video_url" 
                                value="{{ old('video_url', $medium->video_url) }}"
                                placeholder="https://www.youtube.com/watch?v=..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500">
                         <p class="text-sm text-gray-500 mt-1">{{ __('Enter YouTube, Vimeo, or other video platform URL') }}</p>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                                id="title" 
                                name="title" 
                                value="{{ old('title', $medium->title) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500"
                                placeholder="{{ __('Enter media title') }}">
                     </div>
 
@@ -103,7 +103,7 @@
                         </label>
                         <select id="trip_id" 
                                 name="trip_id" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500">
                             <option value="">{{ __('No trip (standalone media)') }}</option>
                             @foreach($trips as $trip)
                                 <option value="{{ $trip->id }}" {{ old('trip_id', $medium->trip_id) == $trip->id ? 'selected' : '' }}>
@@ -120,7 +120,7 @@
                         <textarea id="caption" 
                                   name="caption" 
                                   rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500"
                                   placeholder="{{ __('Enter media description or caption') }}">{{ old('caption', $medium->caption) }}</textarea>
                     </div>
 
@@ -133,7 +133,7 @@
                                name="sort_order" 
                                value="{{ old('sort_order', $medium->sort_order) }}"
                                min="0"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-sky-blue focus:border-brand-sky-blue">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500">
                         <p class="text-sm text-gray-500 mt-1">{{ __('Lower numbers appear first') }}</p>
                     </div>
 
@@ -143,7 +143,7 @@
                                name="is_published" 
                                value="1"
                                {{ old('is_published', $medium->is_published) ? 'checked' : '' }}
-                               class="h-4 w-4 text-brand-sky-blue focus:ring-brand-sky-blue border-gray-300 rounded">
+                               class="h-4 w-4 text-wine-500 focus:ring-wine-500 border-gray-300 rounded">
                         <label for="is_published" class="ml-2 block text-sm text-gray-700">
                             {{ __('Published') }}
                         </label>

@@ -13,6 +13,8 @@ class MediaController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Media::class);
+
         $media = Media::with('trip')->orderBy('created_at', 'desc')->paginate(20);
 
         return view('admin.media.index', compact('media'));
@@ -20,6 +22,8 @@ class MediaController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Media::class);
+
         $trips = Trip::orderBy('title')->get();
 
         return view('admin.media.create', compact('trips'));
@@ -27,6 +31,8 @@ class MediaController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Media::class);
+
         $validated = $request->validate([
             'trip_id' => 'nullable|exists:trips,id',
             'type' => 'required|in:photo,video',
@@ -77,11 +83,15 @@ class MediaController extends Controller
 
     public function show(Media $medium)
     {
+        $this->authorize('view', $medium);
+
         return view('admin.media.show', compact('medium'));
     }
 
     public function edit(Media $medium)
     {
+        $this->authorize('update', $medium);
+
         $trips = Trip::orderBy('title')->get();
 
         return view('admin.media.edit', compact('medium', 'trips'));
@@ -89,6 +99,8 @@ class MediaController extends Controller
 
     public function update(Request $request, Media $medium)
     {
+        $this->authorize('update', $medium);
+
         $validated = $request->validate([
             'trip_id' => 'nullable|exists:trips,id',
             'type' => 'required|in:photo,video',
@@ -146,10 +158,12 @@ class MediaController extends Controller
 
     public function destroy(Media $medium)
     {
+        $this->authorize('delete', $medium);
+
         try {
             // Log the deletion attempt
             \Log::info('Attempting to delete media', ['id' => $medium->id, 'title' => $medium->title]);
-            
+
             // Delete files if they exist
             if ($medium->file_path) {
                 if (Storage::disk('public')->exists($medium->file_path)) {
@@ -157,7 +171,7 @@ class MediaController extends Controller
                     \Log::info('Deleted file', ['path' => $medium->file_path]);
                 }
             }
-            
+
             if ($medium->thumb_path) {
                 if (Storage::disk('public')->exists($medium->thumb_path)) {
                     Storage::disk('public')->delete($medium->thumb_path);
@@ -169,15 +183,15 @@ class MediaController extends Controller
             \Log::info('Media deleted successfully', ['id' => $medium->id]);
 
             return redirect()->route('admin.media.index')->with('success', 'Media deleted successfully.');
-            
+
         } catch (\Exception $e) {
             \Log::error('Failed to delete media', [
                 'id' => $medium->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
-            return redirect()->route('admin.media.index')->with('error', 'Failed to delete media: ' . $e->getMessage());
+
+            return redirect()->route('admin.media.index')->with('error', 'Failed to delete media: '.$e->getMessage());
         }
     }
 }

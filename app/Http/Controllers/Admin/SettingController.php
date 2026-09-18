@@ -10,6 +10,8 @@ class SettingController extends Controller
 {
     public function index()
     {
+        $this->authorize('view', Setting::class);
+
         $socialSettings = Setting::getSocialSettings();
 
         return view('admin.settings.index', compact('socialSettings'));
@@ -17,6 +19,8 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        $this->authorize('update', Setting::class);
+
         $validated = $request->validate([
             'facebook_url' => 'nullable|url',
             'instagram_url' => 'nullable|url',

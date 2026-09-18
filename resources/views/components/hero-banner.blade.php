@@ -69,7 +69,7 @@
                         @if($banner->primary_cta_text && $banner->primary_cta_url)
                         <a href="{{ $banner->primary_cta_url }}" 
                            class="hero-cta-primary {{ $banner->primary_cta_size ?? 'text-base' }} {{ $banner->primary_cta_radius ?? 'rounded-lg' }}"
-                           style="background-color: {{ $banner->primary_cta_bg_color ?? '#0ea5e9' }} !important; color: {{ $banner->primary_cta_text_color ?? '#ffffff' }} !important;">
+                           style="background-color: {{ $banner->primary_cta_bg_color ?? '#8E2653' }} !important; color: {{ $banner->primary_cta_text_color ?? '#ffffff' }} !important;">
                             {{ $banner->primary_cta_text }}
                         </a>
                         @endif
@@ -234,7 +234,7 @@
 .hero-gradient-bg {
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom right, #0ea5e9, #f59e0b);
+    background: linear-gradient(to bottom right, #731F43, #8E2653);
 }
 
 /* Dark Overlay for Text Readability */
@@ -661,24 +661,24 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @else
 <!-- Fallback Hero Section -->
-<section class="relative bg-gradient-to-br from-brand-sky-blue to-brand-gold/70 text-white" style="height: 600px;">
+<section class="relative bg-gradient-to-br from-wine-600 to-wine-500 text-white" style="height: 600px;">
     <div class="container mx-auto px-4 h-full flex items-center justify-center">
         <div class="max-w-4xl mx-auto text-center">
             <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
-                {{ __('hero_title') }}
+                {{ __('messages.hero_title') }}
             </h1>
             <p class="text-lg md:text-xl lg:text-2xl mb-6 md:mb-8 text-gray-100 max-w-3xl mx-auto">
-                {{ __('hero_sub') }}
+                {{ __('messages.hero_sub') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
                 <a href="{{ route('trips.index') }}" class="btn-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4">
-                    {{ __('cta_trips') }}
+                    {{ __('messages.cta_trips') }}
                 </a>
                 <a href="https://wa.me/{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" 
                    target="_blank" 
                    rel="noopener"
                    class="btn-secondary text-base md:text-lg px-6 md:px-8 py-3 md:py-4">
-                    {{ __('cta_whatsapp') }}
+                    {{ __('messages.cta_whatsapp') }}
                 </a>
             </div>
         </div>

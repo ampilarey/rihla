@@ -20,27 +20,27 @@
             padding: 20px;
             font-size: 12px;
             line-height: 1.4;
-            color: #2E2E2E;
+            color: #2E2621;
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #C39A3A;
+            border-bottom: 2px solid #D2A03C;
         }
         
         .logo {
             font-size: 24px;
             font-weight: bold;
-            color: #1C9FE2;
+            color: #8E2653;
             margin-bottom: 10px;
         }
         
         .title {
             font-size: 20px;
             font-weight: bold;
-            color: #2E2E2E;
+            color: #2E2621;
             margin-bottom: 10px;
         }
         
@@ -57,7 +57,7 @@
         .toc-title {
             font-size: 16px;
             font-weight: bold;
-            color: #1C9FE2;
+            color: #8E2653;
             margin-bottom: 15px;
             border-bottom: 1px solid #ddd;
             padding-bottom: 5px;
@@ -69,7 +69,7 @@
         }
         
         .toc-number {
-            color: #C39A3A;
+            color: #D2A03C;
             font-weight: bold;
         }
         
@@ -85,7 +85,7 @@
         }
         
         .step-number {
-            background: #C39A3A;
+            background: #D2A03C;
             color: white;
             width: 30px;
             height: 30px;
@@ -101,7 +101,7 @@
         .step-title {
             font-size: 16px;
             font-weight: bold;
-            color: #2E2E2E;
+            color: #2E2621;
         }
         
         .step-content {
@@ -117,14 +117,14 @@
             margin-bottom: 10px;
             padding: 10px;
             background: #f8f9fa;
-            border-left: 3px solid #1C9FE2;
+            border-left: 3px solid #8E2653;
         }
         
         .step-dua {
             margin-bottom: 10px;
             padding: 10px;
-            background: #f0f8ff;
-            border-left: 3px solid #C39A3A;
+            background: #FBF6EC;
+            border-left: 3px solid #D2A03C;
         }
         
         .step-fiqh {
@@ -145,7 +145,7 @@
         
         .checklist-item:before {
             content: "☐ ";
-            color: #C39A3A;
+            color: #D2A03C;
             font-weight: bold;
         }
         
@@ -253,7 +253,9 @@
                                 ފިޤްހްތައް:
                             @endif
                         </strong><br>
-                        {{ $step->fiqh_notes }}
+                        @foreach ((array) $step->fiqh_notes as $fiqhNote)
+                            {{ $fiqhNote }}<br>
+                        @endforeach
                     </div>
                 @endif
                 

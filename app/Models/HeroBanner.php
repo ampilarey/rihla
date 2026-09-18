@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use Carbon\Carbon;
 
 class HeroBanner extends Model
 {
@@ -52,6 +52,7 @@ class HeroBanner extends Model
     /**
      * Scope for published banners
      */
+    /** @param Builder<HeroBanner> $query */
     public function scopePublished(Builder $query): void
     {
         $query->where('is_active', true);
@@ -60,6 +61,7 @@ class HeroBanner extends Model
     /**
      * Scope for active banners (published and within window)
      */
+    /** @param Builder<HeroBanner> $query */
     public function scopeActive(Builder $query): void
     {
         $query->published()->withinWindow();
@@ -68,6 +70,7 @@ class HeroBanner extends Model
     /**
      * Scope for banners in a specific locale
      */
+    /** @param Builder<HeroBanner> $query */
     public function scopeForLocale(Builder $query, string $locale): void
     {
         $query->where('locale', $locale);
@@ -76,6 +79,7 @@ class HeroBanner extends Model
     /**
      * Scope for ordered banners
      */
+    /** @param Builder<HeroBanner> $query */
     public function scopeOrdered(Builder $query): void
     {
         $query->orderBy('sort_order', 'asc');
@@ -84,15 +88,16 @@ class HeroBanner extends Model
     /**
      * Scope for banners within their scheduled window
      */
+    /** @param Builder<HeroBanner> $query */
     public function scopeWithinWindow(Builder $query): void
     {
         $now = Carbon::now();
         $query->where(function (Builder $q) use ($now) {
             $q->whereNull('start_at')
-              ->orWhere('start_at', '<=', $now);
+                ->orWhere('start_at', '<=', $now);
         })->where(function (Builder $q) use ($now) {
             $q->whereNull('end_at')
-              ->orWhere('end_at', '>=', $now);
+                ->orWhere('end_at', '>=', $now);
         });
     }
 
@@ -101,11 +106,11 @@ class HeroBanner extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        if (!$this->image_path) {
+        if (! $this->image_path) {
             return null;
         }
-        
-        return asset('storage/' . $this->image_path);
+
+        return asset('storage/'.$this->image_path);
     }
 
     /**
@@ -113,7 +118,7 @@ class HeroBanner extends Model
      */
     public function getResponsiveImageUrlsAttribute(): array
     {
-        if (!$this->image_path) {
+        if (! $this->image_path) {
             return [];
         }
 
@@ -122,9 +127,9 @@ class HeroBanner extends Model
         $basePath = str_replace('.webp', '', $basePath);
 
         return [
-            'large' => asset('storage/' . $basePath . '_1920w.webp'),
-            'medium' => asset('storage/' . $basePath . '_1280w.webp'),
-            'small' => asset('storage/' . $basePath . '_768w.webp'),
+            'large' => asset('storage/'.$basePath.'_1920w.webp'),
+            'medium' => asset('storage/'.$basePath.'_1280w.webp'),
+            'small' => asset('storage/'.$basePath.'_768w.webp'),
         ];
     }
 
@@ -133,20 +138,20 @@ class HeroBanner extends Model
      */
     public function isCurrentlyVisible(): bool
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
         $now = Carbon::now();
-        
+
         if ($this->start_at && $now->lt($this->start_at)) {
             return false;
         }
-        
+
         if ($this->end_at && $now->gt($this->end_at)) {
             return false;
         }
-        
+
         return true;
     }
 

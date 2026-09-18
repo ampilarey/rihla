@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\GuideStep;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\GuideStep>
+ * @extends Factory<GuideStep>
  */
 class GuideStepFactory extends Factory
 {
@@ -20,15 +21,22 @@ class GuideStepFactory extends Factory
             'locale' => 'en',
             'step_number' => $this->faker->unique()->numberBetween(1, 100),
             'title' => $this->faker->sentence(3),
-            'description' => $this->faker->paragraph(),
-            'photo_path' => $this->faker->optional()->imageUrl(),
+            'summary' => $this->faker->paragraph(),
+            'details' => $this->faker->optional()->paragraphs(3, true),
+            'image_path' => $this->faker->optional()->imageUrl(),
             'dua_text' => $this->faker->optional()->sentence(),
-            'fiqh_notes' => $this->faker->optional()->paragraph(),
+            // A JSON array, one note per school of thought — matching the
+            // model's cast, the seeder and what the admin panel submits.
+            'fiqh_notes' => $this->faker->optional()->randomElements([
+                'Obligatory in all four schools',
+                'Hanafi: recommended before departure',
+                'Shafi\'i: may be combined with the following step',
+            ], 2),
             'checklist' => $this->faker->optional()->randomElements([
                 'Make intention',
                 'Recite dua',
                 'Complete action',
-                'Verify completion'
+                'Verify completion',
             ], $this->faker->numberBetween(2, 4)),
             'is_published' => true,
         ];

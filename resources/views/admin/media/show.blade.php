@@ -52,7 +52,7 @@
                     <div class="bg-gray-100 p-4 rounded-lg">
                         <a href="{{ $medium->video_url }}" 
                            target="_blank" 
-                           class="text-brand-sky-blue hover:underline break-all">
+                           class="text-wine-500 hover:underline break-all">
                             {{ $medium->video_url }}
                         </a>
                     </div>
@@ -69,7 +69,7 @@
                     <label class="block text-sm font-medium text-gray-700">{{ __('Type') }}</label>
                     <p class="mt-1 text-sm text-gray-900">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            {{ $medium->type === 'photo' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                            {{ $medium->type === 'photo' ? 'bg-wine-50 text-wine-600' : 'bg-wine-50 text-wine-600' }}">
                             {{ ucfirst($medium->type) }}
                         </span>
                     </p>
@@ -90,7 +90,7 @@
                     <p class="mt-1 text-sm text-gray-900">
                         @if($medium->trip)
                             <a href="{{ route('admin.trips.edit', $medium->trip) }}" 
-                               class="text-brand-sky-blue hover:underline">
+                               class="text-wine-500 hover:underline">
                                 {{ $medium->trip->title }}
                             </a>
                         @else
@@ -108,7 +108,7 @@
                     <label class="block text-sm font-medium text-gray-700">{{ __('Status') }}</label>
                     <p class="mt-1 text-sm text-gray-900">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            {{ $medium->is_published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                            {{ $medium->is_published ? 'bg-success/10 text-success-dark' : 'bg-warning/10 text-warning-dark' }}">
                             {{ $medium->is_published ? 'Published' : 'Draft' }}
                         </span>
                     </p>
@@ -139,7 +139,7 @@
                 @csrf
                 @method('DELETE')
                 <button type="submit" 
-                        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                        class="bg-error hover:bg-error-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
                         onclick="return confirm('{{ __('Are you sure you want to delete this media?') }}')">
                     {{ __('Delete Media') }}
                 </button>

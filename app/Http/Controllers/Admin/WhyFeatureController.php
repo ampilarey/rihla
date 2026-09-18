@@ -17,23 +17,25 @@ class WhyFeatureController extends Controller
      */
     public function store(UpsertWhyFeatureRequest $request): RedirectResponse
     {
+        $this->authorize('create', WhyFeature::class);
+
         $data = $request->validated();
-        
+
         // Handle image upload
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('why/features', 'public');
             $data['image_path'] = $imagePath;
         }
-        
+
         // Remove the image field from data if no new image
         unset($data['image']);
-        
+
         WhyFeature::create($data);
-        
+
         // Clear cache for all locales
         Cache::forget('why_section_active_en');
         Cache::forget('why_section_active_dv');
-        
+
         return redirect()->back()->with('success', 'Feature created successfully!');
     }
 
@@ -42,6 +44,8 @@ class WhyFeatureController extends Controller
      */
     public function edit(WhyFeature $feature): View
     {
+        $this->authorize('view', $feature);
+
         return view('admin.why.feature_edit', compact('feature'));
     }
 
@@ -50,28 +54,30 @@ class WhyFeatureController extends Controller
      */
     public function update(UpsertWhyFeatureRequest $request, WhyFeature $feature): RedirectResponse
     {
+        $this->authorize('update', $feature);
+
         $data = $request->validated();
-        
+
         // Handle image upload
         if ($request->hasFile('image')) {
             // Delete old image if exists
             if ($feature->image_path && Storage::disk('public')->exists($feature->image_path)) {
                 Storage::disk('public')->delete($feature->image_path);
             }
-            
+
             $imagePath = $request->file('image')->store('why/features', 'public');
             $data['image_path'] = $imagePath;
         }
-        
+
         // Remove the image field from data if no new image
         unset($data['image']);
-        
+
         $feature->update($data);
-        
+
         // Clear cache for all locales
         Cache::forget('why_section_active_en');
         Cache::forget('why_section_active_dv');
-        
+
         return redirect()->route('admin.why-sections.edit', $feature->section)
             ->with('success', 'Feature updated successfully!');
     }
@@ -81,18 +87,20 @@ class WhyFeatureController extends Controller
      */
     public function destroy(WhyFeature $feature): RedirectResponse
     {
+        $this->authorize('delete', $feature);
+
         // Delete image if exists
         if ($feature->image_path && Storage::disk('public')->exists($feature->image_path)) {
             Storage::disk('public')->delete($feature->image_path);
         }
-        
+
         $section = $feature->section;
         $feature->delete();
-        
+
         // Clear cache for all locales
         Cache::forget('why_section_active_en');
         Cache::forget('why_section_active_dv');
-        
+
         return redirect()->route('admin.why-sections.edit', $section)
             ->with('success', 'Feature deleted successfully!');
     }

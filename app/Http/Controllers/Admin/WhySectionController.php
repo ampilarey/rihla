@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateWhySectionRequest;
 use App\Models\WhySection;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -18,10 +17,12 @@ class WhySectionController extends Controller
      */
     public function index(): RedirectResponse
     {
+        $this->authorize('viewAny', WhySection::class);
+
         $currentLocale = app()->getLocale();
         $section = WhySection::where('locale', $currentLocale)->first();
-        
-        if (!$section) {
+
+        if (! $section) {
             $section = WhySection::create([
                 'locale' => $currentLocale,
                 'title' => $currentLocale === 'dv' ? 'ރިހްލައަށް އަންނަވާނަންވާކަންތައްވަނީއެވެ؟' : 'Why Choose Rihla',
@@ -29,7 +30,7 @@ class WhySectionController extends Controller
                 'is_active' => true,
             ]);
         }
-        
+
         return redirect()->route('admin.why-sections.edit', $section);
     }
 
@@ -38,8 +39,10 @@ class WhySectionController extends Controller
      */
     public function edit(WhySection $section): View
     {
+        $this->authorize('view', $section);
+
         $section->load('features');
-        
+
         return view('admin.why.edit', compact('section'));
     }
 
@@ -48,28 +51,30 @@ class WhySectionController extends Controller
      */
     public function update(UpdateWhySectionRequest $request, WhySection $section): RedirectResponse
     {
+        $this->authorize('update', $section);
+
         $data = $request->validated();
-        
+
         // Handle image upload
         if ($request->hasFile('image')) {
             // Delete old image if exists
             if ($section->image_path && Storage::disk('public')->exists($section->image_path)) {
                 Storage::disk('public')->delete($section->image_path);
             }
-            
+
             $imagePath = $request->file('image')->store('why', 'public');
             $data['image_path'] = $imagePath;
         }
-        
+
         // Remove the image field from data if no new image
         unset($data['image']);
-        
+
         $section->update($data);
-        
+
         // Clear cache for all locales
         Cache::forget('why_section_active_en');
         Cache::forget('why_section_active_dv');
-        
+
         return redirect()->route('admin.why-sections.edit', $section)
             ->with('success', 'Why section updated successfully!');
     }

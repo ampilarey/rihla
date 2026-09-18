@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Trip extends Model
 {
@@ -63,18 +64,35 @@ class Trip extends Model
                 $trip->slug = \Str::slug($trip->title);
             }
         });
+
+        // The sitemap lists every published trip and is cached for an hour.
+        // Without this, publishing a trip would leave it out of the sitemap
+        // for up to an hour after it went live.
+        // Must return nothing. Cache::forget() returns false when the key is
+        // not cached, and a model-event listener returning false halts the
+        // rest of the listeners for that event — which silently suppressed
+        // every later listener on Trip's saved and deleted events.
+        $bustSitemap = function (): void {
+            Cache::forget('sitemap.xml');
+        };
+
+        static::saved($bustSitemap);
+        static::deleted($bustSitemap);
     }
 
+    /** @return HasMany<Media, $this> */
     public function media(): HasMany
     {
         return $this->hasMany(Media::class)->orderBy('sort_order');
     }
 
+    /** @return HasMany<Media, $this> */
     public function photos(): HasMany
     {
         return $this->hasMany(Media::class)->where('type', 'photo')->orderBy('sort_order');
     }
 
+    /** @return HasMany<Media, $this> */
     public function videos(): HasMany
     {
         return $this->hasMany(Media::class)->where('type', 'video')->orderBy('sort_order');

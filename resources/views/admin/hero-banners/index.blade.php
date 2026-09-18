@@ -13,7 +13,7 @@
     </div>
 
     @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+        <div class="bg-success/10 border border-success/40 text-success-dark px-4 py-3 rounded mb-6">
             {{ session('success') }}
         </div>
     @endif
@@ -22,7 +22,7 @@
     @if(isset($banners['en']) && $banners['en']->count() > 0)
         <div class="mb-12">
             <h2 class="text-2xl font-semibold text-gray-700 mb-6 flex items-center">
-                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium mr-3">EN</span>
+                <span class="bg-wine-50 text-wine-600 px-3 py-1 rounded-full text-sm font-medium mr-3">EN</span>
                 English Banners
             </h2>
             
@@ -60,7 +60,7 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $banner->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $banner->is_active ? 'bg-success/10 text-success-dark' : 'bg-error/10 text-error-dark' }}">
                                             {{ $banner->is_active ? 'Active' : 'Inactive' }}
                                         </span>
                                     </td>
@@ -82,9 +82,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
                                             <a href="{{ route('admin.hero-banners.show', $banner) }}" 
-                                               class="text-brand-sky-blue hover:text-blue-600">View</a>
+                                               class="text-wine-500 hover:text-wine-600">View</a>
                                             <a href="{{ route('admin.hero-banners.edit', $banner) }}" 
-                                               class="text-brand-gold hover:text-amber-600">Edit</a>
+                                               class="text-gold-700 hover:text-gold-700">Edit</a>
                                             <form method="POST" action="{{ route('admin.hero-banners.toggle-status', $banner) }}" class="inline">
                                                 @csrf
                                                 <button type="submit" 
@@ -96,7 +96,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="text-red-600 hover:text-red-800"
+                                                        class="text-error hover:text-error-dark"
                                                         onclick="return confirm('Are you sure you want to delete this banner?')">
                                                     Delete
                                                 </button>
@@ -116,7 +116,7 @@
     @if(isset($banners['dv']) && $banners['dv']->count() > 0)
         <div class="mb-12">
             <h2 class="text-2xl font-semibold text-gray-700 mb-6 flex items-center">
-                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium mr-3">ދިވެހިބަހުން</span>
+                <span class="bg-success/10 text-success-dark px-3 py-1 rounded-full text-sm font-medium mr-3">ދިވެހިބަހުން</span>
                 Dhivehi Banners
             </h2>
             
@@ -154,7 +154,7 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $banner->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $banner->is_active ? 'bg-success/10 text-success-dark' : 'bg-error/10 text-error-dark' }}">
                                             {{ $banner->is_active ? 'Active' : 'Inactive' }}
                                         </span>
                                     </td>
@@ -176,9 +176,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
                                             <a href="{{ route('admin.hero-banners.show', $banner) }}" 
-                                               class="text-brand-sky-blue hover:text-blue-600">View</a>
+                                               class="text-wine-500 hover:text-wine-600">View</a>
                                             <a href="{{ route('admin.hero-banners.edit', $banner) }}" 
-                                               class="text-brand-gold hover:text-amber-600">Edit</a>
+                                               class="text-gold-700 hover:text-gold-700">Edit</a>
                                             <form method="POST" action="{{ route('admin.hero-banners.toggle-status', $banner) }}" class="inline">
                                                 @csrf
                                                 <button type="submit" 
@@ -190,7 +190,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="text-red-600 hover:text-red-800"
+                                                        class="text-error hover:text-error-dark"
                                                         onclick="return confirm('Are you sure you want to delete this banner?')">
                                                     Delete
                                                 </button>

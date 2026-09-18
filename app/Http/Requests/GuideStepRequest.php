@@ -7,6 +7,11 @@ use Illuminate\Validation\Rule;
 
 class GuideStepRequest extends FormRequest
 {
+    /**
+     * The route group and the controller's policy both gate this already;
+     * returning true here defers to them rather than adding a third, weaker
+     * answer that could drift out of step with the other two.
+     */
     public function authorize(): bool
     {
         return true;

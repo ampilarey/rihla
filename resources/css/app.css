@@ -121,26 +121,39 @@
     }
 }
 
-/* Custom components with Rihla Travels brand colors */
+/* Rihla design system — wine primary, gold accent, ink text, cream surfaces.
+   One definition per component: the previous file declared .btn-primary, .card
+   and .badge-gold twice (once in @layer components, once as plain CSS below),
+   where the later plain rule silently won. */
 @layer components {
+    /* ── Buttons ───────────────────────────────────────────────────────────
+       One primary, one secondary, one accent. Gold is never a filled button
+       with white text (2.4:1); as a fill it takes ink. */
     .btn-primary {
-        @apply bg-brand-emerald hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2;
+        @apply inline-flex items-center justify-center bg-wine-500 hover:bg-wine-600 active:bg-wine-700 text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2;
     }
 
     .btn-secondary {
-        @apply border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-amber-500 focus:ring-offset-2;
+        @apply inline-flex items-center justify-center bg-cream hover:bg-wine-50 border border-wine-500 text-wine-600 font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2;
     }
 
-    .btn-sky {
-        @apply bg-brand-sky-blue hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    .btn-gold {
+        @apply inline-flex items-center justify-center bg-gold-500 hover:bg-gold-600 text-ink font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2;
     }
 
     .btn-outline {
-        @apply border-2 border-brand-dark-grey text-brand-dark-grey hover:bg-brand-dark-grey hover:text-white font-medium py-3 px-6 rounded-lg transition-colors focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+        @apply inline-flex items-center justify-center border-2 border-ink text-ink hover:bg-ink hover:text-cream font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2;
     }
 
+    /* Retained so existing markup keeps working; folded onto the primary so
+       there is only ever one primary button colour. */
+    .btn-sky {
+        @apply btn-primary;
+    }
+
+    /* ── Surfaces ──────────────────────────────────────────────────────── */
     .card {
-        @apply bg-white rounded-2xl border border-gray-200 shadow-soft p-6;
+        @apply bg-white rounded-2xl border border-gray-200 shadow-soft overflow-hidden;
     }
 
     .card-hover {
@@ -148,47 +161,75 @@
     }
 
     .section-light {
-        @apply bg-brand-light-beige;
+        @apply bg-cream;
     }
 
     .section-dark {
-        @apply bg-brand-dark-grey text-white;
+        @apply bg-ink text-cream;
     }
 
+    .section-wine {
+        @apply bg-wine-500 text-white;
+    }
+
+    /* Single-hue and restrained, rather than the old sky-to-gold blend. */
     .section-gradient {
-        @apply bg-gradient-to-r from-brand-sky-blue to-brand-gold/70;
+        @apply bg-gradient-to-r from-wine-600 to-wine-500 text-white;
     }
 
+    /* ── Type ─────────────────────────────────────────────────────────── */
     .text-brand-heading {
-        @apply text-brand-black;
+        @apply text-ink;
     }
 
     .text-brand-body {
-        @apply text-brand-dark-grey;
+        @apply text-ink-muted;
     }
 
+    /* ── Badges ───────────────────────────────────────────────────────────
+       Gold badges carry ink text. Status badges use a pale ground with dark
+       text so they stay legible without shouting over the brand. */
     .badge-gold {
-        @apply bg-brand-gold text-white px-3 py-1 rounded-full text-sm font-medium;
+        @apply inline-flex items-center bg-gold-500 text-ink px-3 py-1 rounded-full text-sm font-medium;
     }
 
-    .badge-sky {
-        @apply bg-brand-sky-blue text-white px-3 py-1 rounded-full text-sm font-medium;
+    .badge-wine {
+        @apply inline-flex items-center bg-wine-500 text-white px-3 py-1 rounded-full text-sm font-medium;
     }
 
+    .badge-success {
+        @apply inline-flex items-center bg-wine-50 text-success px-3 py-1 rounded-full text-sm font-medium;
+    }
+
+    .badge-warning {
+        @apply inline-flex items-center bg-cream-deep text-warning px-3 py-1 rounded-full text-sm font-medium;
+    }
+
+    .badge-error {
+        @apply inline-flex items-center bg-wine-50 text-error px-3 py-1 rounded-full text-sm font-medium;
+    }
+
+    /* Legacy badge names, folded onto the wine badge. */
+    .badge-sky,
     .badge-emerald {
-        @apply bg-brand-emerald text-white px-3 py-1 rounded-full text-sm font-medium;
+        @apply badge-wine;
     }
 
+    /* ── Layout ───────────────────────────────────────────────────────── */
     .container-fluid {
         @apply max-w-screen-xl mx-auto px-4;
     }
 
+    .section {
+        @apply max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8;
+    }
+
     .divider-gold {
-        @apply border-t border-brand-gold/40;
+        @apply border-t border-gold-500/40;
     }
 
     .divider-sky {
-        @apply border-t border-brand-sky-blue/40;
+        @apply border-t border-wine-500/30;
     }
 
     .aspect-video {
@@ -202,27 +243,6 @@
     .aspect-4-3 {
         aspect-ratio: 4 / 3;
     }
-}
-
-/* CTA and Layout Utility Classes */
-.btn-primary { 
-    @apply inline-flex items-center justify-center px-5 py-3 rounded-2xl bg-brand-sky-blue text-white font-semibold hover:opacity-90 focus:ring focus:ring-brand-sky-blue/40; 
-}
-
-.btn-secondary { 
-    @apply inline-flex items-center justify-center px-5 py-3 rounded-2xl border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-white focus:ring focus:ring-brand-gold/30; 
-}
-
-.badge-gold { 
-    @apply inline-flex items-center px-2.5 py-1 rounded-full bg-brand-gold text-white text-xs font-medium; 
-}
-
-.section { 
-    @apply max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8; 
-}
-
-.card { 
-    @apply bg-white rounded-2xl shadow-soft overflow-hidden; 
 }
 
 /* RTL Support */
@@ -262,8 +282,12 @@
 
 /* Locale-specific typography */
 @layer base {
+    /* A_Faruma is restricted to the Thaana range by its unicode-range, so
+       Latin characters and digits inside Dhivehi text still come from Inter
+       rather than from the three Latin glyphs the Thaana face happens to
+       carry. Listing both is what makes that split work. */
     [lang="dv"] {
-        font-family: 'Faruma', 'MV Waheed', 'Cairo', 'Tajawal', 'sans-serif';
+        font-family: 'A_Faruma', 'MV Waheed', 'Inter', sans-serif;
     }
 
     [lang="en"] {
@@ -271,34 +295,19 @@
     }
 }
 
-/* Dhivehi Font Utility Classes - Faruma Primary */
+/* Script-specific type. The `font-dhivehi-waheed`, `-cairo` and `-elegant`
+   variants that used to live here named fonts the site no longer loads and
+   were referenced by no view. */
 @layer utilities {
     .font-dhivehi {
-        font-family: 'Faruma', 'MV Waheed', 'sans-serif';
+        font-family: 'A_Faruma', 'MV Waheed', 'Inter', sans-serif;
     }
-    
-    .font-dhivehi-faruma {
-        font-family: 'Faruma', 'sans-serif';
-    }
-    
-    .font-dhivehi-waheed {
-        font-family: 'MV Waheed', 'sans-serif';
-    }
-    
-    .font-dhivehi-cairo {
-        font-family: 'Cairo', 'sans-serif';
-    }
-    
-    .font-dhivehi-elegant {
-        font-family: 'Tajawal', 'sans-serif';
-    }
-    
-    .font-inter {
-        font-family: 'Inter', 'Arial', sans-serif;
-    }
-    
-    /* Automatic font switching based on locale */
-    .font-auto {
-        font-family: var(--font-family, 'Inter');
+
+    /* Arabic, for du'a and Qur'anic text. Thaana fonts do not cover Arabic
+       and Inter does not either, so without this a supplication falls back to
+       whatever the device happens to have. */
+    .font-arabic {
+        font-family: 'Cairo', 'Segoe UI', sans-serif;
+        line-height: 2;
     }
 }

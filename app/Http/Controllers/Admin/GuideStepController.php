@@ -15,6 +15,8 @@ class GuideStepController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', GuideStep::class);
+
         $guideSteps = GuideStep::orderBy('locale')
             ->orderBy('step_number')
             ->get()
@@ -28,6 +30,8 @@ class GuideStepController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', GuideStep::class);
+
         return view('admin.guide-steps.create');
     }
 
@@ -36,6 +40,8 @@ class GuideStepController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', GuideStep::class);
+
         $request->validate([
             'step_number' => 'required|integer|min:1',
             'locale' => 'required|in:en,dv',
@@ -44,7 +50,8 @@ class GuideStepController extends Controller
             'details' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
             'dua_text' => 'nullable|string',
-            'fiqh_notes' => 'nullable|string',
+            'fiqh_notes' => 'nullable|array',
+            'fiqh_notes.*' => 'string|max:500',
             'video_url' => 'nullable|url|max:255',
             'checklist' => 'nullable|array',
             'checklist.*' => 'string|max:255',
@@ -53,18 +60,18 @@ class GuideStepController extends Controller
 
         $data = $request->only([
             'step_number', 'locale', 'title', 'summary', 'details',
-            'dua_text', 'fiqh_notes', 'video_url', 'is_published'
+            'dua_text', 'fiqh_notes', 'video_url', 'is_published',
         ]);
-        
+
         // Process checklist and fiqh_notes
         if ($request->has('checklist')) {
             $data['checklist'] = array_filter($request->input('checklist', []));
         }
-        
+
         if ($request->has('fiqh_notes')) {
             $data['fiqh_notes'] = array_filter($request->input('fiqh_notes', []));
         }
-        
+
         $data['is_published'] = $request->has('is_published');
 
         if ($request->hasFile('image')) {
@@ -83,7 +90,13 @@ class GuideStepController extends Controller
      */
     public function show(GuideStep $guideStep)
     {
-        return view('admin.guide-steps.show', compact('guideStep'));
+        $this->authorize('view', $guideStep);
+
+        // There is no admin.guide-steps.show view and never has been, so this
+        // returned "View [admin.guide-steps.show] not found" — a 500 on every
+        // attempt to open a step. Editing is what the panel is for, and the
+        // edit screen already shows everything a read-only one would.
+        return redirect()->route('admin.guide-steps.edit', $guideStep);
     }
 
     /**
@@ -91,6 +104,8 @@ class GuideStepController extends Controller
      */
     public function edit(GuideStep $guideStep)
     {
+        $this->authorize('update', $guideStep);
+
         return view('admin.guide-steps.edit', compact('guideStep'));
     }
 
@@ -99,6 +114,8 @@ class GuideStepController extends Controller
      */
     public function update(Request $request, GuideStep $guideStep)
     {
+        $this->authorize('update', $guideStep);
+
         $request->validate([
             'step_number' => 'required|integer|min:1',
             'locale' => 'required|in:en,dv',
@@ -107,7 +124,8 @@ class GuideStepController extends Controller
             'details' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:6144',
             'dua_text' => 'nullable|string',
-            'fiqh_notes' => 'nullable|string',
+            'fiqh_notes' => 'nullable|array',
+            'fiqh_notes.*' => 'string|max:500',
             'video_url' => 'nullable|url|max:255',
             'checklist' => 'nullable|array',
             'checklist.*' => 'string|max:255',
@@ -116,18 +134,18 @@ class GuideStepController extends Controller
 
         $data = $request->only([
             'step_number', 'locale', 'title', 'summary', 'details',
-            'dua_text', 'fiqh_notes', 'video_url', 'is_published'
+            'dua_text', 'fiqh_notes', 'video_url', 'is_published',
         ]);
-        
+
         // Process checklist and fiqh_notes
         if ($request->has('checklist')) {
             $data['checklist'] = array_filter($request->input('checklist', []));
         }
-        
+
         if ($request->has('fiqh_notes')) {
             $data['fiqh_notes'] = array_filter($request->input('fiqh_notes', []));
         }
-        
+
         $data['is_published'] = $request->has('is_published');
 
         if ($request->hasFile('image')) {
@@ -151,6 +169,8 @@ class GuideStepController extends Controller
      */
     public function destroy(GuideStep $guideStep)
     {
+        $this->authorize('delete', $guideStep);
+
         if ($guideStep->image_path) {
             $this->deleteImage($guideStep->image_path);
         }
@@ -166,6 +186,8 @@ class GuideStepController extends Controller
      */
     public function updateOrder(Request $request)
     {
+        $this->authorize('update', GuideStep::class);
+
         $request->validate([
             'steps' => 'required|array',
             'steps.*.id' => 'required|exists:guide_steps,id',
@@ -184,11 +206,13 @@ class GuideStepController extends Controller
      */
     public function toggleStatus(GuideStep $guideStep)
     {
-        $guideStep->update(['is_published' => !$guideStep->is_published]);
-        
+        $this->authorize('update', $guideStep);
+
+        $guideStep->update(['is_published' => ! $guideStep->is_published]);
+
         return response()->json([
             'success' => true,
-            'is_published' => $guideStep->is_published
+            'is_published' => $guideStep->is_published,
         ]);
     }
 
@@ -197,6 +221,8 @@ class GuideStepController extends Controller
      */
     public function bulkUpdateStatus(Request $request)
     {
+        $this->authorize('update', GuideStep::class);
+
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:guide_steps,id',
@@ -207,7 +233,7 @@ class GuideStepController extends Controller
             ->update(['is_published' => $request->input('status')]);
 
         $action = $request->input('status') ? 'published' : 'unpublished';
-        
+
         return redirect()->route('admin.guide-steps.index')
             ->with('success', "Selected guide steps {$action} successfully.");
     }

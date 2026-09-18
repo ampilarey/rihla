@@ -12,6 +12,13 @@ class TripSeeder extends Seeder
      */
     public function run(): void
     {
+        // Demo content. It reached production once and advertised resort
+        // holidays on an Umrah site; never let it run there again.
+        if (app()->isProduction()) {
+            $this->command->warn(static::class.' skipped: demo data is not seeded in production.');
+
+            return;
+        }
         // Current Trip
         Trip::create([
             'title' => 'Maldives Island Hopping Adventure',

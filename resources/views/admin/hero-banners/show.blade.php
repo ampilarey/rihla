@@ -13,7 +13,7 @@
                     Edit Banner
                 </a>
                 <a href="{{ route('admin.hero-banners.index') }}" 
-                   class="text-brand-sky-blue hover:text-blue-600 font-medium">
+                   class="text-wine-500 hover:text-wine-600 font-medium">
                     ← Back to Banners
                 </a>
             </div>
@@ -50,7 +50,7 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Language</dt>
                                     <dd class="mt-1 text-sm text-gray-900">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $heroBanner->locale === 'en' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $heroBanner->locale === 'en' ? 'bg-wine-50 text-wine-600' : 'bg-success/10 text-success-dark' }}">
                                             {{ strtoupper($heroBanner->locale) }}
                                         </span>
                                     </dd>
@@ -78,10 +78,10 @@
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500">Primary CTA</dt>
                                         <dd class="mt-1 text-sm text-gray-900">
-                                            <span class="text-brand-sky-blue">{{ $heroBanner->primary_cta_text }}</span> →
+                                            <span class="text-wine-500">{{ $heroBanner->primary_cta_text }}</span> →
                                             <a href="{{ $heroBanner->primary_cta_url }}" 
                                                target="_blank"
-                                               class="text-brand-sky-blue hover:underline">
+                                               class="text-wine-500 hover:underline">
                                                 {{ $heroBanner->primary_cta_url }}
                                             </a>
                                         </dd>
@@ -91,10 +91,10 @@
                                     <div>
                                         <dt class="text-sm font-medium text-gray-500">Secondary CTA</dt>
                                         <dd class="mt-1 text-sm text-gray-900">
-                                            <span class="text-brand-gold">{{ $heroBanner->secondary_cta_text }}</span> →
+                                            <span class="text-gold-700">{{ $heroBanner->secondary_cta_text }}</span> →
                                             <a href="{{ $heroBanner->secondary_cta_url }}" 
                                                target="_blank"
-                                               class="text-brand-gold hover:underline">
+                                               class="text-gold-700 hover:underline">
                                                 {{ $heroBanner->secondary_cta_url }}
                                             </a>
                                         </dd>
@@ -116,7 +116,7 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Status</dt>
                                     <dd class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $heroBanner->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $heroBanner->is_active ? 'bg-success/10 text-success-dark' : 'bg-error/10 text-error-dark' }}">
                                             {{ $heroBanner->is_active ? 'Active' : 'Inactive' }}
                                         </span>
                                     </dd>
@@ -147,7 +147,7 @@
                                     <dt class="text-sm font-medium text-gray-500">Image</dt>
                                     <dd class="mt-1 text-sm text-gray-900">
                                         @if($heroBanner->image_path)
-                                            <span class="text-green-600">✓ Image uploaded</span>
+                                            <span class="text-success">✓ Image uploaded</span>
                                         @else
                                             <span class="text-gray-500">No image</span>
                                         @endif
@@ -188,7 +188,7 @@
                             <form method="POST" action="{{ route('admin.hero-banners.toggle-status', $heroBanner) }}" class="inline">
                                 @csrf
                                 <button type="submit" 
-                                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-sky-blue">
+                                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-wine-500">
                                     {{ $heroBanner->is_active ? 'Deactivate' : 'Activate' }}
                                 </button>
                             </form>
@@ -197,7 +197,7 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit" 
-                                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                    class="px-4 py-2 bg-error text-white rounded-lg hover:bg-error-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error"
                                     onclick="return confirm('Are you sure you want to delete this banner?')">
                                 Delete Banner
                             </button>

@@ -16,6 +16,8 @@ class HeroBannerController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', HeroBanner::class);
+
         $banners = HeroBanner::orderBy('locale')
             ->orderBy('sort_order')
             ->get()
@@ -29,6 +31,8 @@ class HeroBannerController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', HeroBanner::class);
+
         return view('admin.hero-banners.create');
     }
 
@@ -37,11 +41,13 @@ class HeroBannerController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', HeroBanner::class);
+
         // Debug: Log the request data
         \Log::info('HeroBanner store request', [
             'data' => $request->all(),
             'files' => $request->allFiles(),
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
         ]);
 
         $validator = Validator::make($request->all(), [
@@ -76,8 +82,9 @@ class HeroBannerController extends Controller
 
         if ($validator->fails()) {
             \Log::warning('HeroBanner validation failed', [
-                'errors' => $validator->errors()->toArray()
+                'errors' => $validator->errors()->toArray(),
             ]);
+
             return back()->withErrors($validator)->withInput();
         }
 
@@ -105,10 +112,10 @@ class HeroBannerController extends Controller
         } catch (\Exception $e) {
             \Log::error('HeroBanner creation failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
-            return back()->withErrors(['error' => 'Failed to create banner: ' . $e->getMessage()])->withInput();
+
+            return back()->withErrors(['error' => 'Failed to create banner: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -117,6 +124,8 @@ class HeroBannerController extends Controller
      */
     public function show(HeroBanner $heroBanner)
     {
+        $this->authorize('view', $heroBanner);
+
         return view('admin.hero-banners.show', compact('heroBanner'));
     }
 
@@ -125,6 +134,8 @@ class HeroBannerController extends Controller
      */
     public function edit(HeroBanner $heroBanner)
     {
+        $this->authorize('update', $heroBanner);
+
         return view('admin.hero-banners.edit', compact('heroBanner'));
     }
 
@@ -133,6 +144,8 @@ class HeroBannerController extends Controller
      */
     public function update(Request $request, HeroBanner $heroBanner)
     {
+        $this->authorize('update', $heroBanner);
+
         $validator = Validator::make($request->all(), [
             'locale' => 'required|in:en,dv',
             'title' => 'required|string|max:120',
@@ -176,7 +189,7 @@ class HeroBannerController extends Controller
             if ($heroBanner->image_path) {
                 $this->deleteImage($heroBanner->image_path);
             }
-            
+
             $imagePath = $this->processImage($request->file('image'));
             $data['image_path'] = $imagePath;
         }
@@ -192,6 +205,8 @@ class HeroBannerController extends Controller
      */
     public function destroy(HeroBanner $heroBanner)
     {
+        $this->authorize('delete', $heroBanner);
+
         // Delete image
         if ($heroBanner->image_path) {
             $this->deleteImage($heroBanner->image_path);
@@ -208,7 +223,9 @@ class HeroBannerController extends Controller
      */
     public function toggleStatus(HeroBanner $heroBanner)
     {
-        $heroBanner->update(['is_active' => !$heroBanner->is_active]);
+        $this->authorize('update', $heroBanner);
+
+        $heroBanner->update(['is_active' => ! $heroBanner->is_active]);
 
         return back()->with('success', 'Banner status updated successfully.');
     }
@@ -218,6 +235,8 @@ class HeroBannerController extends Controller
      */
     public function updateOrder(Request $request)
     {
+        $this->authorize('update', HeroBanner::class);
+
         $request->validate([
             'banners' => 'required|array',
             'banners.*.id' => 'required|exists:hero_banners,id',
@@ -237,15 +256,15 @@ class HeroBannerController extends Controller
      */
     private function processImage($image): string
     {
-        $filename = 'hero_' . time() . '_' . uniqid();
+        $filename = 'hero_'.time().'_'.uniqid();
         $extension = $image->getClientOriginalExtension();
-        
+
         // Store original
-        $originalPath = $image->storeAs('hero', $filename . '.' . $extension, 'public');
-        
+        $originalPath = $image->storeAs('hero', $filename.'.'.$extension, 'public');
+
         // Create responsive variants
         $this->createResponsiveVariants($image, $filename);
-        
+
         return $originalPath;
     }
 
@@ -268,7 +287,7 @@ class HeroBannerController extends Controller
                 ->encode('webp', 85);
 
             Storage::disk('public')->put(
-                'hero/' . $filename . '_' . $suffix . '.webp',
+                'hero/'.$filename.'_'.$suffix.'.webp',
                 $variant
             );
         }
@@ -286,9 +305,9 @@ class HeroBannerController extends Controller
         // Delete original and variants
         $files = [
             $imagePath,
-            $basePath . '_1920w.webp',
-            $basePath . '_1280w.webp',
-            $basePath . '_768w.webp',
+            $basePath.'_1920w.webp',
+            $basePath.'_1280w.webp',
+            $basePath.'_768w.webp',
         ];
 
         foreach ($files as $file) {

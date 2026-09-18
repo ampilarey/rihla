@@ -1,44 +1,40 @@
 {
-    "name": "Rihla Travels - Umrah Guide",
-    "short_name": "Umrah Guide",
-    "description": "Complete step-by-step guide for performing Umrah with proper etiquette and supplications",
-    "start_url": "/guide",
+    "name": "Rihla Travels",
+    "short_name": "Rihla",
+    "description": "Umrah packages, a step-by-step Umrah guide, and Islamic travel from the Maldives.",
+    "id": "/",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#1C9FE2",
-    "theme_color": "#1C9FE2",
     "orientation": "portrait-primary",
+    "background_color": "#FBF6EC",
+    "theme_color": "#2E2621",
     "icons": [
         {
-            "src": "/images/logo-192.png",
+            "src": "/images/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
         },
         {
-            "src": "/images/logo-512.png",
+            "src": "/images/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
-        }
-    ],
-    "categories": ["travel", "education", "religion"],
-    "lang": "en",
-    "dir": "ltr",
-    "scope": "/guide",
-    "prefer_related_applications": false,
-    "related_applications": [],
-    "screenshots": [
-        {
-            "src": "/images/guide-screenshot-1.png",
-            "sizes": "1280x720",
-            "type": "image/png",
-            "form_factor": "wide"
+            "purpose": "any"
         },
         {
-            "src": "/images/guide-screenshot-2.png",
-            "sizes": "390x844",
+            "src": "/images/icon-maskable-192.png",
+            "sizes": "192x192",
             "type": "image/png",
-            "form_factor": "narrow"
+            "purpose": "maskable"
+        },
+        {
+            "src": "/images/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
-    ]
+    ],
+    "categories": ["travel", "education"],
+    "prefer_related_applications": false
 }

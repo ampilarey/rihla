@@ -10,19 +10,19 @@
     </div>
 
     @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+        <div class="bg-success/10 border border-success/40 text-success-dark px-4 py-3 rounded mb-6">
             {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <div class="bg-error/10 border border-error/40 text-error-dark px-4 py-3 rounded mb-6">
             {{ session('error') }}
         </div>
     @endif
 
     @if($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <div class="bg-error/10 border border-error/40 text-error-dark px-4 py-3 rounded mb-6">
             <ul class="list-disc list-inside">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -79,15 +79,15 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                @if($item->type === 'photo') bg-blue-100 text-blue-800
-                                @else bg-red-100 text-red-800
+                                @if($item->type === 'photo') bg-wine-50 text-wine-600
+                                @else bg-error/10 text-error-dark
                                 @endif">
                                 {{ ucfirst($item->type) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             @if($item->trip)
-                                <a href="{{ route('admin.trips.edit', $item->trip) }}" class="text-brand-green hover:text-brand-green/80">
+                                <a href="{{ route('admin.trips.edit', $item->trip) }}" class="text-wine-500 hover:text-wine-600">
                                     {{ $item->trip->title }}
                                 </a>
                             @else
@@ -96,24 +96,24 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             @if($item->is_published)
-                                <span class="text-green-600">{{ __('Yes') }}</span>
+                                <span class="text-success">{{ __('Yes') }}</span>
                             @else
-                                <span class="text-red-600">{{ __('No') }}</span>
+                                <span class="text-error">{{ __('No') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
-                                <a href="{{ route('admin.media.edit', $item) }}" class="text-brand-green hover:text-brand-green/80">
+                                <a href="{{ route('admin.media.edit', $item) }}" class="text-wine-500 hover:text-wine-600">
                                     {{ __('Edit') }}
                                 </a>
-                                <a href="{{ route('admin.media.show', $item) }}" class="text-blue-600 hover:text-blue-800">
+                                <a href="{{ route('admin.media.show', $item) }}" class="text-wine-500 hover:text-wine-600">
                                     {{ __('View') }}
                                 </a>
                                 <form action="{{ route('admin.media.destroy', $item) }}" method="POST" class="inline" style="display: inline;" id="delete-form-{{ $item->id }}">
                                     @csrf
                                     <input type="hidden" name="_method" value="DELETE">
                                     <button type="submit" 
-                                            class="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded px-2 py-1"
+                                            class="text-error hover:text-error-dark focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2 rounded px-2 py-1"
                                             onclick="return confirmAndSubmit(event, {{ $item->id }}, '{{ $item->title ?: 'this media item' }}')">
                                         {{ __('Delete') }}
                                     </button>
