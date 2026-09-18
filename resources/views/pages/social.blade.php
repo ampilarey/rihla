@@ -15,7 +15,7 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @if($socialSettings['facebook_url'])
-            <a href="{{ $socialSettings['facebook_url'] }}" target="_blank" class="group">
+            <a href="{{ $socialSettings['facebook_url'] }}" target="_blank" rel="noopener noreferrer" class="group">
                 <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center">
                     <div class="w-16 h-16 bg-wine-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -29,7 +29,7 @@
             @endif
             
             @if($socialSettings['instagram_url'])
-            <a href="{{ $socialSettings['instagram_url'] }}" target="_blank" class="group">
+            <a href="{{ $socialSettings['instagram_url'] }}" target="_blank" rel="noopener noreferrer" class="group">
                 <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center">
                     <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -43,7 +43,7 @@
             @endif
             
             @if($socialSettings['tiktok_url'])
-            <a href="{{ $socialSettings['tiktok_url'] }}" target="_blank" class="group">
+            <a href="{{ $socialSettings['tiktok_url'] }}" target="_blank" rel="noopener noreferrer" class="group">
                 <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center">
                     <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@
             @endif
             
             @if($socialSettings['viber_url'])
-            <a href="{{ $socialSettings['viber_url'] }}" target="_blank" class="group">
+            <a href="{{ $socialSettings['viber_url'] }}" target="_blank" rel="noopener noreferrer" class="group">
                 <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center">
                     <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@
             @endif
             
             <!-- WhatsApp Button -->
-            <a href="https://wa.me/{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" target="_blank" class="group">
+            <a href="{{ \App\Support\Contact::whatsappUrl() }}" target="_blank" rel="noopener noreferrer" class="group">
                 <div class="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center">
                     <div class="w-16 h-16 bg-wine-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -113,8 +113,8 @@
         <div class="card">
             <h3 class="text-2xl font-bold text-gray-800 mb-4">{{ __('Stay Connected') }}</h3>
             <p class="text-gray-600 mb-6">{{ __('Follow us on social media to get the latest updates, behind-the-scenes content, and exclusive offers.') }}</p>
-            <a href="https://wa.me/{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" 
-               target="_blank" 
+            <a href="{{ \App\Support\Contact::whatsappUrl() }}" 
+               target="_blank" rel="noopener noreferrer" 
                class="btn-primary">
                 {{ __('Start a Conversation') }}
             </a>

@@ -65,7 +65,12 @@
                         <input type="text" name="whatsapp_number" id="whatsapp_number" value="{{ $socialSettings['whatsapp_number'] ?? '9607972434' }}" required
                                placeholder="9607972434"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
-                        <p class="text-sm text-gray-500 mt-1">{{ __('Enter number without + or country code') }}</p>
+                        {{-- The old hint said "without + or country code" while the
+                             placeholder beside it showed 9607972434, which is the
+                             country code followed by the number. Anyone who followed
+                             the hint would have broken every WhatsApp link on the
+                             site. --}}
+                        <p class="text-sm text-gray-500 mt-1">{{ __('Digits only, including the country code — for example 9607972434.') }}</p>
                     </div>
 
                     <div>
