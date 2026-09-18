@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\GuideStep;
 use App\Models\User;
+use App\Support\Access;
 use Database\Seeders\UmrahGuideSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,7 +27,7 @@ class GuideStepAdminTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['is_admin' => true]);
+        return User::factory()->create()->assignRole(Access::SUPER_ADMIN);
     }
 
     /** @return array<string, mixed> */
@@ -49,7 +50,8 @@ class GuideStepAdminTest extends TestCase
     {
         $this->actingAs($this->admin())
             ->post(route('admin.guide-steps.store'), $this->validStep())
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
 
         $step = GuideStep::sole();
 
@@ -70,7 +72,8 @@ class GuideStepAdminTest extends TestCase
                 route('admin.guide-steps.update', $step),
                 $this->validStep(['title' => 'New title', 'summary' => 'Rewritten.']),
             )
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
 
         $step->refresh();
 

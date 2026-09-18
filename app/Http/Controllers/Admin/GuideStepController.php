@@ -15,6 +15,8 @@ class GuideStepController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', GuideStep::class);
+
         $guideSteps = GuideStep::orderBy('locale')
             ->orderBy('step_number')
             ->get()
@@ -28,6 +30,8 @@ class GuideStepController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', GuideStep::class);
+
         return view('admin.guide-steps.create');
     }
 
@@ -36,6 +40,8 @@ class GuideStepController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', GuideStep::class);
+
         $request->validate([
             'step_number' => 'required|integer|min:1',
             'locale' => 'required|in:en,dv',
@@ -84,6 +90,8 @@ class GuideStepController extends Controller
      */
     public function show(GuideStep $guideStep)
     {
+        $this->authorize('view', $guideStep);
+
         return view('admin.guide-steps.show', compact('guideStep'));
     }
 
@@ -92,6 +100,8 @@ class GuideStepController extends Controller
      */
     public function edit(GuideStep $guideStep)
     {
+        $this->authorize('update', $guideStep);
+
         return view('admin.guide-steps.edit', compact('guideStep'));
     }
 
@@ -100,6 +110,8 @@ class GuideStepController extends Controller
      */
     public function update(Request $request, GuideStep $guideStep)
     {
+        $this->authorize('update', $guideStep);
+
         $request->validate([
             'step_number' => 'required|integer|min:1',
             'locale' => 'required|in:en,dv',
@@ -153,6 +165,8 @@ class GuideStepController extends Controller
      */
     public function destroy(GuideStep $guideStep)
     {
+        $this->authorize('delete', $guideStep);
+
         if ($guideStep->image_path) {
             $this->deleteImage($guideStep->image_path);
         }
@@ -168,6 +182,8 @@ class GuideStepController extends Controller
      */
     public function updateOrder(Request $request)
     {
+        $this->authorize('update', GuideStep::class);
+
         $request->validate([
             'steps' => 'required|array',
             'steps.*.id' => 'required|exists:guide_steps,id',
@@ -186,6 +202,8 @@ class GuideStepController extends Controller
      */
     public function toggleStatus(GuideStep $guideStep)
     {
+        $this->authorize('update', $guideStep);
+
         $guideStep->update(['is_published' => ! $guideStep->is_published]);
 
         return response()->json([
@@ -199,6 +217,8 @@ class GuideStepController extends Controller
      */
     public function bulkUpdateStatus(Request $request)
     {
+        $this->authorize('update', GuideStep::class);
+
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:guide_steps,id',

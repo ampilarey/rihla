@@ -2,31 +2,60 @@
 
 namespace App\Providers;
 
+use App\Models\GuideStep;
+use App\Models\HeroBanner;
+use App\Models\Media;
+use App\Models\Setting;
+use App\Models\Trip;
+use App\Models\WhyFeature;
+use App\Models\WhySection;
+use App\Policies\GuideStepPolicy;
+use App\Policies\HeroBannerPolicy;
+use App\Policies\MediaPolicy;
+use App\Policies\SettingPolicy;
+use App\Policies\TripPolicy;
+use App\Policies\WhyFeaturePolicy;
+use App\Policies\WhySectionPolicy;
+use App\Support\Access;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
     /**
-     * The model to policy mappings for the application.
-     *
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        //
+        Trip::class => TripPolicy::class,
+        Media::class => MediaPolicy::class,
+        GuideStep::class => GuideStepPolicy::class,
+        HeroBanner::class => HeroBannerPolicy::class,
+        WhySection::class => WhySectionPolicy::class,
+        WhyFeature::class => WhyFeaturePolicy::class,
+        Setting::class => SettingPolicy::class,
     ];
 
-    /**
-     * Register any authentication / authorization services.
-     */
     public function boot(): void
     {
-        Gate::define('admin', function ($user) {
-            return $user->is_admin === true;
+        // Super Admin is granted everything here rather than by holding every
+        // permission. A permission added later is then covered automatically,
+        // instead of silently locking out the one role that must never be
+        // locked out. Returning null — not false — lets every other check fall
+        // through to the normal policy and permission chain.
+        Gate::before(function ($user, string $ability) {
+            return $user->hasRole(Access::SUPER_ADMIN) ? true : null;
         });
-        
-        Gate::define('manage-content', function ($user) {
-            return $user->is_admin === true;
-        });
+
+        // `admin` used to mean `is_admin === true`. It now means "may open the
+        // admin panel at all", which every staff role holds. It stays a gate
+        // because the whole admin route group is behind `can:admin`, and that
+        // coarse check is the first line of defence in front of the
+        // per-resource policies.
+        Gate::define('admin', fn ($user) => $user->can('admin.access'));
+
+        // Kept for the views and code that already ask this question.
+        Gate::define('manage-content', fn ($user) => $user->can('trip.update')
+            || $user->can('media.update')
+            || $user->can('guide.update'));
     }
 }

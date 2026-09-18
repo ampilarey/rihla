@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Support\Access;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
@@ -37,18 +38,20 @@ class CreateAdminUser extends Command
             return 1;
         }
 
-        // Create admin user
         $user = User::create([
             'name' => 'Admin',
             'email' => $email,
             'password' => Hash::make($password),
-            'is_admin' => true,
         ]);
+
+        // Authorisation comes from the role now, not the `is_admin` flag.
+        $user->assignRole(Access::SUPER_ADMIN);
 
         $this->info('Admin user created successfully!');
         $this->info("Email: {$email}");
-        $this->info("Password: {$password}");
-        $this->info('Admin privileges: Yes');
+        // The password was supplied on the command line and is already in the
+        // operator's shell history; echoing it back only widens the exposure.
+        $this->info('Role: '.Access::SUPER_ADMIN);
 
         return 0;
     }

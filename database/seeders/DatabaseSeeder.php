@@ -12,6 +12,9 @@ class DatabaseSeeder extends Seeder
      * @var list<class-string<Seeder>>
      */
     private const CONTENT = [
+        // First: without roles and permissions nobody can reach the admin
+        // panel, so this is not optional content.
+        RolesAndPermissionsSeeder::class,
         SettingsSeeder::class,
         UmrahGuideSeeder::class,
         WhySectionSeeder::class,
