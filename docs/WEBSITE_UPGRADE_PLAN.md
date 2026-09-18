@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.8
+**Version:** 1.9
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.9 | Typography pass (`f30291b`). D26–D29 added and fixed — the headline one being that **Dhivehi never rendered in a Dhivehi font**, because the layout requested a Google font that does not exist while the real one sat unused in the repository. |
 | 1.8 | Audit-log foundation (`2e81a34`). D24 and D25 added and fixed. TranslationTest's ratchet split by surface: 98 public / 120 admin, replacing one ceiling of 209 — the public number now binds more than twice as hard. |
 | 1.7 | Authorisation replaced (`456abd6`) — roles, permissions and policies for the staff side, scoped to functionality that exists. D22 and D23 added and fixed: the base controller could not authorise at all, and four high-severity advisories sat in `league/commonmark`. |
 | 1.6 | P0.6 implemented (`d9f60c9`) — **P0 is complete**. D19–D21 added and fixed: the layout rendered no styles/scripts stacks, the service worker could never install, and five referenced icons did not exist. |
@@ -110,6 +111,10 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D23 | ~~**High**~~ **fixed** (`b1f91ed`) | `league/commonmark` 2.9.0 carried four high-severity advisories — three DoS and one XSS where the `AttributesExtension`'s `on*` filter is bypassed with a U+000C form feed. Pre-existing, transitive via laravel/framework, and enough to fail CI's dependency-audit job on `main`. | `composer.lock` | Never audited before CI existed |
 | D24 | ~~**High**~~ **fixed** (`2e81a34`) | `Trip::boot()`'s sitemap-busting listener was `fn () => Cache::forget('sitemap.xml')`. `Cache::forget()` returns **false** when the key is not cached, and a model-event listener returning false halts the remaining listeners — so that closure silently suppressed every later listener on Trip's `saved` and `deleted` events. Introduced in `031351c`; found because the audit observer stopped firing. | `app/Models/Trip.php` | Arrow function returning the cache call's result |
 | D25 | ~~**Medium**~~ **fixed** (`2e81a34`) | Deleting the acting user (the "delete my account" route, which exists today) wrote an audit row whose foreign key pointed at the row just deleted, so the insert was rejected — a 500 on a live route once auditing was on. | `app/Observers/AuditObserver.php` | Ordering of the `deleted` event against the delete itself |
+| D26 | ~~**High**~~ **fixed** (`f30291b`) | **Dhivehi never rendered in a Dhivehi font.** The layout asked Google Fonts for "Faruma", which has never been hosted there — verified 400, twice per page load, one of them an `@import` inside a `<style>` block that blocks rendering until it fails. A second `@font-face` pointed at a hand-written `fonts.gstatic.com` URL returning 404. Thaana fell through to `MV Waheed` (absent outside the Maldives) and then to generic sans-serif, while the real font sat unused in `public/fonts/A_faruma.ttf`. | `resources/views/layouts/app.blade.php`, `resources/css/dhivehi-fonts.css` | Font names copied without checking the font existed |
+| D27 | ~~**Medium**~~ **fixed** (`f30291b`) | Cairo (9 weights) and Tajawal (7) loaded on every page as Dhivehi "fallbacks". Arabic families carry no Thaana, so they could never render a Dhivehi character, and no view referenced either. | `resources/views/layouts/app.blade.php` | Fallback stack assembled by script family name rather than by coverage |
+| D28 | ~~**Low**~~ **fixed** (`f30291b`) | `.font-test-afruama` — a debug rule forcing red 24px text — shipped in the production CSS bundle, alongside `html[lang="dv"] *` with `!important`, which made the font unoverridable anywhere in the Dhivehi UI. | `resources/css/dhivehi-fonts.css` | Debug scaffolding left in |
+| D29 | ~~**Low**~~ **fixed** (`f30291b`) | Du'a text had no Arabic face: neither Inter nor a Thaana font covers Arabic, so supplications rendered in whatever the device happened to have, and carried no `lang="ar"` for screen readers. | `resources/views/pages/guide.blade.php` | Never specified |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
@@ -355,6 +360,29 @@ now single-hue wine.
 **Still open:** hero banner colours live in the database (D11) and must be updated through
 `/admin/hero-banners`; the logo is deliberately untouched and its asset gaps are unresolved
 (`BRAND.md` §4).
+
+### 4.6 Typography — **implemented** ✅
+
+The colour system's counterpart, and it carried a worse defect than any colour did: **Dhivehi never rendered in a Dhivehi font** (D26).
+
+`layouts/app.blade.php` requested `family=Faruma` from Google Fonts, where that font has never been hosted — verified **400**, twice per page load, one of them an `@import` inside a `<style>` block, which blocks first paint until it fails. A second `@font-face` pointed at a hand-written `fonts.gstatic.com` URL returning **404**. Thaana therefore fell through to `MV Waheed` — a system font absent from every device outside the Maldives — and then to generic sans-serif. The real font was in the repository the whole time, at `public/fonts/A_faruma.ttf`.
+
+**Shipped in `f30291b`:**
+
+| | Before | After |
+|---|---|---|
+| Stylesheet requests per page | 5 | 2 |
+| Requests that always failed | 2 | 0 |
+| Font weights fetched | ~16 (Cairo 9 + Tajawal 7) | 2 (Cairo) |
+| Thaana font | none that resolved | self-hosted, 12 KB WOFF2 |
+
+A_Faruma is self-hosted and converted to WOFF2 (28 KB → 12 KB), preloaded only on Dhivehi pages. The face holds 50 Thaana glyphs and 3 Latin, so its `unicode-range` confines it to Thaana: Latin and digits inside Dhivehi text still come from Inter, and an English page never fetches it. Cairo survives at two weights and is now actually applied — du'a text had no Arabic face at all, and now carries `lang="ar"` and `dir="rtl"` for screen readers too.
+
+Also removed: `html[lang="dv"] *` with `!important`, and `.font-test-afruama`, a debug rule forcing red 24px text that had shipped in the production bundle. Thaana line height and tracking are now set deliberately, because its vowel marks sit above and below the base letter and collide at line heights chosen for Latin.
+
+`display-sm` … `display-xl` added to the Tailwind scale, each pairing a size with its line height and tracking. **Added**, not a redefinition of `text-*` — overriding those keys would silently resize every heading on the site.
+
+**Still open:** the spacing rhythm. That is cosmetic refactoring across 48 views and wants a designer's eye more than an engineer's, so it is deliberately not bundled here.
 
 ---
 
@@ -696,7 +724,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5), typography and spacing remain**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
+| **1 — Foundations** | Ready to build on | i18n redesign (§9.4), ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |
