@@ -63,6 +63,11 @@ fi
 log "2/7 database backup"
 run php artisan rihla:backup || die "backup failed — nothing has been changed"
 
+# A dump that exists is not a dump that would restore. mysqldump writes a file
+# even when the disk fills mid-table: right name, plausible size, missing the
+# last few tables. Checking takes seconds here and cannot be done later.
+run php artisan rihla:backup:verify || die "the backup will not restore — nothing has been changed"
+
 # -------------------------------------------------------------------- 3. fetch
 log "3/7 fetch"
 # Not wrapped in run(): fetching changes nothing that is served, and a dry run
