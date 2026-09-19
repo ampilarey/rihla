@@ -59,6 +59,20 @@ and a test fails when a committed asset no longer matches anything the
 installed packages ship — because stale assets are silent, and mean last
 version's JavaScript against this version's markup.
 
+### It resolved a dependency the project cannot run
+
+`filament/support` accepts `symfony/html-sanitizer ^7.0|^8.0`. Composer picked
+v8.1.7, which requires **PHP >= 8.4.1** — fine on the machine that ran the
+install, and impossible to install on PHP 8.3, which `composer.json` declares
+as the floor and which CI tests. The lock was not installable on a host the
+project claims to support.
+
+The fix is not to pin that one package. `composer.json` now sets
+`config.platform.php` to `8.3.0`, so composer resolves every dependency for
+the *oldest* PHP the project supports rather than the newest one a developer
+happens to have. This class of bug was going to recur otherwise, and only CI
+would have caught it — which it did, within a minute.
+
 ### It added two public routes
 
 `filament/actions` registers `/filament/exports/{export}/download` and
