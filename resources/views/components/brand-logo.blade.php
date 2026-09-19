@@ -1,38 +1,60 @@
-@props(['loading' => 'eager', 'class' => 'h-20 w-auto', 'on' => 'light'])
+@props([
+    'loading' => 'eager',
+    'class' => 'w-20',
+    'on' => 'light',
+])
 
 {{--
-    The Rihla logo: the two-sail dhoni.
+    The Rihla lockup: the dhoni, with the company name justified beneath it to
+    the mark's own width.
 
-    This replaced the Kaaba-and-calligraphy wordmark, which is kept in the
-    repository as `rihla-logo.png` (the original) and `rihla-logo-brand.png`
-    (the same artwork recoloured into the palette). Neither is served any more.
+    The name is real text, not part of the artwork. That is deliberate — it is
+    indexed by search engines, read aloud by screen readers, selectable, and
+    it stays sharp at any pixel density without a second file.
 
-    The mark is vector, so one 461-byte file covers every size from the 16-pixel
-    favicon to the header — no srcset, no resampling, no blur on a high-density
-    screen. For reference, the wordmark it replaces needed six raster files, and
-    before that a single 1.44 MB PNG.
+    The width is set on the wrapper and the mark fills it, so the mark and the
+    name are always the same width by construction rather than by a number
+    someone has to keep in step. `class` sizes the whole lockup: w-20 in the
+    header, w-16 in the footer.
 
-    width and height are the viewBox multiplied by 100, which is exact rather
-    than rounded: the browser divides them to reserve the right space before the
-    file lands, and the CSS class decides how large it actually appears.
+    `on="dark"` swaps the hull to cream and the name to cream. The hull is ink
+    #2E2621 and the footer is `bg-ink`, the same #2E2621 — so on the footer the
+    hull disappeared entirely and the logo rendered as two sails floating above
+    nothing. The sails are unaffected: wine and gold both hold against ink.
 
-    `on="dark"` swaps the hull to cream. The hull is ink #2E2621 and the footer
-    is `bg-ink`, the same #2E2621 — so on the footer the hull disappeared
-    entirely and the logo rendered as two sails floating above nothing. The
-    sails are unaffected: wine and gold both hold against ink. Only the hull
-    needs the swap, because it is the one part painted in the surface's own
-    colour.
+    The two lines carry different tracking because they are different lengths:
+    five letters and seven letters, each spread to the same span.
+
+    Sizes are in cqw — a percentage of the lockup's own width — so the name
+    scales with the mark instead of being pinned to one pixel size. A px value
+    is declared first as the fallback for anything that does not understand
+    container units. `em` would not work here: it resolves against the parent's
+    font size, not its width, which put the name at 2.6px on the first try.
 --}}
-@php($mark = $on === 'dark' ? 'images/rihla-mark-inverse.svg' : 'images/rihla-mark.svg')
-<img src="{{ asset($mark) }}"
-     alt="{{ config('app.name') }}"
-     width="6247"
-     height="6468"
-     loading="{{ $loading }}"
-     decoding="async"
-     {{-- `class` is a prop, not a merged attribute: $attributes->merge()
-          appends to its default rather than replacing it, so the footer's
-          `h-16 w-auto` arrived as `h-20 w-auto h-16 w-auto` and which height
-          won came down to the order Tailwind happened to emit them in. --}}
-     class="{{ $class }}"
-     {{ $attributes }}>
+@php
+    $dark = $on === 'dark';
+    $mark = $dark ? 'images/rihla-mark-inverse.svg' : 'images/rihla-mark.svg';
+@endphp
+
+<span {{ $attributes->merge(['class' => 'inline-flex flex-col items-center leading-none '.$class]) }}
+      style="container-type: inline-size;">
+    <img src="{{ asset($mark) }}"
+         alt=""
+         width="6247"
+         height="6468"
+         loading="{{ $loading }}"
+         decoding="async"
+         class="w-full h-auto">
+
+    {{-- One accessible name for the pair, so a reader says "Rihla Travels"
+         rather than spelling out two letter-spaced fragments. --}}
+    <span class="sr-only">{{ config('app.name') }}</span>
+
+    <span aria-hidden="true"
+          class="mt-1.5 block w-full text-center font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
+          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.58em; text-indent: 0.58em;">RIHLA</span>
+
+    <span aria-hidden="true"
+          class="mt-0.5 block w-full text-center font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
+          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.21em; text-indent: 0.21em;">TRAVELS</span>
+</span>

@@ -9,7 +9,7 @@
 
     <div class="mb-8">
         <a href="{{ route('home') }}" class="flex items-center focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 rounded">
-            <x-brand-logo class="h-20 w-auto" />
+            <x-brand-logo class="w-20" />
         </a>
     </div>
 

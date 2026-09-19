@@ -173,7 +173,7 @@
                                  so `w-50` compiled to nothing at all and the logo
                                  fell back to its intrinsic width. `w-auto` is what
                                  it was already doing, said out loud. --}}
-                            <x-brand-logo class="h-20 w-auto" />
+                            <x-brand-logo class="w-20" />
                         </a>
                     </div>
 
@@ -382,7 +382,7 @@
                     <!-- Company Info -->
                     <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center mb-4">
-                            <x-brand-logo class="h-16 w-auto" loading="lazy" on="dark" />
+                            <x-brand-logo class="w-16" loading="lazy" on="dark" />
                         </div>
                         <p class="text-gray-300 mb-4 max-w-md">
                             {{ __('Rihla Travels provides exceptional Islamic travel services, specializing in Umrah packages and spiritual journeys to the holy cities of Makkah and Madinah.') }}
