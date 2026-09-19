@@ -67,7 +67,7 @@ on `test.rihla.mv`. If something there looks wrong, it will look wrong on `rihla
 
 ```bash
 ssh rihla@<host>
-cd /home/rihla/rihla.mv
+cd /home/rihla/rihla.mv-app
 
 # 1. See what would happen. Changes nothing.
 DRY_RUN=1 ./scripts/deploy-production.sh
@@ -96,12 +96,18 @@ last thing at night.
 ### 0. Find the production directory
 
 ```bash
-ls -d /home/rihla/rihla.mv && cd /home/rihla/rihla.mv && pwd && git log --oneline -1
+ls -d /home/rihla/rihla.mv-app && cd /home/rihla/rihla.mv-app && pwd && git log --oneline -1
 ```
 
 **Expect:** the path printed twice, then one commit line — whatever production
-is currently on. If `ls` says "No such file or directory", the site lives
-somewhere else; run `ls /home/rihla` and send me what you see.
+is currently on.
+
+The production checkout is `rihla.mv-app`, **not** `rihla.mv` — `~/public_html`
+is a symlink to `rihla.mv-app/public`. An earlier version of this document
+guessed `rihla.mv` by analogy with `test.rihla.mv`; that directory does not
+exist, and the first attempt to promote failed at `cd`. If this `ls` fails too,
+run `for d in /home/rihla/*/; do [ -f "$d/artisan" ] && echo "$d"; done` and use
+whichever path it prints.
 
 ---
 

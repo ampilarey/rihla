@@ -19,7 +19,12 @@ set -uo pipefail
 export HOME="${HOME:-/home/rihla}"
 export PATH="$HOME/bin:/usr/local/bin:/opt/cpanel/ea-php84/root/usr/bin:/opt/cpanel/composer/bin:/usr/bin:/bin:${PATH:-}"
 
-ROOT="${RIHLA_PRODUCTION_ROOT:-/home/rihla/rihla.mv}"
+# Verified on the server: production is a git checkout at rihla.mv-app, and
+# ~/public_html is a symlink into its public/ directory. The earlier default
+# guessed /home/rihla/rihla.mv by analogy with test.rihla.mv, which does not
+# exist — the script aborted before doing anything, which is the right way to
+# be wrong about a path, but it wasted a step.
+ROOT="${RIHLA_PRODUCTION_ROOT:-/home/rihla/rihla.mv-app}"
 TARGET_SHA="${1:-}"
 DRY_RUN="${DRY_RUN:-0}"
 LOCK="$HOME/.deploy-production.lock"
