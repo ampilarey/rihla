@@ -117,11 +117,19 @@
                     @else
                         <div class="relative overflow-hidden rounded-2xl shadow-soft hover:shadow-lg transition-shadow duration-300">
                             <div class="w-full h-64 bg-gray-200 flex items-center justify-center relative">
-                                <img src="{{ $item->thumbnail_url }}" 
-                                     alt="{{ $item->title }}" 
-                                     class="w-full h-full object-cover"
-         loading="lazy"
-         decoding="async">
+                                {{-- Only when there is a real thumbnail. This used to
+                                     point at via.placeholder.com for anything that was
+                                     not YouTube — a service that has shut down, on a
+                                     host `img-src` refuses, so every Vimeo, Facebook,
+                                     Instagram and TikTok video rendered a broken image.
+                                     Without one, the panel below is the placeholder. --}}
+                                @if($item->thumbnail_url)
+                                    <img src="{{ $item->thumbnail_url }}"
+                                         alt="{{ $item->title }}"
+                                         class="w-full h-full object-cover"
+                                         loading="lazy"
+                                         decoding="async">
+                                @endif
                                 <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
                                     <div class="bg-white/90 rounded-full p-3">
                                         <svg aria-hidden="true" focusable="false" class="w-8 h-8 text-wine-500" fill="currentColor" viewBox="0 0 24 24">

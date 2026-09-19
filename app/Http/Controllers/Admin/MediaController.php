@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MediaRequest;
 use App\Models\Media;
 use App\Models\Trip;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -30,21 +30,11 @@ class MediaController extends Controller
         return view('admin.media.create', compact('trips'));
     }
 
-    public function store(Request $request)
+    public function store(MediaRequest $request)
     {
         $this->authorize('create', Media::class);
 
-        $validated = $request->validate([
-            'trip_id' => 'nullable|exists:trips,id',
-            'type' => 'required|in:photo,video',
-            'title' => 'nullable|string|max:255',
-            'caption' => 'nullable|string',
-            'file_path' => 'required_if:type,photo|nullable|image|mimes:jpeg,png,webp|max:6144',
-            'video_url' => 'required_if:type,video|nullable|url',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_published' => 'boolean',
-        ]);
-
+        $validated = $request->validated();
         $validated['is_published'] = $request->has('is_published');
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
@@ -94,21 +84,11 @@ class MediaController extends Controller
         return view('admin.media.edit', compact('medium', 'trips'));
     }
 
-    public function update(Request $request, Media $medium)
+    public function update(MediaRequest $request, Media $medium)
     {
         $this->authorize('update', $medium);
 
-        $validated = $request->validate([
-            'trip_id' => 'nullable|exists:trips,id',
-            'type' => 'required|in:photo,video',
-            'title' => 'nullable|string|max:255',
-            'caption' => 'nullable|string',
-            'file_path' => 'nullable|image|mimes:jpeg,png,webp|max:6144',
-            'video_url' => 'nullable|url',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_published' => 'boolean',
-        ]);
-
+        $validated = $request->validated();
         $validated['is_published'] = $request->has('is_published');
 
         if ($request->type === 'photo' && $request->hasFile('file_path')) {

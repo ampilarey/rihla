@@ -2,52 +2,58 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\NormalisesTranslations;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
+/**
+ * One media item, with its text in both languages.
+ *
+ * Replaces two copies of the same rule list inside the controller's store()
+ * and update(), which had already drifted: only store() required a file for a
+ * photo.
+ */
 class MediaRequest extends FormRequest
 {
-    /**
-     * The route group and the controller's policy both gate this already;
-     * returning true here defers to them rather than adding a third, weaker
-     * answer that could drift out of step with the other two.
-     */
+    use NormalisesTranslations;
+
+    /** The route group and the controller's policy both gate this already. */
     public function authorize(): bool
     {
         return true;
     }
 
-    public function rules(): array
+    protected function prepareForValidation(): void
     {
-        return [
-            'trip_id' => ['nullable', 'exists:trips,id'],
-            'type' => ['required', Rule::in(['photo', 'video'])],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'file_path' => [
-                'required_if:type,photo',
-                'nullable',
-                'image',
-                'mimes:jpeg,png,jpg,webp',
-                'max:5120',
-            ],
-            'video_url' => [
-                'required_if:type,video',
-                'nullable',
-                'url',
-                'regex:/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/.+/',
-            ],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-        ];
+        $this->normaliseTranslations(['title', 'caption']);
     }
 
-    public function messages(): array
+    public function rules(): array
+    {
+        return array_merge([
+            'trip_id' => 'nullable|exists:trips,id',
+            'type' => 'required|in:photo,video',
+            // Required only when creating a photo: an edit that changes the
+            // caption should not demand the file again.
+            'file_path' => ($this->isMethod('post') ? 'required_if:type,photo|' : '').'nullable|image|mimes:jpeg,png,webp|max:6144',
+            'video_url' => 'required_if:type,video|nullable|url',
+            'sort_order' => 'nullable|integer|min:0',
+            'is_published' => 'boolean',
+        ],
+            // Neither is required: a photograph can stand without a caption,
+            // and the gallery reads the title only when there is one.
+            $this->translatedRules('title', required: false, max: 255),
+            $this->translatedRules('caption', required: false),
+        );
+    }
+
+    public function attributes(): array
     {
         return [
-            'file_path.required_if' => 'A photo file is required when type is photo.',
-            'video_url.required_if' => 'A video URL is required when type is video.',
-            'video_url.regex' => 'The video URL must be a valid YouTube URL.',
-            'file_path.max' => 'The photo file size must not exceed 5MB.',
+            'title.en' => 'title (English)',
+            'title.dv' => 'title (Dhivehi)',
+            'caption.en' => 'caption (English)',
+            'caption.dv' => 'caption (Dhivehi)',
+            'file_path' => 'image',
         ];
     }
 }
