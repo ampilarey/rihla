@@ -319,4 +319,38 @@ class DeploymentToolingTest extends TestCase
         $this->assertStringContainsString('merge-base --is-ancestor', $this->script());
         $this->assertStringContainsString('--ff-only', $this->script());
     }
+
+    /**
+     * The script deploys itself, so it must not be read from the file it is
+     * about to rewrite.
+     *
+     * Step 4 runs `git merge --ff-only`, and any release that changes
+     * scripts/deploy-production.sh rewrites the file bash is executing. Bash
+     * reads a script lazily, by byte offset. Demonstrated rather than assumed:
+     * a script that rewrites itself mid-run prints its first line, then
+     * silently stops and **exits 0**. On a deploy that means merging the code
+     * and then skipping composer install, the migration, the caches and
+     * `php artisan up` — leaving the site in maintenance mode with unmigrated
+     * code, while reporting success.
+     *
+     * Re-running from a temp copy costs nothing and removes the whole class.
+     */
+    public function test_the_production_script_runs_from_a_snapshot_of_itself(): void
+    {
+        $script = $this->script();
+
+        $this->assertStringContainsString('RIHLA_DEPLOY_SNAPSHOT', $script,
+            'The script rewrites itself at the merge step and must not be read from that file.');
+
+        $this->assertMatchesRegularExpression('/mktemp.*\n.*cp "\$0"/m', $script,
+            'The snapshot must be a copy of the running script.');
+
+        // And the guard has to come before the merge, or it guards nothing.
+        $guardAt = strpos($script, 'RIHLA_DEPLOY_SNAPSHOT');
+        $mergeAt = strpos($this->scriptWithoutComments(), 'merge --ff-only');
+
+        $this->assertNotFalse($guardAt);
+        $this->assertNotFalse($mergeAt);
+        $this->assertLessThan($mergeAt, $guardAt);
+    }
 }

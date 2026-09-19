@@ -16,6 +16,25 @@
 #   - leave the site in maintenance mode if a step fails
 set -uo pipefail
 
+# Run from a snapshot, because this script deploys itself.
+#
+# Step 4 runs `git merge --ff-only`, and a release that changes
+# scripts/deploy-production.sh rewrites the very file bash is executing. Bash
+# reads a script lazily, by byte offset, so a file that changes underneath it
+# can resume mid-line and execute something that was never a command — halfway
+# through a production deploy, with the site in maintenance mode.
+#
+# Copying to a temp file and re-running from there costs nothing and removes
+# the whole class of problem.
+if [[ "${RIHLA_DEPLOY_SNAPSHOT:-}" != "1" ]]; then
+  __snapshot=$(mktemp -t rihla-deploy.XXXXXX) || { echo "cannot create a temp file"; exit 1; }
+  cp "$0" "$__snapshot" || { rm -f "$__snapshot"; echo "cannot snapshot $0"; exit 1; }
+  RIHLA_DEPLOY_SNAPSHOT=1 bash "$__snapshot" "$@"
+  __code=$?
+  rm -f "$__snapshot"
+  exit $__code
+fi
+
 export HOME="${HOME:-/home/rihla}"
 export PATH="$HOME/bin:/usr/local/bin:/opt/cpanel/ea-php84/root/usr/bin:/opt/cpanel/composer/bin:/usr/bin:/bin:${PATH:-}"
 
