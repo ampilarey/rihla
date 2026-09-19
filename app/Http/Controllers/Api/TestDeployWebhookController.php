@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\Deploy\TestDeployTrigger;
+use App\Support\DeploySecret;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -17,8 +18,7 @@ class TestDeployWebhookController extends Controller
 {
     public function __invoke(Request $request, TestDeployTrigger $trigger): JsonResponse
     {
-        $secret = (string) config('deploy.test_webhook_secret', '');
-        if ($secret === '' || strlen($secret) < 16) {
+        if (DeploySecret::configured() === null) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
@@ -31,8 +31,7 @@ class TestDeployWebhookController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        $provided = $this->extractSecret($request);
-        if ($provided === '' || ! hash_equals($secret, $provided)) {
+        if (! DeploySecret::matches($request)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -58,18 +57,6 @@ class TestDeployWebhookController extends Controller
             'sha' => $expectedSha,
             'log' => '~/self-update-test.log',
         ], 202);
-    }
-
-    private function extractSecret(Request $request): string
-    {
-        // header() returns a string when given a string default.
-        $header = $request->header('Authorization', '');
-
-        if (str_starts_with($header, 'Bearer ')) {
-            return trim(substr($header, 7));
-        }
-
-        return trim($request->header('X-Deploy-Secret', ''));
     }
 
     private function isTestHost(Request $request): bool

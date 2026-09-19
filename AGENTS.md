@@ -13,7 +13,8 @@ Rihla Travels is a Laravel 13 (PHP 8.3+) travel website using TailwindCSS + Vite
 
 ### Non-obvious gotchas
 ### TEST auto-deploy (like Bake & Grill)
-- On push to `main`, GitHub Actions calls `POST https://test.rihla.mv/api/deploy/test-pull` (see `.github/workflows/deploy-test-immediate.yml`).
+- **After CI passes** on `main` (not on the push itself), GitHub Actions calls `POST https://test.rihla.mv/api/deploy/test-pull` (see `.github/workflows/deploy-test-immediate.yml`). A red CI run deploys nothing and says so.
+- The workflow then polls `GET /api/health` with the deploy secret until it reports the commit it just deployed. A 202 from the webhook only means the pull *started*.
 - Server script: `scripts/pull-deploy-test.sh` (path `/home/rihla/test.rihla.mv`). Production is never auto-deployed.
 - Setup: `docs/TEST_AUTO_DEPLOY.md`. Requires GitHub environment `test` secret `TEST_DEPLOY_WEBHOOK_SECRET` and the same value in TEST `.env`. Cron fallback: `scripts/install-self-update-cron-test.sh`.
 - Webhook needs public DNS for `test.rihla.mv`; cron works on-server without it.

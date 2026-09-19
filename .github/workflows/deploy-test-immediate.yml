@@ -1,21 +1,42 @@
 name: Deploy TEST (immediate)
 
-# Fires as soon as main is pushed — fast path for test.rihla.mv auto-pull.
+# Runs after CI passes on main, not when main is pushed.
+#
+# It used to trigger on the push itself, so the deploy raced the test suite and
+# usually won: a merge with failing tests was live on test.rihla.mv before
+# GitHub had finished saying it was broken. The risk register called this out
+# as "currently the gap that lets this happen"; this is the gate.
+#
 # Cron (scripts/self-update-test.sh) remains a fallback if the webhook fails.
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
 
 concurrency:
   group: deploy-test-immediate
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   pull-test-now:
     name: Webhook pull (test.rihla.mv)
+    # Only a green CI run on a push to main deploys. A pull request's CI run
+    # tests a merge commit that is not on main and must never reach a server.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     environment: test
+    env:
+      # workflow_run's GITHUB_SHA is main's tip, not the commit CI verified.
+      # On a fast second merge those differ, and deploying the wrong one is
+      # exactly the failure this gate exists to prevent.
+      DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
       - name: Trigger TEST deploy webhook
         env:
@@ -26,18 +47,20 @@ jobs:
             exit 1
           fi
 
+          echo "Deploying ${DEPLOY_SHA} (CI run ${{ github.event.workflow_run.id }})"
+
           for attempt in 1 2 3 4 5 6; do
             code=$(curl -sS -o /tmp/deploy-webhook.json -w "%{http_code}" \
               -X POST "https://test.rihla.mv/api/deploy/test-pull" \
               -H "Authorization: Bearer ${DEPLOY_SECRET}" \
               -H "Content-Type: application/json" \
               -H "Accept: application/json" \
-              -d "{\"sha\":\"${GITHUB_SHA}\"}")
+              -d "{\"sha\":\"${DEPLOY_SHA}\"}")
             echo "Attempt ${attempt}: HTTP ${code}"
             cat /tmp/deploy-webhook.json || true
             echo ""
             if [ "$code" = "202" ]; then
-              echo "TEST deploy triggered for ${GITHUB_SHA}"
+              echo "TEST deploy triggered for ${DEPLOY_SHA}"
               exit 0
             fi
             sleep 5
@@ -46,8 +69,45 @@ jobs:
           echo "::error::Webhook deploy failed after retries"
           exit 1
 
-      - name: Brief smoke (homepage + health)
+      # A 202 means the pull *started*. The webhook spawns the script with
+      # nohup and answers immediately, so a conflict or a failed composer run
+      # leaves the old code serving — which answers the homepage exactly as
+      # well as the new code would. Asking the site which commit it is running
+      # is the only check that can tell the two apart.
+      - name: Verify the deployed commit is live
+        env:
+          DEPLOY_SECRET: ${{ secrets.TEST_DEPLOY_WEBHOOK_SECRET }}
         run: |
-          sleep 20
-          curl -fsS -o /dev/null -w "health %{http_code}\n" https://test.rihla.mv/api/health
-          curl -fsS -o /dev/null -w "home %{http_code}\n" https://test.rihla.mv/
+          # composer install only runs when the lockfile changed, but when it
+          # does, it runs on shared hosting. Allow for that rather than calling
+          # a slow deploy a failed one.
+          for attempt in $(seq 1 30); do
+            sleep 15
+            body=$(curl -sS --max-time 20 \
+              -H "Authorization: Bearer ${DEPLOY_SECRET}" \
+              -H "Accept: application/json" \
+              "https://test.rihla.mv/api/health" || echo '{}')
+            live=$(printf '%s' "$body" | jq -r '.commit // empty')
+            echo "Attempt ${attempt}: live=${live:-unknown} want=${DEPLOY_SHA}"
+
+            if [ "$live" = "${DEPLOY_SHA}" ]; then
+              echo "test.rihla.mv is serving ${DEPLOY_SHA}"
+              curl -fsS -o /dev/null -w "home %{http_code}\n" https://test.rihla.mv/
+              exit 0
+            fi
+          done
+
+          echo "::error::test.rihla.mv is not serving ${DEPLOY_SHA} after 7 minutes. Check ~/self-update-test.log on the server."
+          exit 1
+
+  report-blocked:
+    name: Deploy skipped (CI red)
+    # Without this the gate is silent: a failed CI run simply produces no
+    # deploy, which looks identical to no deploy having been due.
+    if: >-
+      github.event.workflow_run.conclusion != 'success' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::warning::CI concluded '${{ github.event.workflow_run.conclusion }}' on ${{ github.event.workflow_run.head_sha }}. test.rihla.mv was not deployed and is still serving the last commit that passed."
