@@ -21,7 +21,7 @@ class WhySectionSeeder extends Seeder
             'primary_cta_text' => 'Start Your Journey',
             'primary_cta_url' => '/trips',
             'secondary_cta_text' => 'Learn More',
-            'secondary_cta_url' => '/about',
+            'secondary_cta_url' => '/guide',
             'is_active' => true,
         ]);
 

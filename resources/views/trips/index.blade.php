@@ -34,9 +34,9 @@
     <!-- Current Trips Tab -->
     <div id="current-tab" class="tab-content" role="tabpanel" aria-labelledby="tab-current" tabindex="0">
         @if($currentTrips->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex flex-wrap justify-center gap-6">
                 @foreach($currentTrips as $trip)
-                    @include('trips._trip-card', ['trip' => $trip])
+                    <div class="w-full md:w-[22rem]">@include('trips._trip-card', ['trip' => $trip])</div>
                 @endforeach
             </div>
         @else
@@ -49,9 +49,9 @@
     <!-- Upcoming Trips Tab -->
     <div id="upcoming-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-upcoming" tabindex="0">
         @if($upcomingTrips->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex flex-wrap justify-center gap-6">
                 @foreach($upcomingTrips as $trip)
-                    @include('trips._trip-card', ['trip' => $trip])
+                    <div class="w-full md:w-[22rem]">@include('trips._trip-card', ['trip' => $trip])</div>
                 @endforeach
             </div>
             <div class="mt-8">
@@ -67,9 +67,9 @@
     <!-- Past Trips Tab -->
     <div id="past-tab" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-past" tabindex="0">
         @if($pastTrips->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex flex-wrap justify-center gap-6">
                 @foreach($pastTrips as $trip)
-                    @include('trips._trip-card', ['trip' => $trip])
+                    <div class="w-full md:w-[22rem]">@include('trips._trip-card', ['trip' => $trip])</div>
                 @endforeach
             </div>
             <div class="mt-8">
