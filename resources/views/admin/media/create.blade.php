@@ -156,7 +156,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="@cspNonce">
 document.addEventListener('DOMContentLoaded', function() {
     const typeRadios = document.querySelectorAll('input[name="type"]');
     const photoSection = document.getElementById('photo-section');

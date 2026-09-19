@@ -98,7 +98,7 @@
 }
 </style>
 
-<script>
+<script nonce="@cspNonce">
     const TRIP_TABS = ['current', 'upcoming', 'past'];
 
     function showTab(tabName, moveFocus = false) {

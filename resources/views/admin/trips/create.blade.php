@@ -207,7 +207,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="@cspNonce">
 document.addEventListener('DOMContentLoaded', function() {
     
     const localeSelect = document.getElementById('locale');

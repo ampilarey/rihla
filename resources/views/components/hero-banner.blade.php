@@ -461,7 +461,7 @@
 }
 </style>
 
-<script>
+<script nonce="@cspNonce">
 // ===== HERO BANNER CAROUSEL JAVASCRIPT =====
 // Production-ready with proper error handling and accessibility
 

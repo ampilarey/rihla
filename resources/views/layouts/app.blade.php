@@ -500,7 +500,7 @@
     @endunless
 
     <!-- JavaScript -->
-    <script>
+    <script nonce="@cspNonce">
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
             const button = document.querySelector('[data-click="toggleMobileMenu"]');
@@ -538,7 +538,7 @@
          offline and the install prompt can appear anywhere. The registration
          on the guide page was pushed to a 'scripts' stack that no layout
          rendered, so it never ran at all. --}}
-    <script>
+    <script nonce="@cspNonce">
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
                 navigator.serviceWorker.register('{{ asset('sw.js') }}')

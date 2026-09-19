@@ -220,8 +220,8 @@
     @endif
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<script>
+<script src="{{ asset('vendor/sortablejs/Sortable.min.js') }}"></script>
+<script nonce="@cspNonce">
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize drag and drop for English banners
     const enBanners = document.getElementById('en-banners');

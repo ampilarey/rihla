@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="@cspNonce">
     // Redirect to edit page
     window.location.href = '{{ route("admin.why-sections.edit", 1) }}';
 </script>

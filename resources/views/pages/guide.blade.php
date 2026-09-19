@@ -472,7 +472,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="@cspNonce">
 function umrahGuide() {
     return {
         currentStep: 1,

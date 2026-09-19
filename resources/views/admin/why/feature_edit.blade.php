@@ -159,7 +159,7 @@
                 </div>
             </form>
             
-            <script>
+            <script nonce="@cspNonce">
                 document.addEventListener('DOMContentLoaded', function() {
                     // Synchronize color picker and text input
                     const colorPicker = document.getElementById('background_color');
