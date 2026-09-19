@@ -37,7 +37,6 @@ class AdminWritePathTest extends TestCase
         $admin = $this->admin();
 
         $this->actingAs($admin)->post(route('admin.trips.store'), [
-            'locale' => 'en',
             'title' => 'Ramadan Umrah 2026',
             'date_start' => '2026-03-01',
             'date_end' => '2026-03-10',
@@ -51,7 +50,6 @@ class AdminWritePathTest extends TestCase
         $this->assertSame('ramadan-umrah-2026', $trip->slug);
 
         $this->actingAs($admin)->put(route('admin.trips.update', $trip), [
-            'locale' => 'en',
             'title' => 'Ramadan Umrah 2026 — Extended',
             'date_start' => '2026-03-01',
             'date_end' => '2026-03-14',
@@ -81,7 +79,6 @@ class AdminWritePathTest extends TestCase
         $admin = $this->admin();
 
         $this->actingAs($admin)->post(route('admin.trips.store'), [
-            'locale' => 'en',
             'title' => 'Ramdan Umrah 2026',
             'date_start' => '2026-03-01',
             'date_end' => '2026-03-10',
@@ -96,7 +93,6 @@ class AdminWritePathTest extends TestCase
 
         // Correcting the spelling of the title.
         $this->actingAs($admin)->put(route('admin.trips.update', $trip), [
-            'locale' => 'en',
             'title' => 'Ramadan Umrah 2026',
             'date_start' => '2026-03-01',
             'date_end' => '2026-03-10',
@@ -117,7 +113,6 @@ class AdminWritePathTest extends TestCase
         $admin = $this->admin();
 
         $this->actingAs($admin)->post(route('admin.trips.store'), [
-            'locale' => 'en',
             'title' => 'Ramadan Umrah 2026',
             'slug' => 'ramadan-2026',
             'date_start' => '2026-03-01',
@@ -129,7 +124,6 @@ class AdminWritePathTest extends TestCase
         $this->assertSame('ramadan-2026', $trip->slug);
 
         $this->actingAs($admin)->put(route('admin.trips.update', $trip), [
-            'locale' => 'en',
             'title' => 'Ramadan Umrah 2026',
             'slug' => 'ramadan-umrah',
             'date_start' => '2026-03-01',
@@ -147,7 +141,6 @@ class AdminWritePathTest extends TestCase
     public function test_a_trip_cannot_end_before_it_starts(): void
     {
         $this->actingAs($this->admin())->post(route('admin.trips.store'), [
-            'locale' => 'en',
             'title' => 'Impossible',
             'date_start' => '2026-03-10',
             'date_end' => '2026-03-01',
@@ -270,7 +263,6 @@ class AdminWritePathTest extends TestCase
         ]);
 
         $this->actingAs($reporter)->post(route('admin.trips.store'), [
-            'locale' => 'en',
             'title' => 'Should not exist',
             'date_start' => '2026-03-01',
             'date_end' => '2026-03-10',

@@ -27,28 +27,24 @@ class PageController extends Controller
     }
 
     /**
-     * The published guide steps for a locale, falling back to English.
+     * The published guide steps, read in a given locale.
      *
      * The Dhivehi steps shipped as machine-generated filler: all ten carried
      * the *same* du'a and the same reference_text, where the English ten carry
-     * ten real du'as and citations like "Quran 2:196". They have been removed
+     * ten real du'as and citations like "Quran 2:196". They were removed
      * rather than paraphrased — these are the ritual steps of Umrah, and
      * inventing replacements would be worse than the defect.
      *
-     * Falling back means a Dhivehi visitor reads the correct instructions in
-     * English instead of an empty page or, as before, the same meaningless
-     * sentence as the du'a for every step. The fallback disappears the moment
-     * a real translation is entered in the admin panel.
+     * So a Dhivehi visitor reads the correct instructions in English. That
+     * fallback is now per field rather than per guide: a step was two rows,
+     * one per language, and a single missing Dhivehi row sent the *whole*
+     * guide back to English. One row holds both languages, so the Dhivehi
+     * shows wherever it exists and only the rest falls back.
      */
     private function guideStepsFor(string $locale): Collection
     {
-        $steps = GuideStep::published()->forLocale($locale)->ordered()->get();
-
-        if ($steps->isNotEmpty() || $locale === 'en') {
-            return $steps;
-        }
-
-        return GuideStep::published()->forLocale('en')->ordered()->get();
+        return GuideStep::published()->ordered()->get()
+            ->each(fn (GuideStep $step) => $step->setLocale($locale));
     }
 
     public function guide()
@@ -133,8 +129,11 @@ class PageController extends Controller
                     'summary' => $step->summary,
                     'details' => $step->details,
                     'dua_text' => $step->dua_text,
-                    'fiqh_notes' => $step->fiqh_notes,
-                    'checklist' => $step->checklist,
+                    // Lists, always. A translated attribute with nothing
+                    // stored for this locale reads back as an empty string,
+                    // and this endpoint has always promised an array.
+                    'fiqh_notes' => $step->fiqh_notes_list,
+                    'checklist' => $step->checklist_items,
                     'image_url' => $step->image_url,
                     'video_url' => $step->video_url,
                 ];

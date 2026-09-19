@@ -103,22 +103,34 @@ class TranslationQualityTest extends TestCase
     {
         $this->seed(UmrahGuideSeeder::class);
 
+        $steps = GuideStep::all();
+
+        $this->assertNotEmpty($steps, 'Expected the seeder to produce guide steps.');
+
+        // The du'a is the Arabic of the rite and is stored once, not per
+        // language — so it is checked once.
+        $duas = $steps->pluck('dua_text')->filter()->values();
+
+        $this->assertSame(
+            $duas->count(),
+            $duas->unique()->count(),
+            'Guide steps repeat the same du\'a; that is filler, not content.',
+        );
+
         foreach (['en', 'dv'] as $locale) {
-            $steps = GuideStep::where('locale', $locale)->get();
+            // Without fallback: the English reference showing through on a
+            // step with no Dhivehi is the fallback working, not ten steps
+            // sharing one citation.
+            $references = $steps
+                ->map(fn (GuideStep $step) => $step->getTranslationWithoutFallback('reference_text', $locale))
+                ->filter()
+                ->values();
 
-            if ($steps->isEmpty()) {
-                continue;
-            }
-
-            foreach (['dua_text', 'reference_text'] as $column) {
-                $values = $steps->pluck($column)->filter()->values();
-
-                $this->assertSame(
-                    $values->count(),
-                    $values->unique()->count(),
-                    "[{$locale}] guide steps repeat the same {$column}; that is filler, not content.",
-                );
-            }
+            $this->assertSame(
+                $references->count(),
+                $references->unique()->count(),
+                "[{$locale}] guide steps repeat the same reference_text; that is filler, not content.",
+            );
         }
     }
 
@@ -127,10 +139,13 @@ class TranslationQualityTest extends TestCase
     {
         $this->seed(UmrahGuideSeeder::class);
 
-        $this->assertSame(0, GuideStep::where('locale', 'dv')->count(),
+        $translated = GuideStep::all()
+            ->filter(fn (GuideStep $step) => $step->hasTranslation('title', 'dv'));
+
+        $this->assertCount(0, $translated,
             'Dhivehi guide content needs a translator and a scholar, not a seeder.');
 
-        $this->assertGreaterThan(0, GuideStep::where('locale', 'en')->count());
+        $this->assertGreaterThan(0, GuideStep::count());
     }
 
     /**
@@ -165,13 +180,12 @@ class TranslationQualityTest extends TestCase
     {
         $this->seed(UmrahGuideSeeder::class);
 
-        GuideStep::create([
-            'step_number' => 1,
-            'locale' => 'dv',
-            'title' => 'ނިއްޔާ',
-            'summary' => 'ހަގީގީ ތަރުޖަމާ',
-            'is_published' => true,
-        ]);
+        // The translation goes onto the step it translates, not onto a second
+        // row that happens to share its number.
+        $step = GuideStep::where('step_number', 1)->sole();
+        $step->setTranslation('title', 'dv', 'ނިއްޔާ');
+        $step->setTranslation('summary', 'dv', 'ހަގީގީ ތަރުޖަމާ');
+        $step->save();
 
         $this->get('/dv/guide')
             ->assertOk()

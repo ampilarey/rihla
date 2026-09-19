@@ -14,7 +14,6 @@ class GuideTest extends TestCase
     {
         // Create test steps
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 1,
             'title' => 'Test Step 1',
             'summary' => 'Test summary 1',
@@ -22,7 +21,6 @@ class GuideTest extends TestCase
         ]);
 
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 2,
             'title' => 'Test Step 2',
             'summary' => 'Test summary 2',
@@ -38,7 +36,6 @@ class GuideTest extends TestCase
     public function test_guide_pdf_download()
     {
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 1,
             'title' => 'Test Step',
             'summary' => 'Test summary',
@@ -53,7 +50,6 @@ class GuideTest extends TestCase
     public function test_guide_api_returns_steps()
     {
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 1,
             'title' => 'Test Step',
             'summary' => 'Test summary',
@@ -79,21 +75,18 @@ class GuideTest extends TestCase
     public function test_guide_steps_ordering()
     {
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 3,
             'title' => 'Step 3',
             'is_published' => true,
         ]);
 
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 1,
             'title' => 'Step 1',
             'is_published' => true,
         ]);
 
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 2,
             'title' => 'Step 2',
             'is_published' => true,
@@ -109,14 +102,12 @@ class GuideTest extends TestCase
     public function test_unpublished_steps_not_shown()
     {
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 1,
             'title' => 'Published Step',
             'is_published' => true,
         ]);
 
         GuideStep::factory()->create([
-            'locale' => 'en',
             'step_number' => 2,
             'title' => 'Unpublished Step',
             'is_published' => false,

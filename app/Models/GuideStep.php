@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class GuideStep extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     /**
      * Kept deliberately in step with the table. Four of these names were
@@ -18,7 +19,6 @@ class GuideStep extends Model
      */
     protected $fillable = [
         'step_number',
-        'locale',
         'title',
         'summary',
         'details',
@@ -30,6 +30,20 @@ class GuideStep extends Model
         'checklist',
         'is_published',
     ];
+
+    /**
+     * Stored as `{"en": …, "dv": …}` and read back in the request's locale,
+     * falling back to English. One step is one row in both languages; it used
+     * to be one row per language, joined to its twin by nothing but a shared
+     * `step_number`.
+     *
+     * `dua_text` is deliberately absent. It is the Arabic of the rite — the
+     * same words whatever language the page is in, so it is data rather than
+     * a translation. See docs/adr/0001-how-content-is-translated.md.
+     *
+     * @var array<int, string>
+     */
+    public array $translatable = ['title', 'summary', 'details', 'reference_text', 'fiqh_notes', 'checklist'];
 
     protected $casts = [
         'step_number' => 'integer',
@@ -44,14 +58,6 @@ class GuideStep extends Model
     public function scopePublished(Builder $query): void
     {
         $query->where('is_published', true);
-    }
-
-    /**
-     * Scope for specific locale
-     */
-    public function scopeForLocale(Builder $query, string $locale): void
-    {
-        $query->where('locale', $locale);
     }
 
     /**
@@ -72,10 +78,24 @@ class GuideStep extends Model
 
     /**
      * Get checklist items as array
+     *
+     * A translated attribute with nothing stored for this locale comes back
+     * as an empty *string*, not null and not an empty array — so `?? []` let
+     * a string reach code that foreach'd over it.
      */
     public function getChecklistItemsAttribute(): array
     {
-        return $this->checklist ?? [];
+        return is_array($this->checklist) ? $this->checklist : [];
+    }
+
+    /**
+     * Fiqh notes as an array, whatever the column holds.
+     *
+     * Named `fiqh_notes_list` rather than `fiqh_notes` on purpose — see below.
+     */
+    public function getFiqhNotesListAttribute(): array
+    {
+        return is_array($this->fiqh_notes) ? $this->fiqh_notes : [];
     }
 
     // There is deliberately no getFiqhNotesAttribute() accessor. The one that

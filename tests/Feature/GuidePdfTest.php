@@ -23,9 +23,8 @@ class GuidePdfTest extends TestCase
     {
         GuideStep::factory()->create([
             'step_number' => 1,
-            'locale' => $locale,
-            'title' => $title,
-            'summary' => 'Enter the state of Ihram at the miqat.',
+            'title' => [$locale => $title],
+            'summary' => [$locale => 'Enter the state of Ihram at the miqat.'],
             'is_published' => true,
         ]);
     }

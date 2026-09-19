@@ -15,7 +15,6 @@ class UmrahGuideTest extends TestCase
         // Create test guide steps
         GuideStep::create([
             'step_number' => 1,
-            'locale' => 'en',
             'title' => 'Test Step 1',
             'summary' => 'Test description 1',
             'is_published' => true,
@@ -23,7 +22,6 @@ class UmrahGuideTest extends TestCase
 
         GuideStep::create([
             'step_number' => 2,
-            'locale' => 'en',
             'title' => 'Test Step 2',
             'summary' => 'Test description 2',
             'is_published' => false,
@@ -38,21 +36,12 @@ class UmrahGuideTest extends TestCase
 
     public function test_guide_page_shows_correct_locale_content()
     {
-        // Create English step
+        // One step, both languages. This used to be two rows sharing a step
+        // number and nothing else.
         GuideStep::create([
             'step_number' => 1,
-            'locale' => 'en',
-            'title' => 'English Step',
-            'summary' => 'English description',
-            'is_published' => true,
-        ]);
-
-        // Create Dhivehi step
-        GuideStep::create([
-            'step_number' => 1,
-            'locale' => 'dv',
-            'title' => 'ދިވެހިންނަށްޓަކައިންނެވެ',
-            'summary' => 'ދިވެހިންނަށްޓަކައިންނެވެ',
+            'title' => ['en' => 'English Step', 'dv' => 'ދިވެހިންނަށްޓަކައިންނެވެ'],
+            'summary' => ['en' => 'English description', 'dv' => 'ދިވެހިންނަށްޓަކައިންނެވެ'],
             'is_published' => true,
         ]);
 
@@ -74,7 +63,6 @@ class UmrahGuideTest extends TestCase
     {
         GuideStep::create([
             'step_number' => 3,
-            'locale' => 'en',
             'title' => 'Step 3',
             'summary' => 'Third step',
             'is_published' => true,
@@ -82,7 +70,6 @@ class UmrahGuideTest extends TestCase
 
         GuideStep::create([
             'step_number' => 1,
-            'locale' => 'en',
             'title' => 'Step 1',
             'summary' => 'First step',
             'is_published' => true,
@@ -90,7 +77,6 @@ class UmrahGuideTest extends TestCase
 
         GuideStep::create([
             'step_number' => 2,
-            'locale' => 'en',
             'title' => 'Step 2',
             'summary' => 'Second step',
             'is_published' => true,

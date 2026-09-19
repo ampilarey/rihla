@@ -213,7 +213,6 @@ class RouteSmokeTest extends TestCase
 
         $step = GuideStep::factory()->create([
             'step_number' => 1,
-            'locale' => 'en',
             'is_published' => true,
         ]);
 

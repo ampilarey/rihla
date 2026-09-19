@@ -2,9 +2,10 @@
     'name',
     'label',
     'value' => [],
-    'type' => 'text',
+    'type' => 'text',   // text | textarea | lines
     'rows' => 3,
     'required' => false,
+    'help' => null,
 ])
 
 {{--
@@ -29,7 +30,15 @@
                     {{ $language }}@if($locale === 'dv') <span class="normal-case tracking-normal">{{ __('(optional)') }}</span>@endif
                 </label>
 
-                @if($type === 'textarea')
+                @if($type === 'lines')
+                    {{-- A list field: one item per line. It used to be a column
+                         of single-line inputs with an "add another" button,
+                         beside a textarea of the same name that silently won
+                         the tie and threw the inputs away. --}}
+                    <textarea name="{{ $name }}[{{ $locale }}]" id="{{ $id }}" rows="{{ $rows }}"
+                              @if($locale === 'dv') dir="rtl" lang="dv" @endif
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ implode("\n", (array) (data_get($value, $locale) ?: [])) }}</textarea>
+                @elseif($type === 'textarea')
                     <textarea name="{{ $name }}[{{ $locale }}]" id="{{ $id }}" rows="{{ $rows }}"
                               @if($required && $locale === 'en') required @endif
                               @if($locale === 'dv') dir="rtl" lang="dv" @endif
@@ -48,6 +57,10 @@
             </div>
         @endforeach
     </div>
+
+    @if($help)
+        <p class="text-sm text-gray-500 mt-1">{{ $help }}</p>
+    @endif
 
     @error($name)
         <p class="text-error text-sm mt-1">{{ $message }}</p>

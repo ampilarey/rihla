@@ -35,7 +35,6 @@ class GuideStepAdminTest extends TestCase
     {
         return array_merge([
             'step_number' => 1,
-            'locale' => 'en',
             'title' => 'Ihram',
             'summary' => 'Enter the state of Ihram at the miqat.',
             'details' => 'Bathe, wear the two white sheets, and make your intention.',
@@ -117,7 +116,6 @@ class GuideStepAdminTest extends TestCase
     {
         GuideStep::factory()->create([
             'step_number' => 1,
-            'locale' => 'en',
             'reference_text' => 'Quran 2:196 and authentic hadith about Ihram.',
             'is_published' => true,
         ]);
@@ -164,7 +162,6 @@ class GuideStepAdminTest extends TestCase
     {
         GuideStep::factory()->create([
             'step_number' => 1,
-            'locale' => 'en',
             'title' => 'Ihram',
             'summary' => 'Enter the state of Ihram at the miqat.',
             'details' => 'Bathe, wear the two white sheets.',
@@ -191,7 +188,6 @@ class GuideStepAdminTest extends TestCase
     {
         GuideStep::factory()->create([
             'step_number' => 1,
-            'locale' => 'en',
             'fiqh_notes' => ['Obligatory in all four schools'],
             'is_published' => true,
         ]);
@@ -203,7 +199,7 @@ class GuideStepAdminTest extends TestCase
     {
         $this->seed(UmrahGuideSeeder::class);
 
-        $step = GuideStep::where('locale', 'en')->orderBy('step_number')->first();
+        $step = GuideStep::orderBy('step_number')->first();
 
         $this->assertNotNull($step);
         $this->assertNotEmpty($step->summary, 'Seeded guide steps have no body text.');
