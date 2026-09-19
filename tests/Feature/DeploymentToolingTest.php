@@ -367,7 +367,11 @@ class DeploymentToolingTest extends TestCase
      */
     public function test_the_script_does_not_call_a_live_deploy_a_dry_run(): void
     {
-        $script = $this->script();
+        // Without comments: the note explaining this bug necessarily quotes the
+        // broken expression, and the first version of this test matched its own
+        // explanation. Sixth time a comment has been read as code in this
+        // project, which is why scriptWithoutComments() exists.
+        $script = $this->scriptWithoutComments();
 
         $this->assertStringNotContainsString('${DRY_RUN:+', $script,
             ':+ tests whether the variable is set, and it is always set to "0" or "1".');
