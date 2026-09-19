@@ -1,10 +1,18 @@
-<!-- Floating Action Buttons -->
+{{-- Floating action buttons.
+
+     These are fixed, so they float over every section of every page. A
+     wine-filled button over a wine section has 1.00:1 against its own backdrop
+     — the circle disappears and the icon is left hanging in mid-air, which is
+     what a phone screenshot of the live homepage showed. The cream ring gives
+     each wine button an edge on wine, and is invisible on cream where the wine
+     fill provides its own. The Call button needs none: cream on wine is
+     7.64:1. --}}
 <div class="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50 flex flex-col space-y-3">
     <!-- WhatsApp Button -->
     <a href="{{ \App\Support\Contact::whatsappUrl() }}"
        target="_blank" 
        rel="noopener"
-       class="btn-primary shadow-soft w-14 h-14 rounded-full flex items-center justify-center text-white hover:opacity-90 transition-all duration-200 transform hover:scale-105"
+       class="btn-primary shadow-soft ring-2 ring-cream w-14 h-14 rounded-full flex items-center justify-center text-white hover:opacity-90 transition-all duration-200 transform hover:scale-105"
        aria-label="{{ __('messages.cta_whatsapp') }}"
        title="{{ __('messages.cta_whatsapp') }}">
         <svg aria-hidden="true" focusable="false" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -26,7 +34,7 @@
     <a href="{{ \App\Support\Contact::catalogUrl() }}"
        target="_blank" 
        rel="noopener"
-       class="bg-wine-500 text-white shadow-soft w-14 h-14 rounded-full flex items-center justify-center hover:opacity-90 transition-all duration-200 transform hover:scale-105"
+       class="bg-wine-500 text-white shadow-soft ring-2 ring-cream w-14 h-14 rounded-full flex items-center justify-center hover:opacity-90 transition-all duration-200 transform hover:scale-105"
        aria-label="{{ __('Browse our catalog') }}"
        title="{{ __('Browse our catalog') }}">
         <svg aria-hidden="true" focusable="false" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

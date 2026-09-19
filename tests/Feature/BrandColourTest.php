@@ -311,4 +311,47 @@ class BrandColourTest extends TestCase
         // of this test dutifully reported it as still in use.
         return (string) preg_replace('/\{\{--.*?--\}\}/s', '', substr($layout, $start, $end - $start));
     }
+
+    /**
+     * A fixed button must be legible over anything it can float over.
+     *
+     * The floating WhatsApp, Call and Catalog buttons are `position: fixed`, so
+     * they pass over every section of every page. Two of them are wine-filled,
+     * and a wine circle over a wine section has **1.00:1** against its own
+     * backdrop — the disc vanishes and the icon is left hanging in mid-air.
+     * That is not a contrast ratio a text-colour check would ever catch, and it
+     * was found in a phone screenshot of the live site, not by a test.
+     *
+     * The cream ring gives them an edge on wine (7.64:1) and is invisible on
+     * cream, where the wine fill supplies its own. The Call button needs none:
+     * its cream fill is already 7.64:1 against wine.
+     */
+    public function test_every_floating_button_keeps_an_edge_on_any_background(): void
+    {
+        $component = File::get(resource_path('views/components/whatsapp-fab.blade.php'));
+
+        preg_match_all('/<a\s[^>]*class="([^"]*w-14[^"]*rounded-full[^"]*)"/s', $component, $matches);
+
+        $this->assertNotEmpty($matches[1], 'No floating buttons found to check.');
+        $this->assertCount(3, $matches[1]);
+
+        foreach ($matches[1] as $classes) {
+            $wineFilled = str_contains($classes, 'bg-wine') || str_contains($classes, 'btn-primary');
+
+            if (! $wineFilled) {
+                // A cream or light fill already separates itself from wine.
+                continue;
+            }
+
+            $this->assertMatchesRegularExpression(
+                '/\b(ring-\d|border(-\d)?)\b/',
+                $classes,
+                'A wine-filled floating button has no ring or border, so it disappears '
+                .'against a wine section — 1.00:1 against its own backdrop.',
+            );
+
+            $this->assertMatchesRegularExpression('/\b(ring|border)-cream\b/', $classes,
+                'The edge must be cream; a wine edge on wine is the same defect.');
+        }
+    }
 }
