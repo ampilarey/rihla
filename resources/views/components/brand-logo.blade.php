@@ -1,4 +1,4 @@
-@props(['loading' => 'eager', 'class' => 'h-20 w-auto'])
+@props(['loading' => 'eager', 'class' => 'h-20 w-auto', 'on' => 'light'])
 
 {{--
     The Rihla logo: the two-sail dhoni.
@@ -15,8 +15,16 @@
     width and height are the viewBox multiplied by 100, which is exact rather
     than rounded: the browser divides them to reserve the right space before the
     file lands, and the CSS class decides how large it actually appears.
+
+    `on="dark"` swaps the hull to cream. The hull is ink #2E2621 and the footer
+    is `bg-ink`, the same #2E2621 — so on the footer the hull disappeared
+    entirely and the logo rendered as two sails floating above nothing. The
+    sails are unaffected: wine and gold both hold against ink. Only the hull
+    needs the swap, because it is the one part painted in the surface's own
+    colour.
 --}}
-<img src="{{ asset('images/rihla-mark.svg') }}"
+@php($mark = $on === 'dark' ? 'images/rihla-mark-inverse.svg' : 'images/rihla-mark.svg')
+<img src="{{ asset($mark) }}"
      alt="{{ config('app.name') }}"
      width="6247"
      height="6468"
