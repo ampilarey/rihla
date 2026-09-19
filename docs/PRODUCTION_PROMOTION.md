@@ -67,7 +67,7 @@ on `test.rihla.mv`. If something there looks wrong, it will look wrong on `rihla
 
 ```bash
 ssh rihla@<host>
-cd /home/rihla/rihla.mv
+cd /home/rihla/rihla.mv-app
 
 # 1. See what would happen. Changes nothing.
 DRY_RUN=1 ./scripts/deploy-production.sh
@@ -82,7 +82,136 @@ To promote one specific reviewed commit rather than whatever `main` happens to b
 ./scripts/deploy-production.sh <full-40-character-sha>
 ```
 
-### The first promotion: exact commands
+## First promotion on a host that has never had this tooling
+
+`rihla:preflight`, `rihla:backup` and `rihla:backup:verify` ship **with** the
+release being deployed. On a host that has never had them, `deploy-production.sh`
+stops at step 1 with:
+
+```
+ABORT: this checkout has no rihla:* commands yet, so preflight and the backup cannot run.
+```
+
+That is correct behaviour, not a fault — the script refuses to deploy without a
+backup it can verify, and it cannot take one until the code that knows how has
+arrived. It happens exactly once per host. Every promotion after this one uses
+the script normally.
+
+The way through is to take the backup by hand, bring the code across, and then
+let the new tooling check its own work before anything touches the schema. The
+important ordering is unchanged: **nothing migrates until a backup exists.**
+
+Run these in order, from the production checkout. Stop at the first thing that
+does not match, and send me the output.
+
+### 1. Confirm the merge will not clobber local edits
+
+```bash
+cd /home/rihla/rihla.mv-app
+git diff --name-only HEAD origin/main -- '*.gitignore' '.env' | head
+```
+
+**Expect:** nothing. `git status` shows several `.gitignore` files as modified
+on this host; that is harmless as long as the incoming release does not also
+change them, and this command proves it either way. If it prints anything,
+stop — a fast-forward would refuse, and I would rather know now.
+
+### 2. Back up the database by hand
+
+Read the credentials out of `.env` rather than typing them, and keep the
+password out of your shell history and out of `ps`:
+
+```bash
+mkdir -p ~/backups
+DB=$(grep -E '^DB_DATABASE=' .env | cut -d= -f2-)
+DU=$(grep -E '^DB_USERNAME=' .env | cut -d= -f2-)
+MYSQL_PWD=$(grep -E '^DB_PASSWORD=' .env | cut -d= -f2-) \
+  mysqldump --user="$DU" --single-transaction --quick --no-tablespaces "$DB" \
+  | gzip > ~/backups/rihla-before-first-promotion-$(date +%F_%H%M).sql.gz
+ls -lh ~/backups/
+```
+
+**Expect:** a file of a plausible size — kilobytes at least, not zero.
+
+### 3. Check that backup is actually restorable
+
+```bash
+BK=$(ls -t ~/backups/*.sql.gz | head -1)
+gzip -t "$BK" && echo "gzip OK"
+zcat "$BK" | grep -c "^CREATE TABLE"
+zcat "$BK" | tail -1
+```
+
+**Expect:** `gzip OK`, a table count above zero, and a last line containing
+`Dump completed`. **If the completion marker is missing, the dump stopped early
+— stop and tell me.** `mysqldump` writes a plausible-looking file when it fails
+part way, which is the whole reason `rihla:backup:verify` exists.
+
+### 4. Bring the code across
+
+```bash
+php artisan down --retry=60
+git merge --ff-only origin/main
+composer install --no-dev --optimize-autoloader --no-interaction
+```
+
+The site shows a maintenance page from here until step 7. No migration has run
+yet — only files have changed.
+
+### 5. Now the new tooling exists: let it check the host
+
+```bash
+php artisan rihla:preflight --production
+php artisan rihla:backup:verify "$BK"
+```
+
+**Expect:** preflight listing what is wrong with `.env`, and the verifier
+confirming the hand-made backup carries every table.
+
+Fix any `fail` in `.env` — `APP_ENV=production`, `APP_DEBUG=false`,
+`APP_URL=https://rihla.mv` — and re-run preflight until only the exception
+below remains. The site is still down while you do this, which is the right
+time for it.
+
+**One failure is expected here and must not be fixed by hand:**
+
+```
+fail  demo content — these demo trips are in the database:
+      maldives-island-hopping-adventure, luxury-resort-experience
+```
+
+That check exists to stop demo content being deployed *to* production. On a
+first promotion the demo content is already there — it is what visitors have
+been seeing — and the release being deployed is what removes it, by migration,
+in the next step. The same goes for a `PLxxxxxxxxxx` YouTube playlist if
+preflight reports one.
+
+So on the **first** promotion: treat a demo-content failure as expected, and
+every other failure as blocking. On every promotion after that, a demo-content
+failure is real and means something put it back.
+
+### 6. Migrate
+
+```bash
+php artisan migrate --force
+php artisan storage:link --force
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+
+This is the only step that touches your real data. You have a verified backup.
+
+### 7. Bring it back up and look at it
+
+```bash
+php artisan up
+curl -sS -o /dev/null -w "%{http_code}\n" https://rihla.mv/en
+```
+
+Then check the pages in the table under *Check it with your own eyes* below.
+
+---
+
+## Every promotion after the first: exact commands
 
 Run these in **cPanel → Terminal** (or over SSH) as the `rihla` user. Do them in
 order. After each one, check the "expect" line before moving on — if what you
@@ -96,12 +225,18 @@ last thing at night.
 ### 0. Find the production directory
 
 ```bash
-ls -d /home/rihla/rihla.mv && cd /home/rihla/rihla.mv && pwd && git log --oneline -1
+ls -d /home/rihla/rihla.mv-app && cd /home/rihla/rihla.mv-app && pwd && git log --oneline -1
 ```
 
 **Expect:** the path printed twice, then one commit line — whatever production
-is currently on. If `ls` says "No such file or directory", the site lives
-somewhere else; run `ls /home/rihla` and send me what you see.
+is currently on.
+
+The production checkout is `rihla.mv-app`, **not** `rihla.mv` — `~/public_html`
+is a symlink to `rihla.mv-app/public`. An earlier version of this document
+guessed `rihla.mv` by analogy with `test.rihla.mv`; that directory does not
+exist, and the first attempt to promote failed at `cd`. If this `ls` fails too,
+run `for d in /home/rihla/*/; do [ -f "$d/artisan" ] && echo "$d"; done` and use
+whichever path it prints.
 
 ---
 

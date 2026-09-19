@@ -19,7 +19,12 @@ set -uo pipefail
 export HOME="${HOME:-/home/rihla}"
 export PATH="$HOME/bin:/usr/local/bin:/opt/cpanel/ea-php84/root/usr/bin:/opt/cpanel/composer/bin:/usr/bin:/bin:${PATH:-}"
 
-ROOT="${RIHLA_PRODUCTION_ROOT:-/home/rihla/rihla.mv}"
+# Verified on the server: production is a git checkout at rihla.mv-app, and
+# ~/public_html is a symlink into its public/ directory. The earlier default
+# guessed /home/rihla/rihla.mv by analogy with test.rihla.mv, which does not
+# exist — the script aborted before doing anything, which is the right way to
+# be wrong about a path, but it wasted a step.
+ROOT="${RIHLA_PRODUCTION_ROOT:-/home/rihla/rihla.mv-app}"
 TARGET_SHA="${1:-}"
 DRY_RUN="${DRY_RUN:-0}"
 LOCK="$HOME/.deploy-production.lock"
@@ -51,6 +56,21 @@ log "root: $ROOT"
 
 # ---------------------------------------------------------------- 1. preflight
 log "1/7 preflight"
+
+# The checks and the backup ship *with* the release being deployed, so on a
+# host that has never had them they do not exist yet and artisan answers
+# "There are no commands defined in the rihla namespace". That is a
+# bootstrapping problem, not a broken deploy, and it happens exactly once per
+# host — but a confusing error at step 1 of a production deploy is the last
+# thing anybody needs, so say what it is and where the answer is written down.
+if ! php artisan list rihla --no-ansi >/dev/null 2>&1; then
+  die "this checkout has no rihla:* commands yet, so preflight and the backup cannot run.
+       That is expected the first time a host is promoted: the tooling ships with the
+       release it is deploying. Follow 'First promotion on a host that has never had
+       this tooling' in docs/PRODUCTION_PROMOTION.md, which takes the backup by hand
+       first. Every promotion after that one uses this script normally."
+fi
+
 if [[ "$DRY_RUN" != "1" ]]; then
   php artisan rihla:preflight --production || die "preflight failed — fix the findings above before deploying"
 else
