@@ -170,18 +170,7 @@
                             <span class="hidden sm:inline">{{ __('Call us') }}</span>
                         </a>
 
-                        <!-- WhatsApp Catalog CTA - Always visible -->
-                        <a href="{{ \App\Support\Contact::catalogUrl() }}"
-                           target="_blank"
-                           rel="noopener"
-                           aria-label="{{ __('Browse Catalog') }}"
-                           class="bg-wine-500 hover:bg-wine-600 text-white text-sm px-2 md:px-4 py-2 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 focus:ring-offset-ink">
-                            <svg aria-hidden="true" focusable="false" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                            </svg>
-                            <span class="hidden sm:inline">{{ __('Browse Catalog') }}</span>
-                        </a>
-                    @endunless
+@endunless
                 </div>
             </div>
         </div>
@@ -369,14 +358,7 @@
                                     </svg>
                                     <span>{{ __('Call us') }}</span>
                                 </a>
-                                <a href="{{ \App\Support\Contact::catalogUrl() }}" target="_blank" rel="noopener"
-                                   class="bg-wine-500 hover:bg-wine-600 text-white text-sm px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2">
-                                    <svg aria-hidden="true" focusable="false" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
-                                    <span>{{ __('Browse Catalog') }}</span>
-                                </a>
-                            </div>
+                                </div>
                         @endunless
                     </div>
                 </div>

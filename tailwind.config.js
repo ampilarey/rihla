@@ -104,6 +104,14 @@ export default {
         // silently losing its style. Remove once `grep -r "brand-" resources/`
         // comes back clean.
         'brand-gold': '#D2A03C',
+
+        // WhatsApp's own brand green, for the one button that is theirs rather
+        // than ours. Recolouring their mark into wine makes a worse button:
+        // people recognise this green without reading anything. Recorded so it
+        // is obviously borrowed and never spreads into the palette.
+        // #128C7E is their darker official green if the lighter one's 1.98:1
+        // against white ever has to give way.
+        whatsapp: '#25D366',
         'brand-sky-blue': '#8E2653',
         'brand-black': '#2E2621',
         'brand-white': '#FFFFFF',

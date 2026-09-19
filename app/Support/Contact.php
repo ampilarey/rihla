@@ -45,12 +45,6 @@ final class Contact
             : $url.'?text='.rawurlencode($message);
     }
 
-    /** WhatsApp's own catalogue view for the same number. */
-    public static function catalogUrl(): string
-    {
-        return 'https://wa.me/c/'.self::whatsappNumber();
-    }
-
     /**
      * The number as a human reads it, for display beside a tel: link.
      *
