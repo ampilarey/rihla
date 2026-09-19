@@ -99,6 +99,42 @@ class DemoContentTest extends TestCase
     }
 
     /**
+     * Removing the seeder's videos was not enough on its own.
+     *
+     * A deploy runs `migrate --force`, not `db:seed`, so the rows the old
+     * seeder had already written stayed in the test database and stayed on
+     * the page. Changing a seeder governs the next seed and nothing else. The
+     * migration deletes them by the exact values the seeder wrote.
+     */
+    public function test_the_placeholder_media_is_deleted_rather_than_only_unseeded(): void
+    {
+        // Exactly what the old seeder inserted, put back by hand.
+        Media::create([
+            'type' => 'video', 'title' => 'Cultural Heritage Tour Highlights',
+            'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'is_published' => true,
+        ]);
+        Media::create([
+            'type' => 'photo', 'title' => 'Maldives Sunset',
+            'file_path' => 'media/sunset.jpg', 'is_published' => true,
+        ]);
+
+        // A real row that merely shares a title must survive.
+        $keep = Media::create([
+            'type' => 'video', 'title' => 'Cultural Heritage Tour Highlights',
+            'video_url' => 'https://www.youtube.com/watch?v=rihla-real-upload', 'is_published' => true,
+        ]);
+
+        // Called directly: RefreshDatabase has already run every migration,
+        // so `artisan migrate` would report nothing to do and assert nothing.
+        $migration = require database_path('migrations/2026_09_19_060000_remove_placeholder_demo_media.php');
+        $migration->up();
+
+        $this->assertDatabaseMissing('media', ['video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ']);
+        $this->assertDatabaseMissing('media', ['file_path' => 'media/sunset.jpg']);
+        $this->assertDatabaseHas('media', ['id' => $keep->id]);
+    }
+
+    /**
      * A customer must never meet the browser's broken-image icon. Demo rows
      * carry no file on purpose, and a real upload can go missing too.
      */
