@@ -8,6 +8,7 @@ use App\Models\HeroBanner;
 use App\Models\Media;
 use App\Models\Setting;
 use App\Models\Trip;
+use App\Models\User;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Policies\AuditLogPolicy;
@@ -16,6 +17,7 @@ use App\Policies\HeroBannerPolicy;
 use App\Policies\MediaPolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\TripPolicy;
+use App\Policies\UserPolicy;
 use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
 use App\Support\Access;
@@ -36,6 +38,7 @@ class AuthServiceProvider extends ServiceProvider
         WhyFeature::class => WhyFeaturePolicy::class,
         Setting::class => SettingPolicy::class,
         AuditLog::class => AuditLogPolicy::class,
+        User::class => UserPolicy::class,
     ];
 
     public function boot(): void

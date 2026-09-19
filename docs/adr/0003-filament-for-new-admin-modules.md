@@ -83,6 +83,15 @@ installing. Filament's `imports`, `exports` and `failed_import_rows`
 migrations are published and run, so they behave. Export and import are also
 features Rihla will plausibly want for pilgrim lists in Phase 3.
 
+### Its colour generator does not understand a dark brand
+
+Given one hex, Filament's `Color::hex()` treats it as the *middle* of a scale
+it generates. Wine (`#8E2653`) sits near the dark end of its own ramp, so
+shade 600 — what a filled button uses — came out a pale pink at roughly 3.0:1
+against white. The panel looked like a different product and failed the
+contrast the rest of the site is held to. It gets the whole ramp from
+`Brand::WINE_SCALE` instead, which matches `tailwind.config.js`.
+
 ## Other departures from the generated panel
 
 - **No second login form.** `filament:install` adds one at `/staff/login`; it
@@ -96,6 +105,39 @@ features Rihla will plausibly want for pilgrim lists in Phase 3.
 - **Panel access is a permission**, not merely being signed in. Every customer
   account Phase 3 introduces will be an authenticated user, and none of them
   may see this.
+
+## The first module: staff accounts
+
+A gap rather than a duplicate. Nine staff roles were introduced in Phase 1
+with no screen to assign them: an account could only be made with
+`php artisan admin:create` and a role could only be granted from tinker, so in
+practice everyone was a Super Admin — the opposite of what the roles are for.
+
+Building it found a live authorisation defect that had nothing to do with
+Filament. `Access::matrix()` defined the content permission set **by
+exclusion** — "everything except `admin.access`, `setting.*` and `audit.*`" —
+so adding `user.*` to the permission list silently gave the Content Manager
+and the Operations Manager the ability to create staff accounts and hand out
+roles, including their own. The read-only set had the same shape, matching
+any permission containing `.view`, which handed the Reporting role
+`user.viewAny` and with it every staff name and email address.
+
+Both are now defined by inclusion. **A list that grows by default grants by
+default**, and this one had been one permission away from that since Phase 1.
+
+Two rules could not live in the policy, because `Gate::before` grants Super
+Admin every ability before a policy method runs — and Super Admin is the only
+role that reaches these screens:
+
+- **The last Super Admin cannot be deleted.** On the model, so it holds for
+  the staff screen, the profile page's "delete my account" and tinker alike.
+  It began as a `deleting` listener and did not work: `HasRoles` registers its
+  own `deleting` listener to detach the pivot rows, and trait boot runs before
+  `booted()`, so the guard saw a user with no roles and waved it through. It
+  only appeared to work when something had loaded the relation first.
+  Overriding `delete()` runs before any of that.
+- **Nobody deletes their own account from the staff screen.** The delete
+  actions hide themselves on the signed-in user's row.
 
 ## Consequences
 

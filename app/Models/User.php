@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Exceptions\LastSuperAdmin;
+use App\Support\Access;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -62,6 +64,43 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'password',
         'remember_token',
     ];
+
+    /**
+     * The last Super Admin cannot be deleted.
+     *
+     * Not a policy rule: `Gate::before` grants Super Admin every ability
+     * before a policy method runs, so a guard written there would never fire
+     * for the only people who can delete staff accounts. Here it holds for
+     * the staff screen, the profile page's "delete my account" and a careless
+     * tinker session alike.
+     *
+     * And not a `deleting` listener either, which is where this started.
+     * `HasRoles` registers its own `deleting` listener to detach the pivot
+     * rows, and trait boot runs before `booted()` — so by the time the guard
+     * ran, the user it was checking no longer had any roles and it waved the
+     * deletion through. It only appeared to work when something had loaded
+     * the relation first. Overriding delete() runs before any of that.
+     *
+     * A mass delete (`User::where(...)->delete()`) fires no model events at
+     * all and is not covered; nothing in this application does that.
+     */
+    public function delete(): ?bool
+    {
+        if ($this->isTheLastSuperAdmin()) {
+            throw new LastSuperAdmin;
+        }
+
+        return parent::delete();
+    }
+
+    public function isTheLastSuperAdmin(): bool
+    {
+        if (! $this->hasRole(Access::SUPER_ADMIN)) {
+            return false;
+        }
+
+        return static::role(Access::SUPER_ADMIN)->whereKeyNot($this->getKey())->doesntExist();
+    }
 
     /**
      * Get the attributes that should be cast.

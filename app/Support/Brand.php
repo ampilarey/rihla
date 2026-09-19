@@ -39,4 +39,30 @@ final class Brand
     public const BORDER = '#DBD3CE';
 
     public const WHITE = '#ffffff';
+
+    /**
+     * The wine ramp, matching `tailwind.config.js`.
+     *
+     * Here because Filament needs the whole scale, not one colour. Handed only
+     * the base hex, its `Color::hex()` treats it as the *middle* of a ramp it
+     * generates itself — and wine sits near the dark end, so shade 600 (which
+     * is what a filled button uses) came out a pale pink at 3.0:1 against
+     * white. The panel looked like a different product and failed the contrast
+     * the rest of the site is held to.
+     *
+     * @var array<int, string>
+     */
+    public const WINE_SCALE = [
+        50 => '#FCF5F8',
+        100 => '#F9E7EF',
+        200 => '#F1CBDB',
+        300 => '#E7A6C3',
+        400 => '#DA76A2',
+        500 => '#8E2653',
+        600 => '#731F43',
+        700 => '#5B1835',
+        800 => '#441228',
+        900 => '#300D1C',
+        950 => '#1E0812',
+    ];
 }

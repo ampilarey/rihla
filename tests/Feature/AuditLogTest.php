@@ -158,6 +158,11 @@ class AuditLogTest extends TestCase
      */
     public function test_the_log_survives_the_deletion_of_its_author(): void
     {
+        // A second Super Admin, because the last one cannot be deleted — see
+        // User::isTheLastSuperAdmin(). The point here is the record, not the
+        // role.
+        $this->admin();
+
         $admin = $this->admin();
         $name = $admin->name;
 

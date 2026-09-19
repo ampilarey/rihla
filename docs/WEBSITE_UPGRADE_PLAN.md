@@ -677,6 +677,8 @@ The short version, because each one would otherwise be rediscovered: **the panel
 
 Also: `composer update` now needs `php artisan filament:upgrade` and a commit of the republished assets. A test fails if that is forgotten.
 
+**The first module is staff accounts and roles** — a gap, not a duplicate: §9.3 shipped nine roles with no screen to assign them, so an account could only be made with `php artisan admin:create` and a role only from tinker. Building it found a live authorisation defect that predates Filament: `Access::matrix()` defined the content permission set *by exclusion*, so adding `user.*` to the permission list silently gave the Content Manager and Operations Manager the ability to hand out roles including their own, and the read-only set — matching any permission containing `.view` — gave Reporting every staff name and email address. Both are defined by inclusion now. See ADR 0003.
+
 ### 9.3 Authorisation
 
 Replace the `is_admin` boolean with real roles and permissions (`spatie/laravel-permission`). **Staff roles** (nine, each a real Rihla job function — companion §17.1): Super Admin, Operations Manager, Booking Staff, Finance, Visa Staff, Pilgrim Support, Content Manager, Tour Leader, Reporting (read-only). Permissions are verbs (`booking.create`, `refund.approve`, `document.verify`, …) with separation of duties enforced in code — the same person may not request and approve one refund.

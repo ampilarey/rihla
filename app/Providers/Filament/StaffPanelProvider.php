@@ -59,8 +59,12 @@ class StaffPanelProvider extends PanelProvider
             ->path(self::PATH)
             ->brandName('Rihla Staff')
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
+            // The whole ramp, not one hex. Handed a single colour, Filament
+            // treats it as the middle of a scale it generates — and wine sits
+            // near the dark end, so a filled button came out pale pink at
+            // 3.0:1 against white.
             ->colors([
-                'primary' => Color::hex(Brand::WINE),
+                'primary' => Brand::WINE_SCALE,
                 'gray' => Color::Stone,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
