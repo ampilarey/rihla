@@ -224,6 +224,12 @@
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Settings') }}
                                 </a>
+                                {{-- The Filament panel. New modules are built there;
+                                     these screens move across in Phase 3. --}}
+                                <a href="{{ url(\App\Providers\Filament\StaffPanelProvider::PATH) }}"
+                                   class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
+                                    {{ __('Staff') }}
+                                </a>
                                 <a href="{{ route('home') }}" 
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('View Site') }}
@@ -301,6 +307,10 @@
                             <a href="{{ route('admin.settings.index') }}" 
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Settings') }}
+                            </a>
+                            <a href="{{ url(\App\Providers\Filament\StaffPanelProvider::PATH) }}"
+                               class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                {{ __('Staff') }}
                             </a>
                             <a href="{{ route('home') }}" 
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">

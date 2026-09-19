@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Providers\Filament\StaffPanelProvider;
 use App\Support\Csp;
 use Closure;
 use Illuminate\Http\Request;
@@ -80,7 +81,7 @@ class SecurityHeaders
                 config('security.csp_report_only')
                     ? 'Content-Security-Policy-Report-Only'
                     : 'Content-Security-Policy',
-                $this->policy(),
+                $this->policy($request),
             );
         }
 
@@ -115,11 +116,40 @@ class SecurityHeaders
      * injection is a real but much smaller problem than script injection, and
      * this is the honest trade rather than a green tick.
      */
-    private function policy(): string
+    /**
+     * The staff panel cannot run under the site's script policy.
+     *
+     * Filament and Livewire emit four inline <script> blocks between them,
+     * and only Livewire's can carry a nonce — Filament's `assets.blade.php`
+     * writes `window.filamentData` with no way to attach one. Under the
+     * nonce policy the browser refuses all four and the panel renders but
+     * does nothing, which is how this was found: the page was opened and
+     * looked at.
+     *
+     * So `script-src` on /staff is 'self' 'unsafe-inline' 'unsafe-eval',
+     * and the public site keeps its nonce. The panel is behind
+     * authentication and the `admin.access` permission; the public site,
+     * which is where an injection would come from a stranger, is unchanged.
+     * A test asserts both halves of that.
+     *
+     * The alternative is patching published Filament views on every upgrade.
+     * See docs/adr/0003-filament-for-new-admin-modules.md.
+     */
+    private function isStaffPanel(Request $request): bool
     {
-        $nonce = Csp::nonce();
+        return $request->is(StaffPanelProvider::PATH, StaffPanelProvider::PATH.'/*');
+    }
 
-        $script = ["'self'", "'nonce-{$nonce}'", "'unsafe-eval'"];
+    private function policy(Request $request): string
+    {
+        // A nonce and 'unsafe-inline' in the same directive is not a
+        // belt-and-braces arrangement: a browser that understands nonces
+        // ignores 'unsafe-inline' entirely. So the panel gets a policy with
+        // no nonce at all, and every other page keeps the strict one.
+        $script = $this->isStaffPanel($request)
+            ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+            : ["'self'", "'nonce-".Csp::nonce()."'", "'unsafe-eval'"];
+
         $connect = ["'self'"];
 
         // With `npm run dev` running, Vite serves the bundle and its hot-reload
