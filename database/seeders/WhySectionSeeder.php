@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\WhySection;
 use App\Models\WhyFeature;
+use App\Models\WhySection;
 use Illuminate\Database\Seeder;
 
 class WhySectionSeeder extends Seeder
@@ -21,18 +21,6 @@ class WhySectionSeeder extends Seeder
             'primary_cta_text' => 'Start Your Journey',
             'primary_cta_url' => '/trips',
             'secondary_cta_text' => 'Learn More',
-            'secondary_cta_url' => '/about',
-            'is_active' => true,
-        ]);
-
-        // Create Dhivehi why section
-        $whySectionDv = WhySection::create([
-            'locale' => 'dv',
-            'title' => 'ރިހްލައަށް އަންނަވާނަންވާކަންތައްވަނީއެވެ؟',
-            'subtitle' => 'ތިޔަބޭފުޅުންނަށްޓަކައި ތިމަންމަގައިގެވިގެންވާ އަސަރުވެރިކަންތައްވަނީއެވެ',
-            'primary_cta_text' => 'ދަތުރުންނަށްޓަކައިވާލާ',
-            'primary_cta_url' => '/trips',
-            'secondary_cta_text' => 'އިތުރަށްދަންނަވާލާ',
             'secondary_cta_url' => '/about',
             'is_active' => true,
         ]);
@@ -67,34 +55,17 @@ class WhySectionSeeder extends Seeder
             WhyFeature::create($featureData);
         }
 
-        // Create Dhivehi features
-        $featuresDv = [
-            [
-                'title' => 'ވިސްވަރަށްޓަކައިވާލުންތައް',
-                'text' => 'ތިމަންމަގައިގެވިގެންވާ މަޝްހޫރުތައްވަނީއެވެއިން ކޮންމެވެސްކަމަށްޓަކައިވާލުންތައްވަނީއެވެ',
-                'icon' => '🧭',
-                'sort_order' => 0,
-                'is_active' => true,
-            ],
-            [
-                'title' => 'ރައްޓަށްޓަކައިވާލުންތައް',
-                'text' => 'ރައްޓަށްޓަކައިވާލުންތައްވަނީއެވެއިން ކޮންމެވެސްކަމަށްޓަކައިވާލުންތައްވަނީއެވެ',
-                'icon' => '🏨',
-                'sort_order' => 1,
-                'is_active' => true,
-            ],
-            [
-                'title' => 'ސަފުވަށްޓަކައިވާލުންތައް',
-                'text' => 'ސަފުވަށްޓަކައިވާލުންތައްވަނީއެވެއިން ކޮންމެވެސްކަމަށްޓަކައިވާލުންތައްވަނީއެވެ',
-                'icon' => '💰',
-                'sort_order' => 2,
-                'is_active' => true,
-            ],
-        ];
+        // Dhivehi is deliberately not seeded.
+        //
+        // What used to be here was machine-generated: the three feature titles
+        // shared a 19-character suffix, and two of the three bodies shared 72
+        // of their 77 characters, where the English copy for the same three
+        // points shares two. On the homepage, which made it the fabricated
+        // Dhivehi a visitor was most likely to see.
+        //
+        // HomeController falls back to the English section for a locale with
+        // none, so /dv keeps the block. A real translation entered in the
+        // admin panel wins the moment it exists.
 
-        foreach ($featuresDv as $featureData) {
-            $featureData['why_section_id'] = $whySectionDv->id;
-            WhyFeature::create($featureData);
-        }
     }
 }
