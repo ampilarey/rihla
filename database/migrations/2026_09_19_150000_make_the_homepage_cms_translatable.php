@@ -79,6 +79,10 @@ return new class extends Migration
         foreach (DB::table('hero_banners')->orderBy('id')->get()->groupBy('sort_order') as $rows) {
             $primary = $rows->firstWhere('locale', 'en') ?? $rows->first();
 
+            if ($primary === null) {
+                continue;
+            }
+
             DB::table('hero_banners')->where('id', $primary->id)->update(
                 $this->translationsFrom($rows, self::TRANSLATABLE['hero_banners']),
             );
@@ -100,6 +104,10 @@ return new class extends Migration
         }
 
         $primary = $sections->firstWhere('locale', 'en') ?? $sections->first();
+
+        if ($primary === null) {
+            return;
+        }
 
         DB::table('why_sections')->where('id', $primary->id)->update(
             $this->translationsFrom($sections, self::TRANSLATABLE['why_sections']),
@@ -177,7 +185,7 @@ return new class extends Migration
     }
 
     /**
-     * @param  Collection<int, object>  $rows
+     * @param  Collection<int, stdClass>  $rows
      * @param  list<string>  $fields
      * @return array<string, string>
      */
@@ -201,9 +209,9 @@ return new class extends Migration
     }
 
     /**
-     * @param  Collection<int, object>  $rows
+     * @param  Collection<int, stdClass>  $rows
      */
-    private function deleteMerged(string $table, $rows, object $primary): void
+    private function deleteMerged(string $table, $rows, stdClass $primary): void
     {
         $ids = $rows->pluck('id')->reject(fn ($id) => $id === $primary->id);
 
