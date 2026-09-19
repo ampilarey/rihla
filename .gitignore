@@ -2,6 +2,10 @@
 /node_modules
 /public/hot
 # public/build is committed for cPanel/shared hosting deploys without Node.
+# Filament's published assets are committed for the same reason: the deploy
+# is a `git pull`, and `filament:assets` cannot run where there is no build
+# step. `filament:upgrade` republishes them after every composer update, and
+# a CI job fails if what is committed has drifted from what the packages ship.
 /public/storage
 /storage/*.key
 /storage/pail

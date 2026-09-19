@@ -61,6 +61,14 @@ npm run build
 composer install --no-dev --optimize-autoloader
 ```
 
+> **After any `composer update` that moves Filament**, run
+> `php artisan filament:upgrade` and commit what it republishes into
+> `public/js/filament`, `public/css/filament` and `public/fonts/filament`.
+> There is no build step on the server, so those files ship from git exactly
+> like `public/build`. Stale assets are silent — last version's JavaScript
+> against this version's markup — so a test fails when they drift. See
+> [ADR 0003](adr/0003-filament-for-new-admin-modules.md).
+
 ## 📤 File Upload and Initial Setup
 
 ### 1. Server Access and File Transfer
