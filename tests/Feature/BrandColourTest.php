@@ -333,17 +333,25 @@ class BrandColourTest extends TestCase
         preg_match_all('/<a\s[^>]*class="([^"]*w-14[^"]*rounded-full[^"]*)"/s', $component, $matches);
 
         $this->assertNotEmpty($matches[1], 'No floating buttons found to check.');
-        $this->assertCount(3, $matches[1]);
+        $this->assertCount(2, $matches[1],
+            'Message us and Call us. The WhatsApp catalog button has gone — the site carries the trips now.');
 
         // All three carry the same treatment now. The Call button used to be
         // inverted — cream fill, thin gold-700 outline — which read as an
         // accident rather than a decision, and its icon was the faintest thing
         // on the screen at 5.90:1 against its own fill.
         foreach ($matches[1] as $classes) {
-            $this->assertStringContainsString('bg-wine', $classes,
-                'The floating buttons share one treatment; a lone inverted one reads as a mistake.');
-            $this->assertStringContainsString('text-cream', $classes,
-                'Cream on wine is 7.64:1 for every icon.');
+            // One is WhatsApp's, on WhatsApp's own green, because a recoloured
+            // WhatsApp mark is a worse button — people recognise that circle
+            // without reading anything. The rest of the site stays wine.
+            $ours = ! str_contains($classes, 'bg-whatsapp');
+
+            if ($ours) {
+                $this->assertStringContainsString('bg-wine', $classes,
+                    'Our own floating buttons share one treatment; a lone inverted one reads as a mistake.');
+                $this->assertStringContainsString('text-cream', $classes,
+                    'Cream on wine is 7.64:1.');
+            }
 
             $this->assertMatchesRegularExpression(
                 '/\b(ring-\d|border(-\d)?)\b/',

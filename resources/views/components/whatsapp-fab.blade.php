@@ -1,9 +1,18 @@
 {{-- Floating action buttons.
 
-     One treatment for all three. The Call button used to be inverted — cream
-     fill, thin gold-700 outline icon — which read as an accident rather than a
-     decision, and its icon was the faintest thing on the screen at 5.90:1
-     against its own fill. Every icon is now cream on wine at 7.64:1.
+     Two buttons: message us on WhatsApp, or call. The WhatsApp Business
+     catalog link has gone — the site carries the trips now, so sending people
+     back into a chat app to browse them was sending them the wrong way.
+
+     WhatsApp gets its own mark on its own green (#25D366), because a
+     recoloured WhatsApp glyph is a worse button: people recognise that green
+     circle without reading anything. Noted honestly: white on #25D366 is
+     1.98:1, under the 3:1 that icons should meet. That is WhatsApp's own
+     brand pairing, not a choice made here, and the alternative is their
+     darker official green #128C7E at 4.14:1.
+
+     Call keeps the wine fill with a cream handset, solid rather than a
+     hairline outline so it reads as a telephone at 28px.
 
      These are fixed, so they pass over every section of every page, and the
      fill and the ring cover different grounds:
@@ -23,7 +32,7 @@
     <a href="{{ \App\Support\Contact::whatsappUrl() }}"
        target="_blank" 
        rel="noopener"
-       class="bg-wine-500 hover:bg-wine-600 text-cream shadow-soft ring-2 ring-cream w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-105"
+       class="bg-whatsapp hover:brightness-95 text-white shadow-soft ring-2 ring-cream w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-105"
        aria-label="{{ __('messages.cta_whatsapp') }}"
        title="{{ __('messages.cta_whatsapp') }}">
         <svg aria-hidden="true" focusable="false" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
@@ -36,20 +45,9 @@
        class="bg-wine-500 hover:bg-wine-600 text-cream shadow-soft ring-2 ring-cream w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-105"
        aria-label="{{ __('Call us') }}"
        title="{{ __('Call us') }}">
-        <svg aria-hidden="true" focusable="false" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+        <svg aria-hidden="true" focusable="false" class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
         </svg>
     </a>
 
-    <!-- Catalog Button -->
-    <a href="{{ \App\Support\Contact::catalogUrl() }}"
-       target="_blank" 
-       rel="noopener"
-       class="bg-wine-500 hover:bg-wine-600 text-cream shadow-soft ring-2 ring-cream w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-105"
-       aria-label="{{ __('Browse our catalog') }}"
-       title="{{ __('Browse our catalog') }}">
-        <svg aria-hidden="true" focusable="false" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-        </svg>
-    </a>
 </div>

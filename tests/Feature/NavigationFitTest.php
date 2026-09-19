@@ -90,13 +90,18 @@ class NavigationFitTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole(Access::SUPER_ADMIN);
 
+        // 'Browse Catalog' used to be the marker here. It has gone entirely:
+        // it linked to the WhatsApp Business catalog, and the site carries the
+        // trips now, so it was sending people the wrong way.
         $this->actingAs($admin)
             ->get('/admin')
             ->assertOk()
-            ->assertDontSee('Browse Catalog', false)
-            ->assertDontSee('whatsapp-fab', false);
+            ->assertDontSee('Message us', false)
+            ->assertDontSee('Call us', false);
 
         // And they are still there for visitors.
-        $this->get('/en')->assertOk()->assertSee('Browse Catalog', false);
+        $this->get('/en')->assertOk()
+            ->assertSee('Message us', false)
+            ->assertSee('Call us', false);
     }
 }
