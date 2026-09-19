@@ -335,13 +335,15 @@ class BrandColourTest extends TestCase
         $this->assertNotEmpty($matches[1], 'No floating buttons found to check.');
         $this->assertCount(3, $matches[1]);
 
+        // All three carry the same treatment now. The Call button used to be
+        // inverted — cream fill, thin gold-700 outline — which read as an
+        // accident rather than a decision, and its icon was the faintest thing
+        // on the screen at 5.90:1 against its own fill.
         foreach ($matches[1] as $classes) {
-            $wineFilled = str_contains($classes, 'bg-wine') || str_contains($classes, 'btn-primary');
-
-            if (! $wineFilled) {
-                // A cream or light fill already separates itself from wine.
-                continue;
-            }
+            $this->assertStringContainsString('bg-wine', $classes,
+                'The floating buttons share one treatment; a lone inverted one reads as a mistake.');
+            $this->assertStringContainsString('text-cream', $classes,
+                'Cream on wine is 7.64:1 for every icon.');
 
             $this->assertMatchesRegularExpression(
                 '/\b(ring-\d|border(-\d)?)\b/',
