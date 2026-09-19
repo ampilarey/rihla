@@ -489,7 +489,42 @@ Also removed: `html[lang="dv"] *` with `!important`, and `.font-test-afruama`, a
 
 `display-sm` … `display-xl` added to the Tailwind scale, each pairing a size with its line height and tracking. **Added**, not a redefinition of `text-*` — overriding those keys would silently resize every heading on the site.
 
-**Still open:** the spacing rhythm. That is cosmetic refactoring across 48 views and wants a designer's eye more than an engineer's, so it is deliberately not bundled here.
+**Since done — see §4.7.** This said the spacing rhythm was "cosmetic refactoring across 48 views
+and wants a designer's eye more than an engineer's". Measuring it first made it a much smaller job
+than that: nine wrappers, not 48 views.
+
+---
+
+### 4.7 Section rhythm — **implemented** ✅
+
+The vertical half of the design system, which had never been written down.
+
+**What the audit found**, before changing anything:
+
+| | Before |
+|---|---|
+| Rhythms across five public pages | **Four** — home `py-16`, trips and gallery `py-8`, trip detail `py-8`, guide `py-6 md:py-8 lg:py-12` |
+| Pages whose rhythm changed with the viewport | **One** (the guide) |
+| Responsive vertical-padding declarations in the whole codebase | **6** |
+| Section/container classes defined in `app.css` and used by no view | **Six** |
+
+So a 375px phone was given the spacing chosen for a 1440px desktop, and the stylesheet already
+held a section system nothing had adopted.
+
+**Shipped:** `.section-y` (`py-10 md:py-14 lg:py-16`) and `.section-y-tight`
+(`py-8 md:py-10 lg:py-12`), applied to nine page-level wrappers. The values were chosen so
+**desktop changes as little as possible** — the homepage is still 64px at `lg`, the guide still
+48px — while mobile tightens (the homepage 64 → 40px). The trips, gallery and trip pages gain
+32 → 48px at `lg`, matching the rhythm the guide had already set.
+
+`.section` and `.container-fluid` are gone: unused, undocumented, and `.section` read as the base
+of the documented `.section-light` / `.section-dark` / `.section-wine` family, which it never was.
+Eleven further component classes turned out to be undefined in `docs/BRAND.md`; that table is
+complete now, and `SectionRhythmTest` fails if it drifts again.
+
+**The numbers are a judgement call and can be argued with.** The point of the pass is that arguing
+with them is now a two-line edit in `app.css` rather than a sweep through the views — which is the
+engineer's half of the job the v1.0 plan wanted a designer for.
 
 ---
 
@@ -873,7 +908,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | ~~i18n redesign (§9.4)~~ **— done: trips, the Umrah guide, the homepage blocks and media all translatable (ADR 0001)**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, ~~Filament adoption (§9.2)~~ **— adopted; panel at `/staff` (ADR 0003)**, ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, ~~hosting decision + move (§9.1)~~ **— decided: stay on cPanel (ADR 0002)**, ~~media library~~ **— narrowed: the swap to spatie/laravel-medialibrary waits for a second media owner (ADR 0004); translations and the broken thumbnails are done**, ~~observability~~ **— Pulse at `/pulse` and log rotation done (ADR 0005); Sentry and uptime monitoring need the owner's accounts** | **3.5–5.5 weeks** |
+| **1 — Foundations** | Ready to build on | ~~i18n redesign (§9.4)~~ **— done: trips, the Umrah guide, the homepage blocks and media all translatable (ADR 0001)**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, ~~Filament adoption (§9.2)~~ **— adopted; panel at `/staff` (ADR 0003)**, ~~design-system pass~~ **— colour (§4.5), typography (`f30291b`) and the section rhythm (§4.7) all done**, ~~hosting decision + move (§9.1)~~ **— decided: stay on cPanel (ADR 0002)**, ~~media library~~ **— narrowed: the swap to spatie/laravel-medialibrary waits for a second media owner (ADR 0004); translations and the broken thumbnails are done**, ~~observability~~ **— Pulse at `/pulse` and log rotation done (ADR 0005); Sentry and uptime monitoring need the owner's accounts** | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |

@@ -9,7 +9,7 @@
 
 <!-- Current Trip Section -->
 @if($currentTrip)
-<section class="py-16 bg-cream">
+<section class="section-y bg-cream">
     <div class="container mx-auto px-4">
         <h2 class="section-title">
             {{ __('Current Trip') }}
@@ -70,7 +70,7 @@
 
 <!-- Upcoming Trip Section -->
 @if($upcomingTrip)
-<section class="py-16 bg-cream-deep">
+<section class="section-y bg-cream-deep">
     <div class="container mx-auto px-4">
         <h2 class="section-title">
             {{ __('messages.section_upcoming') }}
@@ -133,7 +133,7 @@
 
 <!-- Gallery Teaser Section -->
 @if($recentMedia->count() > 0)
-<section class="py-16 bg-white">
+<section class="section-y bg-white">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
             <h2 class="section-title mb-4">
@@ -179,7 +179,7 @@
 @endif
 
 <!-- CTA Section -->
-<section class="py-16 bg-wine-500 text-white">
+<section class="section-y bg-wine-500 text-white">
     <div class="container mx-auto px-4 text-center">
         <h2 class="text-3xl font-bold mb-6">
             {{ __('messages.join_next_title') }}

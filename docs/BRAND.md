@@ -115,18 +115,40 @@ Defined once each in `resources/css/app.css`, inside `@layer components`.
 | `.btn-outline` | Ink border and text, hover ink fill with cream text |
 | `.btn-sky` | Legacy alias, folded onto `.btn-primary` |
 | `.card` | White, warm border, soft shadow |
+| `.section-y` | Section rhythm: `py-10 md:py-14 lg:py-16` |
+| `.section-y-tight` | Section rhythm for pages without a hero: `py-8 md:py-10 lg:py-12` |
 | `.section-light` / `.section-dark` / `.section-wine` | Cream / ink / wine grounds |
 | `.section-gradient` | Single-hue `wine-600 → wine-500` |
 | `.badge-gold` | Gold fill, **ink text** |
 | `.badge-wine` | Wine fill, white text |
 | `.badge-success` / `.badge-warning` / `.badge-error` | Pale tint, dark semantic text |
 | `.badge-sky` / `.badge-emerald` | Legacy aliases, folded onto `.badge-wine` |
+| `.card-hover` | `.card` plus a shadow lift on hover |
+| `.section-title` | Centred `text-3xl` ink heading with the gold rule beneath it |
+| `.text-brand-heading` / `.text-brand-body` | Ink and ink-muted text |
+| `.divider-gold` | Hairline rule, `gold-500` at 40% |
+| `.divider-sky` | Legacy alias, folded onto a wine hairline |
+| `.aspect-video` / `.aspect-square` / `.aspect-4-3` | 16:9, 1:1, 4:3 boxes |
+| `.font-dhivehi` | A_Faruma, for Thaana |
+| `.font-arabic` | Cairo at line-height 2, for du'a text |
+
+**One rhythm only.** `.section-y` and `.section-y-tight` are the vertical spacing of every
+public page section. Five pages had four different rhythms between them before this, and only
+one of them changed with the viewport — so a phone was given the spacing chosen for a desktop.
+The numbers are a judgement call and can be argued with; the point is that arguing with them is
+now a two-line edit here rather than a sweep through the views. They set vertical padding only,
+because a section often carries a full-bleed background while its content stays in a container.
 
 **One primary only.** Before this pass there were three competing primaries — an emerald
 `.btn-primary`, a sky `.btn-sky` and a gold-filled `.btn-secondary`. Do not add a fourth.
 
 > `.btn-gold` and `.badge-wine` are tree-shaken out of the build until a view uses them. That is
 > correct Tailwind behaviour, not a missing style.
+
+**This table is complete, and a test says so.** `SectionRhythmTest` fails if `app.css` defines a
+component class this file does not name. Two classes — `.section` and `.container-fluid` — sat in
+the stylesheet unused and undocumented long enough that `.section` read as the base of the
+`.section-light` / `.section-dark` / `.section-wine` family, which it never was. Both are gone.
 
 ---
 
