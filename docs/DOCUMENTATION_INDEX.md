@@ -11,6 +11,7 @@ Welcome to the comprehensive documentation for the Rihla Travels website. This d
 - **[Project Overview](PROJECT_OVERVIEW.md)** - Vision, goals, target audience, and key differentiators
 - **[Tech Stack](TECH_STACK.md)** - Complete technology stack and dependencies
 - **[Database Schema](DATABASE_SCHEMA.md)** - Database structure, relationships, and migrations
+- **[Architecture decisions](adr/)** - One short record per significant decision, newest last
 
 ### 🚀 Implementation Guides
 - **[Feature Specifications](FEATURE_SPECIFICATIONS.md)** - Detailed feature descriptions and requirements

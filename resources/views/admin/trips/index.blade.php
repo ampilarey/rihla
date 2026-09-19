@@ -38,9 +38,9 @@
                             {{ __('Status') }}
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {{ __('Language') }}
+                            {{ __('Dhivehi') }}
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             {{ __('Published') }}
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -78,10 +78,15 @@
                                 {{ ucfirst($trip->status) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-wine-50 text-wine-600">
-                                {{ strtoupper($trip->locale) }}
-                            </span>
+                        {{-- A trip is one row in both languages now. This says
+                             whether the Dhivehi half has been written yet; until
+                             it is, a Dhivehi visitor reads the English. --}}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @if($trip->hasTranslation('title', 'dv'))
+                                <span class="text-success">{{ __('Yes') }}</span>
+                            @else
+                                <span class="text-gray-500">{{ __('No') }}</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             @if($trip->is_published)

@@ -55,10 +55,14 @@ Rihla today is a brochure site with a six-table content model. The booking engin
 ```php
 // app/Models/Trip.php — abridged
 protected $fillable = [
-  'locale','title','title_dv','slug','date_start','date_end',
-  'location','location_dv','summary','summary_dv','details','details_dv',
+  'title','slug','date_start','date_end',
+  'location','summary','details',
   'price_from_mvr','status','cover_image','is_published',
 ];
+// title / location / summary / details hold {"en": ..., "dv": ...}
+// since docs/adr/0001-how-content-is-translated.md. The `locale` column
+// and the four `*_dv` twins it competed with are gone.
+public array $translatable = ['title','location','summary','details'];
 const STATUSES = ['current','upcoming','past'];
 public function media(): HasMany   // hasMany(Media::class)
 ```
@@ -70,7 +74,7 @@ Five structural problems, each of which the target model resolves:
 | T1 | **Product and schedule are the same row.** A trip *is* its dates. | Running the same Ramadan package three times means three duplicated content rows. Editing the itinerary means editing it N times. |
 | T2 | **`status: current\|upcoming\|past` is derived display state, not lifecycle.** It is a function of `date_start`/`date_end`. | It will silently drift from reality, and it cannot express the states that matter commercially: `draft`, `selling`, `sold_out`, `closed`, `cancelled`, `departed`. |
 | T3 | **`price_from_mvr` is a single nullable integer.** | Cannot express adult/child, room occupancy, deposits, extras, or currency. It is a marketing label, not a price. |
-| T4 | **Translations are `*_dv` columns plus a `locale` column.** The two mechanisms contradict each other — is a row a language, or does a row contain languages? | Adding Arabic means five more columns on every content table. Per-locale slugs and per-locale SEO are impossible. |
+| T4 | ~~**Translations are `*_dv` columns plus a `locale` column.** The two mechanisms contradict each other — is a row a language, or does a row contain languages?~~ **Resolved for `trips`** — one row, JSON per language, English fallback ([ADR 0001](adr/0001-how-content-is-translated.md)). Still open for `guide_steps`, `hero_banners`, `why_sections` (a `locale` column each) and `why_features`, `media` (no mechanism at all). | Adding Arabic to a converted table is a key, not a column. Per-locale slugs and per-locale SEO remain a translation table's job, which is where `packages` and `articles` go. |
 | T5 | **`media` is `hasMany` on `trips` directly** (`media.trip_id`). | Media cannot attach to a package, a hotel, a Ziyarah location or an article without more foreign keys. |
 
 ### 2.3 Identity, access and locale as they stand

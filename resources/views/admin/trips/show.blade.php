@@ -36,9 +36,9 @@
                     <div class="space-y-6">
                         <!-- Title and Status -->
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ $trip->title }}</h2>
-                            @if($trip->title_dv)
-                                <h3 class="text-lg font-medium text-gray-700 mb-2">{{ $trip->title_dv }}</h3>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ $trip->getTranslation('title', 'en') }}</h2>
+                            @if($trip->hasTranslation('title', 'dv'))
+                                <h3 class="text-lg font-medium text-gray-700 mb-2" dir="rtl" lang="dv">{{ $trip->getTranslation('title', 'dv') }}</h3>
                             @endif
                             <div class="flex items-center space-x-4">
                                 <span class="px-3 py-1 text-sm font-semibold rounded-full 
@@ -54,8 +54,8 @@
                                     @endif">
                                     {{ $trip->is_published ? __('Published') : __('Draft') }}
                                 </span>
-                                <span class="px-3 py-1 text-sm font-semibold rounded-full bg-wine-50 text-wine-600">
-                                    {{ strtoupper($trip->locale) }}
+                                <span class="px-3 py-1 text-sm font-semibold rounded-full {{ $trip->hasTranslation('title', 'dv') ? 'bg-wine-50 text-wine-600' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ $trip->hasTranslation('title', 'dv') ? __('Dhivehi') : __('English') }}
                                 </span>
                             </div>
                         </div>

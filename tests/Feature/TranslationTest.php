@@ -114,7 +114,9 @@ class TranslationTest extends TestCase
      */
     public function test_untranslatable_sentence_keys_in_the_admin_panel_do_not_increase(): void
     {
-        $ceiling = 120;
+        // Lowered from 120 when the trip form stopped asking for the same
+        // four fields twice over — once plainly and once labelled "(Dhivehi)".
+        $ceiling = 116;
 
         $count = count($this->sentenceKeys(admin: true));
 

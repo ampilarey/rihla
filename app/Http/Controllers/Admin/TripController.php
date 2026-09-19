@@ -14,19 +14,19 @@ class TripController extends Controller
     {
         $this->authorize('viewAny', Trip::class);
 
-        $locale = app()->getLocale();
-        $trips = Trip::where('locale', $locale)->orderBy('created_at', 'desc')->paginate(20);
+        // Every trip, once. This used to filter by the panel's own locale,
+        // which meant a Dhivehi trip was a second row an English-reading
+        // editor could not see — and the public site showed both.
+        $trips = Trip::orderBy('created_at', 'desc')->paginate(20);
 
-        return view('admin.trips.index', compact('trips', 'locale'));
+        return view('admin.trips.index', compact('trips'));
     }
 
     public function create()
     {
         $this->authorize('create', Trip::class);
 
-        $locale = app()->getLocale();
-
-        return view('admin.trips.create', compact('locale'));
+        return view('admin.trips.create');
     }
 
     public function store(TripRequest $request)
@@ -34,11 +34,14 @@ class TripController extends Controller
         $this->authorize('create', Trip::class);
 
         $validated = $request->validated();
-        // Derived from the title only when the form leaves it blank; the field
-        // is validated for uniqueness, so an editor who sets one means it.
-        $validated['slug'] = Str::slug(filled($validated['slug'] ?? null) ? $validated['slug'] : $validated['title']);
+        // Derived from the English title only when the form leaves it blank;
+        // the field is validated for uniqueness, so an editor who sets one
+        // means it. English because a slug is ASCII and Thaana does not
+        // transliterate into one.
+        $validated['slug'] = Str::slug(filled($validated['slug'] ?? null)
+            ? $validated['slug']
+            : $validated['title']['en']);
         $validated['is_published'] = $request->has('is_published');
-        $validated['locale'] = app()->getLocale();
 
         if ($request->hasFile('cover_image')) {
             $path = $request->file('cover_image')->store('trips', 'public');
@@ -54,18 +57,14 @@ class TripController extends Controller
     {
         $this->authorize('view', $trip);
 
-        $locale = app()->getLocale();
-
-        return view('admin.trips.show', compact('trip', 'locale'));
+        return view('admin.trips.show', compact('trip'));
     }
 
     public function edit(Trip $trip)
     {
         $this->authorize('update', $trip);
 
-        $locale = app()->getLocale();
-
-        return view('admin.trips.edit', compact('trip', 'locale'));
+        return view('admin.trips.edit', compact('trip'));
     }
 
     public function update(TripRequest $request, Trip $trip)
