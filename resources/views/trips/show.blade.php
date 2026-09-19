@@ -10,7 +10,7 @@
 @endpush
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 section-y-tight">
     <!-- Trip Header -->
     <div class="max-w-4xl mx-auto mb-12">
         @if($trip->cover_image)

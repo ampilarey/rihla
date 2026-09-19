@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 section-y-tight">
     <h1 class="text-4xl font-bold text-center mb-12 text-gray-800">{{ __('Gallery') }}</h1>
     
     <!-- Filter Pills -->

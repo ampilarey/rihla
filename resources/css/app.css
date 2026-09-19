@@ -237,12 +237,28 @@
     }
 
     /* ── Layout ───────────────────────────────────────────────────────── */
-    .container-fluid {
-        @apply max-w-screen-xl mx-auto px-4;
+    /* ── Section rhythm ────────────────────────────────────────────────────
+       The vertical half of the design system, which never got written. Five
+       public pages had four different rhythms between them — the homepage a
+       flat py-16, the trips and gallery pages a flat py-8, the Umrah guide
+       the only one that changed with the viewport — so a phone got the
+       spacing chosen for a desktop and vice versa.
+
+       Named here rather than repeated, so the rhythm of the whole site is
+       two declarations to change instead of a sweep through the views. The
+       numbers are a judgement call; where they live is not.
+
+       Deliberately vertical only. These go on the <section>, which may carry
+       a full-bleed background; the container inside it keeps its own
+       horizontal classes. */
+    .section-y {
+        @apply py-10 md:py-14 lg:py-16;
     }
 
-    .section {
-        @apply max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8;
+    /* For pages that open straight into content rather than a hero: the
+       trips list, the gallery, a trip, the guide. */
+    .section-y-tight {
+        @apply py-8 md:py-10 lg:py-12;
     }
 
     .divider-gold {
