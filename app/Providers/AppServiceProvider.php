@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -66,6 +67,14 @@ class AppServiceProvider extends ServiceProvider
             $model::observe(AuditObserver::class);
         }
 
+        // A translated field falls back to English, and then — rather than
+        // rendering nothing — to whatever language the record does have. A
+        // card with a blank title is broken; a card with a title the reader
+        // was not expecting is merely untranslated.
+        Translatable::fallback(
+            fallbackLocale: config('app.fallback_locale'),
+            fallbackAny: true,
+        );
     }
 
     /**

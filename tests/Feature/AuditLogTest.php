@@ -48,7 +48,10 @@ class AuditLogTest extends TestCase
 
         $this->assertSame(AuditLog::CREATED, $log->event);
         $this->assertNull($log->old_values);
-        $this->assertSame('Seven Nights in Madinah', $log->new_values['title']);
+        // A translated column is logged per language, not as the JSON blob it
+        // is stored as — otherwise adding a Dhivehi title and rewriting the
+        // English one leave the same entry.
+        $this->assertSame(['en' => 'Seven Nights in Madinah'], $log->new_values['title']);
     }
 
     public function test_an_update_records_both_sides_of_each_change(): void
@@ -59,8 +62,8 @@ class AuditLogTest extends TestCase
 
         $log = AuditLog::where('event', AuditLog::UPDATED)->sole();
 
-        $this->assertSame('Seven Nights in Madinah', $log->old_values['title']);
-        $this->assertSame('Ten Nights in Madinah', $log->new_values['title']);
+        $this->assertSame(['en' => 'Seven Nights in Madinah'], $log->old_values['title']);
+        $this->assertSame(['en' => 'Ten Nights in Madinah'], $log->new_values['title']);
 
         // Only what actually changed.
         $this->assertSame(['title'], array_keys($log->new_values));
@@ -80,7 +83,7 @@ class AuditLogTest extends TestCase
         $log = AuditLog::where('event', AuditLog::DELETED)->sole();
 
         $this->assertSame($id, $log->auditable_id);
-        $this->assertSame('Seven Nights in Madinah', $log->old_values['title']);
+        $this->assertSame(['en' => 'Seven Nights in Madinah'], $log->old_values['title']);
         $this->assertNull($log->new_values);
     }
 

@@ -6,29 +6,40 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Translatable\HasTranslations;
 
 class Trip extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = [
-        'locale',
         'title',
-        'title_dv',
         'slug',
         'date_start',
         'date_end',
         'location',
-        'location_dv',
         'summary',
-        'summary_dv',
         'details',
-        'details_dv',
         'price_from_mvr',
         'status',
         'cover_image',
         'is_published',
     ];
+
+    /**
+     * Stored as `{"en": "...", "dv": "..."}` and read back in the request's
+     * locale, falling back to English.
+     *
+     * These four used to exist twice over: once plainly and once as a `*_dv`
+     * twin, on a table that also had a `locale` column saying the whole row
+     * was one language. See the migration that merged them.
+     *
+     * The slug is deliberately not here. It is the trip's public URL, and one
+     * trip has one URL — the locale is already a path segment in front of it.
+     *
+     * @var array<int, string>
+     */
+    public array $translatable = ['title', 'location', 'summary', 'details'];
 
     protected $casts = [
         'date_start' => 'date',

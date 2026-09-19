@@ -50,30 +50,26 @@ CREATE TABLE users (
 ```sql
 CREATE TABLE trips (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    locale VARCHAR(2) DEFAULT 'en',
-    title VARCHAR(255) NOT NULL,
-    title_dv VARCHAR(255) NULL,
+    -- Translated columns hold {"en": "...", "dv": "..."} and are read back in
+    -- the request's locale, English first. See docs/adr/0001.
+    title JSON NOT NULL,
     slug VARCHAR(255) UNIQUE NOT NULL,
     date_start DATE NOT NULL,
     date_end DATE NOT NULL,
-    location VARCHAR(255) NULL,
-    location_dv VARCHAR(255) NULL,
-    summary TEXT NULL,
-    summary_dv TEXT NULL,
-    details LONGTEXT NULL,
-    details_dv LONGTEXT NULL,
+    location JSON NULL,
+    summary JSON NULL,
+    details JSON NULL,
     price_from_mvr INT UNSIGNED NULL,
     status ENUM('current', 'upcoming', 'past') DEFAULT 'upcoming',
     cover_image VARCHAR(255) NULL,
     is_published BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
-    
+
     INDEX idx_trips_slug (slug),
     INDEX idx_trips_status (status),
     INDEX idx_trips_published (is_published),
-    INDEX idx_trips_dates (date_start, date_end),
-    INDEX idx_trips_locale (locale)
+    INDEX idx_trips_dates (date_start, date_end)
 );
 ```
 
@@ -346,13 +342,17 @@ INDEX idx_hero_banners_dates (locale, is_active, start_at, end_at)
 - **Supported Locales**: `en` (English), `dv` (Dhivehi)
 - **Default Locale**: English (`en`)
 - **RTL Support**: Database ready for right-to-left language display
-- **Content Strategy**: Duplicate fields for translated content
+- **Content Strategy**: JSON translatable columns, per
+  [ADR 0001](adr/0001-how-content-is-translated.md). The tables below that
+  still use a `locale` column with one row per language are converted next.
 
 ### Multilingual Tables
-1. **Trips**: `title`, `title_dv`, `summary`, `summary_dv`, `details`, `details_dv`, `location`, `location_dv`
-2. **Guide Steps**: `locale` field with multilingual content handling
-3. **Hero Banners**: `locale` enum with separate content per language
-4. **Why Sections**: `locale` field with multilingual feature management
+1. **Trips**: `title`, `location`, `summary`, `details` — one row, JSON per
+   language, English fallback (`spatie/laravel-translatable`)
+2. **Guide Steps**: `locale` field, one row per language — *to convert*
+3. **Hero Banners**: `locale` enum, one row per language — *to convert*
+4. **Why Sections**: `locale` field, one row per language — *to convert*
+5. **Why Features**, **Media**: no translation mechanism at all — *to add*
 
 ## 🔒 Data Integrity & Constraints
 

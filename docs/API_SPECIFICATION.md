@@ -95,16 +95,17 @@ All admin endpoints require authentication and admin privileges.
 **Request Body** (multipart/form-data):
 ```json
 {
-  "title": "string (required)",
-  "title_dv": "string (optional)",
+  "title[en]": "string (required)",
+  "title[dv]": "string (optional)",
   "date_start": "date (required, YYYY-MM-DD)",
   "date_end": "date (required, YYYY-MM-DD)",
-  "location": "string (optional)",
-  "location_dv": "string (optional)",
-  "summary": "text (optional)",
-  "summary_dv": "text (optional)",
-  "details": "longtext (optional)",
-  "details_dv": "longtext (optional)",
+  "location[en]": "string (optional)",
+  "location[dv]": "string (optional)",
+  "summary[en]": "text (optional)",
+  "summary[dv]": "text (optional)",
+  "details[en]": "text (optional)",
+  "details[dv]": "text (optional)",
+  "slug": "string (optional, generated from title[en] when blank)",
   "price_from_mvr": "integer (optional)",
   "status": "enum (current|upcoming|past)",
   "cover_image": "file (optional, image)",
@@ -353,13 +354,18 @@ All admin endpoints require authentication and admin privileges.
 
 #### Trip Validation
 ```php
-'title' => 'required|string|max:255',
-'title_dv' => 'nullable|string|max:255',
-'date_start' => 'required|date|after_or_equal:today',
-'date_end' => 'required|date|after:date_start',
-'location' => 'nullable|string|max:255',
-'summary' => 'nullable|string',
-'details' => 'nullable|string',
+// Translated fields arrive as arrays. A bare string is read as English.
+'title' => 'required|array',
+'title.en' => 'required|string|max:255',
+'title.dv' => 'nullable|string|max:255',
+'date_start' => 'required|date',
+'date_end' => 'required|date|after_or_equal:date_start',
+'location.en' => 'nullable|string|max:255',
+'location.dv' => 'nullable|string|max:255',
+'summary.en' => 'nullable|string|max:1000',
+'summary.dv' => 'nullable|string|max:1000',
+'details.en' => 'nullable|string',
+'details.dv' => 'nullable|string',
 'price_from_mvr' => 'nullable|integer|min:0',
 'status' => 'required|in:current,upcoming,past',
 'cover_image' => 'nullable|image|max:5120'

@@ -36,12 +36,12 @@ class AuditObserver
 
     public function created(Model $model): void
     {
-        $this->record($model, AuditLog::CREATED, null, $this->clean($model->getAttributes()));
+        $this->record($model, AuditLog::CREATED, null, $this->clean($model, $model->getAttributes()));
     }
 
     public function updated(Model $model): void
     {
-        $changed = $this->clean($model->getChanges());
+        $changed = $this->clean($model, $model->getChanges());
 
         // A save that altered nothing of substance — only a timestamp, or a
         // redacted field — is not an event worth a row.
@@ -49,11 +49,14 @@ class AuditObserver
             return;
         }
 
+        $original = $model->getRawOriginal();
         $before = [];
 
         foreach (array_keys($changed) as $key) {
-            $before[$key] = $model->getOriginal($key);
+            $before[$key] = $original[$key] ?? null;
         }
+
+        $before = $this->clean($model, $before);
 
         $this->record($model, AuditLog::UPDATED, $before, $changed);
     }
@@ -62,7 +65,7 @@ class AuditObserver
     {
         // The whole record, because after this there is nothing left to
         // compare against. This is the event an audit trail exists for.
-        $this->record($model, AuditLog::DELETED, $this->clean($model->getAttributes()), null);
+        $this->record($model, AuditLog::DELETED, $this->clean($model, $model->getAttributes()), null);
     }
 
     private function record(Model $model, string $event, ?array $old, ?array $new): void
@@ -96,12 +99,31 @@ class AuditObserver
         ]);
     }
 
-    /** @return array<string, mixed> */
-    private function clean(array $attributes): array
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private function clean(Model $model, array $attributes): array
     {
-        return array_diff_key(
+        $attributes = array_diff_key(
             $attributes,
             array_flip(array_merge(self::NEVER_RECORD, self::NOISE)),
         );
+
+        // A translatable column holds `{"en": "...", "dv": "..."}` as one JSON
+        // string. Logged raw, a trail that exists to show what someone changed
+        // shows an opaque blob, and adding a Dhivehi title reads the same as
+        // rewriting the English one.
+        foreach ($attributes as $key => $value) {
+            if (! is_string($value) || ! method_exists($model, 'isTranslatableAttribute')) {
+                continue;
+            }
+
+            if ($model->isTranslatableAttribute($key)) {
+                $attributes[$key] = json_decode($value, true) ?? $value;
+            }
+        }
+
+        return $attributes;
     }
 }

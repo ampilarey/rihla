@@ -14,40 +14,18 @@
             <form action="{{ route('admin.trips.update', $trip) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-                
-                <!-- Locale Display -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ __('Language') }}
-                    </label>
-                    <div class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
-                        <span class="text-gray-900 font-medium">{{ $trip->locale === 'en' ? __('English') : __('Dhivehi') }}</span>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ __('Trip Title') }} *
-                        </label>
-                        <input type="text" name="title" id="title" value="{{ old('title', $trip->title) }}" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
-                        @error('title')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
 
-                    <div>
-                        <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ __('Location') }}
-                        </label>
-                        <input type="text" name="location" id="location" value="{{ old('location', $trip->location) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
-                        @error('location')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <p class="text-sm text-gray-600 mb-6">
+                    {{ __('One trip, both languages. English is required; Dhivehi is optional, and a visitor reading Dhivehi sees the English text wherever it is left blank.') }}
+                </p>
 
+                <x-admin.translatable-field name="title" :label="__('Trip Title')"
+                    :value="old('title', $trip->getTranslations('title'))" required />
+
+                <x-admin.translatable-field name="location" :label="__('Location')"
+                    :value="old('location', $trip->getTranslations('location'))" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <label for="date_start" class="block text-sm font-medium text-gray-700 mb-2">
                             {{ __('Start Date') }} *
@@ -97,86 +75,17 @@
                     </div>
                 </div>
 
-                <div class="mt-6">
-                    <label for="summary" class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ __('Summary') }}
-                    </label>
-                    <textarea name="summary" id="summary" rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('summary', $trip->summary) }}</textarea>
-                    @error('summary')
-                        <p class="text-error text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+                <x-admin.translatable-field name="summary" :label="__('Summary')"
+                    :value="old('summary', $trip->getTranslations('summary'))" type="textarea" :rows="3" />
 
-                <div class="mt-6">
-                    <label for="details" class="block text-sm font-medium text-gray-700 mb-2">
-                        {{ __('Trip Details') }}
-                    </label>
-                    <textarea name="details" id="details" rows="6"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('details', $trip->details) }}</textarea>
-                    @error('details')
-                        <p class="text-error text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+                <x-admin.translatable-field name="details" :label="__('Trip Details')"
+                    :value="old('details', $trip->getTranslations('details'))" type="textarea" :rows="6" />
 
-                <!-- Dhivehi Fields (Only show when trip is in Dhivehi) -->
-                @if($trip->locale === 'dv')
-                <div class="mt-8 border-t pt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Dhivehi Content') }}</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label for="title_dv" class="block text-sm font-medium text-gray-700 mb-2">
-                                {{ __('Trip Title (Dhivehi)') }}
-                            </label>
-                            <input type="text" name="title_dv" id="title_dv" value="{{ old('title_dv', $trip->title_dv) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
-                            @error('title_dv')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="location_dv" class="block text-sm font-medium text-gray-700 mb-2">
-                                {{ __('Location (Dhivehi)') }}
-                            </label>
-                            <input type="text" name="location_dv" id="location_dv" value="{{ old('location_dv', $trip->location_dv) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
-                            @error('location_dv')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="summary_dv" class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ __('Summary (Dhivehi)') }}
-                        </label>
-                        <textarea name="summary_dv" id="summary_dv" rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('summary_dv', $trip->summary_dv) }}</textarea>
-                        @error('summary_dv')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="details_dv" class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ __('Trip Details (Dhivehi)') }}
-                        </label>
-                        <textarea name="details_dv" id="details_dv" rows="6"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ old('details_dv', $trip->details_dv) }}</textarea>
-                        @error('details_dv')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                @endif
-
-                <div class="mt-6">
+                <div class="mb-6">
                     <label for="cover_image" class="block text-sm font-medium text-gray-700 mb-2">
                         {{ __('Cover Image') }}
                     </label>
-                    
+
                     @if($trip->cover_image)
                         <div class="mb-4">
                             <p class="text-sm text-gray-600 mb-2">{{ __('Current Image:') }}</p>
@@ -185,7 +94,7 @@
          decoding="async">
                         </div>
                     @endif
-                    
+
                     <input type="file" name="cover_image" id="cover_image" accept="image/*"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">
                     <p class="text-sm text-gray-500 mt-1">{{ __('Accepted formats: JPEG, PNG, WebP. Max size: 6MB') }}</p>
@@ -194,7 +103,7 @@
                     @enderror
                 </div>
 
-                <div class="mt-6">
+                <div class="mb-6">
                     <label class="flex items-center">
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', $trip->is_published) ? 'checked' : '' }}
                                class="rounded border-gray-300 text-wine-500 focus:ring-wine-500">
