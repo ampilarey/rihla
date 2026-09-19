@@ -250,6 +250,52 @@ class BrandColourTest extends TestCase
             ->assertSee('rihla-mark-inverse.svg', false);
     }
 
+    /**
+     * The company name sits beside the mark as text, so it inherits the same
+     * problem the hull had: on the footer it must not be painted in the
+     * footer's own colour.
+     *
+     * The first version of the lockup got this wrong — `text-cream` had never
+     * been compiled into the stylesheet, so the footer name rendered in the
+     * default ink on an ink background. Invisible, and invisible to every
+     * assertion that only checked the markup. A browser screenshot caught it.
+     */
+    public function test_the_logo_name_is_legible_on_both_surfaces(): void
+    {
+        $css = File::get(File::glob(public_path('build/assets/*.css'))[0]);
+
+        foreach (['text-cream', 'text-ink'] as $class) {
+            $this->assertStringContainsString('.'.$class, $css,
+                "The compiled stylesheet has no .{$class} rule, so the logo name "
+                .'falls back to whatever it inherits.');
+        }
+
+        $component = File::get(resource_path('views/components/brand-logo.blade.php'));
+
+        $this->assertStringContainsString('text-cream', $component,
+            'The dark lockup does not set a light colour for the name.');
+
+        // And the rendered footer really carries it.
+        $this->seed([SettingsSeeder::class, TripSeeder::class,
+            HeroBannerSeeder::class, WhySectionSeeder::class]);
+
+        $footer = $this->renderedFooter();
+
+        $this->assertStringContainsString('text-cream', $footer,
+            'The footer lockup does not render its name in cream.');
+    }
+
+    /** The footer as the browser receives it. */
+    private function renderedFooter(): string
+    {
+        $html = $this->get('/en')->assertOk()->getContent();
+
+        $start = strpos($html, '<footer');
+        $end = strpos($html, '</footer>');
+
+        return substr($html, $start, $end - $start);
+    }
+
     /** The footer block of the main layout. */
     private function footerMarkup(): string
     {

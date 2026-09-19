@@ -157,9 +157,21 @@ large text and meaningful graphics.
 
 ## 4. Logo — the dhoni
 
-**The two-sail dhoni is the Rihla logo.** It is used everywhere a logo appears: the site header
-and footer, the login page, the browser tab, the phone home screen, the PWA, and the preview card
-that WhatsApp and Facebook show when a link is shared.
+**The two-sail dhoni is the Rihla logo**, with the company name set beneath it, justified to the
+mark's own width. It is used everywhere a logo appears: the site header and footer, the login page,
+the browser tab, the phone home screen, the PWA, and the preview card that WhatsApp and Facebook
+show when a link is shared. The icons are the mark alone — there is no room for type at 16 pixels.
+
+The name is **real text, not artwork**. It is indexed by search engines, read aloud by screen
+readers, selectable, and sharp at any pixel density without a second file. The wrapper carries the
+width and the mark fills it, so mark and name are the same width by construction rather than by a
+number someone has to keep in step. Sizes are in `cqw` — a percentage of the lockup's own width —
+so the whole thing scales from one class: `w-20` in the header, `w-16` in the footer.
+
+`RIHLA` and `TRAVELS` carry different tracking because they are different lengths — five letters
+and seven, each spread to the same span. The two lines are `aria-hidden`; one `sr-only` span
+supplies "Rihla Travels" so a screen reader says the name rather than spelling out two
+letter-spaced fragments.
 
 `public/images/rihla-mark.svg` — 461 bytes, three paths, wine `#8E2653`, gold `#D2A03C`,
 ink `#2E2621`. Lifted from the vector paths inside

@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.25
+**Version:** 1.26
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.26 | **The logo carries the company name again** (D65) — set beneath the dhoni and justified to its width, as real text rather than artwork. A browser screenshot during the work caught the name rendering ink-on-ink in the footer, the same defect as the hull and for the same reason. |
 | 1.25 | **Three defects found in one phone screenshot of the footer** (D62–D64): the logo's hull is ink and so is the footer, so the hull vanished and the logo rendered as two sails above nothing; the tagline was `text-gray-600` on `bg-ink` at **1.96:1**, unreadable; and the floating buttons sat on top of the last line of the page. All three were invisible to a test suite that checked structure and markup but never looked at a rendered page. |
 | 1.24 | **The dhoni is the logo** (D61). Confirmed by the owner as final, it now appears everywhere a logo does — header, footer, login, tab, home screen, and the social preview card. One 461-byte vector covers every size; the Kaaba-and-calligraphy wordmark is retired but kept, in both its original and recoloured form. |
 | 1.23 | **The wordmark was the last thing on the site still in the pre-rebrand colours** (D60) — `#097EDD` bright blue and pure black, neither in the palette, at the top of every page. Recoloured into wine and ink with no shape changed; the untouched original is kept and asserted unchanged. This is the answer to "still I see the old logo", asked four times: the logo genuinely had not changed. |
@@ -166,6 +167,7 @@ These were confirmed by fetching `https://rihla.mv/` on 2026-09-17, not inferred
 | D62 | ~~**High**~~ **fixed** | **The logo disappeared into the footer.** Its hull is ink `#2E2621`; the footer is `bg-ink`, the same `#2E2621`. On the footer the hull rendered invisible and the logo showed as two sails floating above nothing. Shipped and live, found by the owner looking at a phone. A `rihla-mark-inverse.svg` variant carries a cream hull and `<x-brand-logo on="dark">` selects it; a test asserts the two variants differ in the hull fill and nothing else. | `public/images/rihla-mark-inverse.svg`, `components/brand-logo.blade.php` | A one-colour logo on a surface of that colour |
 | D63 | ~~**High**~~ **fixed** | **Footer text at 1.96:1.** The tagline was `text-gray-600` on `bg-ink` — not dim, unreadable — and the divider above it `border-gray-700` at **1.44:1**, an invisible line. Tailwind's grey scale is built for white backgrounds and several of its steps are illegible on ink. Now `gray-400` (5.84:1) and `gray-500` (3.07:1, the floor WCAG sets for a non-text line). The §10.2 accessibility pass missed both because it checked structure, not colour, and §4.5 checked the palette, not Tailwind greys used against it. | `resources/views/layouts/app.blade.php` | Two audits that each assumed the other covered this |
 | D64 | ~~**Medium**~~ **fixed** | The floating WhatsApp, call and catalogue buttons are fixed to the viewport, so at the bottom of the page they covered the footer's closing lines. 208 px of clearance on small screens, matching the button stack's real height; unchanged on desktop, where they sit clear of centred text. | `resources/views/layouts/app.blade.php` | — |
+| D65 | — **done** | **The logo carries the company name again.** When the dhoni replaced the wordmark, the header stopped saying "Rihla Travels" anywhere — a visitor from search saw a boat and had to read the browser tab to learn whose site it was. The name is now set beneath the mark, justified to its width, as real text: indexed, selectable, read aloud, and sharp at any density. Two findings from building it. Sizing in `em` put the name at 2.6px, because `em` resolves against the parent's font size and not its width; `cqw` is the unit that tracks the lockup. And a browser screenshot caught the footer name rendering ink-on-ink — `text-cream` had never been compiled into the stylesheet — which is the hull defect again, and again invisible to every assertion that only read markup. | `components/brand-logo.blade.php` | Not a defect — the cost of D61, now paid |
 
 > **D1 and D2 together mean the live homepage currently shows untranslated placeholder labels above holiday-resort packages.** Everything else in this plan is worth less than fixing those two, and both are hours of work, not weeks.
 
