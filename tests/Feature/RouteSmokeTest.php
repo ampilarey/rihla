@@ -216,9 +216,9 @@ class RouteSmokeTest extends TestCase
             'is_published' => true,
         ]);
 
-        $banner = HeroBanner::create(['locale' => 'en', 'title' => 'A Seeded Banner']);
+        $banner = HeroBanner::create(['title' => 'A Seeded Banner']);
 
-        $section = WhySection::create(['locale' => 'en', 'title' => 'Why Rihla']);
+        $section = WhySection::create(['title' => 'Why Rihla']);
 
         $feature = WhyFeature::create([
             'why_section_id' => $section->id,

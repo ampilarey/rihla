@@ -52,8 +52,8 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Language</dt>
                                     <dd class="mt-1 text-sm text-gray-900">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $heroBanner->locale === 'en' ? 'bg-wine-50 text-wine-600' : 'bg-success/10 text-success-dark' }}">
-                                            {{ strtoupper($heroBanner->locale) }}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $heroBanner->hasTranslation('title', 'dv') ? 'bg-wine-50 text-wine-600' : 'bg-gray-100 text-gray-800' }}">
+                                            {{ $heroBanner->hasTranslation('title', 'dv') ? 'Dhivehi' : 'English' }}
                                         </span>
                                     </dd>
                                 </div>

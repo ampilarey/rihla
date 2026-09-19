@@ -173,7 +173,7 @@ CREATE TABLE guide_steps (
 ```sql
 CREATE TABLE hero_banners (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    locale ENUM('en', 'dv') NOT NULL,
+    -- Translated columns hold {"en": ..., "dv": ...}; see docs/adr/0001.
     title VARCHAR(120) NOT NULL,
     subtitle VARCHAR(200) NULL,
     primary_cta_text VARCHAR(60) NULL,
@@ -189,11 +189,10 @@ CREATE TABLE hero_banners (
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
     
-    INDEX idx_hero_banners_locale (locale),
     INDEX idx_hero_banners_active (is_active),
-    INDEX idx_hero_banners_locale_active (locale, is_active),
-    INDEX idx_hero_banners_order (locale, is_active, sort_order),
-    INDEX idx_hero_banners_dates (locale, is_active, start_at, end_at)
+    INDEX idx_hero_banners_active (is_active),
+    INDEX idx_hero_banners_order (is_active, sort_order),
+    INDEX idx_hero_banners_dates (is_active, start_at, end_at)
 );
 ```
 
@@ -209,7 +208,6 @@ CREATE TABLE hero_banners (
 ```sql
 CREATE TABLE why_sections (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    locale VARCHAR(2) DEFAULT 'en',
     title VARCHAR(255) NOT NULL,
     subtitle TEXT NULL,
     image_path VARCHAR(255) NULL,
@@ -224,7 +222,6 @@ CREATE TABLE why_sections (
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
     
-    INDEX idx_why_sections_locale (locale),
     INDEX idx_why_sections_active (is_active)
 );
 ```
@@ -314,7 +311,6 @@ INDEX idx_trips_slug (slug)
 INDEX idx_trips_status (status)
 INDEX idx_trips_published (is_published)
 INDEX idx_trips_dates (date_start, date_end)
-INDEX idx_trips_locale (locale)
 
 -- Media table
 INDEX idx_media_trip (trip_id)
@@ -326,14 +322,10 @@ INDEX idx_media_order (sort_order)
 INDEX idx_guide_steps_number (step_number)
 
 -- Hero banners table
-INDEX idx_hero_banners_locale_active (locale, is_active)
-INDEX idx_hero_banners_order (locale, is_active, sort_order)
-INDEX idx_hero_banners_dates (locale, is_active, start_at, end_at)
 ```
 
 ### Composite Indexes
 - **Performance Optimization**: Multi-column indexes for common query patterns
-- **Locale-based Queries**: Combined indexes with locale for multilingual content
 - **Publication Status**: Combined indexes with is_published for content filtering
 - **Sorting**: Combined indexes with sort_order for ordered content retrieval
 
@@ -344,8 +336,9 @@ INDEX idx_hero_banners_dates (locale, is_active, start_at, end_at)
 - **Default Locale**: English (`en`)
 - **RTL Support**: Database ready for right-to-left language display
 - **Content Strategy**: JSON translatable columns, per
-  [ADR 0001](adr/0001-how-content-is-translated.md). The tables below that
-  still use a `locale` column with one row per language are converted next.
+  [ADR 0001](adr/0001-how-content-is-translated.md). No content table carries a
+  `locale` column any more: a record is one row in both languages, and a field
+  with no translation falls back to English.
 
 ### Multilingual Tables
 1. **Trips**: `title`, `location`, `summary`, `details` — one row, JSON per
@@ -353,9 +346,12 @@ INDEX idx_hero_banners_dates (locale, is_active, start_at, end_at)
 2. **Guide Steps**: `title`, `summary`, `details`, `reference_text`,
    `fiqh_notes`, `checklist` — one row, JSON per language. `dua_text` is not
    translated
-3. **Hero Banners**: `locale` enum, one row per language — *to convert*
-4. **Why Sections**: `locale` field, one row per language — *to convert*
-5. **Why Features**, **Media**: no translation mechanism at all — *to add*
+3. **Hero Banners**: `title`, `subtitle`, `primary_cta_text`,
+   `secondary_cta_text` — one row, JSON per language. The two CTA URLs are not
+   translated
+4. **Why Sections**: same four fields, same rule
+5. **Why Features**: `title`, `text`, `link_text` — one row, JSON per language
+6. **Media**: `title` and `caption` are English only — *to add*
 
 ## 🔒 Data Integrity & Constraints
 
@@ -383,7 +379,6 @@ UNIQUE KEY unique_settings_key (key)
 ### Check Constraints
 - **Status Enum**: Trips limited to 'current', 'upcoming', 'past'
 - **Media Type Enum**: Media limited to 'photo', 'video'
-- **Locale Values**: Proper locale validation in enum fields
 
 ## 📊 Data Types & Storage
 
@@ -399,8 +394,9 @@ UNIQUE KEY unique_settings_key (key)
 - **SMALLINT**: Small integers (sort order for media)
 
 ### Special Types
-- **JSON**: Flexible configuration storage (settings, checklists, fiqh notes)
-- **ENUM**: Controlled value sets (status, type, locale)
+- **JSON**: Translated text (`{"en": ..., "dv": ...}`) and flexible
+  configuration storage (settings, checklists, fiqh notes)
+- **ENUM**: Controlled value sets (status, type)
 - **BOOLEAN**: True/false flags (publication status, admin role)
 - **DATE/TIMESTAMP**: Temporal data with appropriate precision
 

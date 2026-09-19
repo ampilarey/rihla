@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateWhySectionRequest;
 use App\Models\WhySection;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -19,17 +18,20 @@ class WhySectionController extends Controller
     {
         $this->authorize('viewAny', WhySection::class);
 
-        $currentLocale = app()->getLocale();
-        $section = WhySection::where('locale', $currentLocale)->first();
-
-        if (! $section) {
-            $section = WhySection::create([
-                'locale' => $currentLocale,
-                'title' => $currentLocale === 'dv' ? 'ރިހްލައަށް އަންނަވާނަންވާކަންތައްވަނީއެވެ؟' : 'Why Choose Rihla',
-                'subtitle' => $currentLocale === 'dv' ? 'ތިޔަބޭފުޅުންނަށްޓަކައި ތިމަންމަގައިގެވިގެންވާ އަސަރުވެރިކަންތައްވަނީއެވެ' : 'Discover the unique advantages that make us your perfect travel partner',
+        // One section, in both languages. This used to look up a section for
+        // the *panel's* locale and create one if there was none — and the
+        // Dhivehi one it created carried two hard-coded Thaana sentences
+        // nobody had written. An editor opening this screen with the panel in
+        // Dhivehi silently published machine-generated Dhivehi to the
+        // homepage. English defaults only; the Dhivehi half is typed by a
+        // person or left blank, and blank falls back to English.
+        $section = WhySection::where('is_active', true)->first()
+            ?? WhySection::first()
+            ?? WhySection::create([
+                'title' => ['en' => 'Why Choose Rihla'],
+                'subtitle' => ['en' => 'Discover the unique advantages that make us your perfect travel partner'],
                 'is_active' => true,
             ]);
-        }
 
         return redirect()->route('admin.why-sections.edit', $section);
     }
@@ -71,9 +73,7 @@ class WhySectionController extends Controller
 
         $section->update($data);
 
-        // Clear cache for all locales
-        Cache::forget('why_section_active_en');
-        Cache::forget('why_section_active_dv');
+        WhySection::forgetCache();
 
         return redirect()->route('admin.why-sections.edit', $section)
             ->with('success', 'Why section updated successfully!');

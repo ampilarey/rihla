@@ -54,13 +54,13 @@
             <!-- Content Section -->
             <div class="hero-content">
                 <div class="hero-content-inner">
-                    <h1 class="hero-title {{ $banner->heading_size ?? 'text-2xl' }} {{ $banner->heading_weight ?? 'font-bold' }}"
+                    <h1 dir="auto" class="hero-title {{ $banner->heading_size ?? 'text-2xl' }} {{ $banner->heading_weight ?? 'font-bold' }}"
                         style="color: {{ $banner->heading_color ?? \App\Support\Brand::WHITE }} !important;">
                         {{ $banner->title }}
                     </h1>
                     
                     @if($banner->subtitle)
-                    <p class="hero-subtitle {{ $banner->subheading_size ?? 'text-lg' }} {{ $banner->subheading_weight ?? 'font-normal' }}"
+                    <p dir="auto" class="hero-subtitle {{ $banner->subheading_size ?? 'text-lg' }} {{ $banner->subheading_weight ?? 'font-normal' }}"
                        style="color: {{ $banner->subheading_color ?? \App\Support\Brand::CREAM }} !important;">
                         {{ $banner->subtitle }}
                     </p>

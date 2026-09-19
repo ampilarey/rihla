@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\NormalisesTranslations;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,6 +14,8 @@ use Illuminate\Validation\Rule;
  */
 class GuideStepRequest extends FormRequest
 {
+    use NormalisesTranslations;
+
     /**
      * Text fields the form sends once per language, and their length limit.
      *
@@ -45,62 +48,12 @@ class GuideStepRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Accept a bare `title=…` as English, and turn each list textarea into the
-     * array the column stores.
-     */
     protected function prepareForValidation(): void
     {
-        $normalised = [];
-
-        foreach (array_keys(self::TRANSLATABLE) as $field) {
-            if ($this->has($field) && ! is_array($this->input($field))) {
-                $normalised[$field] = ['en' => $this->input($field)];
-            }
-        }
-
-        foreach (array_keys(self::TRANSLATABLE_LISTS) as $field) {
-            if (! $this->has($field)) {
-                continue;
-            }
-
-            $value = $this->input($field);
-
-            // A bare list — `fiqh_notes[]=…`, or an array posted by a test —
-            // is English. Only a map keyed by language is already per-locale.
-            if (! is_array($value) || array_is_list($value)) {
-                $value = ['en' => $value];
-            }
-
-            $normalised[$field] = array_filter(
-                array_map($this->toList(...), $value),
-                static fn (array $items): bool => $items !== [],
-            );
-        }
-
-        if ($normalised !== []) {
-            $this->merge($normalised);
-        }
-    }
-
-    /**
-     * One item per line, blank lines dropped.
-     *
-     * An array passes through unchanged so a test or a future API can post one
-     * directly.
-     *
-     * @return list<string>
-     */
-    private function toList(mixed $value): array
-    {
-        $items = is_array($value)
-            ? $value
-            : (is_string($value) ? (preg_split('/\r\n|\r|\n/', $value) ?: []) : []);
-
-        return array_values(array_filter(
-            array_map(static fn ($item): string => trim((string) $item), $items),
-            static fn (string $item): bool => $item !== '',
-        ));
+        $this->normaliseTranslations(
+            array_keys(self::TRANSLATABLE),
+            array_keys(self::TRANSLATABLE_LISTS),
+        );
     }
 
     public function rules(): array
@@ -125,12 +78,11 @@ class GuideStepRequest extends FormRequest
         ];
 
         foreach (self::TRANSLATABLE as $field => $max) {
-            $required = in_array($field, self::REQUIRED_IN_ENGLISH, true);
-            $length = $max > 0 ? ['max:'.$max] : [];
-
-            $rules[$field] = [$required ? 'required' : 'nullable', 'array'];
-            $rules[$field.'.en'] = array_merge([$required ? 'required' : 'nullable', 'string'], $length);
-            $rules[$field.'.dv'] = array_merge(['nullable', 'string'], $length);
+            $rules = array_merge($rules, $this->translatedRules(
+                $field,
+                required: in_array($field, self::REQUIRED_IN_ENGLISH, true),
+                max: $max > 0 ? $max : null,
+            ));
         }
 
         foreach (self::TRANSLATABLE_LISTS as $field => $max) {

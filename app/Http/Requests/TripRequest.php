@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\NormalisesTranslations;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class TripRequest extends FormRequest
 {
+    use NormalisesTranslations;
+
     /**
      * Fields the form sends once per language, as `title[en]` / `title[dv]`.
      *
@@ -38,17 +41,7 @@ class TripRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $normalised = [];
-
-        foreach (array_keys(self::TRANSLATABLE) as $field) {
-            if ($this->has($field) && ! is_array($this->input($field))) {
-                $normalised[$field] = ['en' => $this->input($field)];
-            }
-        }
-
-        if ($normalised !== []) {
-            $this->merge($normalised);
-        }
+        $this->normaliseTranslations(array_keys(self::TRANSLATABLE));
     }
 
     public function rules(): array
@@ -71,20 +64,14 @@ class TripRequest extends FormRequest
             'is_published' => ['boolean'],
         ];
 
+        // English is the site's fallback, so a trip without a title would show
+        // a blank card to every visitor. Dhivehi is always optional: leaving
+        // it out means the English text is shown, never that the trip cannot
+        // be saved.
         foreach (self::TRANSLATABLE as $field => $max) {
-            $length = $max > 0 ? ['max:'.$max] : [];
-
-            $rules[$field] = [$field === 'title' ? 'required' : 'nullable', 'array'];
-
-            // English is the site's fallback, so a trip without it would show
-            // a blank card to every visitor who is not reading Dhivehi.
-            $rules[$field.'.en'] = array_merge(
-                [$field === 'title' ? 'required' : 'nullable', 'string'], $length,
-            );
-
-            // Dhivehi is always optional. Leaving it out means the English
-            // text is shown; it never means the trip cannot be saved.
-            $rules[$field.'.dv'] = array_merge(['nullable', 'string'], $length);
+            $rules = array_merge($rules, $this->translatedRules(
+                $field, required: $field === 'title', max: $max > 0 ? $max : null,
+            ));
         }
 
         return $rules;

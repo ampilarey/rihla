@@ -102,7 +102,6 @@ class ImageUploadTest extends TestCase
 
         $this->actingAs($this->admin())
             ->post(route('admin.hero-banners.store'), [
-                'locale' => 'en',
                 'title' => 'Journeys that stay with you',
                 'overlay_opacity' => 40,
                 'image' => UploadedFile::fake()->image('hero.jpg', 2400, 1200),

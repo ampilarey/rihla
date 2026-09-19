@@ -6,13 +6,13 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class HeroBanner extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = [
-        'locale',
         'title',
         'subtitle',
         'primary_cta_text',
@@ -41,6 +41,19 @@ class HeroBanner extends Model
         'end_at',
     ];
 
+    /**
+     * Stored as `{"en": …, "dv": …}` and read back in the request's locale,
+     * falling back to English. A banner used to be one row per language, in
+     * the same slot, sharing nothing but a `sort_order`.
+     *
+     * The two CTA URLs are not here on purpose: a button points at the same
+     * page in either language, and the locale is a path prefix the router
+     * adds. See docs/adr/0001-how-content-is-translated.md.
+     *
+     * @var array<int, string>
+     */
+    public array $translatable = ['title', 'subtitle', 'primary_cta_text', 'secondary_cta_text'];
+
     protected $casts = [
         'is_active' => 'boolean',
         'overlay_opacity' => 'integer',
@@ -65,15 +78,6 @@ class HeroBanner extends Model
     public function scopeActive(Builder $query): void
     {
         $query->published()->withinWindow();
-    }
-
-    /**
-     * Scope for banners in a specific locale
-     */
-    /** @param Builder<HeroBanner> $query */
-    public function scopeForLocale(Builder $query, string $locale): void
-    {
-        $query->where('locale', $locale);
     }
 
     /**

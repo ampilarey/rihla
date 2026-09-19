@@ -46,14 +46,13 @@
                 @enderror
                 
                 <div class="space-y-4">
-                    <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                        <input type="text" id="title" name="title" value="{{ old('title', $feature->title) }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500" required>
-                        @error('title')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <p class="text-sm text-gray-600">
+                        One card, both languages. English is required; Dhivehi is optional,
+                        and a visitor reading Dhivehi sees the English wherever it is blank.
+                    </p>
+
+                    <x-admin.translatable-field name="title" label="Title"
+                        :value="old('title', $feature->getTranslations('title'))" required />
 
                     <div>
                         <label for="icon" class="block text-sm font-medium text-gray-700 mb-2">Icon</label>
@@ -65,14 +64,8 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="text" class="block text-sm font-medium text-gray-700 mb-2">Text</label>
-                        <textarea id="text" name="text" rows="4" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">{{ old('text', $feature->text) }}</textarea>
-                        @error('text')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <x-admin.translatable-field name="text" label="Text"
+                        :value="old('text', $feature->getTranslations('text'))" type="textarea" :rows="4" />
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -84,16 +77,10 @@
                                 <p class="text-error text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div>
-                            <label for="link_text" class="block text-sm font-medium text-gray-700 mb-2">Link Text (Optional)</label>
-                            <input type="text" id="link_text" name="link_text" value="{{ old('link_text', $feature->link_text) }}" 
-                                   placeholder="e.g., Learn More, Book Now, View Details"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
-                            @error('link_text')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
                     </div>
+
+                    <x-admin.translatable-field name="link_text" label="Link text (optional)"
+                        :value="old('link_text', $feature->getTranslations('link_text'))" />
 
                     <div>
                         <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Feature Image</label>

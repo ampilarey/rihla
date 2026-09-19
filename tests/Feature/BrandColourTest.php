@@ -105,7 +105,6 @@ class BrandColourTest extends TestCase
         $this->assertTrue(Schema::hasColumn('hero_banners', 'primary_cta_bg_color'));
 
         $banner = HeroBanner::create([
-            'locale' => 'en',
             'title' => 'Umrah 2026',
         ]);
 

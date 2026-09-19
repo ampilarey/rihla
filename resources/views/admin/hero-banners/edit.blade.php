@@ -22,21 +22,12 @@
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Language -->
-                        <div>
-                            <label for="locale" class="block text-sm font-medium text-gray-700 mb-2">Language *</label>
-                            <select id="locale" name="locale" required 
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent">
-                                <option value="">Select Language</option>
-                                <option value="en" {{ old('locale', $heroBanner->locale) == 'en' ? 'selected' : '' }}>English</option>
-                                <option value="dv" {{ old('locale', $heroBanner->locale) == 'dv' ? 'selected' : '' }}>ދިވެހިބަހުން</option>
-                            </select>
-                            @error('locale')
-                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        One banner, both languages. English is required; Dhivehi is optional,
+                        and a visitor reading Dhivehi sees the English wherever it is blank.
+                    </p>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Sort Order -->
                         <div>
                             <label for="sort_order" class="block text-sm font-medium text-gray-700 mb-2">Sort Order</label>
@@ -56,32 +47,12 @@
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Banner Content</h3>
                     
-                    <div class="space-y-6">
-                        <!-- Title -->
-                        <div>
-                            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                            <input type="text" id="title" name="title" 
-                                   value="{{ old('title', $heroBanner->title) }}" maxlength="120" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
-                                   placeholder="Enter banner title">
-                            <p class="mt-1 text-sm text-gray-500">Maximum 120 characters</p>
-                            @error('title')
-                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <x-admin.translatable-field name="title" label="Title"
+                        :value="old('title', $heroBanner->getTranslations('title'))" required help="Maximum 120 characters." />
 
-                        <!-- Subtitle -->
-                        <div>
-                            <label for="subtitle" class="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-                            <textarea id="subtitle" name="subtitle" rows="3" maxlength="200"
-                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
-                                      placeholder="Enter banner subtitle (optional)">{{ old('subtitle', $heroBanner->subtitle) }}</textarea>
-                            <p class="mt-1 text-sm text-gray-500">Maximum 200 characters</p>
-                            @error('subtitle')
-                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
+                    <x-admin.translatable-field name="subtitle" label="Subtitle"
+                        :value="old('subtitle', $heroBanner->getTranslations('subtitle'))" type="textarea" :rows="3"
+                        help="Maximum 200 characters." />
                 </div>
 
                 <!-- Call to Action -->
@@ -89,17 +60,9 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Call to Action</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Primary CTA -->
-                        <div>
-                            <label for="primary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA Text</label>
-                            <input type="text" id="primary_cta_text" name="primary_cta_text" 
-                                   value="{{ old('primary_cta_text', $heroBanner->primary_cta_text) }}" maxlength="60"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
-                                   placeholder="e.g., Explore Trips">
-                            <p class="mt-1 text-sm text-gray-500">Maximum 60 characters</p>
-                            @error('primary_cta_text')
-                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
-                            @enderror
+                        <div class="md:col-span-2">
+                            <x-admin.translatable-field name="primary_cta_text" label="Primary button text"
+                                :value="old('primary_cta_text', $heroBanner->getTranslations('primary_cta_text'))" help="Maximum 60 characters." />
                         </div>
 
                         <div>
@@ -114,17 +77,9 @@
                             @enderror
                         </div>
 
-                        <!-- Secondary CTA -->
-                        <div>
-                            <label for="secondary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA Text</label>
-                            <input type="text" id="secondary_cta_text" name="secondary_cta_text" 
-                                   value="{{ old('secondary_cta_text', $heroBanner->secondary_cta_text) }}" maxlength="60"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
-                                   placeholder="e.g., Contact Us">
-                            <p class="mt-1 text-sm text-gray-500">Maximum 60 characters</p>
-                            @error('secondary_cta_text')
-                                <p class="mt-1 text-sm text-error">{{ $message }}</p>
-                            @enderror
+                        <div class="md:col-span-2">
+                            <x-admin.translatable-field name="secondary_cta_text" label="Secondary button text"
+                                :value="old('secondary_cta_text', $heroBanner->getTranslations('secondary_cta_text'))" help="Maximum 60 characters." />
                         </div>
 
                         <div>

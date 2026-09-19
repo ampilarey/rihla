@@ -25,27 +25,22 @@ class HomeController extends Controller
 
         $socialSettings = Setting::getSocialSettings();
 
-        // Get active hero banners for current locale
-        $heroBanners = HeroBanner::active()
-            ->where('locale', app()->getLocale())
-            ->orderBy('sort_order')
-            ->get();
+        // Every active banner, in whichever language the visitor is reading.
+        // This used to filter by locale, because a banner in the same slot was
+        // two rows — so a slot with no Dhivehi row simply vanished from /dv.
+        $heroBanners = HeroBanner::active()->orderBy('sort_order')->get();
 
-        // The active why section for this locale, falling back to English.
+        // The active why-section, translated where a translation exists.
         //
-        // The Dhivehi one was machine-generated — its three feature bodies
+        // The Dhivehi section was machine-generated — its three feature bodies
         // shared 72 of 77 characters where the English three share two — and
-        // has been removed rather than paraphrased. Without a fallback, /dv
-        // would simply lose the block; with one, a Dhivehi visitor sees the
-        // real selling points in English until a translation exists.
-        $why = cache()->remember('why_section_active_'.app()->getLocale(), 3600, function () {
-            $query = fn (string $locale) => WhySection::with(['features' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
-                ->where('is_active', true)
-                ->where('locale', $locale)
-                ->first();
-
-            return $query(app()->getLocale()) ?? $query(config('app.fallback_locale'));
-        });
+        // was removed rather than paraphrased. The fallback is now per field
+        // rather than per section, so a half-translated block shows the
+        // Dhivehi it has and the English for the rest, instead of falling back
+        // whole.
+        $why = cache()->remember(WhySection::CACHE_KEY, 3600, fn () => WhySection::with([
+            'features' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+        ])->where('is_active', true)->first());
 
         return view('home', compact('currentTrip', 'upcomingTrip', 'recentMedia', 'socialSettings', 'heroBanners', 'why'));
     }

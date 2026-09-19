@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\NormalisesTranslations;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpsertWhyFeatureRequest extends FormRequest
 {
+    use NormalisesTranslations;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -20,6 +23,11 @@ class UpsertWhyFeatureRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->normaliseTranslations(['title', 'text', 'link_text']);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -27,18 +35,19 @@ class UpsertWhyFeatureRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        return array_merge([
             'why_section_id' => 'required|exists:why_sections,id',
             'icon' => 'nullable|string|max:255',
-            'title' => 'required|string|max:255',
-            'text' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'link_url' => 'nullable|url|max:500',
-            'link_text' => 'nullable|string|max:100',
             'background_color' => 'nullable|string|max:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'sort_order' => 'required|integer|min:0',
             'is_active' => 'boolean',
-        ];
+        ],
+            $this->translatedRules('title', required: true, max: 255),
+            $this->translatedRules('text', required: false, max: 1000),
+            $this->translatedRules('link_text', required: false, max: 100),
+        );
     }
 
     /**
@@ -49,11 +58,14 @@ class UpsertWhyFeatureRequest extends FormRequest
         return [
             'why_section_id' => 'section',
             'icon' => 'icon',
-            'title' => 'title',
-            'text' => 'text',
+            'title.en' => 'title (English)',
+            'title.dv' => 'title (Dhivehi)',
+            'text.en' => 'text (English)',
+            'text.dv' => 'text (Dhivehi)',
             'image' => 'image',
             'link_url' => 'link URL',
-            'link_text' => 'link text',
+            'link_text.en' => 'link text (English)',
+            'link_text.dv' => 'link text (Dhivehi)',
             'background_color' => 'background color',
             'sort_order' => 'sort order',
         ];

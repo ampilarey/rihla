@@ -13,9 +13,9 @@ class WhySectionSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create English why section
+        // The one why-section, seeded in English. Its Dhivehi half is typed by
+        // a person in the admin panel or left blank, and blank falls back.
         $whySectionEn = WhySection::create([
-            'locale' => 'en',
             'title' => 'Why Choose Rihla',
             'subtitle' => 'Discover the unique advantages that make us your perfect travel partner',
             'primary_cta_text' => 'Start Your Journey',

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\HeroBannerRequest;
 use App\Models\HeroBanner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class HeroBannerController extends Controller
 {
@@ -18,10 +18,10 @@ class HeroBannerController extends Controller
     {
         $this->authorize('viewAny', HeroBanner::class);
 
-        $banners = HeroBanner::orderBy('locale')
-            ->orderBy('sort_order')
-            ->get()
-            ->groupBy('locale');
+        // One list. A banner in a given slot used to be two rows, one per
+        // language, and the homepage filtered by locale — so a slot with no
+        // Dhivehi row simply vanished from /dv.
+        $banners = HeroBanner::orderBy('sort_order')->get();
 
         return view('admin.hero-banners.index', compact('banners'));
     }
@@ -39,73 +39,21 @@ class HeroBannerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(HeroBannerRequest $request)
     {
         $this->authorize('create', HeroBanner::class);
 
-        $validator = Validator::make($request->all(), [
-            'locale' => 'required|in:en,dv',
-            'title' => 'required|string|max:120',
-            'subtitle' => 'nullable|string|max:200',
-            'primary_cta_text' => 'nullable|string|max:60',
-            'primary_cta_url' => 'nullable|string|max:255',
-            'secondary_cta_text' => 'nullable|string|max:60',
-            'secondary_cta_url' => 'nullable|string|max:255',
-            'overlay_opacity' => 'integer|between:0,100',
-            'heading_color' => 'nullable|string|max:20',
-            'heading_size' => 'nullable|string|max:20',
-            'heading_weight' => 'nullable|string|max:20',
-            'subheading_color' => 'nullable|string|max:20',
-            'subheading_size' => 'nullable|string|max:20',
-            'subheading_weight' => 'nullable|string|max:20',
-            'primary_cta_bg_color' => 'nullable|string|max:20',
-            'primary_cta_text_color' => 'nullable|string|max:20',
-            'primary_cta_size' => 'nullable|string|max:20',
-            'primary_cta_radius' => 'nullable|string|max:20',
-            'secondary_cta_bg_color' => 'nullable|string|max:20',
-            'secondary_cta_text_color' => 'nullable|string|max:20',
-            'secondary_cta_size' => 'nullable|string|max:20',
-            'secondary_cta_radius' => 'nullable|string|max:20',
-            'sort_order' => 'integer|min:0',
-            'is_active' => 'nullable', // Changed from 'boolean' to 'nullable'
-            'start_at' => 'nullable|date',
-            'end_at' => 'nullable|date|after:start_at',
-            'image' => 'nullable|image|mimes:jpeg,png,webp|max:8192',
-        ]);
+        $data = $request->safe()->except(['image', 'is_active']);
+        $data['is_active'] = $request->has('is_active');
 
-        if ($validator->fails()) {
-            \Log::warning('HeroBanner validation failed', [
-                'errors' => $validator->errors()->toArray(),
-            ]);
-
-            return back()->withErrors($validator)->withInput();
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $this->processImage($request->file('image'));
         }
 
-        try {
-            $data = $validator->validated();
-            $data['is_active'] = $request->has('is_active');
+        HeroBanner::create($data);
 
-            // Debug: Log the validated data
-
-            // Handle image upload
-            if ($request->hasFile('image')) {
-                $imagePath = $this->processImage($request->file('image'));
-                $data['image_path'] = $imagePath;
-            }
-
-            // Create the banner
-            $banner = HeroBanner::create($data);
-
-            return redirect()->route('admin.hero-banners.index')
-                ->with('success', 'Hero banner created successfully.');
-        } catch (\Exception $e) {
-            \Log::error('HeroBanner creation failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return back()->withErrors(['error' => 'Failed to create banner: '.$e->getMessage()])->withInput();
-        }
+        return redirect()->route('admin.hero-banners.index')
+            ->with('success', 'Hero banner created successfully.');
     }
 
     /**
@@ -131,56 +79,19 @@ class HeroBannerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, HeroBanner $heroBanner)
+    public function update(HeroBannerRequest $request, HeroBanner $heroBanner)
     {
         $this->authorize('update', $heroBanner);
 
-        $validator = Validator::make($request->all(), [
-            'locale' => 'required|in:en,dv',
-            'title' => 'required|string|max:120',
-            'subtitle' => 'nullable|string|max:200',
-            'primary_cta_text' => 'nullable|string|max:60',
-            'primary_cta_url' => 'nullable|string|max:255',
-            'secondary_cta_text' => 'nullable|string|max:60',
-            'secondary_cta_url' => 'nullable|string|max:255',
-            'overlay_opacity' => 'integer|between:0,100',
-            'heading_color' => 'nullable|string|max:20',
-            'heading_size' => 'nullable|string|max:20',
-            'heading_weight' => 'nullable|string|max:20',
-            'subheading_color' => 'nullable|string|max:20',
-            'subheading_size' => 'nullable|string|max:20',
-            'subheading_weight' => 'nullable|string|max:20',
-            'primary_cta_bg_color' => 'nullable|string|max:20',
-            'primary_cta_text_color' => 'nullable|string|max:20',
-            'primary_cta_size' => 'nullable|string|max:20',
-            'primary_cta_radius' => 'nullable|string|max:20',
-            'secondary_cta_bg_color' => 'nullable|string|max:20',
-            'secondary_cta_text_color' => 'nullable|string|max:20',
-            'secondary_cta_size' => 'nullable|string|max:20',
-            'secondary_cta_radius' => 'nullable|string|max:20',
-            'sort_order' => 'integer|min:0',
-            'is_active' => 'nullable', // Changed from 'boolean' to 'nullable'
-            'start_at' => 'nullable|date',
-            'end_at' => 'nullable|date|after:start_at',
-            'image' => 'nullable|image|mimes:jpeg,png,webp|max:8192',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $data = $validator->validated();
+        $data = $request->safe()->except(['image', 'is_active']);
         $data['is_active'] = $request->has('is_active');
 
-        // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image
             if ($heroBanner->image_path) {
                 $this->deleteImage($heroBanner->image_path);
             }
 
-            $imagePath = $this->processImage($request->file('image'));
-            $data['image_path'] = $imagePath;
+            $data['image_path'] = $this->processImage($request->file('image'));
         }
 
         $heroBanner->update($data);

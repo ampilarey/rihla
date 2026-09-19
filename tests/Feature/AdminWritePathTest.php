@@ -176,7 +176,6 @@ class AdminWritePathTest extends TestCase
         $admin = $this->admin();
 
         $this->actingAs($admin)->post(route('admin.hero-banners.store'), [
-            'locale' => 'en',
             'title' => 'Journeys that stay with you',
             'subtitle' => 'Umrah from the Maldives',
             'overlay_opacity' => 40,
@@ -186,7 +185,6 @@ class AdminWritePathTest extends TestCase
         $this->assertSame('Journeys that stay with you', $banner->title);
 
         $this->actingAs($admin)->put(route('admin.hero-banners.update', $banner), [
-            'locale' => 'en',
             'title' => 'Journeys that stay with you, always',
             'overlay_opacity' => 50,
         ])->assertSessionHasNoErrors()->assertRedirect();
@@ -202,11 +200,10 @@ class AdminWritePathTest extends TestCase
 
     public function test_a_why_section_can_be_updated(): void
     {
-        $section = WhySection::create(['locale' => 'en', 'title' => 'Why Rihla']);
+        $section = WhySection::create(['title' => 'Why Rihla']);
 
         $this->actingAs($this->admin())
             ->put(route('admin.why-sections.update', $section), [
-                'locale' => 'en',
                 'title' => 'Why travel with Rihla',
                 'primary_cta_bg_color' => '#8E2653',
             ])
@@ -219,7 +216,7 @@ class AdminWritePathTest extends TestCase
     public function test_a_why_feature_can_be_created_updated_and_deleted(): void
     {
         $admin = $this->admin();
-        $section = WhySection::create(['locale' => 'en', 'title' => 'Why Rihla']);
+        $section = WhySection::create(['title' => 'Why Rihla']);
 
         $this->actingAs($admin)->post(route('admin.why-sections.features.store', $section), [
             'why_section_id' => $section->id,

@@ -172,7 +172,6 @@ class SeoTest extends TestCase
     {
         GuideStep::create([
             'step_number' => 1,
-            'locale' => 'en',
             'title' => 'Ihram',
             'summary' => 'Enter the state of Ihram at the miqat.',
             'is_published' => true,
