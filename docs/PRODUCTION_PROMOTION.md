@@ -51,7 +51,7 @@ To promote one specific reviewed commit rather than whatever `main` happens to b
 | | Step | If it fails |
 |---|---|---|
 | 1 | `rihla:preflight --production` | **Stops.** Nothing has changed |
-| 2 | `rihla:backup` — gzipped dump to `storage/app/backups` | **Stops.** Nothing has changed |
+| 2 | `rihla:backup` — gzipped dump to `storage/app/backups`, then `rihla:backup:verify` on it | **Stops.** Nothing has changed |
 | 3 | Fetch, and refuse any commit that is not a descendant of what is live | **Stops.** Nothing has changed |
 | 4 | Maintenance mode, then fast-forward | Stops **in maintenance mode**, on purpose — see below |
 | 5 | `composer install --no-dev`, only if dependencies changed | Stops in maintenance mode |
@@ -96,8 +96,16 @@ php artisan up
 
 Things this project does not have yet, in the order they will be missed:
 
-- **A tested restore.** A backup nobody has restored is a hope, not a backup. Restore one
-  into a scratch database and confirm it comes back.
+- **A restore done by a person, once.** The deploy now verifies its own backup before it
+  migrates — `rihla:backup:verify` opens the file, checks the gzip, requires mysqldump's
+  completion marker and confirms every live table is in there — and it refuses to deploy
+  when any of that fails. What it cannot do on shared hosting is create a scratch database
+  to restore into; that needs cPanel, not the database user. Run the restore by hand once,
+  against a throwaway database, and the gap is closed:
+
+  ```bash
+  php artisan rihla:backup:verify          # prints the three commands to run
+  ```
 - **Uptime monitoring.** Point BetterStack or UptimeRobot at `https://rihla.mv/up` with
   alerts to WhatsApp. The health route already exists.
 - **Off-server backups.** `storage/app/backups` is on the same disk as the site. That
