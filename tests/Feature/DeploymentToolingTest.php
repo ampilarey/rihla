@@ -353,4 +353,29 @@ class DeploymentToolingTest extends TestCase
         $this->assertNotFalse($mergeAt);
         $this->assertLessThan($mergeAt, $guardAt);
     }
+
+    /**
+     * A live deploy must not call itself a dry run.
+     *
+     * The banner used `${DRY_RUN:+ (dry run)}`, which expands whenever the
+     * variable is *set and non-empty* — and the script defaults it to "0",
+     * which is non-empty. So every real deploy announced itself as a dry run.
+     * That is the more dangerous way round: an operator reads "(dry run)" and
+     * believes nothing happened, on a run that has just migrated the
+     * production database. Seen on the real thing, after a deploy that had in
+     * fact taken a backup, merged, migrated and brought the site back up.
+     */
+    public function test_the_script_does_not_call_a_live_deploy_a_dry_run(): void
+    {
+        $script = $this->script();
+
+        $this->assertStringNotContainsString('${DRY_RUN:+', $script,
+            ':+ tests whether the variable is set, and it is always set to "0" or "1".');
+
+        $this->assertMatchesRegularExpression('/if \[\[ "\$DRY_RUN" == "1" \]\]/', $script,
+            'The banner must branch on the value.');
+
+        $this->assertStringContainsString('(LIVE)', $script,
+            'A real deploy should say so plainly.');
+    }
 }

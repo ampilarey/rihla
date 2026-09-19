@@ -70,7 +70,16 @@ trap 'rmdir "$LOCK" 2>/dev/null' EXIT
 
 cd "$ROOT" || die "cannot cd to $ROOT"
 
-log "=== Rihla production deploy ${DRY_RUN:+ (dry run)} ==="
+# ${DRY_RUN:+...} expands when the variable is *set and non-empty*, and the
+# default above sets it to "0" — which is non-empty. So every real deploy
+# announced itself as a dry run, which is the more dangerous way round: an
+# operator reads "(dry run)" and believes nothing happened, on a run that has
+# just migrated the production database. Test the value, not the presence.
+if [[ "$DRY_RUN" == "1" ]]; then
+  log "=== Rihla production deploy (dry run — nothing will change) ==="
+else
+  log "=== Rihla production deploy (LIVE) ==="
+fi
 log "root: $ROOT"
 
 # ---------------------------------------------------------------- 1. preflight
