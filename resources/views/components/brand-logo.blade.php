@@ -9,9 +9,19 @@
     of the entire CSS and JavaScript bundle combined, and it was the first
     thing every visitor on a Maldivian mobile connection had to download.
 
-    The artwork here is the same artwork: these files are resampled from that
-    exact PNG, and the original is untouched and still shipped. Only the
-    resolution served to the browser changes — 5 KB where 1.44 MB was.
+    The artwork here is the same artwork, resampled from that exact PNG. The
+    original is untouched and still shipped as rihla-logo.png.
+
+    The colours are not the same. The original is drawn in #097EDD bright blue
+    and pure black, neither of which is in the Rihla palette — it was the last
+    thing on the site still wearing the pre-rebrand scheme, sitting at the top
+    of every page beside everything that had moved to wine, gold and ink. That
+    is why the header kept looking unchanged: it was unchanged. Blue is now
+    wine and pure black is now ink, and nothing else about the mark moved —
+    same letterforms, same Kaaba, same calligraphy, same proportions.
+
+    rihla-logo-brand.png is the recoloured master these are cut from;
+    rihla-logo.png is the untouched original, kept for reference.
 
     width and height are the intrinsic dimensions, not the drawn ones. The
     browser divides them to reserve the right space before the image arrives;
@@ -21,14 +31,14 @@
     {{-- WebP first, PNG for anything that cannot read it. The PNG alone is
          already 8 KB rather than 1.44 MB; WebP takes it to 5. --}}
     <source type="image/webp"
-            srcset="{{ asset('images/rihla-logo-200.webp') }} 200w,
-                    {{ asset('images/rihla-logo-400.webp') }} 400w,
-                    {{ asset('images/rihla-logo-600.webp') }} 600w"
+            srcset="{{ asset('images/rihla-logo-brand-200.webp') }} 200w,
+                    {{ asset('images/rihla-logo-brand-400.webp') }} 400w,
+                    {{ asset('images/rihla-logo-brand-600.webp') }} 600w"
             sizes="(max-width: 640px) 140px, 200px">
-    <img src="{{ asset('images/rihla-logo-400.png') }}"
-     srcset="{{ asset('images/rihla-logo-200.png') }} 200w,
-             {{ asset('images/rihla-logo-400.png') }} 400w,
-             {{ asset('images/rihla-logo-600.png') }} 600w"
+    <img src="{{ asset('images/rihla-logo-brand-400.png') }}"
+     srcset="{{ asset('images/rihla-logo-brand-200.png') }} 200w,
+             {{ asset('images/rihla-logo-brand-400.png') }} 400w,
+             {{ asset('images/rihla-logo-brand-600.png') }} 600w"
      sizes="(max-width: 640px) 140px, 200px"
      alt="{{ config('app.name') }}"
      width="6250"
