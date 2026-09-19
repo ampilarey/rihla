@@ -725,8 +725,9 @@ nothing. The homepage also filtered banners by locale, so a slot with no
 Dhivehi row simply vanished from `/dv`. One row each now, per-field fallback.
 The admin screen for the why-section used to *create* a Dhivehi section when
 none existed, with two hard-coded Thaana sentences nobody had written — that is
-gone. **What remains of §9.4 is `media`**, whose `title` and `caption` are
-English only; it is converted alongside the media-library work.
+gone. **§9.4 is now complete.** `media.title` and `media.caption` were the last
+untranslated content columns, and they follow the same shape as the rest. No
+content table carries a `locale` column any more.
 
 ### 9.5 Architecture standards — the useful 10% of appendices A01–A33
 
@@ -872,7 +873,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | i18n redesign (§9.4) **— trips, the Umrah guide and the homepage blocks done (ADR 0001); `media` remains**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, ~~Filament adoption (§9.2)~~ **— adopted; panel at `/staff` (ADR 0003)**, ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, ~~hosting decision + move (§9.1)~~ **— decided: stay on cPanel (ADR 0002)**, media library, observability | **3.5–5.5 weeks** |
+| **1 — Foundations** | Ready to build on | ~~i18n redesign (§9.4)~~ **— done: trips, the Umrah guide, the homepage blocks and media all translatable (ADR 0001)**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, ~~Filament adoption (§9.2)~~ **— adopted; panel at `/staff` (ADR 0003)**, ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, ~~hosting decision + move (§9.1)~~ **— decided: stay on cPanel (ADR 0002)**, ~~media library~~ **— narrowed: the swap to spatie/laravel-medialibrary waits for a second media owner (ADR 0004); translations and the broken thumbnails are done**, observability | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |
