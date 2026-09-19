@@ -98,6 +98,8 @@ return [
     '24/7 Support' => '24/7 Support',
     'We\'re here for you before, during, and after your trip.' => 'We\'re here for you before, during, and after your trip.',
 
+    'image_unavailable' => 'Image unavailable',
+
     // Error pages
     'error_home' => 'Back to home',
     'error_404_title' => 'We could not find that page',

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Media;
-use App\Models\Trip;
 use Illuminate\Database\Seeder;
 
 class MediaSeeder extends Seeder
@@ -20,56 +19,44 @@ class MediaSeeder extends Seeder
 
             return;
         }
-        // Get the past trip
-        $pastTrip = Trip::where('status', 'past')->first();
+        // What this used to hold, and why none of it is here any more:
+        //
+        //   "Cultural Heritage Tour Highlights"  ->  youtube.com/watch?v=dQw4w9WgXcQ
+        //   "Local Market Experience"            ->  youtube.com/watch?v=9bZkp7q19f0
+        //
+        // Both carried a "Replace with actual video" comment and neither was.
+        // They were live on test.rihla.mv, on the public internet, under
+        // Rihla's branding: an Umrah operator's gallery playing Rick Astley
+        // and Gangnam Style. Alongside them sat "Maldives Sunset" and
+        // "Crystal Clear Waters" — resort-holiday stock copy on a pilgrimage
+        // site, which is the exact thing the guard above was added to stop,
+        // except the guard only stopped it reaching production.
+        //
+        // No demo video is seeded now. Every YouTube id is somebody's real
+        // video, so there is no such thing as a placeholder one; a video demo
+        // needs a real Rihla upload.
+        //
+        // The photographs carry no file. That is deliberate rather than
+        // broken: <x-stored-image> renders the mark on cream when a file is
+        // missing, so the gallery layout is exercised and a visitor sees
+        // "no picture yet" rather than a torn-page icon.
+        $subjects = [
+            ['Ihram at Masjid Aisha', 'Pilgrims entering the state of ihram before Umrah.'],
+            ['Arriving in Madinah', 'The group arriving for the Madinah leg of the journey.'],
+            ['Group briefing in Malé', 'Pre-departure briefing before leaving for Jeddah.'],
+        ];
 
-        if ($pastTrip) {
-            // Add a YouTube video
+        foreach ($subjects as $index => [$title, $caption]) {
             Media::create([
-                'trip_id' => $pastTrip->id,
-                'type' => 'video',
-                'title' => 'Cultural Heritage Tour Highlights',
-                'caption' => 'Watch our amazing journey through Malé\'s cultural sites',
-                'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Replace with actual video
+                'trip_id' => null,
+                'type' => 'photo',
+                'title' => $title,
+                'caption' => $caption,
+                'file_path' => null,
                 'thumb_path' => null,
-                'sort_order' => 1,
-                'is_published' => true,
-            ]);
-
-            // Add another video
-            Media::create([
-                'trip_id' => $pastTrip->id,
-                'type' => 'video',
-                'title' => 'Local Market Experience',
-                'caption' => 'Exploring the vibrant local markets of Malé',
-                'video_url' => 'https://www.youtube.com/watch?v=9bZkp7q19f0', // Replace with actual video
-                'thumb_path' => null,
-                'sort_order' => 2,
+                'sort_order' => $index + 1,
                 'is_published' => true,
             ]);
         }
-
-        // Add some standalone media (not tied to specific trips)
-        Media::create([
-            'trip_id' => null,
-            'type' => 'photo',
-            'title' => 'Maldives Sunset',
-            'caption' => 'Beautiful sunset over the Indian Ocean',
-            'file_path' => 'media/sunset.jpg',
-            'thumb_path' => 'media/sunset-thumb.jpg',
-            'sort_order' => 1,
-            'is_published' => true,
-        ]);
-
-        Media::create([
-            'trip_id' => null,
-            'type' => 'photo',
-            'title' => 'Crystal Clear Waters',
-            'caption' => 'The pristine waters of the Maldives',
-            'file_path' => 'media/waters.jpg',
-            'thumb_path' => 'media/waters-thumb.jpg',
-            'sort_order' => 2,
-            'is_published' => true,
-        ]);
     }
 }

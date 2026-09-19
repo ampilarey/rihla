@@ -98,6 +98,8 @@ return [
     '24/7 Support' => '24/7 އަގުންނަށްވާނެވެ',
     'We\'re here for you before, during, and after your trip.' => 'އަހަރުންނާއަށްވާނެވެ',
 
+    'image_unavailable' => 'Image unavailable',
+
     // Error pages
     // Awaiting a Dhivehi translator. English placeholders — see the note in
     // resources/lang/en/messages.php. Replace the right-hand side only.

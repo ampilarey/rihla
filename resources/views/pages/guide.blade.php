@@ -128,20 +128,20 @@
                 <div class="flex items-center gap-2 md:gap-3 mobile-actions">
                     <button @click="printGuide" 
                             class="inline-flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-wine-500 text-xs md:text-sm"
-                            aria-label="{{ __('Print') }}">
+>
                         <svg aria-hidden="true" focusable="false" class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                         </svg>
-                        <span class="hidden sm:inline">{{ __('Print') }}</span>
+                        <span>{{ __('Print') }}</span>
                     </button>
                     
                     <button @click="downloadPDF" 
                             class="inline-flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-wine-500 hover:bg-wine-600 text-white rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-wine-500 text-xs md:text-sm"
-                            aria-label="{{ __('Download PDF') }}">
+>
                         <svg aria-hidden="true" focusable="false" class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <span class="hidden sm:inline">{{ __('Download PDF') }}</span>
+                        <span>{{ __('Download PDF') }}</span>
                     </button>
                 </div>
             </div>
