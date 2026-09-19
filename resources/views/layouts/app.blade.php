@@ -16,7 +16,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="@yield('og_title', config('app.name', 'Rihla Travels'))">
     <meta property="og:description" content="@yield('og_description', 'Islamic travel services, Umrah packages, and spiritual journeys to Makkah and Madinah.')">
-    <meta property="og:image" content="@yield('og_image', asset('images/rihla-logo-600.png'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/rihla-logo-brand-600.png'))">
     <meta property="og:site_name" content="Rihla Travels">
     <meta property="og:locale" content="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -25,7 +25,7 @@
     <meta property="twitter:url" content="{{ url()->current() }}">
     <meta property="twitter:title" content="@yield('twitter_title', config('app.name', 'Rihla Travels'))">
     <meta property="twitter:description" content="@yield('twitter_description', 'Islamic travel services, Umrah packages, and spiritual journeys to Makkah and Madinah.')">
-    <meta property="twitter:image" content="@yield('twitter_image', asset('images/rihla-logo-600.png'))">
+    <meta property="twitter:image" content="@yield('twitter_image', asset('images/rihla-logo-brand-600.png'))">
 
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">

@@ -95,7 +95,7 @@ class Seo
             // 600 px wide, not the 6250 px original. Every scraper that
             // reads this — Google, WhatsApp, Facebook — was being handed a
             // 1.44 MB file to render a thumbnail.
-            'logo' => asset('images/rihla-logo-600.png'),
+            'logo' => asset('images/rihla-logo-brand-600.png'),
             'identifier' => self::REGISTRATION_NUMBER,
             'telephone' => self::contactPhone(),
             'email' => self::CONTACT_EMAIL,

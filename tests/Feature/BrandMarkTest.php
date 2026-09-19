@@ -170,6 +170,104 @@ class BrandMarkTest extends TestCase
             'The .ico is declared before the SVG, so browsers that support both take the raster.');
     }
 
+    /**
+     * The wordmark was the last thing on the site still wearing the
+     * pre-rebrand scheme.
+     *
+     * It is drawn in #097EDD bright blue and pure #000000 black — neither in
+     * the palette — while everything around it had moved to wine, gold and
+     * ink. It sat at the top of every page looking exactly as it always had,
+     * which is why "still I see the old logo" was the correct reading of a
+     * site that had otherwise changed completely.
+     *
+     * The recoloured master moves those two hues and nothing else.
+     */
+    public function test_the_served_wordmark_carries_no_pre_rebrand_colour(): void
+    {
+        foreach ([200, 400, 600] as $width) {
+            $path = public_path("images/rihla-logo-brand-{$width}.png");
+
+            $this->assertFileExists($path);
+
+            $image = imagecreatefrompng($path);
+            $w = imagesx($image);
+            $h = imagesy($image);
+
+            $blue = 0;
+            $pureBlack = 0;
+
+            for ($y = 0; $y < $h; $y++) {
+                for ($x = 0; $x < $w; $x++) {
+                    [$r, $g, $b, $a] = $this->pixel($image, $x, $y);
+
+                    if ($a > 100) {
+                        continue;   // effectively transparent
+                    }
+
+                    // The old calligraphy blue, #097EDD, and anything near it.
+                    if ($b > 150 && $b - $r > 60 && $b - $g > 40) {
+                        $blue++;
+                    }
+
+                    if ($r < 12 && $g < 12 && $b < 12) {
+                        $pureBlack++;
+                    }
+                }
+            }
+
+            imagedestroy($image);
+
+            $this->assertSame(0, $blue,
+                "rihla-logo-brand-{$width}.png still has {$blue} pixels of pre-rebrand blue.");
+            $this->assertSame(0, $pureBlack,
+                "rihla-logo-brand-{$width}.png still has {$pureBlack} pixels of pure black; "
+                .'the palette calls for ink #2E2621.');
+        }
+    }
+
+    /**
+     * Read one pixel as RGBA, whatever the PNG's colour type.
+     *
+     * The served wordmarks are quantised to a 64-entry palette, which is what
+     * takes them under 4 KB. On a palette image imagecolorat() returns the
+     * palette *index*, not a packed colour — so shifting it as though it were
+     * one reports every pixel as near-black. An earlier version of the test
+     * above did exactly that and failed against perfectly good artwork.
+     *
+     * @return array{int, int, int, int}
+     */
+    private function pixel(\GdImage $image, int $x, int $y): array
+    {
+        $at = imagecolorat($image, $x, $y);
+
+        if (imageistruecolor($image)) {
+            return [($at >> 16) & 0xFF, ($at >> 8) & 0xFF, $at & 0xFF, ($at >> 24) & 0x7F];
+        }
+
+        $colour = imagecolorsforindex($image, $at);
+
+        return [$colour['red'], $colour['green'], $colour['blue'], $colour['alpha']];
+    }
+
+    /** The untouched original stays in the repository for reference. */
+    public function test_the_original_artwork_is_preserved_alongside_the_recolour(): void
+    {
+        $original = public_path('images/rihla-logo.png');
+
+        $this->assertFileExists($original, 'The original wordmark has been deleted.');
+
+        [$width, $height] = getimagesize($original);
+
+        $this->assertSame(6250, $width);
+        $this->assertSame(2976, $height);
+
+        $recoloured = public_path('images/rihla-logo-brand.png');
+
+        $this->assertFileExists($recoloured);
+        $this->assertSame([6250, 2976], array_slice(getimagesize($recoloured), 0, 2),
+            'The recolour changed the artwork geometry; it should only change hues.');
+    }
+
     /** The wordmark is still the logo. The mark did not replace it. */
     public function test_the_header_still_carries_the_wordmark(): void
     {
@@ -177,7 +275,7 @@ class BrandMarkTest extends TestCase
 
         $this->get('/en')
             ->assertOk()
-            ->assertSee('rihla-logo-400.png', false);
+            ->assertSee('rihla-logo-brand-400.png', false);
     }
 
     private function seedSite(): void

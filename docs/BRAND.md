@@ -162,13 +162,35 @@ and the reason the question felt unresolved for so long.
 
 | | Artwork | Where it is used |
 |---|---|---|
-| **Logo** | The original Kaaba-and-calligraphy wordmark, `rihla-logo.png` | Header, footer, login, social share image, structured data |
+| **Logo** | The Kaaba-and-calligraphy wordmark, recoloured into the palette, `rihla-logo-brand.png` | Header, footer, login, social share image, structured data |
 | **Mark** | The two-sail dhoni, `rihla-mark.svg` | Browser tab, phone home screen, PWA, `favicon.*` |
 
 The wordmark stays the logo because it carries the company's name. The mark carries none, and a
 visitor arriving from search needs to read who this is. The mark takes the icon slots because the
 opposite is true there: at 16 pixels the Kaaba-and-calligraphy detail turns to mud, while three
 flat shapes stay legible.
+
+### The wordmark was the last thing still in the old colours
+
+Sampling the original's pixels found `#097EDD` bright blue and pure `#000000` black — neither in
+the palette, and the blue in nothing else on the site. Everything else had moved to wine, gold and
+ink during the colour work; the wordmark was deliberately excluded, so it sat at the top of every
+page in the pre-rebrand scheme while the page around it had changed completely.
+
+`public/images/rihla-logo-brand.png` is that artwork with two hues moved and nothing else:
+
+| Was | Is | Why |
+|---|---|---|
+| `#097EDD` bright blue | wine `#8E2653` | Blue is not a Rihla colour |
+| `#000000` pure black | ink `#2E2621` | The palette calls for ink; pure black reads harsh |
+| `#C18F2C` | gold `#D2A03C` | Snapped to the exact brand gold |
+
+No shape, letterform or proportion changed. Anti-aliased edges are blended rather than snapped, so
+the curves stay clean at every size. The served sizes are quantised to a 64-entry palette, which
+takes the header's copy to **3 KB** — smaller than the blue version it replaces.
+
+`public/images/rihla-logo.png` is the untouched original, kept in the repository for reference and
+asserted unchanged by `BrandMarkTest`.
 
 ### The mark
 
