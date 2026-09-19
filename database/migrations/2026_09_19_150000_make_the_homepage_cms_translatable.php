@@ -103,11 +103,8 @@ return new class extends Migration
             return;
         }
 
+        // Not null: the early return above establishes there is a row.
         $primary = $sections->firstWhere('locale', 'en') ?? $sections->first();
-
-        if ($primary === null) {
-            return;
-        }
 
         DB::table('why_sections')->where('id', $primary->id)->update(
             $this->translationsFrom($sections, self::TRANSLATABLE['why_sections']),
