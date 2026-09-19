@@ -19,46 +19,65 @@ class TripSeeder extends Seeder
 
             return;
         }
-        // Current Trip
-        Trip::create([
-            'title' => 'Maldives Island Hopping Adventure',
-            'slug' => 'maldives-island-hopping-adventure',
-            'date_start' => now()->subDays(5),
-            'date_end' => now()->addDays(10),
-            'location' => 'Malé Atoll, Maldives',
-            'summary' => 'Experience the beauty of multiple islands in the Maldives with our current adventure.',
-            'details' => 'Join us for an unforgettable journey through the pristine waters and white sandy beaches of the Maldives. Visit local islands, enjoy water sports, and immerse yourself in the local culture.',
-            'price_from_mvr' => 15000,
-            'status' => 'current',
-            'is_published' => true,
-        ]);
+        // What this used to hold, and why none of it is here any more:
+        //
+        //   "Maldives Island Hopping Adventure"  — white sandy beaches, water sports
+        //   "Luxury Resort Experience"           — overwater villas, "perfect for
+        //                                          honeymooners and luxury travelers"
+        //   "Cultural Heritage Tour"             — traditional markets, local crafts
+        //
+        // All three were live on test.rihla.mv, public and under Rihla's
+        // branding, each on its own indexed URL: an Umrah operator selling
+        // honeymoon resort stays. The guard above was added after demo content
+        // reached production and did exactly this, but it only governs where
+        // the data runs, not what it says — and nothing had read it since.
+        //
+        // The figures below are illustrative, not quotes. They exist so the
+        // homepage, the trips list and a trip page have something shaped like
+        // real content to lay out.
+        $trips = [
+            [
+                'title' => 'Ramadan Umrah — 14 Nights',
+                'slug' => 'ramadan-umrah-14-nights',
+                'date_start' => now()->subDays(5),
+                'date_end' => now()->addDays(9),
+                'location' => 'Makkah & Madinah',
+                'summary' => 'Fourteen nights across the two holy cities, with a Maldivian group leader throughout.',
+                'details' => 'A guided Umrah group departing Velana International for Jeddah, with eight nights in '
+                    .'Makkah and six in Madinah. Hotels are within walking distance of the Haram. A Dhivehi-speaking '
+                    .'group leader travels with the party from departure to return, and the fiqh of each rite is '
+                    .'covered in a briefing before departure.',
+                'price_from_mvr' => 28500,
+                'status' => 'current',
+            ],
+            [
+                'title' => 'Shawwal Umrah — 10 Nights',
+                'slug' => 'shawwal-umrah-10-nights',
+                'date_start' => now()->addDays(34),
+                'date_end' => now()->addDays(44),
+                'location' => 'Makkah & Madinah',
+                'summary' => 'A shorter group for those who cannot take a full fortnight away.',
+                'details' => 'Six nights in Makkah and four in Madinah, with the same group-leader arrangement and '
+                    .'the same walking-distance hotels. Visa and permit processing is handled before departure.',
+                'price_from_mvr' => 22000,
+                'status' => 'upcoming',
+            ],
+            [
+                'title' => 'Rabi al-Awwal Umrah — 12 Nights',
+                'slug' => 'rabi-al-awwal-umrah-12-nights',
+                'date_start' => now()->subDays(64),
+                'date_end' => now()->subDays(52),
+                'location' => 'Makkah & Madinah',
+                'summary' => 'A completed departure, kept here so past groups stay visible.',
+                'details' => 'Twelve nights across both cities with ziyarah in Madinah. Listed as past so the trips '
+                    .'page has something in each of its three tabs.',
+                'price_from_mvr' => 26000,
+                'status' => 'past',
+            ],
+        ];
 
-        // Upcoming Trip
-        Trip::create([
-            'title' => 'Luxury Resort Experience',
-            'slug' => 'luxury-resort-experience',
-            'date_start' => now()->addDays(30),
-            'date_end' => now()->addDays(37),
-            'location' => 'Baa Atoll, Maldives',
-            'summary' => 'Indulge in luxury at one of the most exclusive resorts in the Maldives.',
-            'details' => 'Experience world-class service, overwater villas, private beaches, and gourmet dining. Perfect for honeymooners and luxury travelers seeking the ultimate Maldives experience.',
-            'price_from_mvr' => 25000,
-            'status' => 'upcoming',
-            'is_published' => true,
-        ]);
-
-        // Past Trip
-        Trip::create([
-            'title' => 'Cultural Heritage Tour',
-            'slug' => 'cultural-heritage-tour',
-            'date_start' => now()->subDays(60),
-            'date_end' => now()->subDays(53),
-            'location' => 'Malé City, Maldives',
-            'summary' => 'Explore the rich cultural heritage of Malé and surrounding islands.',
-            'details' => 'Discover historical mosques, traditional markets, and local crafts. Learn about Maldivian history, cuisine, and traditions while meeting friendly locals.',
-            'price_from_mvr' => 8000,
-            'status' => 'past',
-            'is_published' => true,
-        ]);
+        foreach ($trips as $trip) {
+            Trip::create($trip + ['is_published' => true]);
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Media;
+use App\Models\Trip;
 use Database\Seeders\MediaSeeder;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -132,6 +133,62 @@ class DemoContentTest extends TestCase
         $this->assertDatabaseMissing('media', ['video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ']);
         $this->assertDatabaseMissing('media', ['file_path' => 'media/sunset.jpg']);
         $this->assertDatabaseHas('media', ['id' => $keep->id]);
+    }
+
+    /**
+     * The trips were the worse half, and the half I missed first time.
+     *
+     * The gallery was cleaned while `TripSeeder` went on offering "Luxury
+     * Resort Experience — overwater villas, private beaches, perfect for
+     * honeymooners and luxury travelers" from an Umrah operator, each trip on
+     * its own indexed URL. Trips are the most prominent content on the site:
+     * the homepage lists them, the trips page lists them, and each has a page
+     * of its own.
+     *
+     * This checks the words rather than the rows. A seeder can be rewritten
+     * and still describe a beach holiday.
+     */
+    public function test_no_seeded_trip_sells_a_beach_holiday(): void
+    {
+        $offenders = [];
+
+        // Vocabulary that has no business on a pilgrimage itinerary.
+        $resort = ['overwater', 'honeymoon', 'luxury travel', 'white sandy', 'water sports',
+            'private beach', 'resort experience', 'island hopping', 'gourmet dining'];
+
+        foreach ($this->seederSources() as $source) {
+            foreach ($resort as $phrase) {
+                if (stripos($source, $phrase) !== false) {
+                    $offenders[] = $phrase;
+                }
+            }
+        }
+
+        $this->assertSame([], array_values(array_unique($offenders)), implode("\n", array_merge(
+            ['Seeders describe a beach holiday. This is an Umrah operator:'],
+            array_unique($offenders),
+        )));
+    }
+
+    /** The cleanup deletes the rows a seeder change cannot reach. */
+    public function test_the_placeholder_trips_are_deleted_rather_than_only_unseeded(): void
+    {
+        $gone = Trip::create([
+            'title' => 'Luxury Resort Experience', 'slug' => 'luxury-resort-experience',
+            'date_start' => now(), 'date_end' => now()->addDay(), 'status' => 'upcoming', 'is_published' => true,
+        ]);
+
+        // A real trip that merely shares the name must survive.
+        $keep = Trip::create([
+            'title' => 'Luxury Resort Experience', 'slug' => 'a-real-trip-someone-named-oddly',
+            'date_start' => now(), 'date_end' => now()->addDay(), 'status' => 'upcoming', 'is_published' => true,
+        ]);
+
+        $migration = require database_path('migrations/2026_09_19_063000_remove_placeholder_demo_trips.php');
+        $migration->up();
+
+        $this->assertDatabaseMissing('trips', ['id' => $gone->id]);
+        $this->assertDatabaseHas('trips', ['id' => $keep->id]);
     }
 
     /**
