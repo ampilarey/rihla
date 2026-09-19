@@ -155,36 +155,63 @@ large text and meaningful graphics.
 
 ---
 
-## 4. Logo — decision open
+## 4. Logo and mark — settled
 
-**The current logo is unchanged in the repository.** `public/images/rihla-logo.png` is the
-original Kaaba-and-calligraphy mark, and the colour work above deliberately did not touch it.
+Rihla now uses **two pieces of artwork with different jobs**, which is the usual arrangement
+and the reason the question felt unresolved for so long.
 
-Three candidates exist, none adopted:
+| | Artwork | Where it is used |
+|---|---|---|
+| **Logo** | The original Kaaba-and-calligraphy wordmark, `rihla-logo.png` | Header, footer, login, social share image, structured data |
+| **Mark** | The two-sail dhoni, `rihla-mark.svg` | Browser tab, phone home screen, PWA, `favicon.*` |
 
-1. **Recoloured original** — the existing mark remapped to wine, gold and ink. Keeps all existing
-   recognition. Still raster.
-2. **Dhoni with Kaaba** — a Maldivian dhoni beside the Kaaba, sharing a waterline. True vector.
-3. **Dhoni alone (two-sail)** — the preferred direction as of the last review. True vector,
-   strongest at small sizes.
+The wordmark stays the logo because it carries the company's name. The mark carries none, and a
+visitor arriving from search needs to read who this is. The mark takes the icon slots because the
+opposite is true there: at 16 pixels the Kaaba-and-calligraphy detail turns to mud, while three
+flat shapes stay legible.
 
-### Outstanding asset problems
+### The mark
 
-These are live and independent of which mark is chosen:
+`public/images/rihla-mark.svg` — 461 bytes, three paths, wine `#8E2653`, gold `#D2A03C`,
+ink `#2E2621`.
 
-| File | Problem |
-|---|---|
-| `public/favicon.ico` | **0 bytes** — an empty file |
-| `public/favicon-32x32.png` | Referenced by `layouts/app.blade.php`, **does not exist** → 404 |
-| `public/favicon-16x16.png` | Referenced by the layout, **does not exist** → 404 |
-| `public/apple-touch-icon.png` | Referenced by the layout, **does not exist** → 404 |
-| `public/images/logo-192.png` | Named in `manifest.json`, **does not exist** |
-| `public/images/logo-512.png` | Named in `manifest.json`, **does not exist** |
-| `public/images/rihla-logo.png` | 6250×2976, **1.4 MB** — roughly 40× larger than any page needs |
-| — | No SVG master anywhere in the repository |
+This is the "Dhoni alone (two-sail)" direction this section previously recorded as preferred but
+lacking a master file. The master was lifted from the vector paths inside
+[`docs/brand/Rihla-Palette.pdf`](brand/Rihla-Palette.pdf) — the geometry is the designer's own
+curve data, extracted rather than traced, so it is exact rather than approximate.
 
-Also: `manifest.json` sets both `scope` and `start_url` to `/guide`, so the PWA installs as
-"Umrah Guide" rather than as Rihla.
+Every icon below is cut from it, on a cream `#FBF6EC` field. Cream rather than transparency
+because a transparent icon loses its ink hull against a dark browser theme.
+
+| File | Size | Purpose |
+|---|---|---|
+| `public/favicon.svg` | 589 B | Offered first; stays sharp at any pixel density |
+| `public/favicon.ico` | 16/32/48 | Legacy browsers, Windows pins |
+| `public/favicon-16x16.png`, `-32x32.png` | 16, 32 | Browser tab |
+| `public/apple-touch-icon.png` | 180 | iOS home screen |
+| `public/images/icon-192.png`, `-512.png` | 192, 512 | PWA, `purpose: any` |
+| `public/images/icon-maskable-192.png`, `-512.png` | 192, 512 | PWA, `purpose: maskable` |
+
+**Maskable icons carry extra padding on purpose.** Android crops them to a circle or squircle and
+keeps only the middle 80%; at the inset used by the other icons the dhoni would lose the tip of a
+sail. `BrandMarkTest` asserts every pixel of artwork sits inside that safe zone.
+
+### The palette document
+
+[`docs/brand/Rihla-Palette.pdf`](brand/Rihla-Palette.pdf) is the source of truth for the colour
+system in §1–§3 above. Every token in it — the ten-step wine ramp, gold, ink, cream and the three
+semantic colours — is implemented exactly in `tailwind.config.js` and `app/Support/Brand.php`,
+verified value by value.
+
+### Asset problems, resolved
+
+The table that stood here listed a 0-byte `favicon.ico`, four icon files referenced by the layout
+that did not exist, two more named in `manifest.json` that did not exist, a 1.4 MB logo, and no
+SVG master anywhere. All of it is fixed: the icons exist and are generated from one source, the
+manifest matches, the logo is served through `<x-brand-logo>` at 5 KB rather than 1.44 MB (the
+1.44 MB original is retained untouched as the archival master), and the SVG master exists.
+
+`manifest.json` now scopes to `/` rather than `/guide`, so the PWA installs as Rihla.
 
 ### Company seal
 
