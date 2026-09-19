@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Media;
+use App\Models\Setting;
 use App\Models\Trip;
 use Database\Seeders\MediaSeeder;
 use Database\Seeders\SettingsSeeder;
@@ -189,6 +190,65 @@ class DemoContentTest extends TestCase
 
         $this->assertDatabaseMissing('trips', ['id' => $gone->id]);
         $this->assertDatabaseHas('trips', ['id' => $keep->id]);
+    }
+
+    /**
+     * The third placeholder found on the live site, and the reason this test
+     * now looks for the shape rather than the instance.
+     *
+     * `SettingsSeeder` seeded `PLxxxxxxxxxx` as the YouTube playlist id,
+     * carrying a "replace with actual playlist ID" comment that nobody acted
+     * on. The social page embedded a player pointed at it, so visitors got a
+     * 404 inside an iframe where the videos should be.
+     *
+     * This one mattered more than the others: unlike the trip and media
+     * seeders it has no production guard, because it seeds real configuration
+     * rather than demo content. A placeholder here reaches the live site.
+     */
+    public function test_no_seeded_setting_holds_a_placeholder(): void
+    {
+        $offenders = [];
+
+        // The shapes a "fill this in later" value takes.
+        $shapes = [
+            '/\bPL x{4,}/ix' => 'a YouTube playlist id of xs',
+            '/\bx{5,}\b/i' => 'a run of xs standing in for a real value',
+            '/\byour[-_](?:id|key|url|number)\b/i' => 'a your-something-here token',
+            '/\b1234567890\b/' => 'a 1234567890 phone number',
+            '/@example\.(?:com|org)\b/i' => 'an example.com address',
+        ];
+
+        $source = (string) preg_replace('~//[^\n]*|/\*.*?\*/~s', '', File::get(database_path('seeders/SettingsSeeder.php')));
+
+        foreach ($shapes as $pattern => $description) {
+            if (preg_match($pattern, $source, $match)) {
+                $offenders[] = "{$match[0]} — {$description}";
+            }
+        }
+
+        $this->assertSame([], $offenders, implode("\n", array_merge(
+            ['SettingsSeeder holds placeholder values. It has no production',
+                'guard, because it seeds real configuration — so these reach the',
+                'live site:'],
+            $offenders,
+        )));
+    }
+
+    /** And the value already written to the database is cleared. */
+    public function test_the_placeholder_playlist_is_cleared_rather_than_only_unseeded(): void
+    {
+        Setting::setSocialSettings(['youtube_playlist_id' => 'PLxxxxxxxxxx']);
+
+        $migration = require database_path('migrations/2026_09_19_070000_clear_placeholder_youtube_playlist.php');
+        $migration->up();
+
+        $this->assertNull(Setting::getSocialSettings()['youtube_playlist_id']);
+
+        // A real id set since is left alone.
+        Setting::setSocialSettings(['youtube_playlist_id' => 'PLrealRihlaPlaylist']);
+        $migration->up();
+
+        $this->assertSame('PLrealRihlaPlaylist', Setting::getSocialSettings()['youtube_playlist_id']);
     }
 
     /**
