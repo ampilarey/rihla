@@ -319,4 +319,67 @@ class DeploymentToolingTest extends TestCase
         $this->assertStringContainsString('merge-base --is-ancestor', $this->script());
         $this->assertStringContainsString('--ff-only', $this->script());
     }
+
+    /**
+     * The script deploys itself, so it must not be read from the file it is
+     * about to rewrite.
+     *
+     * Step 4 runs `git merge --ff-only`, and any release that changes
+     * scripts/deploy-production.sh rewrites the file bash is executing. Bash
+     * reads a script lazily, by byte offset. Demonstrated rather than assumed:
+     * a script that rewrites itself mid-run prints its first line, then
+     * silently stops and **exits 0**. On a deploy that means merging the code
+     * and then skipping composer install, the migration, the caches and
+     * `php artisan up` — leaving the site in maintenance mode with unmigrated
+     * code, while reporting success.
+     *
+     * Re-running from a temp copy costs nothing and removes the whole class.
+     */
+    public function test_the_production_script_runs_from_a_snapshot_of_itself(): void
+    {
+        $script = $this->script();
+
+        $this->assertStringContainsString('RIHLA_DEPLOY_SNAPSHOT', $script,
+            'The script rewrites itself at the merge step and must not be read from that file.');
+
+        $this->assertMatchesRegularExpression('/mktemp.*\n.*cp "\$0"/m', $script,
+            'The snapshot must be a copy of the running script.');
+
+        // And the guard has to come before the merge, or it guards nothing.
+        $guardAt = strpos($script, 'RIHLA_DEPLOY_SNAPSHOT');
+        $mergeAt = strpos($this->scriptWithoutComments(), 'merge --ff-only');
+
+        $this->assertNotFalse($guardAt);
+        $this->assertNotFalse($mergeAt);
+        $this->assertLessThan($mergeAt, $guardAt);
+    }
+
+    /**
+     * A live deploy must not call itself a dry run.
+     *
+     * The banner used `${DRY_RUN:+ (dry run)}`, which expands whenever the
+     * variable is *set and non-empty* — and the script defaults it to "0",
+     * which is non-empty. So every real deploy announced itself as a dry run.
+     * That is the more dangerous way round: an operator reads "(dry run)" and
+     * believes nothing happened, on a run that has just migrated the
+     * production database. Seen on the real thing, after a deploy that had in
+     * fact taken a backup, merged, migrated and brought the site back up.
+     */
+    public function test_the_script_does_not_call_a_live_deploy_a_dry_run(): void
+    {
+        // Without comments: the note explaining this bug necessarily quotes the
+        // broken expression, and the first version of this test matched its own
+        // explanation. Sixth time a comment has been read as code in this
+        // project, which is why scriptWithoutComments() exists.
+        $script = $this->scriptWithoutComments();
+
+        $this->assertStringNotContainsString('${DRY_RUN:+', $script,
+            ':+ tests whether the variable is set, and it is always set to "0" or "1".');
+
+        $this->assertMatchesRegularExpression('/if \[\[ "\$DRY_RUN" == "1" \]\]/', $script,
+            'The banner must branch on the value.');
+
+        $this->assertStringContainsString('(LIVE)', $script,
+            'A real deploy should say so plainly.');
+    }
 }
