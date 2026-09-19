@@ -15,7 +15,7 @@
         <div class="bg-white rounded-2xl p-1 shadow-soft" role="tablist" aria-label="{{ __('Trips') }}">
             @foreach ([['current', __('Current')], ['upcoming', __('Upcoming')], ['past', __('Past')]] as $i => [$key, $label])
                 <button type="button"
-                        onclick="showTab('{{ $key }}')"
+                        data-click="showTab" data-args="{{ json_encode([$key]) }}"
                         id="tab-{{ $key }}"
                         role="tab"
                         aria-selected="{{ $i === 0 ? 'true' : 'false' }}"

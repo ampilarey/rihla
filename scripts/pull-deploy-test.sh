@@ -66,6 +66,14 @@ git merge --ff-only FETCH_HEAD || { echo "$(date '+%F %T') fast-forward failed â
 if git diff --name-only "$LOCAL" "$REMOTE" | grep -qE '^(composer.lock|composer.json)$'; then
   composer install --no-dev --optimize-autoloader --no-interaction \
     || { echo "$(date '+%F %T') composer install failed"; exit 1; }
+else
+  # Rebuild the classmap even when dependencies did not change. It maps
+  # class => file, so a commit that deletes or moves a PHP class leaves it
+  # pointing at a file that is gone; class_exists() then tries to include
+  # the missing file and the page fatals. Blade does that for every
+  # <x-component> tag, which is how this was found.
+  composer dump-autoload --optimize --no-interaction \
+    || { echo "$(date '+%F %T') dump-autoload failed"; exit 1; }
 fi
 
 php artisan storage:link --force 2>/dev/null \

@@ -111,12 +111,12 @@
                                 <a href="{{ route('admin.media.show', $item) }}" class="text-wine-500 hover:text-wine-600">
                                     {{ __('View') }}
                                 </a>
-                                <form action="{{ route('admin.media.destroy', $item) }}" method="POST" class="inline" style="display: inline;" id="delete-form-{{ $item->id }}">
+                                <form action="{{ route('admin.media.destroy', $item) }}" method="POST" class="inline" style="display: inline;" id="delete-form-{{ $item->id }}"
+                                      data-confirm="{{ __('Are you sure you want to delete this media?') }}{{ $item->title ? ' — '.$item->title : '' }}">
                                     @csrf
                                     <input type="hidden" name="_method" value="DELETE">
                                     <button type="submit" 
-                                            class="text-error hover:text-error-dark focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2 rounded px-2 py-1"
-                                            onclick="return confirmAndSubmit(event, {{ $item->id }}, '{{ $item->title ?: 'this media item' }}')">
+                                            class="text-error hover:text-error-dark focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2 rounded px-2 py-1">
                                         {{ __('Delete') }}
                                     </button>
                                 </form>
@@ -133,51 +133,4 @@
         </div>
     </div>
 </div>
-
-<script>
-function confirmAndSubmit(event, itemId, itemName) {
-    event.preventDefault();
-    
-    console.log('Delete clicked for item:', itemId, itemName);
-    
-    if (confirm('Are you sure you want to delete "' + itemName + '"? This action cannot be undone.')) {
-        const form = document.getElementById('delete-form-' + itemId);
-        console.log('Form found:', form);
-        console.log('Form action:', form.action);
-        console.log('Form method:', form.method);
-        
-        // Check all form inputs
-        const formData = new FormData(form);
-        console.log('Form data:');
-        for (let [key, value] of formData.entries()) {
-            console.log(key + ':', value);
-        }
-        
-        // Submit the form
-        console.log('Submitting form...');
-        form.submit();
-        
-        return true;
-    }
-    
-    return false;
-}
-
-// Debug CSRF token and forms on page load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'));
-    
-    const deleteForms = document.querySelectorAll('form[method="POST"]');
-    console.log('Found delete forms:', deleteForms.length);
-    
-    deleteForms.forEach((form, index) => {
-        console.log('Form ' + index + ':', form.action);
-        const csrfInput = form.querySelector('input[name="_token"]');
-        const methodInputs = form.querySelectorAll('input[name="_method"]');
-        console.log('Form ' + index + ' - CSRF input:', csrfInput ? 'Found (' + csrfInput.value + ')' : 'Missing');
-        console.log('Form ' + index + ' - Method inputs:', methodInputs.length, methodInputs.length > 0 ? Array.from(methodInputs).map(input => input.value) : 'None');
-    });
-});
-</script>
-
 @endsection

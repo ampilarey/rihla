@@ -195,12 +195,11 @@
                                 </button>
                             </form>
                         </div>
-                        <form method="POST" action="{{ route('admin.hero-banners.destroy', $heroBanner) }}" class="inline">
+                        <form data-confirm="Are you sure you want to delete this banner?" method="POST" action="{{ route('admin.hero-banners.destroy', $heroBanner) }}" class="inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" 
-                                    class="px-4 py-2 bg-error text-white rounded-lg hover:bg-error-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error"
-                                    onclick="return confirm('Are you sure you want to delete this banner?')">
+                                    class="px-4 py-2 bg-error text-white rounded-lg hover:bg-error-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error">
                                 Delete Banner
                             </button>
                         </form>

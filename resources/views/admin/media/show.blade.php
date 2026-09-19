@@ -139,12 +139,11 @@
                 {{ __('Edit Media') }}
             </a>
             
-            <form method="POST" action="{{ route('admin.media.destroy', $medium) }}" class="inline" style="display: inline;">
+            <form data-confirm="{{ __('Are you sure you want to delete this media?') }}" method="POST" action="{{ route('admin.media.destroy', $medium) }}" class="inline" style="display: inline;">
                 @csrf
                 @method('DELETE')
                 <button type="submit" 
-                        class="bg-error hover:bg-error-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-                        onclick="return confirm('{{ __('Are you sure you want to delete this media?') }}')">
+                        class="bg-error hover:bg-error-dark text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
                     {{ __('Delete Media') }}
                 </button>
             </form>

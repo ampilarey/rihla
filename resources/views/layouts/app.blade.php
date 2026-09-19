@@ -274,7 +274,7 @@
                     <!-- Mobile menu button -->
                     <button type="button" 
                             class="{{ $navToggle }} p-2 rounded-md text-ink hover:text-wine-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2"
-                            onclick="toggleMobileMenu()"
+                            data-click="toggleMobileMenu"
                             aria-label="{{ __('Menu') }}"
                             aria-controls="mobile-menu"
                             aria-expanded="false">
@@ -503,7 +503,7 @@
     <script>
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');
-            const button = document.querySelector('[onclick="toggleMobileMenu()"]');
+            const button = document.querySelector('[data-click="toggleMobileMenu"]');
             const isExpanded = button.getAttribute('aria-expanded') === 'true';
             
             menu.classList.toggle('hidden');
@@ -513,7 +513,7 @@
         // Close mobile menu when clicking outside
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('mobile-menu');
-            const button = document.querySelector('[onclick="toggleMobileMenu()"]');
+            const button = document.querySelector('[data-click="toggleMobileMenu"]');
             
             if (!menu.contains(event.target) && !button.contains(event.target)) {
                 menu.classList.add('hidden');
@@ -525,7 +525,7 @@
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const menu = document.getElementById('mobile-menu');
-                const button = document.querySelector('[onclick="toggleMobileMenu()"]');
+                const button = document.querySelector('[data-click="toggleMobileMenu"]');
                 
                 menu.classList.add('hidden');
                 button.setAttribute('aria-expanded', 'false');

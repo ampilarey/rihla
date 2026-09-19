@@ -94,7 +94,7 @@
         <!-- Previous Button -->
         <button class="hero-nav-arrow hero-nav-left" 
                 type="button"
-                onclick="changeSlide(-1)"
+                data-click="changeSlide" data-args="[-1]"
                 aria-label="Go to previous slide">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -104,7 +104,7 @@
         <!-- Next Button -->
         <button class="hero-nav-arrow hero-nav-right" 
                 type="button"
-                onclick="changeSlide(1)"
+                data-click="changeSlide" data-args="[1]"
                 aria-label="Go to next slide">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -116,7 +116,7 @@
             @foreach($banners as $index => $banner)
             <button class="hero-dot {{ $index === 0 ? 'active' : '' }}"
                     type="button"
-                    onclick="goToSlide({{ $index }})"
+                    data-click="goToSlide" data-args="{{ json_encode([$index]) }}"
                     aria-label="Go to slide {{ $index + 1 }}"
                     aria-current="{{ $index === 0 ? 'true' : 'false' }}"></button>
             @endforeach

@@ -159,7 +159,7 @@
                                         <input type="text" name="checklist[]" value="{{ $item }}"
                                                class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                                placeholder="Checklist item...">
-                                        <button type="button" onclick="removeChecklistItem(this)" 
+                                        <button type="button" data-click="removeChecklistItem" 
                                                 class="px-3 py-2 text-error hover:text-error-dark transition-colors duration-200">
                                             <svg aria-hidden="true" focusable="false" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -172,7 +172,7 @@
                                     <input type="text" name="checklist[]" 
                                            class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                            placeholder="Checklist item...">
-                                    <button type="button" onclick="removeChecklistItem(this)" 
+                                    <button type="button" data-click="removeChecklistItem" 
                                             class="px-3 py-2 text-error hover:text-error-dark transition-colors duration-200">
                                         <svg aria-hidden="true" focusable="false" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -181,7 +181,7 @@
                                 </div>
                             @endif
                         </div>
-                        <button type="button" onclick="addChecklistItem()" 
+                        <button type="button" data-click="addChecklistItem" 
                                 class="mt-3 inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
                             <svg aria-hidden="true" focusable="false" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -199,7 +199,7 @@
                                         <input type="text" name="fiqh_notes[]" value="{{ $note }}"
                                                class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                                placeholder="Fiqh note (e.g., Hanafi • Shafi'i differences)...">
-                                        <button type="button" onclick="removeFiqhNote(this)" 
+                                        <button type="button" data-click="removeFiqhNote" 
                                                 class="px-3 py-2 text-error hover:text-error-dark transition-colors duration-200">
                                             <svg aria-hidden="true" focusable="false" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -212,7 +212,7 @@
                                     <input type="text" name="fiqh_notes[]" 
                                            class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                                            placeholder="Fiqh note (e.g., Hanafi • Shafi'i differences)...">
-                                    <button type="button" onclick="removeFiqhNote(this)" 
+                                    <button type="button" data-click="removeFiqhNote" 
                                             class="px-3 py-2 text-error hover:text-error-dark transition-colors duration-200">
                                         <svg aria-hidden="true" focusable="false" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -221,7 +221,7 @@
                                 </div>
                             @endif
                         </div>
-                        <button type="button" onclick="addFiqhNote()" 
+                        <button type="button" data-click="addFiqhNote" 
                                 class="mt-3 inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
                             <svg aria-hidden="true" focusable="false" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -268,7 +268,7 @@ function addChecklistItem() {
         <input type="text" name="checklist[]" 
                class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                placeholder="Checklist item...">
-        <button type="button" onclick="removeChecklistItem(this)" 
+        <button type="button" data-click="removeChecklistItem" 
                 class="px-3 py-2 text-error hover:text-error-dark transition-colors duration-200">
             <svg aria-hidden="true" focusable="false" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -290,7 +290,7 @@ function addFiqhNote() {
         <input type="text" name="fiqh_notes[]" 
                class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-transparent"
                placeholder="Fiqh note (e.g., Hanafi • Shafi'i differences)...">
-        <button type="button" onclick="removeFiqhNote(this)" 
+        <button type="button" data-click="removeFiqhNote" 
                 class="px-3 py-2 text-error hover:text-error-dark transition-colors duration-200">
             <svg aria-hidden="true" focusable="false" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>

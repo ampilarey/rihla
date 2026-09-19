@@ -109,6 +109,15 @@ if [[ "$DRY_RUN" == "1" ]] || git diff --name-only "$LOCAL" "$REMOTE" | grep -qE
     || die "composer install failed — site is still in maintenance mode"
 else
   log "5/7 composer install (skipped: no dependency change)"
+
+  # The classmap still has to be rebuilt. `--optimize-autoloader` writes a
+  # class => file map, and a commit that deletes or moves a PHP class leaves
+  # that map pointing at a file which is no longer there. Nothing references
+  # the class, so nothing looks wrong — until something calls class_exists()
+  # on it, the autoloader tries to include the missing file, and the page
+  # fatals. Blade does exactly that for every <x-component> tag.
+  run composer dump-autoload --optimize --no-interaction \
+    || die "dump-autoload failed — site is still in maintenance mode"
 fi
 
 # ------------------------------------------------------------------ 6. migrate
