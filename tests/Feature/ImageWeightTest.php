@@ -212,7 +212,10 @@ class ImageWeightTest extends TestCase
         foreach (File::allFiles(resource_path('views')) as $file) {
             $path = str_replace('\\', '/', $file->getPathname());
 
-            if (str_contains($path, 'brand-logo.blade.php')) {
+            // brand-logo is the definition. stored-image uses the bare mark as
+            // a decorative glyph inside a "no picture here" placeholder, which
+            // is not the logo and carries no company name.
+            if (str_contains($path, 'brand-logo.blade.php') || str_contains($path, 'stored-image.blade.php')) {
                 continue;
             }
 

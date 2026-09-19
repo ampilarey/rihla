@@ -32,11 +32,9 @@
                 <div class="group">
                     @if($item->type === 'photo')
                         <div class="relative overflow-hidden rounded-2xl shadow-soft hover:shadow-lg transition-shadow duration-300">
-                            <img src="{{ Storage::url($item->thumb_path ?? $item->file_path) }}" 
-                                 alt="{{ $item->title }}" 
-                                 class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                                 loading="lazy"
-         decoding="async">
+                            <x-stored-image :path="$item->thumb_path ?? $item->file_path"
+                                            :alt="$item->title"
+                                            class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
                             
                             @if($item->title || $item->caption)
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
