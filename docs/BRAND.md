@@ -155,68 +155,67 @@ large text and meaningful graphics.
 
 ---
 
-## 4. Logo and mark — settled
+## 4. Logo — the dhoni
 
-Rihla now uses **two pieces of artwork with different jobs**, which is the usual arrangement
-and the reason the question felt unresolved for so long.
-
-| | Artwork | Where it is used |
-|---|---|---|
-| **Logo** | The Kaaba-and-calligraphy wordmark, recoloured into the palette, `rihla-logo-brand.png` | Header, footer, login, social share image, structured data |
-| **Mark** | The two-sail dhoni, `rihla-mark.svg` | Browser tab, phone home screen, PWA, `favicon.*` |
-
-The wordmark stays the logo because it carries the company's name. The mark carries none, and a
-visitor arriving from search needs to read who this is. The mark takes the icon slots because the
-opposite is true there: at 16 pixels the Kaaba-and-calligraphy detail turns to mud, while three
-flat shapes stay legible.
-
-### The wordmark was the last thing still in the old colours
-
-Sampling the original's pixels found `#097EDD` bright blue and pure `#000000` black — neither in
-the palette, and the blue in nothing else on the site. Everything else had moved to wine, gold and
-ink during the colour work; the wordmark was deliberately excluded, so it sat at the top of every
-page in the pre-rebrand scheme while the page around it had changed completely.
-
-`public/images/rihla-logo-brand.png` is that artwork with two hues moved and nothing else:
-
-| Was | Is | Why |
-|---|---|---|
-| `#097EDD` bright blue | wine `#8E2653` | Blue is not a Rihla colour |
-| `#000000` pure black | ink `#2E2621` | The palette calls for ink; pure black reads harsh |
-| `#C18F2C` | gold `#D2A03C` | Snapped to the exact brand gold |
-
-No shape, letterform or proportion changed. Anti-aliased edges are blended rather than snapped, so
-the curves stay clean at every size. The served sizes are quantised to a 64-entry palette, which
-takes the header's copy to **3 KB** — smaller than the blue version it replaces.
-
-`public/images/rihla-logo.png` is the untouched original, kept in the repository for reference and
-asserted unchanged by `BrandMarkTest`.
-
-### The mark
+**The two-sail dhoni is the Rihla logo.** It is used everywhere a logo appears: the site header
+and footer, the login page, the browser tab, the phone home screen, the PWA, and the preview card
+that WhatsApp and Facebook show when a link is shared.
 
 `public/images/rihla-mark.svg` — 461 bytes, three paths, wine `#8E2653`, gold `#D2A03C`,
-ink `#2E2621`.
+ink `#2E2621`. Lifted from the vector paths inside
+[`docs/brand/Rihla-Palette.pdf`](brand/Rihla-Palette.pdf): the geometry is the designer's own curve
+data, extracted rather than traced.
 
-This is the "Dhoni alone (two-sail)" direction this section previously recorded as preferred but
-lacking a master file. The master was lifted from the vector paths inside
-[`docs/brand/Rihla-Palette.pdf`](brand/Rihla-Palette.pdf) — the geometry is the designer's own
-curve data, extracted rather than traced, so it is exact rather than approximate.
+Because it is vector, **one file covers every size** — the 16-pixel favicon and the header come
+from the same 461 bytes, with no resampling and no blur on a high-density screen. The wordmark it
+replaced needed six raster files, and before that a single 1.44 MB PNG.
 
-Every icon below is cut from it, on a cream `#FBF6EC` field. Cream rather than transparency
+### One thing to keep in mind
+
+The dhoni carries no company name. A visitor arriving from search sees the boat and reads "Rihla
+Travels" only in the browser tab title and the page copy, not in the header. That is a deliberate
+choice, not an oversight. If it ever needs the name, the fix is to set "Rihla Travels" in type
+beside the mark rather than to go back to the old lockup — `<x-brand-logo>` is the single place
+that would change.
+
+### The icon set
+
+Every icon is cut from the same master, on a cream `#FBF6EC` field. Cream rather than transparency,
 because a transparent icon loses its ink hull against a dark browser theme.
 
 | File | Size | Purpose |
 |---|---|---|
-| `public/favicon.svg` | 589 B | Offered first; stays sharp at any pixel density |
+| `public/images/rihla-mark.svg` | 461 B | The logo itself, everywhere on the site |
+| `public/favicon.svg` | 589 B | Offered first; sharp at any pixel density |
 | `public/favicon.ico` | 16/32/48 | Legacy browsers, Windows pins |
 | `public/favicon-16x16.png`, `-32x32.png` | 16, 32 | Browser tab |
 | `public/apple-touch-icon.png` | 180 | iOS home screen |
-| `public/images/icon-192.png`, `-512.png` | 192, 512 | PWA, `purpose: any` |
+| `public/images/icon-192.png`, `-512.png` | 192, 512 | PWA, `purpose: any`; 512 also serves the structured-data logo |
 | `public/images/icon-maskable-192.png`, `-512.png` | 192, 512 | PWA, `purpose: maskable` |
+| `public/images/rihla-social.png` | 1200×630 | `og:image` and `twitter:image` — scrapers cannot read SVG |
 
 **Maskable icons carry extra padding on purpose.** Android crops them to a circle or squircle and
-keeps only the middle 80%; at the inset used by the other icons the dhoni would lose the tip of a
-sail. `BrandMarkTest` asserts every pixel of artwork sits inside that safe zone.
+keeps only the middle 80%; at the inset the other icons use, the dhoni loses the tip of a sail.
+`BrandMarkTest` asserts every pixel of artwork sits inside that safe zone.
+
+### The retired wordmark
+
+The Kaaba-and-calligraphy wordmark is **retired, not deleted**. Both versions stay in the
+repository and both are asserted unchanged by tests:
+
+| File | What it is |
+|---|---|
+| `public/images/rihla-logo.png` | The untouched original, 6250 × 2976 |
+| `public/images/rihla-logo-brand.png` | The same artwork recoloured into the palette |
+
+Nothing serves them. They are kept for print, for the company seal, and for anyone who re-adopts
+the lockup.
+
+Worth recording why the recolour exists at all: sampling the original found `#097EDD` bright blue
+and pure `#000000` black, neither in the palette, and the blue in nothing else on the site. The
+colour work moved every other element to wine, gold and ink and deliberately left the wordmark
+alone, so it sat at the top of every page in the pre-rebrand scheme while the page around it had
+changed completely. That is why it kept looking unchanged — it was unchanged.
 
 ### The palette document
 
@@ -224,16 +223,6 @@ sail. `BrandMarkTest` asserts every pixel of artwork sits inside that safe zone.
 system in §1–§3 above. Every token in it — the ten-step wine ramp, gold, ink, cream and the three
 semantic colours — is implemented exactly in `tailwind.config.js` and `app/Support/Brand.php`,
 verified value by value.
-
-### Asset problems, resolved
-
-The table that stood here listed a 0-byte `favicon.ico`, four icon files referenced by the layout
-that did not exist, two more named in `manifest.json` that did not exist, a 1.4 MB logo, and no
-SVG master anywhere. All of it is fixed: the icons exist and are generated from one source, the
-manifest matches, the logo is served through `<x-brand-logo>` at 5 KB rather than 1.44 MB (the
-1.44 MB original is retained untouched as the archival master), and the SVG master exists.
-
-`manifest.json` now scopes to `/` rather than `/guide`, so the PWA installs as Rihla.
 
 ### Company seal
 

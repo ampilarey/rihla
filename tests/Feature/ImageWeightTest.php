@@ -137,9 +137,13 @@ class ImageWeightTest extends TestCase
     public function test_the_logo_declares_its_intrinsic_size(): void
     {
         foreach (self::PAGES as $page) {
-            foreach ($this->xpath($page)->query('//img[contains(@src, "rihla-logo")]') as $img) {
-                $this->assertSame('6250', $img->getAttribute('width'), "{$page}: logo has no intrinsic width.");
-                $this->assertSame('2976', $img->getAttribute('height'), "{$page}: logo has no intrinsic height.");
+            $logos = $this->xpath($page)->query('//img[contains(@src, "rihla-mark")]');
+
+            $this->assertGreaterThan(0, $logos->length, "{$page} renders no logo at all.");
+
+            foreach ($logos as $img) {
+                $this->assertNotSame('', $img->getAttribute('width'), "{$page}: logo has no intrinsic width.");
+                $this->assertNotSame('', $img->getAttribute('height'), "{$page}: logo has no intrinsic height.");
             }
         }
     }
@@ -212,7 +216,7 @@ class ImageWeightTest extends TestCase
                 continue;
             }
 
-            if (preg_match('/<img[^>]{0,200}rihla-logo/s', File::get($file))) {
+            if (preg_match('/<img[^>]{0,200}rihla-(logo|mark)/s', File::get($file))) {
                 $offenders[] = basename($path);
             }
         }

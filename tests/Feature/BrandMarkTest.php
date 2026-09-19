@@ -180,9 +180,11 @@ class BrandMarkTest extends TestCase
      * which is why "still I see the old logo" was the correct reading of a
      * site that had otherwise changed completely.
      *
-     * The recoloured master moves those two hues and nothing else.
+     * The recoloured master moves those two hues and nothing else. It is no
+     * longer served — the dhoni is the logo — but it is kept for print and
+     * for anyone who re-adopts it, and it stays palette-correct.
      */
-    public function test_the_served_wordmark_carries_no_pre_rebrand_colour(): void
+    public function test_the_retired_wordmark_carries_no_pre_rebrand_colour(): void
     {
         foreach ([200, 400, 600] as $width) {
             $path = public_path("images/rihla-logo-brand-{$width}.png");
@@ -249,8 +251,8 @@ class BrandMarkTest extends TestCase
         return [$colour['red'], $colour['green'], $colour['blue'], $colour['alpha']];
     }
 
-    /** The untouched original stays in the repository for reference. */
-    public function test_the_original_artwork_is_preserved_alongside_the_recolour(): void
+    /** Both wordmarks stay in the repository, retired rather than deleted. */
+    public function test_the_wordmark_artwork_is_preserved(): void
     {
         $original = public_path('images/rihla-logo.png');
 
@@ -268,14 +270,30 @@ class BrandMarkTest extends TestCase
             'The recolour changed the artwork geometry; it should only change hues.');
     }
 
-    /** The wordmark is still the logo. The mark did not replace it. */
-    public function test_the_header_still_carries_the_wordmark(): void
+    /** The dhoni is the logo now, in every place the wordmark used to be. */
+    public function test_the_mark_is_the_logo_everywhere(): void
     {
         $this->seedSite();
 
-        $this->get('/en')
-            ->assertOk()
-            ->assertSee('rihla-logo-brand-400.png', false);
+        foreach (['/en', '/dv', '/en/trips', '/login'] as $page) {
+            $this->get($page)
+                ->assertOk()
+                ->assertSee('images/rihla-mark.svg', false);
+        }
+    }
+
+    /**
+     * One vector file covers every size, from the 16-pixel favicon to the
+     * header. The wordmark it replaced needed six rasters, and before that a
+     * single 1.44 MB PNG.
+     */
+    public function test_no_page_serves_the_retired_wordmark(): void
+    {
+        $this->seedSite();
+
+        foreach (['/en', '/dv', '/en/trips', '/en/guide', '/login'] as $page) {
+            $this->get($page)->assertDontSee('rihla-logo', false);
+        }
     }
 
     private function seedSite(): void
