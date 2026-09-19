@@ -340,4 +340,27 @@ class DemoContentTest extends TestCase
             ->expectsOutputToContain('facebook_url')
             ->assertSuccessful();
     }
+
+    /**
+     * The owner confirmed the four social handles were guesses, so all four are
+     * cleared. The seeder invented them from one name; the TikTok account did
+     * not exist, and Facebook, Instagram and Viber could not be checked by any
+     * script. A dead link on a travel operator's site costs more than a missing
+     * one, and the page hides what is not set.
+     */
+    public function test_the_seeded_social_links_are_cleared_rather_than_only_unseeded(): void
+    {
+        $migration = collect(File::files(database_path('migrations')))
+            ->first(fn ($f) => str_contains($f->getFilename(), 'clear_the_seeded_social_links'));
+
+        $this->assertNotNull($migration,
+            'Changing the seeder does not touch a database that already holds the guesses.');
+
+        $contents = (string) File::get($migration->getPathname());
+
+        foreach (['facebook.com/rihlatravels', 'instagram.com/rihlatravels', 'viber.com/rihlatravels'] as $guess) {
+            $this->assertStringContainsString($guess, $contents,
+                'The migration must match the exact seeded value, never the key alone.');
+        }
+    }
 }
