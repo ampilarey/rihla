@@ -376,13 +376,13 @@
         </main>
 
         <!-- Footer -->
-        <footer class="bg-ink text-white py-12 overflow-x-hidden">
+        <footer class="bg-ink text-white py-12 pb-52 md:pb-12 overflow-x-hidden">
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <!-- Company Info -->
                     <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center mb-4">
-                            <x-brand-logo class="h-16 w-auto" loading="lazy" />
+                            <x-brand-logo class="h-16 w-auto" loading="lazy" on="dark" />
                         </div>
                         <p class="text-gray-300 mb-4 max-w-md">
                             {{ __('Rihla Travels provides exceptional Islamic travel services, specializing in Umrah packages and spiritual journeys to the holy cities of Makkah and Madinah.') }}
@@ -455,8 +455,10 @@
                     </div>
                 </div>
 
-                <div class="border-t border-gray-700 mt-8 pt-8 text-center">
-                    <p class="text-gray-600 mb-2">{{ __('messages.footer_tagline') }}</p>
+                <div class="border-t border-gray-500 mt-8 pt-8 text-center">
+                    {{-- Was text-gray-600, which is 1.96:1 against bg-ink — not
+                         dim, unreadable. gray-400 is 5.84:1. --}}
+                    <p class="text-gray-400 mb-2">{{ __('messages.footer_tagline') }}</p>
                     <p class="text-gray-400">
                         &copy; {{ date('Y') }} {{ config('app.name', 'Rihla Travels') }}. {{ __('All rights reserved.') }}
                     </p>

@@ -4,6 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\HeroBanner;
 use App\Support\Brand;
+use Database\Seeders\HeroBannerSeeder;
+use Database\Seeders\SettingsSeeder;
+use Database\Seeders\TripSeeder;
+use Database\Seeders\WhySectionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -148,5 +152,117 @@ class BrandColourTest extends TestCase
         );
 
         return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+    }
+
+    /**
+     * Tailwind's grey scale is built for white backgrounds, and the footer is
+     * ink. Several steps of it are illegible there, and the footer was using
+     * two of them.
+     *
+     * The tagline was `text-gray-600` — 1.96:1 against `bg-ink`, which is not
+     * "dim", it is unreadable — and the divider above it was `border-gray-700`
+     * at 1.44:1, an invisible line. Both shipped, and neither showed up in the
+     * accessibility pass, which checked structure rather than colour.
+     */
+    public function test_footer_text_is_legible_on_the_ink_background(): void
+    {
+        $footer = $this->footerMarkup();
+
+        // Tailwind's default scale, which is what these classes resolve to.
+        $scale = [
+            '300' => '#D1D5DB', '400' => '#9CA3AF', '500' => '#6B7280',
+            '600' => '#4B5563', '700' => '#374151', '800' => '#1F2937',
+        ];
+
+        $offenders = [];
+
+        preg_match_all('/\btext-gray-(\d{3})\b/', $footer, $matches);
+
+        foreach (array_unique($matches[1]) as $step) {
+            if (! isset($scale[$step])) {
+                continue;
+            }
+
+            $ratio = $this->contrast($scale[$step], Brand::INK);
+
+            if ($ratio < 4.5) {
+                $offenders[] = sprintf('text-gray-%s (%s) is %.2f:1 on bg-ink; AA needs 4.5:1',
+                    $step, $scale[$step], $ratio);
+            }
+        }
+
+        // A divider is not text, so WCAG asks 3:1 of it rather than 4.5:1.
+        preg_match_all('/\bborder-gray-(\d{3})\b/', $footer, $borders);
+
+        foreach (array_unique($borders[1]) as $step) {
+            if (! isset($scale[$step])) {
+                continue;
+            }
+
+            $ratio = $this->contrast($scale[$step], Brand::INK);
+
+            if ($ratio < 3.0) {
+                $offenders[] = sprintf('border-gray-%s (%s) is %.2f:1 on bg-ink; a visible line needs 3:1',
+                    $step, $scale[$step], $ratio);
+            }
+        }
+
+        $this->assertSame([], $offenders, implode("\n", array_merge(
+            ['Footer colours that cannot be seen against bg-ink:'],
+            $offenders,
+        )));
+    }
+
+    /**
+     * The logo hull is ink. So is the footer. On the footer the hull vanished
+     * and the logo rendered as two sails floating above nothing — visible
+     * immediately on a phone, and invisible to every test that only asked
+     * whether the logo was present.
+     */
+    public function test_the_logo_hull_is_visible_on_a_dark_surface(): void
+    {
+        $inverse = File::get(public_path('images/rihla-mark-inverse.svg'));
+
+        $this->assertStringNotContainsString(Brand::INK, $inverse,
+            'The dark-surface logo still paints its hull in the footer background colour.');
+
+        $this->assertStringContainsString(Brand::CREAM, $inverse,
+            'The dark-surface logo should carry a cream hull.');
+
+        // Same geometry, different hull: only the fill may differ.
+        $light = File::get(public_path('images/rihla-mark.svg'));
+
+        $this->assertSame(
+            str_replace(Brand::INK, 'HULL', $light),
+            str_replace(Brand::CREAM, 'HULL', $inverse),
+            'The two logo variants have drifted apart; only the hull colour should differ.',
+        );
+
+        $this->assertStringContainsString('on="dark"', $this->footerMarkup(),
+            'The footer does not ask for the dark-surface logo.');
+
+        // And the rendered page actually serves it.
+        $this->seed([SettingsSeeder::class, TripSeeder::class,
+            HeroBannerSeeder::class, WhySectionSeeder::class]);
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertSee('rihla-mark-inverse.svg', false);
+    }
+
+    /** The footer block of the main layout. */
+    private function footerMarkup(): string
+    {
+        $layout = File::get(resource_path('views/layouts/app.blade.php'));
+
+        $start = strpos($layout, '<footer');
+        $end = strpos($layout, '</footer>');
+
+        $this->assertNotFalse($start, 'No footer in the layout.');
+
+        // Blade comments are stripped first. The comment recording *why*
+        // text-gray-600 was replaced names the class, and an earlier version
+        // of this test dutifully reported it as still in use.
+        return (string) preg_replace('/\{\{--.*?--\}\}/s', '', substr($layout, $start, $end - $start));
     }
 }
