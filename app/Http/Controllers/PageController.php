@@ -8,6 +8,7 @@ use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class PageController extends Controller
 {
@@ -25,13 +26,34 @@ class PageController extends Controller
         return view('pages.contact', compact('socialSettings'));
     }
 
+    /**
+     * The published guide steps for a locale, falling back to English.
+     *
+     * The Dhivehi steps shipped as machine-generated filler: all ten carried
+     * the *same* du'a and the same reference_text, where the English ten carry
+     * ten real du'as and citations like "Quran 2:196". They have been removed
+     * rather than paraphrased — these are the ritual steps of Umrah, and
+     * inventing replacements would be worse than the defect.
+     *
+     * Falling back means a Dhivehi visitor reads the correct instructions in
+     * English instead of an empty page or, as before, the same meaningless
+     * sentence as the du'a for every step. The fallback disappears the moment
+     * a real translation is entered in the admin panel.
+     */
+    private function guideStepsFor(string $locale): Collection
+    {
+        $steps = GuideStep::published()->forLocale($locale)->ordered()->get();
+
+        if ($steps->isNotEmpty() || $locale === 'en') {
+            return $steps;
+        }
+
+        return GuideStep::published()->forLocale('en')->ordered()->get();
+    }
+
     public function guide()
     {
-        $locale = app()->getLocale();
-        $guideSteps = GuideStep::published()
-            ->forLocale($locale)
-            ->ordered()
-            ->get();
+        $guideSteps = $this->guideStepsFor(app()->getLocale());
 
         return view('pages.guide', compact('guideSteps'));
     }
@@ -83,10 +105,7 @@ class PageController extends Controller
     public function guidePdf()
     {
         $locale = app()->getLocale();
-        $guideSteps = GuideStep::published()
-            ->forLocale($locale)
-            ->ordered()
-            ->get();
+        $guideSteps = $this->guideStepsFor($locale);
 
         $pdf = Pdf::loadView('pdf.guide', compact('guideSteps', 'locale'));
 
@@ -106,10 +125,7 @@ class PageController extends Controller
             return response()->json(['error' => 'Invalid locale'], 400);
         }
 
-        $guideSteps = GuideStep::published()
-            ->forLocale($locale)
-            ->ordered()
-            ->get()
+        $guideSteps = $this->guideStepsFor($locale)
             ->map(function ($step) {
                 return [
                     'step_number' => $step->step_number,
