@@ -413,7 +413,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="@cspNonce">
 document.addEventListener('DOMContentLoaded', function() {
     const opacitySlider = document.getElementById('overlay_opacity');
     const opacityValue = document.getElementById('opacity-value');

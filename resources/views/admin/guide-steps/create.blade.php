@@ -219,7 +219,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="@cspNonce">
 function addChecklistItem() {
     const container = document.getElementById('checklist-container');
     const newItem = document.createElement('div');

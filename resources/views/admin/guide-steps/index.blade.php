@@ -152,7 +152,7 @@
     @endif
 </div>
 
-<script>
+<script nonce="@cspNonce">
 // Bulk select functionality
 document.addEventListener('DOMContentLoaded', function() {
     const bulkSelectAll = document.querySelector('.bulk-select-all');

@@ -222,7 +222,7 @@
                 </div>
             </form>
             
-            <script>
+            <script nonce="@cspNonce">
                 document.addEventListener('DOMContentLoaded', function() {
                     // Function to sync color picker and text input
                     function syncColorInputs(colorPickerId, textInputId) {
@@ -379,7 +379,7 @@
                     </div>
                 </form>
                 
-                <script>
+                <script nonce="@cspNonce">
                     document.addEventListener('DOMContentLoaded', function() {
                         // Synchronize color picker and text input
                         const colorPicker = document.getElementById('feature_background_color');

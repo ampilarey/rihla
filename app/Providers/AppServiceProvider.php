@@ -14,6 +14,7 @@ use App\Observers\AuditObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -55,6 +56,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->defineRateLimits();
+
+        // `nonce="@cspNonce"` on an inline <script>. The middleware puts the
+        // same value in the Content-Security-Policy header, and the browser
+        // runs only the scripts carrying it.
+        Blade::directive('cspNonce', static fn () => "<?php echo e(\App\Support\Csp::nonce()); ?>");
 
         foreach (self::AUDITED as $model) {
             $model::observe(AuditObserver::class);
