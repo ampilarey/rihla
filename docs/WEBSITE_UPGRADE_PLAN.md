@@ -1,6 +1,6 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.31
+**Version:** 1.32
 **Date:** 2026-09-18 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.32 | **A production promotion path exists** — the reason five weeks of work has sat on test. `rihla:backup`, `rihla:preflight` and `scripts/deploy-production.sh`, wired to nothing so promotion stays a decision someone makes. The script refuses to run without a verified backup, refuses to move production backwards, and cannot seed. `docs/PRODUCTION_PROMOTION.md` is the checklist. |
 | 1.31 | **The social page embedded a YouTube playlist that does not exist** (D72) — `PLxxxxxxxxxx`, the third placeholder found live, and the one that mattered most: `SettingsSeeder` has no production guard because it seeds real configuration. The test now looks for the *shape* of a placeholder rather than the instance. A sweep of the rest of the codebase found nothing else, and the mail From address was checked and is correct. |
 | 1.30 | **The trips were selling a honeymoon** (D71) — "Luxury Resort Experience: overwater villas, private beaches, perfect for honeymooners and luxury travelers", live on an Umrah operator's site, each trip on its own indexed URL. Same defect as the gallery, in the more prominent place, and missed when the gallery was cleaned. |
 | 1.29 | **First visual audit of the admin panel** — it had never been looked at. The signed-in navigation was losing links off the edge of the screen between 768px and 1279px (D69): three of them below 1000px, silently, with no scrollbar. Visitor call-to-actions were also appearing on the staff panel (D70). |
