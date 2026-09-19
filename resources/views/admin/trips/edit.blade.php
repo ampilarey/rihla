@@ -180,7 +180,9 @@
                     @if($trip->cover_image)
                         <div class="mb-4">
                             <p class="text-sm text-gray-600 mb-2">{{ __('Current Image:') }}</p>
-                            <img src="{{ Storage::url($trip->cover_image) }}" alt="{{ $trip->title }}" class="h-32 w-auto rounded-lg object-cover">
+                            <img src="{{ Storage::url($trip->cover_image) }}" alt="{{ $trip->title }}" class="h-32 w-auto rounded-lg object-cover"
+         loading="lazy"
+         decoding="async">
                         </div>
                     @endif
                     

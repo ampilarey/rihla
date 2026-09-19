@@ -105,7 +105,9 @@
 </head>
 <body>
     <main class="panel">
-        <img src="/images/icon-192.png" alt="{{ config('app.name') }}" class="mark" width="72" height="72">
+        <img src="/images/icon-192.png" alt="{{ config('app.name') }}" class="mark" width="72" height="72"
+         loading="lazy"
+         decoding="async">
 
         <p class="code">@yield('code')</p>
         <h1>@yield('title')</h1>

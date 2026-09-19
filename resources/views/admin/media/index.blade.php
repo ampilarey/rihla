@@ -60,7 +60,9 @@
                             <div class="flex items-center">
                                 @if($item->type === 'photo')
                                     <div class="flex-shrink-0 h-16 w-16">
-                                        <img class="h-16 w-16 rounded-lg object-cover" src="{{ Storage::url($item->thumb_path ?? $item->file_path) }}" alt="{{ $item->title }}">
+                                        <img class="h-16 w-16 rounded-lg object-cover" src="{{ Storage::url($item->thumb_path ?? $item->file_path) }}" alt="{{ $item->title }}"
+         loading="lazy"
+         decoding="async">
                                     </div>
                                 @else
                                     <div class="flex-shrink-0 h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center">

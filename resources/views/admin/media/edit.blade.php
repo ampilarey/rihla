@@ -44,7 +44,9 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('Current Photo') }}</label>
                             <img src="{{ asset('storage/' . $medium->file_path) }}" 
                                  alt="{{ $medium->title }}" 
-                                 class="w-32 h-32 object-cover rounded-lg border">
+                                 class="w-32 h-32 object-cover rounded-lg border"
+         loading="lazy"
+         decoding="async">
                         </div>
                     @endif
                     

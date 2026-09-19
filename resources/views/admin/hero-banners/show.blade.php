@@ -25,7 +25,9 @@
                 <div class="relative h-64 bg-gray-100">
                     <img src="{{ $heroBanner->image_url }}" 
                          alt="{{ $heroBanner->title }}"
-                         class="w-full h-full object-cover">
+                         class="w-full h-full object-cover"
+         loading="lazy"
+         decoding="async">
                     <div class="absolute inset-0 bg-black/{{ $heroBanner->overlay_opacity/100 }}"></div>
                     <div class="absolute inset-0 flex items-center justify-center">
                         <div class="text-center text-white">

@@ -99,7 +99,9 @@
                         <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Feature Image</label>
                         @if($feature->image_path)
                             <div class="mb-2">
-                                <img src="{{ Storage::url($feature->image_path) }}" alt="Current image" class="w-32 h-24 object-cover rounded">
+                                <img src="{{ Storage::url($feature->image_path) }}" alt="Current image" class="w-32 h-24 object-cover rounded"
+         loading="lazy"
+         decoding="async">
                             </div>
                         @endif
                         <input type="file" id="image" name="image" accept="image/*" 

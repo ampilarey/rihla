@@ -21,7 +21,9 @@
                 <div class="md:col-span-1">
                     @if($trip->cover_image)
                         <img src="{{ Storage::url($trip->cover_image) }}" alt="{{ $trip->title }}" 
-                             class="w-full h-64 object-cover rounded-lg shadow-md">
+                             class="w-full h-64 object-cover rounded-lg shadow-md"
+         loading="lazy"
+         decoding="async">
                     @else
                         <div class="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
                             <span class="text-gray-500">{{ __('No Image') }}</span>
@@ -109,7 +111,9 @@
                                     @if($media->type === 'photo')
                                         <img src="{{ $media->getThumbnailUrlAttribute() }}" 
                                              alt="{{ $media->title }}" 
-                                             class="w-full h-24 object-cover rounded-lg">
+                                             class="w-full h-24 object-cover rounded-lg"
+         loading="lazy"
+         decoding="async">
                                     @else
                                         <div class="w-full h-24 bg-gray-200 rounded-lg flex items-center justify-center">
                                             <svg aria-hidden="true" focusable="false" class="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 20 20">

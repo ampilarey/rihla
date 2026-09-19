@@ -46,7 +46,9 @@
                                         @if($banner->image_path)
                                             <img src="{{ $banner->image_url }}" 
                                                  alt="{{ $banner->title }}"
-                                                 class="w-16 h-12 object-cover rounded">
+                                                 class="w-16 h-12 object-cover rounded"
+         loading="lazy"
+         decoding="async">
                                         @else
                                             <div class="w-16 h-12 bg-gray-200 rounded flex items-center justify-center">
                                                 <span class="text-gray-400 text-xs">No Image</span>
@@ -140,7 +142,9 @@
                                         @if($banner->image_path)
                                             <img src="{{ $banner->image_url }}" 
                                                  alt="{{ $banner->title }}"
-                                                 class="w-16 h-12 object-cover rounded">
+                                                 class="w-16 h-12 object-cover rounded"
+         loading="lazy"
+         decoding="async">
                                         @else
                                             <div class="w-16 h-12 bg-gray-200 rounded flex items-center justify-center">
                                                 <span class="text-gray-400 text-xs">No Image</span>

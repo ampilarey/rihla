@@ -18,7 +18,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="{{ route('home') }}">
-                    <img src="{{ asset('images/rihla-logo.png') }}" alt="Rihla Travels Logo" class="h-16 w-auto">
+                    <x-brand-logo class="h-16 w-auto" />
                 </a>
             </div>
 
