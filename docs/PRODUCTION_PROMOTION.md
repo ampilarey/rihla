@@ -169,8 +169,26 @@ php artisan rihla:backup:verify "$BK"
 confirming the hand-made backup carries every table.
 
 Fix any `fail` in `.env` — `APP_ENV=production`, `APP_DEBUG=false`,
-`APP_URL=https://rihla.mv` — and re-run preflight until only warnings remain.
-The site is still down while you do this, which is the right time for it.
+`APP_URL=https://rihla.mv` — and re-run preflight until only the exception
+below remains. The site is still down while you do this, which is the right
+time for it.
+
+**One failure is expected here and must not be fixed by hand:**
+
+```
+fail  demo content — these demo trips are in the database:
+      maldives-island-hopping-adventure, luxury-resort-experience
+```
+
+That check exists to stop demo content being deployed *to* production. On a
+first promotion the demo content is already there — it is what visitors have
+been seeing — and the release being deployed is what removes it, by migration,
+in the next step. The same goes for a `PLxxxxxxxxxx` YouTube playlist if
+preflight reports one.
+
+So on the **first** promotion: treat a demo-content failure as expected, and
+every other failure as blocking. On every promotion after that, a demo-content
+failure is real and means something put it back.
 
 ### 6. Migrate
 
