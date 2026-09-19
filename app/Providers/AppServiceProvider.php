@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Observers\AuditObserver;
+use App\Support\InitialsAvatar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Pulse\Facades\Pulse;
 use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider
@@ -75,6 +77,35 @@ class AppServiceProvider extends ServiceProvider
             fallbackLocale: config('app.fallback_locale'),
             fallbackAny: true,
         );
+
+        $this->drawPulseAvatarsLocally();
+    }
+
+    /**
+     * Stop the Pulse dashboard telling gravatar.com who works here.
+     *
+     * Pulse's default user resolver builds an <img> pointing at
+     * gravatar.com/avatar/<sha256 of the email address>. Opening the
+     * dashboard would hand that hash — a stable identifier for the person
+     * across every site using Gravatar — to a third party, once per staff
+     * member listed, for as long as anyone leaves the page open.
+     *
+     * It was found because the picture was broken, not because anyone
+     * thought to look: `img-src` allows 'self', data: and YouTube's
+     * thumbnail hosts only, so the browser refused the request and the
+     * Application Usage card showed a torn image next to each name. The same
+     * default, with the same two problems, ships in Filament — see
+     * App\Support\InitialsAvatar.
+     *
+     * `name` and `extra` keep Pulse's own defaults; only the avatar changes.
+     */
+    private function drawPulseAvatarsLocally(): void
+    {
+        Pulse::user(fn ($user): array => [
+            'name' => $user->name ?? '',
+            'extra' => $user->email ?? '',
+            'avatar' => InitialsAvatar::forName($user->name ?? ''),
+        ]);
     }
 
     /**

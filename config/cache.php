@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\WhyFeature;
+use App\Models\WhySection;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 return [
@@ -116,16 +120,33 @@ return [
     |
     */
 
-    // Allowlisted for HomeController's why-section cache (Eloquent models + relations).
+    // Allowlisted for HomeController's why-section cache (Eloquent models +
+    // relations), and for Pulse's dashboard query cache.
+    //
+    // Leaving a class out is not a quiet degradation. PHP hands back a
+    // __PHP_Incomplete_Class, and the first property read throws "the script
+    // tried to access a property on an incomplete object" — which names
+    // unserialize() and an autoloader, and says nothing about this list. Every
+    // Pulse card rendered that error until stdClass was added here, and the
+    // dashboard still answered 200, because each card fails inside its own
+    // Livewire request. It was found by opening the page.
     'serializable_classes' => [
-        App\Models\WhySection::class,
-        App\Models\WhyFeature::class,
+        WhySection::class,
+        WhyFeature::class,
         Illuminate\Database\Eloquent\Collection::class,
-        Illuminate\Support\Collection::class,
+        Collection::class,
         Carbon\Carbon::class,
-        Carbon\CarbonImmutable::class,
+        CarbonImmutable::class,
         DateTime::class,
         DateTimeImmutable::class,
+
+        // Pulse's queries return plain rows, and it caches the result for a
+        // few seconds (Livewire\Concerns\RemembersQueries). stdClass is the
+        // safest possible entry on this list: the list exists to stop a
+        // leaked APP_KEY being turned into a gadget chain, and a class with
+        // no methods — no __wakeup, no __destruct, no __toString — has
+        // nothing to chain.
+        stdClass::class,
     ],
 
 ];

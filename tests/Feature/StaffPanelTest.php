@@ -81,7 +81,13 @@ class StaffPanelTest extends TestCase
      * to attach a nonce — so that one directive is relaxed for /staff and
      * nowhere else. Both halves matter, so both are asserted.
      */
-    public function test_only_the_staff_panel_relaxes_the_script_policy(): void
+    /**
+     * The staff panel relaxes script-src; the public site must not. Pulse is
+     * the other page with the same exception, asserted in PulseDashboardTest
+     * — this test no longer claims to be the only one, because it stopped
+     * being true the day Pulse landed.
+     */
+    public function test_the_staff_panel_relaxes_the_script_policy_and_the_public_site_does_not(): void
     {
         $admin = User::factory()->create()->assignRole(Access::SUPER_ADMIN);
 

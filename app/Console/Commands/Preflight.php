@@ -21,6 +21,9 @@ class Preflight extends Command
 
     protected $description = 'Check this installation is fit to serve before deploying';
 
+    /** Big enough to be worth saying, small enough to still be fixable. */
+    private const LOG_SIZE_WARNING = 100 * 1024 * 1024;
+
     /** @var list<array{string, string}> */
     private array $failures = [];
 
@@ -38,6 +41,7 @@ class Preflight extends Command
         if ($production) {
             $this->checkProductionEnvironment();
             $this->checkNoDemoContent();
+            $this->checkLogging();
         }
 
         foreach ($this->warnings as [$name, $detail]) {
@@ -131,6 +135,50 @@ class Preflight extends Command
 
         if (Setting::getWhatsAppNumber() === '') {
             $this->addFailure('settings', 'no WhatsApp number is configured; every contact link is dead');
+        }
+    }
+
+    /**
+     * The log is the only record of what went wrong on a host nobody watches.
+     *
+     * Two ways it stops being one. An unrotated `single` channel grows until
+     * the account hits its disk quota, at which point the site cannot write a
+     * session or accept an upload — a failure that looks nothing like a full
+     * disk. And `LOG_LEVEL=debug` on a live site buries the one line that
+     * matters under every query and cache read, which is the same thing as
+     * having no log.
+     *
+     * Warnings, not failures: a full log is a problem next month, and
+     * blocking a deploy over it would teach people to skip preflight.
+     */
+    private function checkLogging(): void
+    {
+        $default = (string) config('logging.default');
+
+        // `stack` is a list of other channels; anything else is one channel.
+        $channels = $default === 'stack'
+            ? array_map('strval', (array) config('logging.channels.stack.channels'))
+            : [$default];
+
+        if (in_array('single', $channels, true)) {
+            $this->addWarning('logging', 'the single channel never rotates; set LOG_STACK=daily before storage/logs fills the account quota');
+        }
+
+        // Read back through config, not env(). Production runs config:cache,
+        // and env() returns null there — a check that reads it would report
+        // the default on every cached host and never fire.
+        foreach ($channels as $channel) {
+            $level = (string) config("logging.channels.{$channel}.level", 'debug');
+
+            if (in_array($level, ['debug', 'info'], true)) {
+                $this->addWarning('logging', "the {$channel} channel logs at [{$level}]; production wants warning or above, or the line that matters is buried");
+            }
+        }
+
+        $log = storage_path('logs/laravel.log');
+
+        if (File::exists($log) && File::size($log) > self::LOG_SIZE_WARNING) {
+            $this->addWarning('logging', 'storage/logs/laravel.log is '.round(File::size($log) / 1048576).' MB; rotate or delete it');
         }
     }
 

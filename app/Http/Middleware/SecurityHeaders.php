@@ -134,10 +134,25 @@ class SecurityHeaders
      *
      * The alternative is patching published Filament views on every upgrade.
      * See docs/adr/0003-filament-for-new-admin-modules.md.
+     *
+     * The Pulse dashboard is the second page in the same position, for the
+     * same reason: it is Livewire, and its layout writes an inline <script>
+     * this application does not render and cannot put a nonce on. It is
+     * listed here by its configured path rather than by a hard-coded
+     * 'pulse', so moving PULSE_PATH moves this with it — a dashboard that
+     * renders blank because the policy no longer matches its URL is a
+     * genuinely confusing failure.
+     *
+     * Both are staff-only pages behind authentication. The public site,
+     * which is where an injection would arrive from a stranger, keeps the
+     * nonce. A test asserts both halves of that.
      */
-    private function isStaffPanel(Request $request): bool
+    private function needsInlineScripts(Request $request): bool
     {
-        return $request->is(StaffPanelProvider::PATH, StaffPanelProvider::PATH.'/*');
+        $pulse = trim((string) config('pulse.path'), '/');
+
+        return $request->is(StaffPanelProvider::PATH, StaffPanelProvider::PATH.'/*')
+            || ($pulse !== '' && $request->is($pulse, $pulse.'/*'));
     }
 
     private function policy(Request $request): string
@@ -146,7 +161,7 @@ class SecurityHeaders
         // belt-and-braces arrangement: a browser that understands nonces
         // ignores 'unsafe-inline' entirely. So the panel gets a policy with
         // no nonce at all, and every other page keeps the strict one.
-        $script = $this->isStaffPanel($request)
+        $script = $this->needsInlineScripts($request)
             ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
             : ["'self'", "'nonce-".Csp::nonce()."'", "'unsafe-eval'"];
 
