@@ -94,12 +94,11 @@
                                                     {{ $banner->is_active ? 'Deactivate' : 'Activate' }}
                                                 </button>
                                             </form>
-                                            <form method="POST" action="{{ route('admin.hero-banners.destroy', $banner) }}" class="inline">
+                                            <form data-confirm="Are you sure you want to delete this banner?" method="POST" action="{{ route('admin.hero-banners.destroy', $banner) }}" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="text-error hover:text-error-dark"
-                                                        onclick="return confirm('Are you sure you want to delete this banner?')">
+                                                        class="text-error hover:text-error-dark">
                                                     Delete
                                                 </button>
                                             </form>
@@ -190,12 +189,11 @@
                                                     {{ $banner->is_active ? 'Deactivate' : 'Activate' }}
                                                 </button>
                                             </form>
-                                            <form method="POST" action="{{ route('admin.hero-banners.destroy', $banner) }}" class="inline">
+                                            <form data-confirm="Are you sure you want to delete this banner?" method="POST" action="{{ route('admin.hero-banners.destroy', $banner) }}" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="text-error hover:text-error-dark"
-                                                        onclick="return confirm('Are you sure you want to delete this banner?')">
+                                                        class="text-error hover:text-error-dark">
                                                     Delete
                                                 </button>
                                             </form>

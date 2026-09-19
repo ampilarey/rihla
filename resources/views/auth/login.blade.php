@@ -101,31 +101,4 @@
 </div>
 
 <!-- Debug Script -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Login page DOM loaded');
-    
-    // Check if CSS is loaded
-    const styles = getComputedStyle(document.body);
-    console.log('CSS loaded:', styles.fontFamily !== 'serif');
-    
-    // Check if Tailwind classes are working
-    const testElement = document.querySelector('.bg-gray-50');
-    if (testElement) {
-        const bgColor = getComputedStyle(testElement).backgroundColor;
-        console.log('Tailwind classes working:', bgColor !== 'rgba(0, 0, 0, 0)');
-    }
-    
-    // Check form elements
-    const form = document.querySelector('form');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    
-    console.log('Form elements found:', {
-        form: !!form,
-        email: !!emailInput,
-        password: !!passwordInput
-    });
-});
-</script>
 @endsection

@@ -209,27 +209,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Trip create form loaded');
     
     const localeSelect = document.getElementById('locale');
     const dhivehiFields = document.getElementById('dhivehi-fields');
-    
-    console.log('Locale select:', localeSelect);
-    console.log('Dhivehi fields:', dhivehiFields);
-    
+
     if (!localeSelect || !dhivehiFields) {
         console.error('Required elements not found');
         return;
     }
     
     function toggleDhivehiFields() {
-        console.log('Toggling fields, locale value:', localeSelect.value);
         if (localeSelect.value === 'dv') {
             dhivehiFields.classList.remove('hidden');
-            console.log('Showing Dhivehi fields');
         } else {
             dhivehiFields.classList.add('hidden');
-            console.log('Hiding Dhivehi fields');
         }
     }
     
@@ -239,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for changes
     localeSelect.addEventListener('change', toggleDhivehiFields);
     
-    console.log('Event listeners attached');
 });
 </script>
 @endsection

@@ -87,7 +87,6 @@
      x-init="init({{ $guideSteps->count() }})"
      dir="{{ app()->getLocale() === 'dv' ? 'rtl' : 'ltr' }}">
 
-
     <!-- Page Header -->
     <div class="bg-gradient-to-r from-wine-600 to-wine-500 text-white">
         <div class="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
@@ -202,7 +201,7 @@
                         <button @click="mobileTocOpen = !mobileTocOpen" 
                                 class="w-full p-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200 mobile-toc-button"
                                 :class="{ 'bg-gray-50': mobileTocOpen }"
-                                onclick="toggleMobileToc(this)">
+                                data-click="toggleMobileToc">
                             <div class="flex items-center gap-3">
                                 <svg aria-hidden="true" focusable="false" class="w-5 h-5 text-wine-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
@@ -234,7 +233,7 @@
                                                 'bg-wine-500 text-white': currentStep === {{ $index + 1 }},
                                                 'text-gray-700': currentStep !== {{ $index + 1 }}
                                             }"
-                                            onclick="goToStepFallback({{ $index + 1 }})">
+                                            data-click="goToStepFallback" data-args="{{ json_encode([$index + 1]) }}">
                                         <div class="flex items-center gap-3">
                                             <div class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-medium"
                                                  :class="{ 
@@ -483,25 +482,19 @@ function umrahGuide() {
         
         init(totalSteps) {
             this.totalSteps = totalSteps;
-            
-            // Debug logging
-            console.log('UmrahGuide initialized with', totalSteps, 'steps');
-            console.log('Alpine.js available:', typeof Alpine !== 'undefined');
-            
+
             // Scroll to top step on page load
             this.$nextTick(() => {
                 if (window.location.hash) {
                     const stepMatch = window.location.hash.match(/step-(\d+)/);
                     if (stepMatch) {
                         this.currentStep = parseInt(stepMatch[1]);
-                        console.log('Navigating to step from hash:', this.currentStep);
                     }
                 }
             });
         },
         
         goToStep(stepNumber) {
-            console.log('Going to step:', stepNumber);
             this.currentStep = stepNumber;
             const element = document.getElementById(`step-${stepNumber}`);
             if (element) {
@@ -534,12 +527,10 @@ function umrahGuide() {
         },
         
         printGuide() {
-            console.log('Printing guide...');
             window.print();
         },
         
         downloadPDF() {
-            console.log('Downloading PDF...');
             window.location.href = '{{ route("guide.pdf") }}';
         }
     }
@@ -586,7 +577,6 @@ function toggleMobileToc(button) {
 }
 
 function goToStepFallback(stepNumber) {
-    console.log('Fallback: Going to step:', stepNumber);
     const element = document.getElementById(`step-${stepNumber}`);
     if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -77,12 +77,12 @@
                                             <div class="flex items-center gap-2">
                                                 <span class="text-sm font-medium text-gray-900">{{ $step->step_number }}</span>
                                                 <div class="flex flex-col">
-                                                    <button class="text-gray-400 hover:text-gray-600" onclick="moveStep({{ $step->id }}, 'up')">
+                                                    <button class="text-gray-400 hover:text-gray-600" data-click="moveStep" data-args="{{ json_encode([$step->id, 'up']) }}">
                                                         <svg aria-hidden="true" focusable="false" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                                         </svg>
                                                     </button>
-                                                    <button class="text-gray-400 hover:text-gray-600" onclick="moveStep({{ $step->id }}, 'down')">
+                                                    <button class="text-gray-400 hover:text-gray-600" data-click="moveStep" data-args="{{ json_encode([$step->id, 'down']) }}">
                                                         <svg aria-hidden="true" focusable="false" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                                         </svg>
@@ -102,7 +102,7 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <button onclick="toggleStatus({{ $step->id }})" 
+                                            <button data-click="toggleStatus" data-args="{{ json_encode([$step->id]) }}" 
                                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors duration-200 {{ $step->is_published ? 'bg-success/10 text-success-dark' : 'bg-gray-100 text-gray-800' }}">
                                                 {{ $step->is_published ? 'Published' : 'Draft' }}
                                             </button>
@@ -113,7 +113,7 @@
                                                    class="text-wine-500 hover:text-wine-600 transition-colors duration-200">
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('admin.guide-steps.destroy', $step) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this step?')">
+                                                <form action="{{ route('admin.guide-steps.destroy', $step) }}" method="POST" class="inline" data-confirm="Are you sure you want to delete this step?">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-error hover:text-error-dark transition-colors duration-200">
@@ -252,7 +252,6 @@ function saveNewOrder(table) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log('Order updated successfully');
         }
     })
     .catch(error => {

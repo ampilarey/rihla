@@ -451,7 +451,7 @@
                                    class="text-wine-500 hover:text-wine-600 text-sm font-medium">Edit</a>
                                 
                                 <form action="{{ route('admin.features.destroy', $feature) }}" method="POST" class="inline" 
-                                      onsubmit="return confirm('Are you sure you want to delete this feature?')">
+                                      data-confirm="Are you sure you want to delete this feature?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-error hover:text-error-dark text-sm font-medium">Delete</button>

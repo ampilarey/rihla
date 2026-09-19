@@ -98,7 +98,7 @@
                                 <a href="{{ route('admin.trips.show', $trip) }}" class="text-wine-500 hover:text-wine-600">
                                     {{ __('View') }}
                                 </a>
-                                <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this trip?') }}')">
+                                <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" class="inline" data-confirm="{{ __('Are you sure you want to delete this trip?') }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-error hover:text-error-dark">

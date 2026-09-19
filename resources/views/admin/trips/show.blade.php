@@ -172,7 +172,7 @@
                     </a>
                 </div>
                 
-                <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" class="inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this trip? This action cannot be undone.') }}')">
+                <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" class="inline" data-confirm="{{ __('Are you sure you want to delete this trip? This action cannot be undone.') }}">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="px-6 py-2 bg-error text-white rounded-lg hover:bg-error-dark transition-colors">
