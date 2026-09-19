@@ -105,6 +105,16 @@ final class Access
         'user.create',
         'user.update',
         'user.delete',
+
+        // The Pulse dashboard. In no role's set, for the same reason as
+        // `user.*` and stated here rather than left to be noticed: Pulse
+        // shows the SQL of slow queries, the file and line of every
+        // exception, and the names and email addresses of whoever was
+        // signed in at the time. That is an engineering surface, not an
+        // operations one, and nobody's job at Rihla needs it. Super Admin
+        // holds it through Gate::before; granting it to anyone else is a
+        // decision someone makes deliberately.
+        'pulse.view',
     ];
 
     /**

@@ -52,9 +52,17 @@ return [
 
     'channels' => [
 
+        // `daily`, not Laravel's `single`, because this application is
+        // served from a shared-hosting account with a disk quota (ADR 0002).
+        // `single` appends to one laravel.log forever: nothing rotates it,
+        // nothing reads it, and the first anyone hears of it is the account
+        // hitting its quota — at which point the site stops being able to
+        // write sessions or upload a photograph, for a reason that looks
+        // nothing like a full disk. `daily` keeps LOG_DAILY_DAYS files and
+        // deletes the rest.
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels' => explode(',', (string) env('LOG_STACK', 'daily')),
             'ignore_exceptions' => false,
         ],
 

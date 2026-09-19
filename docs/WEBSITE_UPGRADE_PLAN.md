@@ -741,7 +741,7 @@ Adopt now, as short repo documents, not 50 manuals:
 | Coding standards | A10, `36-...` | Pint config + Larastan level, in CI (already partly present) |
 | Testing standards | A08, `49-...` | Test pyramid targets in §10.3 |
 | Security engineering | A06, `20-...` | Checklist in §10.4 |
-| Observability | A07, `39-...` | Laravel Pulse + Sentry; log levels and retention |
+| Observability | A07, `39-...` | ~~Laravel Pulse~~ **done — at `/pulse`, configured for cPanel (ADR 0005)**; ~~log levels and retention~~ **done — the stack rotates and preflight warns**; Sentry **still needs the owner's account** |
 | Deployment & release | A09, `51-...` | Extend the existing deploy doc |
 
 Defer (record the decision, do not build): event-driven architecture (A04, `37-...`), data lakehouse (A28), multi-tenancy (`47-...`), plugin marketplace (`55-...`), enterprise meta-model (META01), reference models RM01–RM10, reference architectures RA01–RA25. These describe an organisation with an architecture function. Rihla should revisit them if it franchises or white-labels.
@@ -800,7 +800,7 @@ Personal data: passports, photos, medical notes and payment records for minors a
 - **Staging never holds unmasked production data.** `test.rihla.mv` auto-deploys from `main` and is reachable on the public internet. Once real passports and payments exist, production data must never be copied to it except through an anonymising export (fake names, scrubbed passport numbers, masked contacts). Write that export before Phase 3 ships, not after the first request to "just copy prod to test".
 - **Backup before every production migration.** `pull-deploy-test.sh` runs `migrate --force` automatically, which is fine for test. The production promotion procedure must take a database snapshot first, and every migration in the booking domain must be either reversible or explicitly forward-fix-only in its ADR.
 - **Email authentication.** Booking confirmations and payment receipts that land in spam are a support cost and a trust cost. Set SPF, DKIM and DMARC for `rihla.mv` before the first transactional email is sent from the platform, and send through a dedicated transactional provider, not the cPanel mail server.
-- **Uptime monitoring on production.** The deploy workflow smoke-tests `test.rihla.mv` only. Point an external monitor (BetterStack / UptimeRobot free tier) at `https://rihla.mv/up` — the health route already exists in `bootstrap/app.php` — with WhatsApp/email alerts.
+- **Uptime monitoring on production — [R-9] still open.** The deploy workflow smoke-tests `test.rihla.mv` only. Point an external monitor (BetterStack / UptimeRobot free tier) at `https://rihla.mv/up` — the health route already exists in `bootstrap/app.php` — with WhatsApp/email alerts. **This is the one piece of observability Pulse cannot supply**, because a dashboard served by the site cannot tell you the site is down, and it needs an account only the owner can open (ADR 0005).
 - **Dependency scanning** in CI (`composer audit`, `npm audit`) — added to P0.3.
 
 ### 10.5 The KPIs worth instrumenting
@@ -846,7 +846,7 @@ Laravel 13 compatibility verified against Packagist on 2026-09-17:
 | Backups | `spatie/laravel-backup` 10.x | ✓ | Ship backups off-box (S3-compatible), not to the same cPanel disk |
 | Payments | `javaabu/bml-connect-laravel` 0.7 | ✓ | Broad constraint (`^5.5 … ^13`) — read the source before trusting edge cases |
 | Search | Laravel Scout + Meilisearch (VPS) or MySQL full-text (shared hosting) |
-| Monitoring | Laravel Pulse + Sentry |
+| Monitoring | Laravel Pulse (in place, ADR 0005) + Sentry (needs an account) |
 | PDFs | `barryvdh/laravel-dompdf` (already present) |
 
 ### 11.6 Indicative recurring cost
@@ -873,7 +873,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | ~~i18n redesign (§9.4)~~ **— done: trips, the Umrah guide, the homepage blocks and media all translatable (ADR 0001)**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, ~~Filament adoption (§9.2)~~ **— adopted; panel at `/staff` (ADR 0003)**, ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, ~~hosting decision + move (§9.1)~~ **— decided: stay on cPanel (ADR 0002)**, ~~media library~~ **— narrowed: the swap to spatie/laravel-medialibrary waits for a second media owner (ADR 0004); translations and the broken thumbnails are done**, observability | **3.5–5.5 weeks** |
+| **1 — Foundations** | Ready to build on | ~~i18n redesign (§9.4)~~ **— done: trips, the Umrah guide, the homepage blocks and media all translatable (ADR 0001)**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, ~~Filament adoption (§9.2)~~ **— adopted; panel at `/staff` (ADR 0003)**, ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, ~~hosting decision + move (§9.1)~~ **— decided: stay on cPanel (ADR 0002)**, ~~media library~~ **— narrowed: the swap to spatie/laravel-medialibrary waits for a second media owner (ADR 0004); translations and the broken thumbnails are done**, ~~observability~~ **— Pulse at `/pulse` and log rotation done (ADR 0005); Sentry and uptime monitoring need the owner's accounts** | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |

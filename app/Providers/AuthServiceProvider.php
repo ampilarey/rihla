@@ -63,5 +63,17 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-content', fn ($user) => $user->can('trip.update')
             || $user->can('media.update')
             || $user->can('guide.update'));
+
+        // Pulse names its own gate, and defines a default of "only in the
+        // local environment" from a callAfterResolving hook. That default is
+        // the right way round — it denies on production rather than allowing —
+        // but it means this definition has to land *after* Pulse's, and the
+        // Gate::before call at the top of this method is what resolves the
+        // Gate and fires Pulse's hook. Written here, next to the other gates,
+        // so the ordering is visible rather than spread across providers.
+        //
+        // Tested rather than assumed: a gate registered where it cannot take
+        // effect looks exactly like one that works. See PulseDashboardTest.
+        Gate::define('viewPulse', fn ($user) => $user->can('pulse.view'));
     }
 }
