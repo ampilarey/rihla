@@ -30,6 +30,8 @@ class TripTranslationTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const MIGRATION = __DIR__.'/../../database/migrations/2026_09_19_130000_make_trip_content_translatable.php';
+
     private function admin(): User
     {
         return User::factory()->create()->assignRole(Access::SUPER_ADMIN);
@@ -66,7 +68,12 @@ class TripTranslationTest extends TestCase
      */
     public function test_the_migration_carries_the_old_shape_across(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 1])->assertSuccessful();
+        // By path, not by step: --step=1 means "the newest migration", which
+        // is whichever one was added last, not this one.
+        $this->artisan('migrate:rollback', [
+            '--path' => self::MIGRATION,
+            '--realpath' => true,
+        ])->assertSuccessful();
 
         $base = [
             'date_start' => '2026-03-01',
@@ -103,7 +110,7 @@ class TripTranslationTest extends TestCase
             ]),
         ]);
 
-        $this->artisan('migrate')->assertSuccessful();
+        $this->artisan('migrate', ['--path' => self::MIGRATION, '--realpath' => true])->assertSuccessful();
 
         $both = Trip::where('slug', 'both')->sole();
         $this->assertSame('Seven Nights in Madinah', $both->getTranslation('title', 'en'));

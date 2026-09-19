@@ -54,6 +54,11 @@ untranslated.
 
 ### What is not translated
 
+- **Scripture.** `guide_steps.dua_text` is the Arabic of the rite: the same
+  words whatever language the page is in. It is one column, shown unchanged in
+  both languages. Its `reference_text` — "Quran 2:196 and authentic hadith" —
+  *is* translated, because that sentence is written for the reader.
+
 - **Slugs.** One trip has one public URL. The locale is already the first path
   segment in front of it (`/en/trips/…`, `/dv/trips/…`), and a slug is ASCII —
   Thaana does not transliterate into one. Per-locale slugs are a translation
@@ -73,9 +78,25 @@ untranslated.
   problem and another reason `packages` may want a translation table.
 - The audit log decodes translatable columns before writing them, so adding a
   Dhivehi title is a distinguishable event from rewriting the English one.
-- `guide_steps`, `hero_banners` and `why_sections` still use one row per
-  locale. They are converted next, in their own change, because they carry
-  seeded content and an admin panel each.
+- `hero_banners` and `why_sections` still use one row per locale, and
+  `why_features` and `media` still have no mechanism at all. They are
+  converted next, in their own change, because they carry seeded content and
+  an admin panel each.
+
+## What it changed for a reader
+
+The guide is the clearest case. A step used to be two rows agreeing only by
+convention on their `step_number`, so `PageController` could only ask "are
+there any Dhivehi steps?" — and with none, it served *the whole guide* in
+English. One missing translation meant none of them showed.
+
+Now the fallback is per field. A step translated by halves shows the Dhivehi
+title above the English instructions, and an untranslated step sits in a
+translated guide without taking the rest down with it.
+
+It also made a rule enforceable that had been written and never switched on:
+`step_number` is unique. It could not be before, because two rows sharing a
+step number was how a step was translated.
 
 ## Why now rather than in Phase 5
 

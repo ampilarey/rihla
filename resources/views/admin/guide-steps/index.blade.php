@@ -41,16 +41,11 @@
         </form>
     </div>
 
-    <!-- Guide Steps by Locale -->
-    @foreach(['en' => 'English', 'dv' => 'Dhivehi'] as $locale => $localeName)
-        @if(isset($guideSteps[$locale]) && $guideSteps[$locale]->count() > 0)
+    {{-- One list. This was two, one per language, because a step was two rows
+         joined by nothing but a shared step number — so the order and the
+         publish state had to be kept in agreement by hand. --}}
+    @if($guideSteps->isNotEmpty())
             <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $locale === 'en' ? 'bg-wine-50 text-wine-600' : 'bg-success/10 text-success-dark' }}">
-                        {{ strtoupper($locale) }}
-                    </span>
-                    {{ $localeName }} Guide Steps
-                </h2>
                 
                 <div class="bg-white rounded-lg shadow overflow-hidden">
                     <div class="overflow-x-auto">
@@ -63,12 +58,13 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Step</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dhivehi</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200 sortable-table" data-locale="{{ $locale }}">
-                                @foreach($guideSteps[$locale] as $step)
+                            <tbody class="bg-white divide-y divide-gray-200 sortable-table">
+                                @foreach($guideSteps as $step)
                                     <tr data-id="{{ $step->id }}" class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <input type="checkbox" name="ids[]" value="{{ $step->id }}" class="bulk-select rounded border-gray-300 text-wine-500 focus:ring-wine-500">
@@ -96,9 +92,18 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $step->title }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $step->getTranslation('title', 'en') }}</div>
                                             @if($step->summary)
-                                                <div class="text-sm text-gray-500 mt-1 line-clamp-2">{{ Str::limit($step->summary, 100) }}</div>
+                                                <div class="text-sm text-gray-500 mt-1 line-clamp-2">{{ Str::limit($step->getTranslation('summary', 'en'), 100) }}</div>
+                                            @endif
+                                        </td>
+                                        {{-- Whether the Dhivehi half has been written. Until it
+                                             is, a Dhivehi visitor reads the English. --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if($step->hasTranslation('title', 'dv'))
+                                                <span class="text-success">Yes</span>
+                                            @else
+                                                <span class="text-gray-500">No</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -129,8 +134,7 @@
                     </div>
                 </div>
             </div>
-        @endif
-    @endforeach
+    @endif
 
     @if($guideSteps->isEmpty())
         <div class="text-center py-12">

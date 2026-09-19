@@ -139,22 +139,24 @@ CREATE TABLE settings (
 CREATE TABLE guide_steps (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     step_number TINYINT NOT NULL,
-    locale VARCHAR(2) DEFAULT 'en',
-    title VARCHAR(255) NOT NULL,
-    summary TEXT NULL,
-    details TEXT NULL,
-    dua_text TEXT NULL,
+    -- Translated columns hold {"en": ..., "dv": ...}; the list columns hold
+    -- {"en": [...], "dv": [...]}. See docs/adr/0001.
+    title JSON NOT NULL,
+    summary JSON NULL,
+    details JSON NULL,
+    reference_text JSON NULL,
     fiqh_notes JSON NULL,
+    checklist JSON NULL,
+    -- Not translated: the Arabic of the rite, the same in every language.
+    dua_text TEXT NULL,
     video_url VARCHAR(500) NULL,
     image_path VARCHAR(255) NULL,
-    checklist JSON NULL,
     is_published BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
-    
+
     INDEX idx_guide_steps_number (step_number),
-    INDEX idx_guide_steps_locale_published (locale, is_published, step_number),
-    INDEX idx_guide_steps_published (is_published)
+    INDEX idx_guide_steps_published (is_published, step_number)
 );
 ```
 
@@ -322,7 +324,6 @@ INDEX idx_media_order (sort_order)
 
 -- Guide steps table
 INDEX idx_guide_steps_number (step_number)
-INDEX idx_guide_steps_locale_published (locale, is_published, step_number)
 
 -- Hero banners table
 INDEX idx_hero_banners_locale_active (locale, is_active)
@@ -349,7 +350,9 @@ INDEX idx_hero_banners_dates (locale, is_active, start_at, end_at)
 ### Multilingual Tables
 1. **Trips**: `title`, `location`, `summary`, `details` — one row, JSON per
    language, English fallback (`spatie/laravel-translatable`)
-2. **Guide Steps**: `locale` field, one row per language — *to convert*
+2. **Guide Steps**: `title`, `summary`, `details`, `reference_text`,
+   `fiqh_notes`, `checklist` — one row, JSON per language. `dua_text` is not
+   translated
 3. **Hero Banners**: `locale` enum, one row per language — *to convert*
 4. **Why Sections**: `locale` field, one row per language — *to convert*
 5. **Why Features**, **Media**: no translation mechanism at all — *to add*

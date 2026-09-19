@@ -142,7 +142,6 @@ class AuditLogTest extends TestCase
             'date_start' => '2026-03-01',
             'date_end' => '2026-03-08',
             'status' => 'upcoming',
-            'locale' => 'en',
         ]);
 
         $log = AuditLog::where('auditable_type', Trip::class)->latestFirst()->first();

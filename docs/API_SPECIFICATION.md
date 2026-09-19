@@ -24,7 +24,9 @@ The Rihla Travels platform provides both web-based interfaces and API endpoints 
 #### 1. Guide Steps API
 **Endpoint**: `GET /api/guide-steps`
 
-**Description**: Retrieve published guide steps for Umrah/Hajj guidance in specified locale.
+**Description**: Retrieve published guide steps for Umrah/Hajj guidance in the
+requested locale. Each field falls back to English where that locale has no
+translation, so the response is never empty and never partly blank.
 
 **Parameters**:
 ```json
@@ -50,10 +52,11 @@ GET /api/guide-steps?locale=en
       "summary": "Setting the intention for Umrah pilgrimage",
       "details": "Before beginning Umrah, you must make a clear intention...",
       "dua_text": "Allahumma inni uridu al-umrah...",
-      "fiqh_notes": {
-        "hanafi": "According to Hanafi school...",
-        "shafi": "According to Shafi school..."
-      },
+      "reference_text": "Quran 2:196 and authentic hadith.",
+      "fiqh_notes": [
+        "Intention is obligatory in all schools of thought",
+        "Must be made before entering Ihram state"
+      ],
       "checklist": [
         "Make clear intention",
         "Recite Talbiyah",
@@ -217,16 +220,22 @@ All admin endpoints require authentication and admin privileges.
 **Request Body**:
 ```json
 {
-  "step_number": "integer (required)",
-  "locale": "string (required, en|dv)",
-  "title": "string (required)",
-  "summary": "text (optional)",
-  "details": "text (optional)",
-  "dua_text": "text (optional)",
-  "fiqh_notes": "json (optional)",
+  "step_number": "integer (required, unique)",
+  "title[en]": "string (required, max 120)",
+  "title[dv]": "string (optional, max 120)",
+  "summary[en]": "text (required)",
+  "summary[dv]": "text (optional)",
+  "details[en]": "text (optional)",
+  "details[dv]": "text (optional)",
+  "reference_text[en]": "text (optional, max 500)",
+  "reference_text[dv]": "text (optional, max 500)",
+  "fiqh_notes[en]": "text (optional, one note per line)",
+  "fiqh_notes[dv]": "text (optional, one note per line)",
+  "checklist[en]": "text (optional, one item per line)",
+  "checklist[dv]": "text (optional, one item per line)",
+  "dua_text": "text (optional, not translated — the Arabic of the rite)",
   "video_url": "string (optional)",
-  "image_path": "file (optional)",
-  "checklist": "json (optional)",
+  "image": "file (optional)",
   "is_published": "boolean (optional, default: true)"
 }
 ```

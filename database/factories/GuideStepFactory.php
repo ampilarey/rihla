@@ -18,7 +18,6 @@ class GuideStepFactory extends Factory
     public function definition(): array
     {
         return [
-            'locale' => 'en',
             'step_number' => $this->faker->unique()->numberBetween(1, 100),
             'title' => $this->faker->sentence(3),
             'summary' => $this->faker->paragraph(),
@@ -26,19 +25,21 @@ class GuideStepFactory extends Factory
             'image_path' => $this->faker->optional()->imageUrl(),
             'dua_text' => $this->faker->optional()->sentence(),
             'reference_text' => $this->faker->optional()->sentence(),
-            // A JSON array, one note per school of thought — matching the
-            // model's cast, the seeder and what the admin panel submits.
-            'fiqh_notes' => $this->faker->optional()->randomElements([
+            // A list, one note per school of thought — matching the model's
+            // cast, the seeder and what the admin panel submits. Sometimes
+            // empty, never null: the column holds a list or nothing, and
+            // `optional()` would hand back a null the column cannot mean.
+            'fiqh_notes' => $this->faker->boolean() ? $this->faker->randomElements([
                 'Obligatory in all four schools',
                 'Hanafi: recommended before departure',
                 'Shafi\'i: may be combined with the following step',
-            ], 2),
-            'checklist' => $this->faker->optional()->randomElements([
+            ], 2) : [],
+            'checklist' => $this->faker->boolean() ? $this->faker->randomElements([
                 'Make intention',
                 'Recite dua',
                 'Complete action',
                 'Verify completion',
-            ], $this->faker->numberBetween(2, 4)),
+            ], $this->faker->numberBetween(2, 4)) : [],
             'is_published' => true,
         ];
     }
@@ -54,14 +55,22 @@ class GuideStepFactory extends Factory
     }
 
     /**
-     * Indicate that the step is in Dhivehi.
+     * Give the step a Dhivehi translation beside its English one.
+     *
+     * A step is one record in both languages now, so this adds to the row
+     * rather than making a second one.
      */
     public function dhivehi(): static
     {
         return $this->state(fn (array $attributes) => [
-            'locale' => 'dv',
-            'title' => 'ދިވެހިންނަށްޓަކައިގަނޑުދިނުމަށްޓަކައި',
-            'summary' => 'ދިވެހިންނަށްޓަކައިގަނޑުދިނުމަށްޓަކައިގަނޑުދިނުމަށްޓަކައި',
+            'title' => [
+                'en' => $attributes['title'],
+                'dv' => 'ދިވެހިންނަށްޓަކައިގަނޑުދިނުމަށްޓަކައި',
+            ],
+            'summary' => [
+                'en' => $attributes['summary'],
+                'dv' => 'ދިވެހިންނަށްޓަކައިގަނޑުދިނުމަށްޓަކައިގަނޑުދިނުމަށްޓަކައި',
+            ],
         ]);
     }
 }

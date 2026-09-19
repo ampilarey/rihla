@@ -700,8 +700,15 @@ through `spatie/laravel-translatable` with an English fallback, and the admin
 form asks for both languages side by side. The reasoning, and the rule for
 which entities get JSON columns and which get translation tables, is in
 [`adr/0001-how-content-is-translated.md`](adr/0001-how-content-is-translated.md).
-`guide_steps`, `hero_banners` and `why_sections` still use one row per locale
-and are next; `why_features` and `media` still have no mechanism at all.
+**The Umrah guide is done too.** A step was two rows agreeing only by
+convention on their `step_number`, so publishing the English step said nothing
+about the Dhivehi one, reordering had to be done twice, and — the part a
+pilgrim saw — a single missing Dhivehi step sent the *whole* guide back to
+English. It is now one row per step, and the fallback is per field: a step
+translated by halves shows the Dhivehi title above the English instructions.
+`dua_text` is deliberately not translated; it is the Arabic of the rite.
+`hero_banners` and `why_sections` still use one row per locale and are next;
+`why_features` and `media` still have no mechanism at all.
 
 ### 9.5 Architecture standards — the useful 10% of appendices A01–A33
 
@@ -847,7 +854,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | Phase | Outcome | Contents | Effort |
 |---|---|---|---|
 | **P0 — Stabilise** | The live site stops embarrassing itself | §3: translations, demo content, CI (incl. MySQL job **[R-2]**), cleanups, locale-prefixed routing **[R-1]**, SEO essentials, PWA wiring | **4–7 days** |
-| **1 — Foundations** | Ready to build on | i18n redesign (§9.4) **— trips done (ADR 0001); CMS furniture next**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
+| **1 — Foundations** | Ready to build on | i18n redesign (§9.4) **— trips and the Umrah guide done (ADR 0001); hero banners, why-section and media next**, ~~roles/permissions + policies (§9.3)~~ **— staff side done (`456abd6`); customer-side relationships wait for bookings (Phase 3)**, ~~audit-log foundation~~ **— done (`2e81a34`)**, Filament adoption (§9.2), ~~design-system pass~~ **— colour system done (§4.5) and typography done (`f30291b`); spacing remains**, hosting decision + move (§9.1), media library, observability | **3.5–5.5 weeks** |
 | **2 — Public website** | A site that sells | IA + homepage rebuild (§4.2), package/departure model (§5.1), comparison, hotel distance explorer, itinerary, seat bars, countdowns, leader/scholar profiles, trust dashboard, WhatsApp CTA, cost calculator, blog, full SEO | **6–8 weeks** |
 | **3 — Booking & payments** | Money online, spreadsheets retired | Booking flow (§5.2), BML Connect (§5.3), instalments, invoices, document wallet **with versioning** (§5.5) **[R-8]**, **visa applications (§5.4a)** and **Nusuk permits (§5.4b)** as separate deliverables **[R-4]**, minimal CRM (§8.1), **import of historical customers/pilgrims from spreadsheets with duplicate detection** (companion §5.3), Pilgrim Portal v1 (§6.1) | **8–10 weeks** |
 | **4 — Operations & portals** | The journey runs on the platform | Journey planning & capacity (§8.2), room allocation, operations (§8.3), Tour Leader Portal (§6.3), Family Portal (§6.2), safety & emergency (§6.5), notifications | **8–10 weeks** |

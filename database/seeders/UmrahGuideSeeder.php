@@ -30,7 +30,6 @@ class UmrahGuideSeeder extends Seeder
         $steps = [
             [
                 'step_number' => 1,
-                'locale' => 'en',
                 'title' => 'Intention (Niyyah)',
                 'summary' => 'Make a sincere intention in your heart to perform Umrah for the sake of Allah. The intention should be made before entering the state of Ihram.',
                 'checklist' => ['Make sincere intention', 'Recite intention in heart', 'Focus on purpose'],
@@ -41,7 +40,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 2,
-                'locale' => 'en',
                 'title' => 'Ihram & Talbiyah',
                 'summary' => 'Enter the sacred state of Ihram by wearing the prescribed clothing and reciting the Talbiyah. This marks the beginning of your sacred journey.',
                 'checklist' => ['Wear Ihram clothing', 'Recite Talbiyah', 'Avoid prohibited actions'],
@@ -52,7 +50,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 3,
-                'locale' => 'en',
                 'title' => 'Entering Masjid al-Haram',
                 'summary' => 'Enter the Grand Mosque with your right foot, reciting the appropriate supplications. Show respect and reverence for this sacred place.',
                 'checklist' => ['Enter with right foot', 'Recite entrance dua', 'Maintain reverence'],
@@ -63,7 +60,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 4,
-                'locale' => 'en',
                 'title' => 'Tawaf (7 circuits)',
                 'summary' => 'Perform seven complete circuits around the Kaaba, starting from the Black Stone. Each circuit should be done with devotion and focus.',
                 'checklist' => ['Start from Black Stone', 'Complete 7 circuits', 'Maintain focus'],
@@ -74,7 +70,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 5,
-                'locale' => 'en',
                 'title' => 'Pray 2 Rak\'ah at Maqam Ibrahim (if possible)',
                 'summary' => 'After completing Tawaf, pray two rak\'ah at Maqam Ibrahim if space permits. This is a highly recommended act of worship.',
                 'checklist' => ['Find space if available', 'Pray 2 rak\'ah', 'Recite recommended surahs'],
@@ -85,7 +80,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 6,
-                'locale' => 'en',
                 'title' => 'Drink Zamzam',
                 'summary' => 'Drink from the blessed water of Zamzam while standing and facing the Kaaba. This water has special spiritual significance.',
                 'checklist' => ['Face Kaaba', 'Drink while standing', 'Make dua'],
@@ -96,7 +90,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 7,
-                'locale' => 'en',
                 'title' => 'Sa\'i between Safa and Marwah (7 times)',
                 'summary' => 'Walk seven times between the hills of Safa and Marwah, commemorating Hajar\'s search for water. This represents patience and trust in Allah.',
                 'checklist' => ['Start from Safa', 'Complete 7 rounds', 'Recite recommended dua'],
@@ -107,7 +100,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 8,
-                'locale' => 'en',
                 'title' => 'Halq/Taqsir (shave/trim)',
                 'summary' => 'Complete your Umrah by either shaving your head completely (Halq) or trimming your hair (Taqsir). This symbolizes the end of the sacred state.',
                 'checklist' => ['Choose Halq or Taqsir', 'Complete the act', 'Exit Ihram state'],
@@ -118,7 +110,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 9,
-                'locale' => 'en',
                 'title' => 'Leave Ihram',
                 'summary' => 'After completing all rituals, you may leave the state of Ihram. Normal activities and clothing restrictions are now lifted.',
                 'checklist' => ['Complete all rituals', 'Remove Ihram clothing', 'Return to normal state'],
@@ -129,7 +120,6 @@ class UmrahGuideSeeder extends Seeder
             ],
             [
                 'step_number' => 10,
-                'locale' => 'en',
                 'title' => 'Du\'a & Etiquette Guide',
                 'summary' => 'Throughout your Umrah journey, maintain proper etiquette, make sincere supplications, and remember the spiritual significance of each act.',
                 'checklist' => ['Maintain good manners', 'Make sincere dua', 'Show gratitude'],

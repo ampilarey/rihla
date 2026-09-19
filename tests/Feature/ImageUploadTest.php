@@ -32,7 +32,6 @@ class ImageUploadTest extends TestCase
     {
         return array_merge([
             'step_number' => 1,
-            'locale' => 'en',
             'title' => 'Ihram',
             'summary' => 'Enter the state of Ihram.',
             'is_published' => '1',

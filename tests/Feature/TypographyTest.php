@@ -136,7 +136,6 @@ class TypographyTest extends TestCase
     {
         GuideStep::factory()->create([
             'step_number' => 1,
-            'locale' => 'en',
             'dua_text' => 'Labbayka Allahumma labbayk',
             'is_published' => true,
         ]);
