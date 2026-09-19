@@ -1,5 +1,18 @@
 <?php
 
+/*
+ * Published from laravel/pulse, with one change.
+ *
+ * Each of the three match expressions below listed mariadb, mysql, pgsql and
+ * sqlite with no default arm, so any other driver died on PHP's own
+ * UnhandledMatchError — which names the matched value and nothing else, in
+ * the middle of a migration. PHPStan (level 5, match.unhandled) reported all
+ * three. They now throw with the driver named and the supported list given.
+ *
+ * Safe to diverge: a migration is a snapshot that runs once, not a vendor
+ * file re-published on upgrade.
+ */
+
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Pulse\Support\PulseMigration;
@@ -24,6 +37,9 @@ return new class extends PulseMigration
                 'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(md5(`key`))'),
                 'pgsql' => $table->uuid('key_hash')->storedAs('md5("key")::uuid'),
                 'sqlite' => $table->string('key_hash'),
+                default => throw new RuntimeException(
+                    "Pulse's tables cannot be created on the [{$this->driver()}] driver; it supports mariadb, mysql, pgsql and sqlite.",
+                ),
             };
             $table->mediumText('value');
 
@@ -41,6 +57,9 @@ return new class extends PulseMigration
                 'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(md5(`key`))'),
                 'pgsql' => $table->uuid('key_hash')->storedAs('md5("key")::uuid'),
                 'sqlite' => $table->string('key_hash'),
+                default => throw new RuntimeException(
+                    "Pulse's tables cannot be created on the [{$this->driver()}] driver; it supports mariadb, mysql, pgsql and sqlite.",
+                ),
             };
             $table->bigInteger('value')->nullable();
 
@@ -60,6 +79,9 @@ return new class extends PulseMigration
                 'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(md5(`key`))'),
                 'pgsql' => $table->uuid('key_hash')->storedAs('md5("key")::uuid'),
                 'sqlite' => $table->string('key_hash'),
+                default => throw new RuntimeException(
+                    "Pulse's tables cannot be created on the [{$this->driver()}] driver; it supports mariadb, mysql, pgsql and sqlite.",
+                ),
             };
             $table->string('aggregate');
             $table->decimal('value', 20, 2);
