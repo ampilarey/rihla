@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\GuideStep;
+use App\Models\WhySection;
 use Database\Seeders\UmrahGuideSeeder;
+use Database\Seeders\WhySectionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -175,5 +177,72 @@ class TranslationQualityTest extends TestCase
             ->assertOk()
             ->assertSee('ނިއްޔާ', escape: false)
             ->assertDontSee('Intention (Niyyah)');
+    }
+
+    /**
+     * The homepage "Why Choose Rihla" block, which was the fabricated Dhivehi
+     * a visitor was most likely to see.
+     *
+     * Its three feature titles were 24-26 characters long and shared a
+     * 19-character suffix; two of the three bodies shared 72 of their 77
+     * characters. The English copy for the same three points — guides,
+     * accommodation, pricing — shares two and twelve characters, which is
+     * ordinary incidental overlap.
+     */
+    public function test_no_two_why_features_are_near_identical(): void
+    {
+        $this->seed(WhySectionSeeder::class);
+
+        foreach (WhySection::with('features')->get() as $section) {
+            $bodies = $section->features->pluck('text')->filter()->values()->all();
+
+            foreach ($bodies as $i => $a) {
+                foreach (array_slice($bodies, $i + 1) as $b) {
+                    $shared = $this->commonSuffixLength($a, $b);
+                    $shorter = min(mb_strlen($a), mb_strlen($b));
+
+                    $this->assertLessThan(0.5 * $shorter, $shared, sprintf(
+                        '[%s] two feature bodies share their last %d of %d characters; that is filler, not copy.',
+                        $section->locale, $shared, $shorter,
+                    ));
+                }
+            }
+        }
+    }
+
+    private function commonSuffixLength(string $a, string $b): int
+    {
+        $x = preg_split('//u', $a, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $y = preg_split('//u', $b, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $n = 0;
+
+        while ($n < min(count($x), count($y)) && $x[count($x) - 1 - $n] === $y[count($y) - 1 - $n]) {
+            $n++;
+        }
+
+        return $n;
+    }
+
+    /** A fresh install must not put the fabricated Dhivehi block back. */
+    public function test_the_seeder_ships_no_dhivehi_why_section(): void
+    {
+        $this->seed(WhySectionSeeder::class);
+
+        $this->assertSame(0, WhySection::where('locale', 'dv')->count());
+        $this->assertSame(1, WhySection::where('locale', 'en')->count());
+    }
+
+    /**
+     * With no Dhivehi section, the Dhivehi homepage must keep the block rather
+     * than silently lose it.
+     */
+    public function test_the_dhivehi_homepage_falls_back_to_the_english_why_section(): void
+    {
+        $this->seed(WhySectionSeeder::class);
+
+        $this->get('/dv')
+            ->assertOk()
+            ->assertSee('Why Choose Rihla')
+            ->assertSee('Trusted Guides');
     }
 }
