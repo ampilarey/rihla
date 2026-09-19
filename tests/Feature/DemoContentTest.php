@@ -281,4 +281,63 @@ class DemoContentTest extends TestCase
             $missing,
         )));
     }
+
+    /**
+     * The seeder invented four social accounts from one handle.
+     *
+     * facebook.com/rihlatravels, instagram.com/rihlatravels,
+     * tiktok.com/@rihlatravels and viber.com/rihlatravels — none checked.
+     * TikTok answers "Page not available", so that profile does not exist and
+     * the public social page was sending visitors to it. The other three sit
+     * behind login walls and cannot be verified by any script.
+     *
+     * A fresh install must therefore invent none of them. The owner sets the
+     * real ones in Admin → Settings, and the page hides each link that is not
+     * set — the same reason the YouTube playlist is seeded empty.
+     */
+    public function test_the_seeder_invents_no_social_accounts(): void
+    {
+        $this->seed(SettingsSeeder::class);
+
+        $social = Setting::getSocialSettings();
+
+        foreach (['facebook_url', 'instagram_url', 'tiktok_url', 'viber_url'] as $key) {
+            $this->assertNull($social[$key] ?? null, "{$key} was seeded with a guess.");
+        }
+
+        // The number is not a guess; it is the business's real one.
+        $this->assertSame('9607972434', $social['whatsapp_number']);
+    }
+
+    /** A link that is not set must leave no empty anchor behind. */
+    public function test_the_social_page_hides_links_that_are_not_set(): void
+    {
+        $this->seed(SettingsSeeder::class);
+
+        $html = (string) $this->get('/en/social')->assertOk()->getContent();
+
+        foreach (['facebook.com', 'instagram.com', 'tiktok.com', 'viber.com'] as $domain) {
+            $this->assertStringNotContainsString($domain, $html,
+                "An unset social link still rendered a {$domain} anchor.");
+        }
+    }
+
+    /**
+     * Deploying with a link nobody has confirmed must at least be said out
+     * loud. A warning, not a failure: the guess may be right, and blocking a
+     * deploy over it would teach people to ignore preflight.
+     */
+    public function test_preflight_warns_about_unconfirmed_social_links(): void
+    {
+        config(['app.debug' => false, 'app.env' => 'production', 'app.url' => 'https://rihla.mv']);
+
+        Setting::setSocialSettings([
+            'whatsapp_number' => '9607972434',
+            'facebook_url' => 'https://facebook.com/rihlatravels',
+        ]);
+
+        $this->artisan('rihla:preflight', ['--production' => true])
+            ->expectsOutputToContain('facebook_url')
+            ->assertSuccessful();
+    }
 }

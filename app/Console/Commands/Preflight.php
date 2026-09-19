@@ -149,8 +149,49 @@ class Preflight extends Command
             $this->addFailure('demo content', 'these demo trips are in the database: '.$found->implode(', '));
         }
 
-        if (Setting::getSocialSettings()['youtube_playlist_id'] === 'PLxxxxxxxxxx') {
+        $social = Setting::getSocialSettings();
+
+        if (($social['youtube_playlist_id'] ?? null) === 'PLxxxxxxxxxx') {
             $this->addFailure('demo content', 'the YouTube playlist is still the PLxxxxxxxxxx placeholder');
+        }
+
+        $this->checkSeededSocialLinks($social);
+    }
+
+    /**
+     * Social URLs nobody has confirmed.
+     *
+     * The seeder used to invent four of them from one handle. TikTok's was
+     * provably dead and has been cleared; Facebook, Instagram and Viber cannot
+     * be checked from a script — they answer a login wall or a generic page
+     * whether or not the account exists. Only the owner knows.
+     *
+     * A warning rather than a failure: the link may well be right, and
+     * blocking a deploy over a guess that might be correct would teach people
+     * to ignore preflight.
+     *
+     * @param  array<string, mixed>  $social
+     */
+    private function checkSeededSocialLinks(array $social): void
+    {
+        $seeded = [
+            'facebook_url' => 'https://facebook.com/rihlatravels',
+            'instagram_url' => 'https://instagram.com/rihlatravels',
+            'tiktok_url' => 'https://tiktok.com/@rihlatravels',
+            'viber_url' => 'https://viber.com/rihlatravels',
+        ];
+
+        $unconfirmed = [];
+
+        foreach ($seeded as $key => $guess) {
+            if (($social[$key] ?? null) === $guess) {
+                $unconfirmed[] = $key;
+            }
+        }
+
+        if ($unconfirmed !== []) {
+            $this->addWarning('social links', implode(', ', $unconfirmed)
+                .' still hold the seeded guess. Confirm the accounts exist, or clear them in Admin → Settings — the page hides a link that is not set.');
         }
     }
 

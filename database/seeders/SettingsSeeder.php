@@ -13,11 +13,29 @@ class SettingsSeeder extends Seeder
     public function run(): void
     {
         Setting::setSocialSettings([
-            'facebook_url' => 'https://facebook.com/rihlatravels',
-            'instagram_url' => 'https://instagram.com/rihlatravels',
-            'tiktok_url' => 'https://tiktok.com/@rihlatravels',
+            // The four social URLs are deliberately empty.
+            //
+            // They used to be seeded as facebook.com/rihlatravels,
+            // instagram.com/rihlatravels, tiktok.com/@rihlatravels and
+            // viber.com/rihlatravels — one handle typed into four platforms
+            // and never checked. TikTok answers "Page not available", so that
+            // account does not exist; Facebook and Instagram sit behind login
+            // walls and Viber returns a generic account page, so no automated
+            // check can confirm the other three either. Only the owner knows.
+            //
+            // A dead social link on a travel operator's site costs more than a
+            // missing one, and the social page already hides each link that is
+            // not set — the same reason youtube_playlist_id below is empty.
+            // `rihla:preflight` warns if any of them reappears as a seeded
+            // guess. Set the real ones in Admin → Settings.
+            'facebook_url' => null,
+            'instagram_url' => null,
+            'tiktok_url' => null,
+            'viber_url' => null,
+
+            // Not a guess: this is the business's real number, and the single
+            // source for it is App\Support\Contact.
             'whatsapp_number' => '9607972434',
-            'viber_url' => 'https://viber.com/rihlatravels',
             // Left empty on purpose. It used to seed PLxxxxxxxxxx, carrying a
             // "replace with actual playlist ID" comment that nobody replaced —
             // so the social page embedded a YouTube player pointed at a
