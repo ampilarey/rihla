@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpsertWhyFeatureRequest;
 use App\Models\WhyFeature;
+use App\Models\WhySection;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -32,9 +32,7 @@ class WhyFeatureController extends Controller
 
         WhyFeature::create($data);
 
-        // Clear cache for all locales
-        Cache::forget('why_section_active_en');
-        Cache::forget('why_section_active_dv');
+        WhySection::forgetCache();
 
         return redirect()->back()->with('success', 'Feature created successfully!');
     }
@@ -74,9 +72,7 @@ class WhyFeatureController extends Controller
 
         $feature->update($data);
 
-        // Clear cache for all locales
-        Cache::forget('why_section_active_en');
-        Cache::forget('why_section_active_dv');
+        WhySection::forgetCache();
 
         return redirect()->route('admin.why-sections.edit', $feature->section)
             ->with('success', 'Feature updated successfully!');
@@ -97,9 +93,7 @@ class WhyFeatureController extends Controller
         $section = $feature->section;
         $feature->delete();
 
-        // Clear cache for all locales
-        Cache::forget('why_section_active_en');
-        Cache::forget('why_section_active_dv');
+        WhySection::forgetCache();
 
         return redirect()->route('admin.why-sections.edit', $section)
             ->with('success', 'Feature deleted successfully!');

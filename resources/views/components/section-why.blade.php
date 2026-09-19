@@ -12,10 +12,13 @@
                 </div>
             @endif
             
-            <h2 class="section-title text-4xl mb-4" style="color: {{ $why->title_color ?? \App\Support\Brand::INK }};">{{ $why->title }}</h2>
+            {{-- dir="auto" because a block translated by halves puts English text
+                 inside an RTL page, and the bidi algorithm would otherwise move its
+                 full stop to the left of the sentence. --}}
+            <h2 dir="auto" class="section-title text-4xl mb-4" style="color: {{ $why->title_color ?? \App\Support\Brand::INK }};">{{ $why->title }}</h2>
             
             @if($why->subtitle)
-                <p class="text-xl max-w-3xl mx-auto" style="color: {{ $why->subtitle_color ?? \App\Support\Brand::INK_MUTED }};">{{ $why->subtitle }}</p>
+                <p dir="auto" class="text-xl max-w-3xl mx-auto" style="color: {{ $why->subtitle_color ?? \App\Support\Brand::INK_MUTED }};">{{ $why->subtitle }}</p>
             @endif
             
                             @if($why->primary_cta_text || $why->secondary_cta_text)
@@ -70,10 +73,10 @@
                             @endif
                         </div>
                         
-                        <h3 class="text-xl font-semibold text-gray-900 mb-3">{{ $feature->title }}</h3>
+                        <h3 dir="auto" class="text-xl font-semibold text-gray-900 mb-3">{{ $feature->title }}</h3>
                         
                         @if($feature->text)
-                            <p class="text-gray-600 leading-relaxed">{{ $feature->text }}</p>
+                            <p dir="auto" class="text-gray-600 leading-relaxed">{{ $feature->text }}</p>
                         @endif
                         
                         @if($feature->link_url)

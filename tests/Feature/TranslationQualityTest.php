@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\GuideStep;
+use App\Models\WhyFeature;
 use App\Models\WhySection;
 use Database\Seeders\UmrahGuideSeeder;
 use Database\Seeders\WhySectionSeeder;
@@ -208,17 +209,26 @@ class TranslationQualityTest extends TestCase
         $this->seed(WhySectionSeeder::class);
 
         foreach (WhySection::with('features')->get() as $section) {
-            $bodies = $section->features->pluck('text')->filter()->values()->all();
+            foreach (['en', 'dv'] as $locale) {
+                // Without fallback: the English body showing through on an
+                // untranslated card is the fallback working, not two cards
+                // sharing one sentence.
+                $bodies = $section->features
+                    ->map(fn (WhyFeature $feature) => $feature->getTranslationWithoutFallback('text', $locale))
+                    ->filter()
+                    ->values()
+                    ->all();
 
-            foreach ($bodies as $i => $a) {
-                foreach (array_slice($bodies, $i + 1) as $b) {
-                    $shared = $this->commonSuffixLength($a, $b);
-                    $shorter = min(mb_strlen($a), mb_strlen($b));
+                foreach ($bodies as $i => $a) {
+                    foreach (array_slice($bodies, $i + 1) as $b) {
+                        $shared = $this->commonSuffixLength($a, $b);
+                        $shorter = min(mb_strlen($a), mb_strlen($b));
 
-                    $this->assertLessThan(0.5 * $shorter, $shared, sprintf(
-                        '[%s] two feature bodies share their last %d of %d characters; that is filler, not copy.',
-                        $section->locale, $shared, $shorter,
-                    ));
+                        $this->assertLessThan(0.5 * $shorter, $shared, sprintf(
+                            '[%s] two feature bodies share their last %d of %d characters; that is filler, not copy.',
+                            $locale, $shared, $shorter,
+                        ));
+                    }
                 }
             }
         }
@@ -242,8 +252,15 @@ class TranslationQualityTest extends TestCase
     {
         $this->seed(WhySectionSeeder::class);
 
-        $this->assertSame(0, WhySection::where('locale', 'dv')->count());
-        $this->assertSame(1, WhySection::where('locale', 'en')->count());
+        $sections = WhySection::with('features')->get();
+
+        $this->assertCount(1, $sections, 'There is one why-section, in both languages.');
+
+        $translated = $sections->concat($sections->flatMap->features)
+            ->filter(fn ($record) => $record->hasTranslation('title', 'dv'));
+
+        $this->assertCount(0, $translated,
+            'A Dhivehi homepage block needs a translator, not a seeder.');
     }
 
     /**

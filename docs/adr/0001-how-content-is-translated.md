@@ -59,6 +59,9 @@ untranslated.
   both languages. Its `reference_text` — "Quran 2:196 and authentic hadith" —
   *is* translated, because that sentence is written for the reader.
 
+- **URLs.** A CTA points at the same page in either language, and the locale
+  is a path prefix the router adds. `primary_cta_url` and `secondary_cta_url`
+  are one value each.
 - **Slugs.** One trip has one public URL. The locale is already the first path
   segment in front of it (`/en/trips/…`, `/dv/trips/…`), and a slug is ASCII —
   Thaana does not transliterate into one. Per-locale slugs are a translation
@@ -78,10 +81,12 @@ untranslated.
   problem and another reason `packages` may want a translation table.
 - The audit log decodes translatable columns before writing them, so adding a
   Dhivehi title is a distinguishable event from rewriting the English one.
-- `hero_banners` and `why_sections` still use one row per locale, and
-  `why_features` and `media` still have no mechanism at all. They are
-  converted next, in their own change, because they carry seeded content and
-  an admin panel each.
+- `media` still has no mechanism at all — its `title` and `caption` are
+  English only. It is converted alongside the move to a real media library.
+- A block translated by halves puts English text inside an RTL page. Every
+  element that can hold either language now carries `dir="auto"`, so the bidi
+  algorithm does not move an English sentence's full stop to its left. This
+  was rare while a block fell back whole; it is the normal case now.
 
 ## What it changed for a reader
 

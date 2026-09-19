@@ -6,6 +6,8 @@
     'rows' => 3,
     'required' => false,
     'help' => null,
+    // Two forms on one page can both hold a `title` field; ids must differ.
+    'id' => null,
 ])
 
 {{--
@@ -23,10 +25,10 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @foreach(['en' => __('English'), 'dv' => __('Dhivehi')] as $locale => $language)
-            @php($id = $name.'_'.$locale)
+            @php($inputId = ($id ?: $name).'_'.$locale)
             @php($field = $name.'.'.$locale)
             <div>
-                <label for="{{ $id }}" class="block text-xs uppercase tracking-wide text-gray-500 mb-1">
+                <label for="{{ $inputId }}" class="block text-xs uppercase tracking-wide text-gray-500 mb-1">
                     {{ $language }}@if($locale === 'dv') <span class="normal-case tracking-normal">{{ __('(optional)') }}</span>@endif
                 </label>
 
@@ -35,16 +37,16 @@
                          of single-line inputs with an "add another" button,
                          beside a textarea of the same name that silently won
                          the tie and threw the inputs away. --}}
-                    <textarea name="{{ $name }}[{{ $locale }}]" id="{{ $id }}" rows="{{ $rows }}"
+                    <textarea name="{{ $name }}[{{ $locale }}]" id="{{ $inputId }}" rows="{{ $rows }}"
                               @if($locale === 'dv') dir="rtl" lang="dv" @endif
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ implode("\n", (array) (data_get($value, $locale) ?: [])) }}</textarea>
                 @elseif($type === 'textarea')
-                    <textarea name="{{ $name }}[{{ $locale }}]" id="{{ $id }}" rows="{{ $rows }}"
+                    <textarea name="{{ $name }}[{{ $locale }}]" id="{{ $inputId }}" rows="{{ $rows }}"
                               @if($required && $locale === 'en') required @endif
                               @if($locale === 'dv') dir="rtl" lang="dv" @endif
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-wine-500 focus:border-transparent">{{ data_get($value, $locale) }}</textarea>
                 @else
-                    <input type="text" name="{{ $name }}[{{ $locale }}]" id="{{ $id }}"
+                    <input type="text" name="{{ $name }}[{{ $locale }}]" id="{{ $inputId }}"
                            value="{{ data_get($value, $locale) }}"
                            @if($required && $locale === 'en') required @endif
                            @if($locale === 'dv') dir="rtl" lang="dv" @endif

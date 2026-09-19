@@ -23,35 +23,16 @@
                 @method('PUT')
                 
                 <div class="space-y-4">
-                    <div>
-                        <label for="locale" class="block text-sm font-medium text-gray-700 mb-2">Language *</label>
-                        <select id="locale" name="locale" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500" required>
-                            <option value="en" {{ $section->locale === 'en' ? 'selected' : '' }}>English</option>
-                            <option value="dv" {{ $section->locale === 'dv' ? 'selected' : '' }}>ދިވެހި (Dhivehi)</option>
-                        </select>
-                        @error('locale')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <p class="text-sm text-gray-600">
+                        One section, both languages. English is required; Dhivehi is optional,
+                        and a visitor reading Dhivehi sees the English wherever it is blank.
+                    </p>
 
-                    <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                        <input type="text" id="title" name="title" value="{{ old('title', $section->title) }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500" required>
-                        @error('title')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <x-admin.translatable-field name="title" label="Title"
+                        :value="old('title', $section->getTranslations('title'))" required />
 
-                    <div>
-                        <label for="subtitle" class="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-                        <textarea id="subtitle" name="subtitle" rows="3" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">{{ old('subtitle', $section->subtitle) }}</textarea>
-                        @error('subtitle')
-                            <p class="text-error text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <x-admin.translatable-field name="subtitle" label="Subtitle"
+                        :value="old('subtitle', $section->getTranslations('subtitle'))" type="textarea" :rows="3" />
 
                     <div>
                         <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Section Image</label>
@@ -70,13 +51,9 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="primary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA Text</label>
-                            <input type="text" id="primary_cta_text" name="primary_cta_text" value="{{ old('primary_cta_text', $section->primary_cta_text) }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
-                            @error('primary_cta_text')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
+                        <div class="md:col-span-2">
+                            <x-admin.translatable-field name="primary_cta_text" label="Primary button text"
+                                :value="old('primary_cta_text', $section->getTranslations('primary_cta_text'))" />
                         </div>
                         <div>
                             <label for="primary_cta_url" class="block text-sm font-medium text-gray-700 mb-2">Primary CTA URL</label>
@@ -89,13 +66,9 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="secondary_cta_text" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA Text</label>
-                            <input type="text" id="secondary_cta_text" name="secondary_cta_text" value="{{ old('secondary_cta_text', $section->secondary_cta_text) }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500">
-                            @error('secondary_cta_text')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
+                        <div class="md:col-span-2">
+                            <x-admin.translatable-field name="secondary_cta_text" label="Secondary button text"
+                                :value="old('secondary_cta_text', $section->getTranslations('secondary_cta_text'))" />
                         </div>
                         <div>
                             <label for="secondary_cta_url" class="block text-sm font-medium text-gray-700 mb-2">Secondary CTA URL</label>
@@ -281,15 +254,10 @@
                     @endif
                     
                     <div class="space-y-3">
+                        <x-admin.translatable-field name="title" id="feature_title" label="Title"
+                            :value="old('title', [])" required />
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label for="feature_title" class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                                <input type="text" id="feature_title" name="title" required
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
-                                @error('title')
-                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
                             <div>
                                 <label for="feature_icon" class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
                                 <input type="text" id="feature_icon" name="icon" placeholder="e.g., star, heart, shield"
@@ -300,14 +268,8 @@
                             </div>
                         </div>
                         
-                        <div>
-                            <label for="feature_text" class="block text-sm font-medium text-gray-700 mb-1">Text</label>
-                            <textarea id="feature_text" name="text" rows="2"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm"></textarea>
-                            @error('text')
-                                <p class="text-error text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <x-admin.translatable-field name="text" id="feature_text" label="Text"
+                            :value="old('text', [])" type="textarea" :rows="2" />
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
@@ -318,15 +280,10 @@
                                     <p class="text-error text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
-                                <label for="feature_link_text" class="block text-sm font-medium text-gray-700 mb-1">Link Text (Optional)</label>
-                                <input type="text" id="feature_link_text" name="link_text" placeholder="e.g., Learn More, Book Now, View Details"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wine-500 text-sm">
-                                @error('link_text')
-                                    <p class="text-error text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
                         </div>
+
+                        <x-admin.translatable-field name="link_text" id="feature_link_text" label="Link text (optional)"
+                            :value="old('link_text', [])" />
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
