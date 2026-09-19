@@ -95,6 +95,16 @@ final class Access
 
         // Reading the audit trail is an oversight function, not a content one.
         'audit.viewAny',
+
+        // Managing staff accounts and the roles they hold. Deliberately in no
+        // role's set: Super Admin holds it through Gate::before, and granting
+        // it to anyone else is a decision for whoever needs it rather than a
+        // default. A role that can hand out roles can hand out its own.
+        'user.viewAny',
+        'user.view',
+        'user.create',
+        'user.update',
+        'user.delete',
     ];
 
     /**
@@ -113,15 +123,27 @@ final class Access
      */
     public static function matrix(): array
     {
+        // Defined by inclusion, not exclusion. It used to be "everything
+        // except settings and the audit log", and the day `user.*` was added
+        // to PERMISSIONS the Content Manager and Operations Manager silently
+        // gained the ability to create staff accounts and hand out roles —
+        // including their own. A list that grows by default grants by
+        // default.
         $content = array_values(array_filter(
             self::PERMISSIONS,
-            fn (string $permission) => $permission !== 'admin.access'
-                && ! str_starts_with($permission, 'setting.')
-                && ! str_starts_with($permission, 'audit.'),
+            fn (string $permission) => in_array(
+                strtok($permission, '.'),
+                ['trip', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
+                true,
+            ),
         ));
 
+        // Built from $content, not from every permission. Filtering the whole
+        // list for '.view' swept up `user.view` and `user.viewAny` the moment
+        // those existed, which handed the Reporting role a list of every
+        // staff account and their email addresses.
         $readOnly = array_values(array_filter(
-            self::PERMISSIONS,
+            $content,
             fn (string $permission) => str_contains($permission, '.view'),
         ));
 
@@ -139,7 +161,12 @@ final class Access
             self::CONTENT_MANAGER => array_merge(['admin.access'], $content),
 
             // Read-only across the board.
-            self::REPORTING => array_merge(['admin.access'], $readOnly),
+            // Read-only across content, plus the audit trail — reporting on
+            // who changed what is the one oversight function this role has.
+            // It used to hold that by accident: `audit.viewAny` contains
+            // '.view', and $readOnly was built by matching that substring
+            // against every permission. Stated deliberately now.
+            self::REPORTING => array_merge(['admin.access', 'audit.viewAny'], $readOnly),
 
             // Trip-facing staff need to read trips to do their job, but the
             // trip listing is content, not theirs to change.

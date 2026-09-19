@@ -165,6 +165,32 @@ class StaffPanelTest extends TestCase
     }
 
     /**
+     * Filament gets the whole wine ramp, not one hex.
+     *
+     * Handed a single colour, `Color::hex()` treats it as the *middle* of a
+     * scale it generates — and wine sits near the dark end, so shade 600,
+     * which is what a filled button uses, came out a pale pink at roughly
+     * 3.0:1 against white. The panel looked like a different product and
+     * failed the contrast the rest of the site is held to. Caught by looking
+     * at the page, not by a failing assertion.
+     */
+    public function test_the_panel_uses_the_sites_wine_not_a_generated_pink(): void
+    {
+        $admin = User::factory()->create()->assignRole(Access::SUPER_ADMIN);
+
+        $html = $this->actingAs($admin)->get('/staff')->assertOk()->getContent();
+
+        preg_match('/--primary-600:\s*oklch\(([0-9.]+)/', $html, $matches);
+
+        $this->assertNotEmpty($matches, 'The panel did not emit a primary-600 colour.');
+
+        // Wine's lightness is about 0.385. Filament's generated ramp put 600
+        // at 0.598 — visibly pink, and too light to carry white text.
+        $this->assertLessThan(0.45, (float) $matches[1],
+            'primary-600 is lighter than wine; the panel is using a generated ramp again.');
+    }
+
+    /**
      * Committed assets go stale silently.
      *
      * `composer update` brings a new Filament, `filament:upgrade` republishes
