@@ -673,7 +673,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 {{ __('messages.hero_sub') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-                <a href="{{ route('trips.index') }}" class="btn-primary text-base md:text-lg px-6 md:px-8 py-3 md:py-4">
+                {{-- Gold with ink text: the one fill the palette permits gold to be.
+                     A wine button on the wine hero was the primary action drawn in
+                     the colour of its own background, so the secondary outranked it. --}}
+                <a href="{{ route('trips.index') }}" class="btn-gold text-base md:text-lg px-6 md:px-8 py-3 md:py-4">
                     {{ __('messages.cta_trips') }}
                 </a>
                 <a href="{{ \App\Support\Contact::whatsappUrl() }}" 

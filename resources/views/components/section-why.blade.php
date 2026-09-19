@@ -1,5 +1,5 @@
 @if($why)
-<section class="py-16 bg-gray-50" id="section-why">
+<section class="py-16 bg-cream" id="section-why">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
             @if($why->image_path)
@@ -12,7 +12,7 @@
                 </div>
             @endif
             
-            <h2 class="text-4xl font-bold mb-4" style="color: {{ $why->title_color ?? \App\Support\Brand::INK }};">{{ $why->title }}</h2>
+            <h2 class="section-title text-4xl mb-4" style="color: {{ $why->title_color ?? \App\Support\Brand::INK }};">{{ $why->title }}</h2>
             
             @if($why->subtitle)
                 <p class="text-xl max-w-3xl mx-auto" style="color: {{ $why->subtitle_color ?? \App\Support\Brand::INK_MUTED }};">{{ $why->subtitle }}</p>

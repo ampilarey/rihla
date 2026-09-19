@@ -152,8 +152,29 @@
     }
 
     /* ── Surfaces ──────────────────────────────────────────────────────── */
+    /* Padding lives here, not in each view. Without it every card on the site
+       had its heading flush against the left border — measured at 0px in the
+       browser, on every page, and only noticed in a full-page screenshot. The
+       trip card's image carries rounded-2xl of its own, which only makes sense
+       inset inside a rounded card, so this is what that markup expected. */
     .card {
-        @apply bg-white rounded-2xl border border-gray-200 shadow-soft overflow-hidden;
+        @apply bg-white rounded-2xl border border-gray-200 shadow-soft overflow-hidden p-6 md:p-8;
+    }
+
+    /* Section headings share one motif: the heading, then a short gold rule.
+       The 404 page already drew it; the rest of the site now matches. Gold is
+       the accent, so it marks structure rather than filling surfaces. */
+    .section-title {
+        @apply text-3xl font-bold text-center text-ink mb-12;
+    }
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 3rem;
+        height: 3px;
+        margin: 0.875rem auto 0;
+        border-radius: 9999px;
+        background-color: theme('colors.gold.500');
     }
 
     .card-hover {

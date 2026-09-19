@@ -59,6 +59,7 @@
                 </div>
                 
                 <!-- Social Media Links -->
+                @if(collect(['facebook_url', 'instagram_url', 'tiktok_url', 'viber_url'])->contains(fn ($k) => ! empty($socialSettings[$k])))
                 <div class="card">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">{{ __('Follow Us') }}</h3>
                     <div class="flex space-x-4">
@@ -87,6 +88,7 @@
                         @endif
                     </div>
                 </div>
+                @endif
             </div>
             
             <!-- WhatsApp CTA -->
@@ -128,8 +130,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h4 class="font-semibold text-gray-800 mb-2">{{ __('Local Expertise') }}</h4>
-                    <p class="text-gray-600">{{ __('Born and raised in the Maldives, we know the best spots and hidden gems.') }}</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">{{ __('Maldivian group leaders') }}</h4>
+                    <p class="text-gray-600">{{ __('A Dhivehi-speaking leader travels with every group, from Malé to Madinah and back.') }}</p>
                 </div>
                 
                 <div>
@@ -138,8 +140,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                         </svg>
                     </div>
-                    <h4 class="font-semibold text-gray-800 mb-2">{{ __('Personalized Service') }}</h4>
-                    <p class="text-gray-600">{{ __('Every trip is customized to your preferences and travel style.') }}</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">{{ __('Close to the Haram') }}</h4>
+                    <p class="text-gray-600">{{ __('Hotels within walking distance of the Haram in both cities, so the rites come first.') }}</p>
                 </div>
                 
                 <div>
@@ -148,8 +150,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h4 class="font-semibold text-gray-800 mb-2">{{ __('24/7 Support') }}</h4>
-                    <p class="text-gray-600">{{ __('We\'re here for you before, during, and after your trip.') }}</p>
+                    <h4 class="font-semibold text-gray-800 mb-2">{{ __('With you throughout') }}</h4>
+                    <p class="text-gray-600">{{ __('Support before departure, during every rite, and after you return.') }}</p>
                 </div>
             </div>
         </div>

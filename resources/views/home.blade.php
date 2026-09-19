@@ -9,9 +9,9 @@
 
 <!-- Current Trip Section -->
 @if($currentTrip)
-<section class="py-16 bg-white">
+<section class="py-16 bg-cream">
     <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
+        <h2 class="section-title">
             {{ __('Current Trip') }}
         </h2>
         <div class="max-w-4xl mx-auto">
@@ -70,9 +70,9 @@
 
 <!-- Upcoming Trip Section -->
 @if($upcomingTrip)
-<section class="py-16 bg-gray-50">
+<section class="py-16 bg-cream-deep">
     <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">
+        <h2 class="section-title">
             {{ __('messages.section_upcoming') }}
         </h2>
         <div class="max-w-4xl mx-auto">
@@ -136,7 +136,7 @@
 <section class="py-16 bg-white">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">
+            <h2 class="section-title mb-4">
                 {{ __('messages.section_memories') }}
             </h2>
             <p class="text-gray-600 max-w-2xl mx-auto">
