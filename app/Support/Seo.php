@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Http\Middleware\SetLocale;
+use App\Models\Article;
 use App\Models\GuideStep;
 use App\Models\Package;
 use App\Models\Setting;
@@ -198,6 +199,54 @@ class Seo
                 'priceCurrency' => 'MVR',
                 'availability' => 'https://schema.org/InStock',
                 'url' => $url,
+            ];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * An article, as a BlogPosting.
+     *
+     * `author` is emitted only when one is recorded. Attributing an
+     * unattributed article to the organisation would be a claim the page
+     * does not make, and on religious guidance the author is not incidental
+     * — a reader deciding whether to trust a fiqh explanation is partly
+     * deciding whose it is.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function article(Article $article, string $url): ?array
+    {
+        $title = $article->getTranslation('title', app()->getLocale());
+
+        if (blank($title) || ! $article->is_published) {
+            return null;
+        }
+
+        $schema = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'BlogPosting',
+            'headline' => $title,
+            'description' => $article->getTranslation('excerpt', app()->getLocale()) ?: null,
+            'url' => $url,
+            'datePublished' => $article->published_at?->toAtomString(),
+            'dateModified' => $article->updated_at?->toAtomString(),
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => config('app.name'),
+                'identifier' => self::REGISTRATION_NUMBER,
+            ],
+        ]);
+
+        if ($article->cover_image) {
+            $schema['image'] = url(Storage::url($article->cover_image));
+        }
+
+        if ($article->author) {
+            $schema['author'] = [
+                '@type' => 'Person',
+                'name' => $article->author->name,
             ];
         }
 

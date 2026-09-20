@@ -88,6 +88,13 @@ final class Access
         'person.update',
         'person.delete',
 
+        // The blog. Content, like everything else a reader sees.
+        'article.viewAny',
+        'article.view',
+        'article.create',
+        'article.update',
+        'article.delete',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -167,7 +174,7 @@ final class Access
             self::PERMISSIONS,
             fn (string $permission) => in_array(
                 strtok($permission, '.'),
-                ['trip', 'package', 'departure', 'person', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
+                ['trip', 'package', 'departure', 'person', 'article', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
                 true,
             ),
         ));

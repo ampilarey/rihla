@@ -400,4 +400,12 @@ return [
     'Travelling with you' => 'Travelling with you',
     'Who travels with you' => 'Who travels with you',
     'Meet the people who travel with you' => 'Meet the people who travel with you',
+
+    // Articles (Phase 2.7).
+    'Articles' => 'Articles',
+    'Breadcrumb' => 'Breadcrumb',
+    'More to read' => 'More to read',
+    'Nothing has been written here yet.' => 'Nothing has been written here yet.',
+    'Read this' => 'Read this',
+    'What to pack, how the visa works, and what to expect when you arrive.' => 'What to pack, how the visa works, and what to expect when you arrive.',
 ];

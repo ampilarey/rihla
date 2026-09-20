@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetLocale;
+use App\Models\Article;
 use App\Models\Package;
 use App\Models\Trip;
 use Illuminate\Http\Response;
@@ -34,6 +35,10 @@ class SitemapController extends Controller
             ->orderBy('sort_order')
             ->get(['slug', 'updated_at']);
 
+        $articles = Article::published()
+            ->orderByDesc('published_at')
+            ->get(['slug', 'updated_at']);
+
         $entries = [];
 
         // Static pages. Weekly rather than daily: claiming a change frequency
@@ -45,6 +50,7 @@ class SitemapController extends Controller
             ['path' => '/packages', 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['path' => '/trips', 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['path' => '/people', 'changefreq' => 'monthly', 'priority' => '0.6'],
+            ['path' => '/articles', 'changefreq' => 'weekly', 'priority' => '0.7'],
             ['path' => '/guide', 'changefreq' => 'monthly', 'priority' => '0.8'],
             ['path' => '/gallery', 'changefreq' => 'monthly', 'priority' => '0.6'],
             ['path' => '/contact', 'changefreq' => 'yearly', 'priority' => '0.5'],
@@ -64,6 +70,15 @@ class SitemapController extends Controller
                 'lastmod' => $package->updated_at?->toAtomString(),
                 'changefreq' => 'weekly',
                 'priority' => '0.8',
+            ];
+        }
+
+        foreach ($articles as $article) {
+            $entries[] = [
+                'path' => '/articles/'.$article->slug,
+                'lastmod' => $article->updated_at?->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
             ];
         }
 
