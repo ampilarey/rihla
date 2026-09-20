@@ -79,8 +79,10 @@ final class TravelReadiness
                 fn (bool $met): bool => ! $met,
             ));
 
+            // No array_values(): array_keys() already returns a list, and
+            // static analysis calls the extra call dead.
             if ($unmet !== []) {
-                $blockers[$line->traveller->full_name] = array_values($unmet);
+                $blockers[$line->traveller->full_name] = $unmet;
             }
         }
 
