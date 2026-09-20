@@ -7,7 +7,9 @@ use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
 use App\Models\SeatHold;
 use App\Services\Booking\SeatAllocator;
+use App\Services\Visa\VisaDesk;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -29,9 +31,51 @@ class EditBooking extends EditRecord
     {
         return [
             $this->confirmAction(),
+            $this->openVisasAction(),
             $this->extendHoldAction(),
             $this->cancelAction(),
         ];
+    }
+
+    /**
+     * The booking's way into the visa workflow (§5.4a).
+     *
+     * One application per traveller, because a visa is granted to a person
+     * and not to a party. Idempotent: pressing it twice does not queue two
+     * submissions to a government for the same traveller.
+     *
+     * Opens visas and **only** visas. Nusuk permits are a separate
+     * authorisation with separate failure modes [R-4], and a button that
+     * started both would invite exactly the shortcut that strands a pilgrim.
+     */
+    private function openVisasAction(): Action
+    {
+        return Action::make('openVisas')
+            ->label('Open visa applications')
+            ->icon('heroicon-o-identification')
+            ->visible(fn (): bool => auth()->user()?->can('visa.create') === true
+                && $this->booking()->travellers()->exists())
+            ->schema([
+                Select::make('visa_type')
+                    ->label('Visa type')
+                    ->options(config('visa.types'))
+                    ->helperText('The permitted list is configuration — what Saudi Arabia accepts is their rule, not this application\'s.'),
+            ])
+            ->action(function (array $data): void {
+                $opened = app(VisaDesk::class)->openForBooking(
+                    $this->booking(),
+                    $data['visa_type'] ?: null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title(trans_choice(
+                        '{1}:count visa application open|[2,*]:count visa applications open',
+                        $opened->count(),
+                        ['count' => $opened->count()],
+                    ))
+                    ->send();
+            });
     }
 
     private function booking(): Booking

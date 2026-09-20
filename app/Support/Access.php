@@ -123,6 +123,17 @@ final class Access
         'document.update',
         'document.download',
 
+        // Visa applications (§5.4a). Deliberately its own prefix, not
+        // shared with Nusuk permits: they are different authorisations from
+        // different systems, and the roles that will hold them may diverge.
+        // No delete — an application is a record of something submitted to a
+        // government, and a refusal that can be removed is evidence that can
+        // be removed.
+        'visa.viewAny',
+        'visa.view',
+        'visa.create',
+        'visa.update',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -220,6 +231,13 @@ final class Access
             fn (string $permission) => strtok($permission, '.') === 'document',
         ));
 
+        $visas = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'visa',
+        ));
+
+        $visasReadOnly = ['visa.viewAny', 'visa.view'];
+
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
 
@@ -245,6 +263,7 @@ final class Access
                 ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny'],
                 $bookings,
                 $documents,
+                $visas,
                 $content,
             ),
 
@@ -281,6 +300,10 @@ final class Access
                 // mislaid them, so it uploads and downloads. Verifying is
                 // Visa Staff's call, not theirs.
                 ['document.viewAny', 'document.view', 'document.create', 'document.download'],
+                // Reads the visa state to answer "when are we travelling,
+                // then?" without being able to move it — that is Visa
+                // Staff's call.
+                $visasReadOnly,
                 ['package.viewAny', 'package.view', 'departure.viewAny', 'departure.view'],
             ),
 
@@ -299,6 +322,7 @@ final class Access
                 // pull the scan. That is the whole reason download is a
                 // separate verb.
                 $documentsReadOnly,
+                $visasReadOnly,
             ),
 
             // The documents are the job: collecting them, checking them and
@@ -308,6 +332,7 @@ final class Access
             self::VISA_STAFF => array_merge(
                 ['admin.access'],
                 $documents,
+                $visas,
                 $bookingsReadOnly,
             ),
         ];
