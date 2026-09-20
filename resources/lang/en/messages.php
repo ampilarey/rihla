@@ -346,4 +346,12 @@ return [
     'Seats' => 'Seats',
     'Single room' => 'Single room',
     'Triple room' => 'Triple room',
+
+    // Cost calculator (Phase 2.4).
+    'Ask us about paying in instalments.' => 'Ask us about paying in instalments.',
+    'Hello, I would like to ask about :package departing :date.' => 'Hello, I would like to ask about :package departing :date.',
+    'Room' => 'Room',
+    'Total for your party' => 'Total for your party',
+    'Travellers' => 'Travellers',
+    'What will it cost?' => 'What will it cost?',
 ];

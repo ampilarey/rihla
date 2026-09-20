@@ -199,6 +199,8 @@
                             @endif
 
                             <x-seats-bar :departure="$departure" />
+
+                            <x-cost-calculator :departure="$departure" />
                         </div>
                     </div>
                 </article>
