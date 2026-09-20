@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Booking;
 use App\Models\Departure;
+use App\Models\Traveller;
 use App\Models\WaitlistEntry;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -61,6 +62,8 @@ final class DepartureReadiness
 
     public const WAITLIST = 'waitlist';
 
+    public const EMERGENCY_CONTACT = 'emergency_contact';
+
     /**
      * Everything worth a person's attention on this departure.
      *
@@ -75,6 +78,7 @@ final class DepartureReadiness
             self::staffingConcerns($departure),
             self::capacityConcerns($departure),
             self::waitlistConcerns($departure),
+            self::emergencyContactConcerns($departure),
         );
     }
 
@@ -309,6 +313,42 @@ final class DepartureReadiness
                 ? 'Somebody is waiting for a seat that is free'
                 : $waiting.' parties waiting while seats are free',
             'detail' => $remaining.' seat(s) remain and the queue has not been offered them.',
+        ]];
+    }
+
+    /**
+     * Confirmed travellers with nobody to ring — §6.5.
+     *
+     * Blocking, and that is the point. The moment this matters is the
+     * moment nobody has time to go looking for a phone number, so it is
+     * caught while somebody can still ask. Configurable because it is an
+     * operational policy rather than a fact, and on by default because the
+     * safe default for a safeguarding check is on.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function emergencyContactConcerns(Departure $departure): array
+    {
+        if (! config('broadcasts.require_emergency_contacts', true)) {
+            return [];
+        }
+
+        $without = Rooming::travellersOwedABed($departure)
+            ->filter(fn (Traveller $traveller): bool => blank($traveller->emergency_contact_name)
+                || blank($traveller->emergency_contact_phone))
+            ->count();
+
+        if ($without === 0) {
+            return [];
+        }
+
+        return [[
+            'area' => self::EMERGENCY_CONTACT,
+            'severity' => self::BLOCKING,
+            'headline' => $without === 1
+                ? 'One traveller has nobody to ring'
+                : $without.' travellers have nobody to ring',
+            'detail' => 'No emergency contact on file. The moment this matters is the moment nobody has time to go looking.',
         ]];
     }
 

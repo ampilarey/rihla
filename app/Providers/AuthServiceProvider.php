@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Document;
+use App\Models\EmergencyBroadcast;
 use App\Models\Enquiry;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
@@ -35,6 +36,7 @@ use App\Policies\BookingPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\DeparturePolicy;
 use App\Policies\DocumentPolicy;
+use App\Policies\EmergencyBroadcastPolicy;
 use App\Policies\EnquiryPolicy;
 use App\Policies\GuideStepPolicy;
 use App\Policies\HeroBannerPolicy;
@@ -71,6 +73,7 @@ class AuthServiceProvider extends ServiceProvider
         Payment::class => PaymentPolicy::class,
         Enquiry::class => EnquiryPolicy::class,
         Announcement::class => AnnouncementPolicy::class,
+        EmergencyBroadcast::class => EmergencyBroadcastPolicy::class,
         Incident::class => IncidentPolicy::class,
         OperationsLogEntry::class => OperationsLogEntryPolicy::class,
         RollCall::class => RollCallPolicy::class,

@@ -9,6 +9,8 @@
 
         <x-portal-nav current="home" />
 
+        <x-emergency-notice :broadcasts="$broadcasts" />
+
         {{-- The booking itself. --}}
         <section class="card mb-6">
             <h1 dir="auto" class="mb-1 text-2xl font-bold text-ink">{{ $package->title }}</h1>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\PortalSession;
 use App\Models\Booking;
 use App\Models\Document;
+use App\Models\EmergencyBroadcast;
 use App\Models\FamilyAccess;
 use App\Models\NusukPermit;
 use App\Models\VisaApplication;
@@ -175,6 +176,14 @@ class PortalController extends Controller
 
         return view('portal.home', [
             'booking' => $booking,
+            // §6.5. At the top of the page a pilgrim actually opens, and
+            // needing no credentials — which on this host is the whole
+            // reason a broadcast reaches anybody at all.
+            'broadcasts' => EmergencyBroadcast::where('departure_id', $booking->departure_id)
+                ->sent()
+                ->orderByDesc('sent_at')
+                ->limit(5)
+                ->get(),
             'departure' => $booking->departure,
             'package' => $booking->departure->package,
             'readiness' => $this->readiness($booking),
