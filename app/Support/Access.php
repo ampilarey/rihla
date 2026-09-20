@@ -64,6 +64,22 @@ final class Access
         'trip.update',
         'trip.delete',
 
+        // The product Rihla sells, and each dated run of it. Content, which
+        // is why both prefixes are named in $content below — a package
+        // description is public-facing copy, edited by whoever edits the
+        // rest of the site.
+        'package.viewAny',
+        'package.view',
+        'package.create',
+        'package.update',
+        'package.delete',
+
+        'departure.viewAny',
+        'departure.view',
+        'departure.create',
+        'departure.update',
+        'departure.delete',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -143,7 +159,7 @@ final class Access
             self::PERMISSIONS,
             fn (string $permission) => in_array(
                 strtok($permission, '.'),
-                ['trip', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
+                ['trip', 'package', 'departure', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
                 true,
             ),
         ));
