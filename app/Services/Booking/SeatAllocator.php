@@ -166,6 +166,8 @@ final class SeatAllocator
 
             $hold->forceFill(['released_at' => now(), 'released_reason' => $reason])->save();
         });
+
+        $this->offerToWaitlist($hold->departure);
     }
 
     /**
@@ -183,6 +185,8 @@ final class SeatAllocator
 
             $this->setCounters($locked, confirmed: max(0, $locked->capacity_confirmed - $booking->seats));
         });
+
+        $this->offerToWaitlist($booking->departure);
     }
 
     /**
@@ -194,7 +198,31 @@ final class SeatAllocator
      */
     public function reclaim(Departure $departure): int
     {
-        return DB::transaction(fn (): int => $this->reclaimLapsedOn($this->lock($departure)));
+        $seats = DB::transaction(fn (): int => $this->reclaimLapsedOn($this->lock($departure)));
+
+        if ($seats > 0) {
+            $this->offerToWaitlist($departure);
+        }
+
+        return $seats;
+    }
+
+    /**
+     * Seats came back: tell the waiting list.
+     *
+     * Deliberately **not** called from the reclaim inside {@see hold()}.
+     * That reclaim runs because somebody is in the middle of taking those
+     * seats, and offering them to the waiting list at that moment would take
+     * them out from under the customer who triggered it.
+     *
+     * Called after the transaction rather than inside it, so a release is
+     * durable before anything is offered — and resolved from the container
+     * rather than injected, because Waitlist depends on this class and a
+     * constructor cycle would be the price of a tidier signature.
+     */
+    private function offerToWaitlist(Departure $departure): void
+    {
+        app(Waitlist::class)->offerAvailableSeats($departure->fresh() ?? $departure);
     }
 
     /**

@@ -51,6 +51,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Waiting list
+    |--------------------------------------------------------------------------
+    |
+    | How long a promoted party keeps the seats that came back, before their
+    | turn passes to whoever is behind them.
+    |
+    | Twenty-four hours because there is no notification channel here — no
+    | SMTP credentials and no WhatsApp API — so an offer is a message a person
+    | sends, and fifteen minutes would expire before anybody had picked up the
+    | phone. Like every other window in this file, the real figure is the
+    | operator's to set.
+    |
+    */
+
+    'waitlist' => [
+        'offer_minutes' => (int) env('BOOKING_WAITLIST_OFFER_MINUTES', 1440),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Party size
     |--------------------------------------------------------------------------
     |

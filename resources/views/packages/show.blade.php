@@ -243,6 +243,64 @@
                                    class="btn-primary w-full">
                                     {{ __('messages.Book now') }}
                                 </a>
+                            @elseif($departure->is_sold_out && $departure->date_start->isFuture())
+                                {{-- A sold-out departure was a dead end: the page
+                                     said "Fully booked" and the visitor left. Seats
+                                     do come back — a hold lapses, a passport turns
+                                     out to be expired, a family cancels — and
+                                     nobody was told. --}}
+                                <details class="rounded-xl border border-cream-deep p-4">
+                                    <summary dir="auto" class="cursor-pointer font-medium text-wine-600">
+                                        {{ __('messages.Join the waiting list') }}
+                                    </summary>
+
+                                    <form method="POST" action="{{ route('waitlist.join', $package->slug) }}"
+                                          class="mt-4 grid gap-3 sm:grid-cols-2">
+                                        @csrf
+                                        <input type="hidden" name="departure" value="{{ $departure->id }}">
+
+                                        <div class="sm:col-span-2">
+                                            <label dir="auto" for="wl-name-{{ $departure->id }}" class="mb-1 block text-sm font-medium text-ink">
+                                                {{ __('messages.Full name') }}
+                                            </label>
+                                            <input id="wl-name-{{ $departure->id }}" name="name" type="text" required dir="auto"
+                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                        </div>
+
+                                        <div>
+                                            <label dir="auto" for="wl-phone-{{ $departure->id }}" class="mb-1 block text-sm font-medium text-ink">
+                                                {{ __('messages.Phone') }}
+                                            </label>
+                                            <input id="wl-phone-{{ $departure->id }}" name="phone" type="tel" required dir="ltr"
+                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                        </div>
+
+                                        <div>
+                                            <label dir="auto" for="wl-seats-{{ $departure->id }}" class="mb-1 block text-sm font-medium text-ink">
+                                                {{ __('messages.How many travellers?') }}
+                                            </label>
+                                            <input id="wl-seats-{{ $departure->id }}" name="seats" type="number" inputmode="numeric"
+                                                   min="1" max="{{ config('booking.party.max') }}" value="1" dir="ltr"
+                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                        </div>
+
+                                        <div class="sm:col-span-2">
+                                            <label dir="auto" for="wl-email-{{ $departure->id }}" class="mb-1 block text-sm font-medium text-ink">
+                                                {{ __('messages.Email (optional)') }}
+                                            </label>
+                                            <input id="wl-email-{{ $departure->id }}" name="email" type="email" dir="ltr"
+                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                        </div>
+
+                                        <button type="submit" class="btn-secondary sm:col-span-2">
+                                            {{ __('messages.Add me to the list') }}
+                                        </button>
+
+                                        <p dir="auto" class="text-xs text-ink-muted sm:col-span-2">
+                                            {{ __('messages.We message you if a seat comes back. It costs nothing and commits you to nothing.') }}
+                                        </p>
+                                    </form>
+                                </details>
                             @endif
 
                             <x-cost-calculator :departure="$departure" />

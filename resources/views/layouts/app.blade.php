@@ -390,6 +390,24 @@
 
         <!-- Main Content -->
         <main id="main-content" class="flex-1" role="main">
+            {{-- Flashed messages, rendered in one place for every page.
+
+                 Nothing rendered `session('status')` outside the Breeze auth
+                 views, so two redirects that flash it said nothing at all to
+                 the person who triggered them: joining the waiting list, and
+                 being told that a lapsed seat hold had released your seats.
+                 Both looked like the form had done nothing. Found by
+                 submitting the form and reading the page that came back —
+                 the tests asserted the session key, which passes while the
+                 visitor sees silence. --}}
+            @if(session('status'))
+                <div class="container mx-auto px-4 pt-6" role="status" aria-live="polite">
+                    <p dir="auto" class="rounded-xl border border-wine-500 bg-wine-50 p-4 text-ink">
+                        {{ session('status') }}
+                    </p>
+                </div>
+            @endif
+
             {{-- Most views @extends this layout and fill @section('content').
                  The Breeze views (dashboard, profile) render it as
                  <x-app-layout> and pass their body as $slot, which nothing
