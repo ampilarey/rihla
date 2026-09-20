@@ -7,6 +7,7 @@ use App\Models\LearningModule;
 use App\Models\LearningPath;
 use App\Models\ScholarQuestion;
 use App\Models\Traveller;
+use App\Services\Assistant\PilgrimAssistant;
 use App\Services\Learning\Progress;
 use App\Support\StudyPlan;
 use Illuminate\Http\RedirectResponse;
@@ -130,6 +131,39 @@ class LearningController extends Controller
                 ->orderByDesc('created_at')
                 ->get(),
         ]);
+    }
+
+    /**
+     * Try the approved content first — §9.6's pilgrim assistant.
+     *
+     * It sits in front of the scholar's queue rather than beside it: a
+     * pilgrim with a question asks once, and either the approved pages
+     * answer it or a person does. Two separate "ask a question" screens
+     * would only teach them to guess which one to use.
+     *
+     * Today it always hands over, because nothing has been approved. That
+     * is the assistant working, not failing — see {@see PilgrimAssistant}.
+     */
+    public function askTheGuide(Request $request): RedirectResponse
+    {
+        $booking = $this->booking($request);
+
+        $data = $request->validate([
+            'question' => ['required', 'string', 'min:10', 'max:4000'],
+        ]);
+
+        $answer = PilgrimAssistant::make()->ask(
+            $data['question'],
+            $this->traveller($booking),
+        );
+
+        return redirect()->route('learning.questions')
+            // The question rides back either way: when the assistant hands
+            // over, the scholar's form is already filled in, so a pilgrim
+            // who has been told "ask a person" does not have to type it
+            // again to do so.
+            ->with('assistant_answer', $answer)
+            ->with('assistant_question', $data['question']);
     }
 
     public function askQuestion(Request $request): RedirectResponse

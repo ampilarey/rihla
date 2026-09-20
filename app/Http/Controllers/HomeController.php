@@ -9,6 +9,7 @@ use App\Models\Package;
 use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\WhySection;
+use App\Support\Personalisation;
 use Illuminate\Database\Eloquent\Builder;
 
 class HomeController extends Controller
@@ -59,9 +60,15 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
+        // §4.2's "personalisation for returning users", and the whole of
+        // it: one line for somebody signed in who has actually travelled
+        // with Rihla. Nothing is cached — it is per-visitor and the rest
+        // of this page is not, so it must not join the cached payload.
+        $personal = Personalisation::for(auth()->user());
+
         return view('home', compact(
             'currentTrip', 'upcomingTrip', 'recentMedia', 'socialSettings',
-            'heroBanners', 'why', 'upcomingDepartures',
+            'heroBanners', 'why', 'upcomingDepartures', 'personal',
         ));
     }
 }

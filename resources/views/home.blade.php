@@ -4,6 +4,8 @@
 <!-- Hero Section -->
 <x-hero-banner :banners="$heroBanners" />
 
+<x-welcome-back :personal="$personal" />
+
 {{--
     Three routes in, immediately under the hero: browse what is for sale,
     read about the rite, or talk to a person. The plan asks for exactly these

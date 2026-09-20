@@ -248,6 +248,13 @@ final class Access
         // what each pilgrim left behind.
         'kpi.view',
 
+        // The staff drafting assistant — §9.6. A verb, not a screen: it is
+        // "may have a machine write a first draft for me", and it is
+        // separate from the permissions on the things being drafted because
+        // a draft is never sent by the assistant. The person still needs
+        // `enquiry.update` or `announcement.create` to do anything with it.
+        'draft.use',
+
         // Rooming (§8.2). No delete verb for an assignment: taking somebody
         // out of a room is an update to the rooming list, and a separate
         // permission for it would only ever be granted alongside update.
@@ -696,7 +703,7 @@ final class Access
                 $tasks,
                 ['customer.tag'],
                 $costs,
-                ['profit.view', 'kpi.view'],
+                ['profit.view', 'kpi.view', 'draft.use'],
                 $rooming,
                 $incidents,
                 $attendance,
@@ -715,7 +722,11 @@ final class Access
             // Owns the public-facing content, but not the site's settings —
             // social links and contact details are an operations decision.
             self::CONTENT_MANAGER => array_merge(
-                ['admin.access'],
+                // The drafting assistant writes itinerary and announcement
+                // wording, which is this role's work. It cannot publish
+                // anything it wrote — the draft goes into a form a person
+                // still has to save.
+                ['admin.access', 'draft.use'],
                 $content,
                 // Drafts knowledge articles and sends them for review.
                 // Owning the website's words is not enough to sign off
@@ -772,7 +783,9 @@ final class Access
             // which departure, which room, what it costs — but does not
             // write it: prices and descriptions are content.
             self::BOOKING_STAFF => array_merge(
-                ['admin.access'],
+                // Drafts a reply to an enquiry, then edits and sends it
+                // themselves. §9.6's human in the loop is this person.
+                ['admin.access', 'draft.use'],
                 $bookings,
                 // Collects documents and sends them back to the customer who
                 // mislaid them, so it uploads and downloads. Verifying is

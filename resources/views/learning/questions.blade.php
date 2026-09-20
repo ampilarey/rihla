@@ -24,6 +24,78 @@
             </div>
         @endif
 
+        {{--
+            §9.6's pilgrim assistant, in front of the scholar's queue rather
+            than beside it. Two separate "ask a question" boxes would only
+            teach a pilgrim to guess which one to use.
+
+            It answers strictly from pages a named scholar has approved, and
+            hands over to a person whenever it cannot. Today it always hands
+            over, because nothing has been approved yet — which is the
+            feature working, not failing.
+        --}}
+        <form method="POST" action="{{ route('learning.questions.guide', ['locale' => app()->getLocale()]) }}"
+              class="card mb-6">
+            @csrf
+
+            <label for="guide-question" class="mb-1 block font-medium text-ink">
+                {{ __('messages.Look it up first') }}
+            </label>
+
+            <p class="mb-3 text-sm text-ink-muted">
+                {{ __('messages.We will check the pages our scholars have already approved. If they do not answer it, the question goes to a scholar and nothing is guessed.') }}
+            </p>
+
+            <textarea id="guide-question" name="question" rows="3" required minlength="10" maxlength="4000"
+                      dir="auto"
+                      class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('question') }}</textarea>
+
+            @error('question')
+                <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>
+            @enderror
+
+            <button type="submit" class="btn-secondary mt-3">{{ __('messages.Look it up') }}</button>
+        </form>
+
+        @if (session('assistant_answer'))
+            @php($answer = session('assistant_answer'))
+
+            <div class="card mb-8 {{ $answer->referred ? 'border-s-4 border-s-cream-deep' : 'border-s-4 border-s-wine' }}">
+                @unless ($answer->referred)
+                    {{--
+                        The label §9.6 requires on anything a model wrote,
+                        above the text rather than under it: a disclosure
+                        below the answer is read after the answer has
+                        already been believed.
+                    --}}
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        {{ $answer->label() }}
+                    </p>
+                @endunless
+
+                <div class="whitespace-pre-line text-brand-body">{{ $answer->text }}</div>
+
+                @if ($answer->because)
+                    <p class="mt-3 text-sm text-ink-muted">{{ $answer->because }}</p>
+                @endif
+
+                @if ($answer->sources->isNotEmpty())
+                    <div class="mt-4 border-t border-cream-deep pt-3">
+                        <p class="mb-2 text-sm font-medium text-ink">{{ __('messages.Where this comes from') }}</p>
+                        <ul class="space-y-1 text-sm">
+                            @foreach ($answer->sources as $index => $source)
+                                <li>
+                                    <span class="text-ink-muted">[{{ $index + 1 }}]</span>
+                                    <a href="{{ $source->url }}" class="text-wine-600 hover:underline">{{ $source->title }}</a>
+                                    <span class="text-ink-muted">— {{ $source->kindLabel }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('learning.questions.store', ['locale' => app()->getLocale()]) }}"
               class="card mb-8">
             @csrf
@@ -34,7 +106,7 @@
 
             <textarea id="question-body" name="body" rows="6" required minlength="10" maxlength="4000"
                       dir="auto"
-                      class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('body') }}</textarea>
+                      class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('body', session('assistant_question')) }}</textarea>
 
             @error('body')
                 <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>
