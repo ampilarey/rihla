@@ -38,6 +38,25 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Identity documents. Private, and deliberately not servable.
+         *
+         * `serve => false` keeps Laravel's built-in local-disk route from
+         * ever exposing these: the only way to a file here is
+         * DocumentController, which checks the policy, requires a
+         * short-lived signed URL and writes a row to the audit trail before
+         * streaming a byte. A passport scan reachable by guessing a path is
+         * the worst failure this application could have.
+         */
+        'documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/documents'),
+            'serve' => false,
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

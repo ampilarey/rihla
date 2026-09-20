@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\WhyFeatureController;
 use App\Http\Controllers\Admin\WhySectionController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
@@ -137,6 +138,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // The only route to a document file. Signed as well as authenticated:
+    // the disk is private and not servable, so this is the single door, and
+    // it records who walked through it. Not locale-prefixed — it returns a
+    // file, not a page.
+    Route::get('/documents/{version}/download', [DocumentController::class, 'download'])
+        ->name('documents.download')
+        ->middleware('signed');
 });
 
 // Admin routes (require authentication and admin privileges)

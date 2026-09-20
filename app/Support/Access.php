@@ -111,6 +111,18 @@ final class Access
         'customer.view',
         'customer.update',
 
+        // The document wallet. `download` is a separate verb from `view`
+        // on purpose: seeing that a passport has been collected is a
+        // different disclosure from pulling the scan, and the second is the
+        // one that ends up in somebody's downloads folder. No delete —
+        // [R-8] keeps every version, and a wallet you can quietly empty is
+        // not an audit trail.
+        'document.viewAny',
+        'document.view',
+        'document.create',
+        'document.update',
+        'document.download',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -203,6 +215,14 @@ final class Access
             fn (string $permission) => in_array(strtok($permission, '.'), ['booking', 'customer'], true),
         ));
 
+        $documents = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'document',
+        ));
+
+        // Seeing that a document exists, without pulling the file.
+        $documentsReadOnly = ['document.viewAny', 'document.view'];
+
         $bookingsReadOnly = array_values(array_filter(
             $bookings,
             fn (string $permission) => str_contains($permission, '.view'),
@@ -224,6 +244,7 @@ final class Access
             self::OPERATIONS_MANAGER => array_merge(
                 ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny'],
                 $bookings,
+                $documents,
                 $content,
             ),
 
@@ -256,6 +277,10 @@ final class Access
             self::BOOKING_STAFF => array_merge(
                 ['admin.access'],
                 $bookings,
+                // Collects documents and sends them back to the customer who
+                // mislaid them, so it uploads and downloads. Verifying is
+                // Visa Staff's call, not theirs.
+                ['document.viewAny', 'document.view', 'document.create', 'document.download'],
                 ['package.viewAny', 'package.view', 'departure.viewAny', 'departure.view'],
             ),
 
@@ -267,12 +292,24 @@ final class Access
             // Answers the phone. Needs to find a booking and read it back to
             // whoever is calling, and nothing more until the pilgrim portal
             // and the CRM give it something to change.
-            self::PILGRIM_SUPPORT => array_merge(['admin.access'], $bookingsReadOnly),
+            self::PILGRIM_SUPPORT => array_merge(
+                ['admin.access'],
+                $bookingsReadOnly,
+                // Can say "yes, we have your passport" without being able to
+                // pull the scan. That is the whole reason download is a
+                // separate verb.
+                $documentsReadOnly,
+            ),
 
-            // No functionality exists for this yet: visa applications and
-            // Nusuk permits are the next slice of Phase 3. See the class
-            // docblock.
-            self::VISA_STAFF => ['admin.access'],
+            // The documents are the job: collecting them, checking them and
+            // sending them to a Saudi system. Visa applications and Nusuk
+            // permits are the next slice; this role already holds the wallet
+            // those workflows run on.
+            self::VISA_STAFF => array_merge(
+                ['admin.access'],
+                $documents,
+                $bookingsReadOnly,
+            ),
         ];
     }
 }

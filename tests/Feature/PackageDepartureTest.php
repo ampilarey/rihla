@@ -30,18 +30,34 @@ class PackageDepartureTest extends TestCase
     private const MIGRATION = __DIR__.'/../../database/migrations/2026_09_20_100000_create_packages_and_departures.php';
 
     /**
-     * The booking tables hold foreign keys into `packages`, `departures` and
-     * `price_tiers`, and `waitlist_entries` holds them into `departures`,
-     * `seat_holds` and `bookings` — so they come off newest first and go
-     * back on in the reverse order. MySQL refuses the drop otherwise —
-     * "Cannot drop table 'price_tiers' referenced by a foreign key
-     * constraint" — while SQLite allows it and leaves the references
-     * dangling, so this ordering is invisible until CI runs against the
-     * engine production uses.
+     * The migrations that must come off before `packages`, `departures` and
+     * `price_tiers` can be dropped — newest first, restored in reverse.
+     *
+     * MySQL refuses the drop otherwise: "Cannot drop table 'price_tiers'
+     * referenced by a foreign key constraint". SQLite allows it and leaves
+     * the references dangling, so a missing entry here is invisible until CI
+     * runs against the engine production uses.
+     *
+     * Only migrations holding foreign keys *into* that chain. Adding a
+     * column to `departures`, as the people migration does, does not stop it
+     * being dropped, so those are deliberately absent.
+     *
+     * **Maintained by hand, and that is the lesser evil.** Deriving it —
+     * "every migration after the packages one" — was tried and is worse:
+     * re-applying `create_people_and_link_them_to_departures` adds two
+     * foreign-key columns to `departures`, and SQLite implements that by
+     * rebuilding the table, which cascade-deletes every `price_tiers` row
+     * hanging off it. On MySQL that ALTER touches nothing, and in a real
+     * migration run `departures` is empty at that point — so it costs
+     * nothing in practice, and silently destroyed the data under assertion
+     * in this test's rollback-and-replay.
+     *
+     * When a new table takes a foreign key into this chain, add it here.
      *
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        __DIR__.'/../../database/migrations/2026_09_20_170000_create_document_wallet.php',
         __DIR__.'/../../database/migrations/2026_09_20_160000_create_waitlist_entries.php',
         __DIR__.'/../../database/migrations/2026_09_20_141000_add_the_departure_capacity_constraint.php',
         __DIR__.'/../../database/migrations/2026_09_20_140000_create_booking_domain.php',

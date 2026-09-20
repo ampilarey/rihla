@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
+use App\Models\Document;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
 use App\Models\Media;
@@ -23,6 +24,7 @@ use App\Policies\AuditLogPolicy;
 use App\Policies\BookingPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\DeparturePolicy;
+use App\Policies\DocumentPolicy;
 use App\Policies\GuideStepPolicy;
 use App\Policies\HeroBannerPolicy;
 use App\Policies\MediaPolicy;
@@ -46,6 +48,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Booking::class => BookingPolicy::class,
         Customer::class => CustomerPolicy::class,
+        Document::class => DocumentPolicy::class,
         WaitlistEntry::class => WaitlistEntryPolicy::class,
         Trip::class => TripPolicy::class,
         Package::class => PackagePolicy::class,
