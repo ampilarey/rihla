@@ -167,6 +167,18 @@ final class Access
         'payment.reconcile',
         'payment.refund',
 
+        // Enquiries — §8.1's minimal CRM. No delete: an enquiry that was
+        // lost is the record of a customer this operator did not win, and
+        // that is the most useful thing in the table.
+        'enquiry.viewAny',
+        'enquiry.view',
+        'enquiry.create',
+        'enquiry.update',
+        // Handing one to somebody else. Separate from `update` because
+        // "who owns this" is a supervisor's decision at this size, and an
+        // enquiry everybody can reassign is one nobody owns.
+        'enquiry.assign',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -294,6 +306,14 @@ final class Access
         // power to say it is good.
         $paymentsReadOnly = ['payment.viewAny', 'payment.view'];
 
+        $enquiries = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'enquiry',
+        ));
+
+        // Works the enquiries they are given; does not hand them out.
+        $enquiriesWithoutAssigning = ['enquiry.viewAny', 'enquiry.view', 'enquiry.create', 'enquiry.update'];
+
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
 
@@ -322,6 +342,7 @@ final class Access
                 $visas,
                 $permits,
                 $payments,
+                $enquiries,
                 ['departure.nusuk'],
                 $content,
             ),
@@ -370,6 +391,9 @@ final class Access
                 // the customer who mislaid it. It cannot decide the money is
                 // in: that is `payment.reconcile`, and it is Finance's.
                 ['payment.viewAny', 'payment.view', 'payment.create', 'payment.download'],
+                // The people who answer the phone are the people who work
+                // the enquiries.
+                $enquiriesWithoutAssigning,
             ),
 
             // Reconciles payments, so it reads bookings and who they belong
@@ -395,6 +419,8 @@ final class Access
                 $visasReadOnly,
                 $permitsReadOnly,
                 $paymentsReadOnly,
+                // Answering the phone is where most enquiries come from.
+                $enquiriesWithoutAssigning,
             ),
 
             // The documents are the job: collecting them, checking them and

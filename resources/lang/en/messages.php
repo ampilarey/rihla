@@ -518,6 +518,21 @@ return [
     'Umrah permit' => 'Umrah permit',
     'Not sent yet' => 'Not sent yet',
 
+    // The enquiry form (§8.1).
+    'Or send us a message' => 'Or send us a message',
+    'We will come back to you. Leave a number or an email, whichever you prefer.' => 'We will come back to you. Leave a number or an email, whichever you prefer.',
+    'Your name' => 'Your name',
+    'Phone' => 'Phone',
+    'Email' => 'Email',
+    'Which package?' => 'Which package?',
+    'Not sure yet' => 'Not sure yet',
+    'How many of you?' => 'How many of you?',
+    'Anything else?' => 'Anything else?',
+    'Leave this empty' => 'Leave this empty',
+    'Send' => 'Send',
+    'Leave us a phone number or an email so we can reply.' => 'Leave us a phone number or an email so we can reply.',
+    'Thank you — we have your message and will come back to you.' => 'Thank you — we have your message and will come back to you.',
+
     // Invoices and receipts (§5.3). English only for now, like the rest of
     // the portal: the Dhivehi files are being cleaned of machine-generated
     // entries rather than added to.
