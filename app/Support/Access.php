@@ -204,6 +204,24 @@ final class Access
         'incident.assign',
         'incident.resolve',
 
+        // Attendance (§8.3). A head count at a moment where somebody could
+        // be left behind. `delete` exists here and nowhere near incidents:
+        // a count started against the wrong departure is a mis-click with
+        // no evidential value, not a record of what happened to anybody.
+        'attendance.viewAny',
+        'attendance.view',
+        'attendance.create',
+        'attendance.update',
+        'attendance.delete',
+
+        // The daily operations log (§8.3). What happened ordinarily — the
+        // coach was late, the hotel moved the group. Things that went
+        // *wrong* are incidents and carry a severity and an owner.
+        'opslog.viewAny',
+        'opslog.view',
+        'opslog.create',
+        'opslog.update',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -367,6 +385,20 @@ final class Access
             'incident.viewAny', 'incident.view', 'incident.create', 'incident.update',
         ];
 
+        $attendance = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'attendance',
+        ));
+
+        $attendanceReadOnly = ['attendance.viewAny', 'attendance.view'];
+
+        $opsLog = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'opslog',
+        ));
+
+        $opsLogReadOnly = ['opslog.viewAny', 'opslog.view'];
+
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
 
@@ -398,6 +430,8 @@ final class Access
                 $enquiries,
                 $rooming,
                 $incidents,
+                $attendance,
+                $opsLog,
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -432,6 +466,13 @@ final class Access
                 // incident that has to wait for the office to open is one
                 // recorded from memory two days later, if at all.
                 $incidentsFromTheGround,
+                // The head count is their job, not the office's: they are
+                // the one standing at the coach door. Deleting a count is
+                // not, because a count deleted from the coach is a count
+                // nobody can check.
+                ['attendance.viewAny', 'attendance.view', 'attendance.create', 'attendance.update'],
+                // And they write the day up.
+                $opsLog,
             ),
 
             // Takes and manages bookings. Reads the product to do it —
@@ -501,6 +542,8 @@ final class Access
                 $roomingReadOnly,
                 // Takes the call from a family at home asking what happened.
                 $incidentsReadOnly,
+                $attendanceReadOnly,
+                $opsLogReadOnly,
             ),
 
             // The documents are the job: collecting them, checking them and
