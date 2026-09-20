@@ -149,6 +149,24 @@ final class Access
         // a property of the dated run rather than of a person.
         'departure.nusuk',
 
+        // Money received against a booking (§5.3). `download` is a separate
+        // verb for the same reason it is on documents: a bank slip carries
+        // an account number and a name, and seeing that a payment exists is
+        // a different disclosure from pulling the image.
+        //
+        // `reconcile` is separate from `update` on purpose. Anybody taking
+        // the booking can record that a customer says they have paid;
+        // deciding that the money is actually in is a finance decision, and
+        // the two being one permission is how an unchecked slip becomes a
+        // confirmed booking.
+        'payment.viewAny',
+        'payment.view',
+        'payment.create',
+        'payment.update',
+        'payment.download',
+        'payment.reconcile',
+        'payment.refund',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -267,6 +285,15 @@ final class Access
 
         $permitsReadOnly = ['permit.viewAny', 'permit.view'];
 
+        $payments = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'payment',
+        ));
+
+        // Seeing that money was received, without the slip and without the
+        // power to say it is good.
+        $paymentsReadOnly = ['payment.viewAny', 'payment.view'];
+
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
 
@@ -294,6 +321,7 @@ final class Access
                 $documents,
                 $visas,
                 $permits,
+                $payments,
                 ['departure.nusuk'],
                 $content,
             ),
@@ -337,12 +365,22 @@ final class Access
                 $visasReadOnly,
                 $permitsReadOnly,
                 ['package.viewAny', 'package.view', 'departure.viewAny', 'departure.view'],
+                // Takes the phone call where somebody says they have paid,
+                // so it records the claim and can pull the slip back up for
+                // the customer who mislaid it. It cannot decide the money is
+                // in: that is `payment.reconcile`, and it is Finance's.
+                ['payment.viewAny', 'payment.view', 'payment.create', 'payment.download'],
             ),
 
             // Reconciles payments, so it reads bookings and who they belong
             // to. Editing one is booking staff's job; when refunds and
             // payment records exist, this is the role that gets them.
-            self::FINANCE => array_merge(['admin.access'], $bookingsReadOnly),
+            // Reconciles payments, so it reads bookings and who they belong
+            // to. Editing a booking is booking staff's job. Payments are
+            // now this role's whole reason to exist: it records them, pulls
+            // the slips, decides whether the money is in, and issues
+            // refunds. Nobody else holds `payment.reconcile`.
+            self::FINANCE => array_merge(['admin.access'], $bookingsReadOnly, $payments),
 
             // Answers the phone. Needs to find a booking and read it back to
             // whoever is calling, and nothing more until the pilgrim portal
@@ -356,6 +394,7 @@ final class Access
                 $documentsReadOnly,
                 $visasReadOnly,
                 $permitsReadOnly,
+                $paymentsReadOnly,
             ),
 
             // The documents are the job: collecting them, checking them and

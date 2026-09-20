@@ -57,6 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Before the booking domain: `payments` references `bookings`, and
+        // restricts their deletion.
+        __DIR__.'/../../database/migrations/2026_09_20_200000_create_payment_domain.php',
         // Before both the wallet and the booking domain: `nusuk_permits`
         // references `bookings` and `travellers`, and
         // `nusuk_permit_events` references `documents`. The two timestamp

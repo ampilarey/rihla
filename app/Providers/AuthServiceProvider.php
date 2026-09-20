@@ -13,6 +13,7 @@ use App\Models\HeroBanner;
 use App\Models\Media;
 use App\Models\NusukPermit;
 use App\Models\Package;
+use App\Models\Payment;
 use App\Models\Person;
 use App\Models\Setting;
 use App\Models\Trip;
@@ -32,6 +33,7 @@ use App\Policies\HeroBannerPolicy;
 use App\Policies\MediaPolicy;
 use App\Policies\NusukPermitPolicy;
 use App\Policies\PackagePolicy;
+use App\Policies\PaymentPolicy;
 use App\Policies\PersonPolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\TripPolicy;
@@ -54,6 +56,7 @@ class AuthServiceProvider extends ServiceProvider
         Customer::class => CustomerPolicy::class,
         Document::class => DocumentPolicy::class,
         NusukPermit::class => NusukPermitPolicy::class,
+        Payment::class => PaymentPolicy::class,
         VisaApplication::class => VisaApplicationPolicy::class,
         WaitlistEntry::class => WaitlistEntryPolicy::class,
         Trip::class => TripPolicy::class,

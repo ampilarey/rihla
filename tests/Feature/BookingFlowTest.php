@@ -394,6 +394,49 @@ class BookingFlowTest extends TestCase
     }
 
     /**
+     * **No invented account number.** config/payments.php ships with no bank
+     * details, and while that is true the confirmation must say nothing
+     * about where to send money. A made-up account is not a placeholder: it
+     * is an instruction to a customer to send money somewhere, and it is the
+     * same class of defect as the fabricated social links that reached the
+     * live site.
+     */
+    public function test_the_confirmation_invents_no_bank_details(): void
+    {
+        $package = $this->package();
+        $this->holdSeats($package, 1);
+        $this->post('/en/book/travellers', $this->party(1));
+        $this->post('/en/book/review', ['confirmed' => '1']);
+
+        $this->get('/en/book/confirmation')
+            ->assertOk()
+            ->assertDontSee('Paying by bank transfer')
+            ->assertDontSee('Account number');
+    }
+
+    public function test_the_confirmation_shows_the_transfer_details_once_they_exist(): void
+    {
+        config([
+            'payments.bank.name' => 'Bank of Maldives',
+            'payments.bank.account_name' => 'Rihla Travels Pvt Ltd',
+            'payments.bank.accounts' => ['MVR' => '7730000123456'],
+        ]);
+
+        $package = $this->package();
+        $this->holdSeats($package, 1);
+        $this->post('/en/book/travellers', $this->party(1));
+        $this->post('/en/book/review', ['confirmed' => '1']);
+
+        $this->get('/en/book/confirmation')
+            ->assertOk()
+            ->assertSee('Paying by bank transfer')
+            ->assertSee('7730000123456')
+            // The booking reference is what matches the transfer to the
+            // booking when it lands in the account.
+            ->assertSee(Booking::sole()->fresh()->reference);
+    }
+
+    /**
      * Somebody returning to the tab an hour later needs their reference and a
      * way to reach Rihla, not a redirect that loses both.
      */

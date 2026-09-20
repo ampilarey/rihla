@@ -37,6 +37,15 @@ class StaticAnalysisHabitsTest extends TestCase
 
         foreach ($this->phpFiles() as $file) {
             foreach (file($file->getPathname()) as $number => $line) {
+                // Comment lines are skipped, and that is not laziness. This
+                // guard's own fix in Ledger.php carried a comment naming the
+                // pattern it had just removed, and the scan flagged the
+                // prose — a guard that fires on an explanation of itself is
+                // one people start ignoring, and then it catches nothing.
+                if ($this->isComment($line)) {
+                    continue;
+                }
+
                 // A property, not a method: no "(" between the name and ??.
                 if (preg_match('/\?->[A-Za-z_][A-Za-z0-9_]*\s*\?\?/', $line)) {
                     $offenders[] = sprintf('%s:%d — %s', $this->relative($file->getPathname()), $number + 1, trim($line));
@@ -49,6 +58,20 @@ class StaticAnalysisHabitsTest extends TestCase
                 'Use `->`. (A method call is different and keeps its `?->`.)'],
             $offenders,
         )));
+    }
+
+    /**
+     * A line that is nothing but a comment.
+     *
+     * Deliberately crude: a line starting `//`, `#`, `/*` or a docblock
+     * `*`. It does not try to track whether a multi-line comment is open,
+     * because the only thing that would buy is catching an offender that is
+     * already commented out — which is not a defect — while every extra
+     * rule is another way for the scan to go wrong quietly.
+     */
+    private function isComment(string $line): bool
+    {
+        return (bool) preg_match('#^\s*(//|\#|/\*|\*)#', $line);
     }
 
     /** @return list<\SplFileInfo> */

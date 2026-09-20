@@ -463,4 +463,15 @@ return [
     'We message you if a seat comes back. It costs nothing and commits you to nothing.' => 'We message you if a seat comes back. It costs nothing and commits you to nothing.',
     'You are on the waiting list. We will message you if a seat comes back.' => 'You are on the waiting list. We will message you if a seat comes back.',
     'That offer has expired. Join the waiting list again and we will keep looking.' => 'That offer has expired. Join the waiting list again and we will keep looking.',
+
+    // Bank transfer (§5.3). English only: the Dhivehi files hold
+    // machine-generated entries that are being removed rather than trusted,
+    // and these fall back to English until a person translates them.
+    'Paying by bank transfer' => 'Paying by bank transfer',
+    'Bank' => 'Bank',
+    'Account name' => 'Account name',
+    'Account number' => 'Account number',
+    'Amount' => 'Amount',
+    'Reference' => 'Reference',
+    'Send us the slip and we will confirm once the money is in.' => 'Send us the slip and we will confirm once the money is in.',
 ];
