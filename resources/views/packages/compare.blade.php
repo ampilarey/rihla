@@ -57,9 +57,9 @@
                             <th scope="row" class="p-3 text-start font-semibold text-ink-muted">{{ __('messages.Dates') }}</th>
                             @foreach($departures as $departure)
                                 <td class="p-3 align-top" dir="auto">
-                                    {{ $departure->date_start->translatedFormat('j M Y') }}
+                                    <x-local-date :date="$departure->date_start" />
                                     <span aria-hidden="true">–</span>
-                                    {{ $departure->date_end->translatedFormat('j M Y') }}
+                                    <x-local-date :date="$departure->date_end" />
                                     <div class="mt-1"><x-departure-countdown :departure="$departure" /></div>
                                 </td>
                             @endforeach

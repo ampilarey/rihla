@@ -174,6 +174,29 @@ class Departure extends Model
 
     // ── Price ────────────────────────────────────────────────────────────
 
+    /**
+     * The tier for one occupancy and traveller type, if this departure
+     * publishes one.
+     *
+     * Null rather than a guess: a departure that prices only adults must
+     * price everybody as an adult, not have a child discount invented for
+     * it. Callers fall back deliberately.
+     */
+    public function tierFor(string $occupancy, string $paxType = PriceTier::ADULT): ?PriceTier
+    {
+        return $this->priceTiers
+            ->firstWhere(fn (PriceTier $tier): bool => $tier->occupancy === $occupancy && $tier->pax_type === $paxType);
+    }
+
+    /** The occupancies this departure actually prices, in price-list order. */
+    public function occupanciesOffered(): array
+    {
+        return array_values(array_filter(
+            PriceTier::OCCUPANCIES,
+            fn (string $occupancy): bool => $this->priceTiers->contains('occupancy', $occupancy),
+        ));
+    }
+
     /** The cheapest tier — what a "from" price means. */
     public function getLeadPriceAttribute(): ?Money
     {

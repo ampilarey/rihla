@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\Admin\WhyFeatureController;
 use App\Http\Controllers\Admin\WhySectionController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
@@ -45,6 +46,18 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     // Before the {slug} route, or "compare" is read as a package slug.
     Route::get('/packages/compare', PackageComparisonController::class)->name('packages.compare');
     Route::get('/packages/{slug}', [PackageController::class, 'show'])->name('packages.show');
+
+    // Checkout. Step one hangs off the package because that is where the
+    // visitor is standing; the rest do not carry an identifier at all — the
+    // booking is held in the session, because a reference in the path would
+    // let anyone who guessed one read a stranger's passport details.
+    Route::get('/packages/{slug}/book', [BookingController::class, 'start'])->name('booking.start');
+    Route::post('/packages/{slug}/book', [BookingController::class, 'hold'])->name('booking.hold');
+    Route::get('/book/travellers', [BookingController::class, 'travellers'])->name('booking.travellers');
+    Route::post('/book/travellers', [BookingController::class, 'storeTravellers'])->name('booking.travellers.store');
+    Route::get('/book/review', [BookingController::class, 'review'])->name('booking.review');
+    Route::post('/book/review', [BookingController::class, 'confirm'])->name('booking.confirm');
+    Route::get('/book/confirmation', [BookingController::class, 'confirmation'])->name('booking.confirmation');
 
     Route::get('/people', [PeopleController::class, 'index'])->name('people.index');
 

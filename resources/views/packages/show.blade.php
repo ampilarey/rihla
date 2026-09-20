@@ -130,9 +130,9 @@
                         <div class="md:col-span-2 space-y-4">
                             <div class="flex flex-wrap items-baseline gap-x-4 gap-y-2">
                                 <h3 class="text-lg font-bold text-ink" dir="auto">
-                                    {{ $departure->date_start->translatedFormat('j M Y') }}
+                                    <x-local-date :date="$departure->date_start" />
                                     <span class="text-ink-muted" aria-hidden="true">–</span>
-                                    {{ $departure->date_end->translatedFormat('j M Y') }}
+                                    <x-local-date :date="$departure->date_end" />
                                 </h3>
                                 <x-departure-countdown :departure="$departure" />
                             </div>
@@ -232,6 +232,18 @@
                             @endif
 
                             <x-seats-bar :departure="$departure" />
+
+                            {{-- The booking flow proper. Offered only when
+                                 seats can actually be sold: a departure with
+                                 no capacity recorded is not "unlimited", it is
+                                 unconfigured, and a button that throws on the
+                                 next page is worse than no button. --}}
+                            @if($departure->is_bookable)
+                                <a href="{{ route('booking.start', ['slug' => $package->slug, 'departure' => $departure->id]) }}"
+                                   class="btn-primary w-full">
+                                    {{ __('messages.Book now') }}
+                                </a>
+                            @endif
 
                             <x-cost-calculator :departure="$departure" />
                         </div>
