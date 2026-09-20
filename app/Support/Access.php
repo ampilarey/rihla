@@ -149,6 +149,12 @@ final class Access
         // a property of the dated run rather than of a person.
         'departure.nusuk',
 
+        // The departure board (§8.2). Its own permission because of what it
+        // aggregates: money outstanding across a departure's bookings, and
+        // how many travellers are missing a passport, a visa or a permit.
+        // Reading the departure record is not the same disclosure.
+        'departure.board',
+
         // Money received against a booking (§5.3). `download` is a separate
         // verb for the same reason it is on documents: a bank slip carries
         // an account number and a name, and seeing that a payment exists is
@@ -274,7 +280,13 @@ final class Access
                 // set is defined by inclusion precisely so that adding a
                 // verb under an existing prefix cannot grant it by accident,
                 // and this is that case arriving.
-                && $permission !== 'departure.nusuk',
+                && $permission !== 'departure.nusuk'
+                // `departure.board` is the same case, a second time. The
+                // board carries money outstanding and how many travellers
+                // are missing documents; editing the website is not a
+                // reason to see either. Inclusion by prefix would have
+                // handed it over silently.
+                && $permission !== 'departure.board',
         ));
 
         // Bookings and the customers attached to them. A separate set from
@@ -358,7 +370,7 @@ final class Access
                 $payments,
                 $enquiries,
                 $rooming,
-                ['departure.nusuk'],
+                ['departure.nusuk', 'departure.board'],
                 $content,
             ),
 
@@ -405,7 +417,11 @@ final class Access
                 // Staff's call.
                 $visasReadOnly,
                 $permitsReadOnly,
-                ['package.viewAny', 'package.view', 'departure.viewAny', 'departure.view'],
+                // The board tells them which departure needs chasing, which
+                // is most of what taking bookings is. Reporting is
+                // deliberately *not* given it: the board carries money
+                // outstanding, and that role does not hold payments at all.
+                ['package.viewAny', 'package.view', 'departure.viewAny', 'departure.view', 'departure.board'],
                 // Takes the phone call where somebody says they have paid,
                 // so it records the claim and can pull the slip back up for
                 // the customer who mislaid it. It cannot decide the money is
@@ -427,7 +443,13 @@ final class Access
             // now this role's whole reason to exist: it records them, pulls
             // the slips, decides whether the money is in, and issues
             // refunds. Nobody else holds `payment.reconcile`.
-            self::FINANCE => array_merge(['admin.access'], $bookingsReadOnly, $payments),
+            // The board's money line is this role's job: which departures
+            // are flying with a balance outstanding, and how much.
+            self::FINANCE => array_merge(
+                ['admin.access', 'departure.board'],
+                $bookingsReadOnly,
+                $payments,
+            ),
 
             // Answers the phone. Needs to find a booking and read it back to
             // whoever is calling, and nothing more until the pilgrim portal
