@@ -192,6 +192,18 @@ final class Access
         'rooming.view',
         'rooming.update',
 
+        // Incidents on the ground (§8.3, §6.5). No delete verb, and none is
+        // ever added: an incident report that can be removed is evidence
+        // that can be removed — the same reasoning that kept `delete` off
+        // visa applications and Nusuk permits. `resolve` is separate from
+        // `update` because closing one is a statement that it is over.
+        'incident.viewAny',
+        'incident.view',
+        'incident.create',
+        'incident.update',
+        'incident.assign',
+        'incident.resolve',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -340,6 +352,21 @@ final class Access
 
         $roomingReadOnly = ['rooming.viewAny', 'rooming.view'];
 
+        $incidents = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'incident',
+        ));
+
+        $incidentsReadOnly = ['incident.viewAny', 'incident.view'];
+
+        // Raises one and adds to the narrative; does not decide it is over
+        // and does not hand it to somebody else. Both of those are the
+        // office's, and a leader closing their own incident from the
+        // coach is how a serious one stops being followed up.
+        $incidentsFromTheGround = [
+            'incident.viewAny', 'incident.view', 'incident.create', 'incident.update',
+        ];
+
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
 
@@ -370,6 +397,7 @@ final class Access
                 $payments,
                 $enquiries,
                 $rooming,
+                $incidents,
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -400,6 +428,10 @@ final class Access
             self::TOUR_LEADER => array_merge(
                 ['admin.access', 'trip.viewAny', 'trip.view'],
                 $roomingReadOnly,
+                // They are the person standing there when it happens. An
+                // incident that has to wait for the office to open is one
+                // recorded from memory two days later, if at all.
+                $incidentsFromTheGround,
             ),
 
             // Takes and manages bookings. Reads the product to do it —
@@ -467,6 +499,8 @@ final class Access
                 // Answering the phone is where most enquiries come from.
                 $enquiriesWithoutAssigning,
                 $roomingReadOnly,
+                // Takes the call from a family at home asking what happened.
+                $incidentsReadOnly,
             ),
 
             // The documents are the job: collecting them, checking them and

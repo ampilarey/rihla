@@ -57,7 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `rooms` hangs off `departure_hotels`, which this
+        // First of all: `incidents` holds foreign keys into `departures` and
+        // `travellers`, and restricts deleting the latter.
+        __DIR__.'/../../database/migrations/2026_09_20_250000_create_incidents.php',
+        // Then: `rooms` hangs off `departure_hotels`, which this
         // very migration creates, and `room_assignments` reaches into
         // `travellers` and `bookings` besides.
         __DIR__.'/../../database/migrations/2026_09_20_230000_create_rooms.php',
