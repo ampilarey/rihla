@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -169,6 +170,12 @@ class Booking extends Model
     public function seatHolds(): HasMany
     {
         return $this->hasMany(SeatHold::class);
+    }
+
+    /** @return MorphMany<CrmTask, $this> */
+    public function tasks(): MorphMany
+    {
+        return $this->morphMany(CrmTask::class, 'about')->orderBy('due_on');
     }
 
     /** @return HasMany<BookingStatusTransition, $this> */

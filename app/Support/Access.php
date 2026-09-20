@@ -197,6 +197,35 @@ final class Access
         // enquiry everybody can reassign is one nobody owns.
         'enquiry.assign',
 
+        // The rest of §8.1. `quotation.*` has no delete verb for the same
+        // reason `enquiry` has none: a quotation somebody declined is the
+        // record of a price this operator could not win on, and that is
+        // the most useful row in the table. A sent quotation is superseded
+        // rather than edited, so `update` only ever touches a draft.
+        'quotation.viewAny',
+        'quotation.view',
+        'quotation.create',
+        'quotation.update',
+        // Putting a price in front of a customer, and taking their answer.
+        // Separate from writing one, because the number somebody is
+        // committed to is not the same decision as the number somebody
+        // drafted.
+        'quotation.send',
+
+        // Follow-up tasks. `assign` is separate for the same reason
+        // `enquiry.assign` is: work everybody can hand around is work
+        // nobody owns.
+        'task.viewAny',
+        'task.view',
+        'task.create',
+        'task.update',
+        'task.assign',
+        'task.delete',
+
+        // Facts about a customer that outlive any one lead — tags,
+        // preferences, who referred them.
+        'customer.tag',
+
         // Rooming (§8.2). No delete verb for an assignment: taking somebody
         // out of a room is an update to the rooming list, and a separate
         // permission for it would only ever be granted alongside update.
@@ -469,6 +498,26 @@ final class Access
         // Works the enquiries they are given; does not hand them out.
         $enquiriesWithoutAssigning = ['enquiry.viewAny', 'enquiry.view', 'enquiry.create', 'enquiry.update'];
 
+        $quotations = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'quotation',
+        ));
+
+        // Drafts a price and cannot commit the operator to it.
+        $quotationsWithoutSending = [
+            'quotation.viewAny', 'quotation.view', 'quotation.create', 'quotation.update',
+        ];
+
+        $quotationsReadOnly = ['quotation.viewAny', 'quotation.view'];
+
+        $tasks = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'task',
+        ));
+
+        // Works the list and cannot hand work to somebody else.
+        $tasksWithoutAssigning = ['task.viewAny', 'task.view', 'task.create', 'task.update'];
+
         $rooming = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'rooming',
@@ -614,6 +663,9 @@ final class Access
                 $permits,
                 $payments,
                 $enquiries,
+                $quotations,
+                $tasks,
+                ['customer.tag'],
                 $rooming,
                 $incidents,
                 $attendance,
@@ -710,6 +762,14 @@ final class Access
                 // the enquiries — and the chasing list, which is the same
                 // job by another name.
                 $enquiriesWithoutAssigning,
+                // And the price they quote, and the reminders they set
+                // themselves. Sending is theirs: at this size the person
+                // on the phone is the person who commits to the number,
+                // and a quotation that needs a supervisor to send is one
+                // that gets read out from a draft instead.
+                $quotations,
+                $tasksWithoutAssigning,
+                ['customer.tag'],
                 $notices,
                 // Reads the rooming to answer "who am I sharing with?";
                 // rearranging it is operations' job.
@@ -759,6 +819,11 @@ final class Access
                 $paymentsReadOnly,
                 // Answering the phone is where most enquiries come from.
                 $enquiriesWithoutAssigning,
+                // Reads a quotation to answer "what were we quoted?" on the
+                // phone, and cannot write or send one: committing the
+                // operator to a price is not a reception job.
+                $quotationsReadOnly,
+                $tasksWithoutAssigning,
                 $roomingReadOnly,
                 // Takes the call from a family at home asking what happened.
                 $incidentsReadOnly,

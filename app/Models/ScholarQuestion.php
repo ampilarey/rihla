@@ -32,6 +32,10 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * the reason {@see answer()} takes a {@see Person} rather than reading the
  * logged-in user: the scholar who answers may never hold a staff login.
  */
+/**
+ * @property-read ?Person $scholar
+ * @property-read ?Booking $booking
+ */
 class ScholarQuestion extends Model
 {
     use HasFactory;
