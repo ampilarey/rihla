@@ -19,6 +19,7 @@ use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TripController;
+use App\Http\Controllers\WaitlistController;
 use App\Models\GuideStep;
 use App\Models\Media;
 use App\Models\Trip;
@@ -58,6 +59,14 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     Route::get('/book/review', [BookingController::class, 'review'])->name('booking.review');
     Route::post('/book/review', [BookingController::class, 'confirm'])->name('booking.confirm');
     Route::get('/book/confirmation', [BookingController::class, 'confirmation'])->name('booking.confirmation');
+
+    // The waiting list for a full departure. The claim link hands over seats
+    // that are already held, so it is signed and expires with the offer —
+    // a guessable URL would let anybody take somebody else's.
+    Route::post('/packages/{slug}/waitlist', [WaitlistController::class, 'join'])->name('waitlist.join');
+    Route::get('/waitlist/claim/{entry}', [WaitlistController::class, 'claim'])
+        ->name('waitlist.claim')
+        ->middleware('signed');
 
     Route::get('/people', [PeopleController::class, 'index'])->name('people.index');
 

@@ -15,6 +15,7 @@ use App\Models\Person;
 use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
+use App\Models\WaitlistEntry;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Policies\ArticlePolicy;
@@ -30,6 +31,7 @@ use App\Policies\PersonPolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\TripPolicy;
 use App\Policies\UserPolicy;
+use App\Policies\WaitlistEntryPolicy;
 use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
 use App\Support\Access;
@@ -44,6 +46,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Booking::class => BookingPolicy::class,
         Customer::class => CustomerPolicy::class,
+        WaitlistEntry::class => WaitlistEntryPolicy::class,
         Trip::class => TripPolicy::class,
         Package::class => PackagePolicy::class,
         Departure::class => DeparturePolicy::class,

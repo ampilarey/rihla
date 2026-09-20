@@ -11,7 +11,9 @@ use App\Models\Package;
 use App\Models\PriceTier;
 use App\Models\Setting;
 use App\Models\Traveller;
+use App\Models\WaitlistEntry;
 use App\Services\Booking\SeatAllocator;
+use App\Services\Booking\Waitlist;
 use App\Support\Checkout;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -187,6 +189,18 @@ class BookingController extends Controller
         });
 
         Checkout::attach($booking);
+
+        // Entered from a waiting-list offer: the entry has now become a
+        // booking and must stop showing as somebody still waiting.
+        $entryId = Checkout::waitlistEntryId();
+
+        if ($entryId !== null) {
+            $entry = WaitlistEntry::find($entryId);
+
+            if ($entry instanceof WaitlistEntry) {
+                app(Waitlist::class)->convert($entry, $booking->getKey());
+            }
+        }
 
         return redirect()->route('booking.review');
     }

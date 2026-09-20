@@ -31,8 +31,9 @@ class PackageDepartureTest extends TestCase
 
     /**
      * The booking tables hold foreign keys into `packages`, `departures` and
-     * `price_tiers`, so they have to come off before those tables can be
-     * dropped and go back on after. MySQL refuses the drop otherwise —
+     * `price_tiers`, and `waitlist_entries` holds them into `departures`,
+     * `seat_holds` and `bookings` — so they come off newest first and go
+     * back on in the reverse order. MySQL refuses the drop otherwise —
      * "Cannot drop table 'price_tiers' referenced by a foreign key
      * constraint" — while SQLite allows it and leaves the references
      * dangling, so this ordering is invisible until CI runs against the
@@ -41,6 +42,7 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        __DIR__.'/../../database/migrations/2026_09_20_160000_create_waitlist_entries.php',
         __DIR__.'/../../database/migrations/2026_09_20_141000_add_the_departure_capacity_constraint.php',
         __DIR__.'/../../database/migrations/2026_09_20_140000_create_booking_domain.php',
     ];

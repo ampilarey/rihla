@@ -458,4 +458,9 @@ return [
     'Complete on WhatsApp' => 'Complete on WhatsApp',
     'Or call us on :number.' => 'Or call us on :number.',
     'Book now' => 'Book now',
+    'Join the waiting list' => 'Join the waiting list',
+    'Add me to the list' => 'Add me to the list',
+    'We message you if a seat comes back. It costs nothing and commits you to nothing.' => 'We message you if a seat comes back. It costs nothing and commits you to nothing.',
+    'You are on the waiting list. We will message you if a seat comes back.' => 'You are on the waiting list. We will message you if a seat comes back.',
+    'That offer has expired. Join the waiting list again and we will keep looking.' => 'That offer has expired. Join the waiting list again and we will keep looking.',
 ];

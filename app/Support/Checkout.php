@@ -26,11 +26,30 @@ final class Checkout
 
     private const BOOKING = 'checkout.booking';
 
+    /**
+     * Set when the checkout was entered from a waiting-list offer, so the
+     * entry can be marked converted once the booking exists. Without it a
+     * promoted party would book and still show as waiting for ever.
+     */
+    private const WAITLIST = 'checkout.waitlist';
+
     public static function remember(SeatHold $hold, string $occupancy): void
     {
         Session::put(self::HOLD, $hold->getKey());
         Session::put(self::OCCUPANCY, $occupancy);
-        Session::forget(self::BOOKING);
+        Session::forget([self::BOOKING, self::WAITLIST]);
+    }
+
+    public static function rememberWaitlistEntry(int $id): void
+    {
+        Session::put(self::WAITLIST, $id);
+    }
+
+    public static function waitlistEntryId(): ?int
+    {
+        $id = Session::get(self::WAITLIST);
+
+        return is_int($id) ? $id : null;
     }
 
     public static function attach(Booking $booking): void
@@ -61,6 +80,6 @@ final class Checkout
 
     public static function clear(): void
     {
-        Session::forget([self::HOLD, self::OCCUPANCY, self::BOOKING]);
+        Session::forget([self::HOLD, self::OCCUPANCY, self::BOOKING, self::WAITLIST]);
     }
 }
