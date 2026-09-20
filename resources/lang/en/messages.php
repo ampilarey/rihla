@@ -354,4 +354,17 @@ return [
     'Total for your party' => 'Total for your party',
     'Travellers' => 'Travellers',
     'What will it cost?' => 'What will it cost?',
+
+    // Package finder (Phase 2.5).
+    'Any budget' => 'Any budget',
+    'Any length' => 'Any length',
+    'Any month' => 'Any month',
+    'Budget per person' => 'Budget per person',
+    'Clear' => 'Clear',
+    'Departing in' => 'Departing in',
+    'Find packages' => 'Find packages',
+    'Length' => 'Length',
+    'Nothing matches that search. Try a wider budget or a different month.' => 'Nothing matches that search. Try a wider budget or a different month.',
+    'Show all packages' => 'Show all packages',
+    'Up to :amount' => 'Up to :amount',
 ];

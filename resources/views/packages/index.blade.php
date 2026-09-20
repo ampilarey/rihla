@@ -11,6 +11,79 @@
             </p>
         </header>
 
+        {{--
+            The finder. Every option offered comes from departures that exist
+            — the months something actually departs in, budget bands spanning
+            the real prices — because a dropdown offering December when
+            nothing departs in December wastes the one interaction a visitor
+            gives you.
+
+            A separate GET form from the comparison one below, and it submits
+            to this same page, so filtering is a URL: shareable, bookmarkable
+            and readable by a crawler, with no JavaScript.
+        --}}
+        @if(! $options->isEmpty())
+            <form method="GET" action="{{ route('packages.index') }}"
+                  class="card mb-8 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                    <label for="finder-month" class="mb-1 block text-sm font-medium text-ink">
+                        {{ __('messages.Departing in') }}
+                    </label>
+                    <select id="finder-month" name="month"
+                            class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                        <option value="">{{ __('messages.Any month') }}</option>
+                        @foreach($options->months as $month)
+                            <option value="{{ $month['value'] }}" @selected($filters->month === $month['value'])>
+                                {{ $month['label'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if($options->budgets->isNotEmpty())
+                    <div>
+                        <label for="finder-budget" class="mb-1 block text-sm font-medium text-ink">
+                            {{ __('messages.Budget per person') }}
+                        </label>
+                        <select id="finder-budget" name="budget"
+                                class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                            <option value="">{{ __('messages.Any budget') }}</option>
+                            @foreach($options->budgets as $budget)
+                                <option value="{{ $budget['value'] }}"
+                                    @selected($filters->maxBudgetMinor === \App\Support\Money::ofMajor($budget['value'])->minor)>
+                                    {{ $budget['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
+                @if($options->durations->isNotEmpty())
+                    <div>
+                        <label for="finder-nights" class="mb-1 block text-sm font-medium text-ink">
+                            {{ __('messages.Length') }}
+                        </label>
+                        <select id="finder-nights" name="nights"
+                                class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                            <option value="">{{ __('messages.Any length') }}</option>
+                            @foreach($options->durations as $duration)
+                                <option value="{{ $duration['value'] }}" @selected($filters->maxNights === $duration['value'])>
+                                    {{ $duration['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="btn-primary flex-1">{{ __('messages.Find packages') }}</button>
+                    @if(! $filters->isEmpty())
+                        <a href="{{ route('packages.index') }}" class="btn-secondary">{{ __('messages.Clear') }}</a>
+                    @endif
+                </div>
+            </form>
+        @endif
+
     {{--
         A plain GET form. Ticking two boxes and pressing the button lands on
         /packages/compare?departures[]=…, with no JavaScript involved — which
@@ -115,7 +188,18 @@
                 </div>
             </article>
         @empty
-            <p class="py-12 text-center text-ink-muted">{{ __('messages.No packages are published yet.') }}</p>
+            @if($filters->isEmpty())
+                <p class="py-12 text-center text-ink-muted">{{ __('messages.No packages are published yet.') }}</p>
+            @else
+                <div class="card p-8 text-center">
+                    <p class="mb-4 text-brand-body">
+                        {{ __('messages.Nothing matches that search. Try a wider budget or a different month.') }}
+                    </p>
+                    <a href="{{ route('packages.index') }}" class="btn-secondary">
+                        {{ __('messages.Show all packages') }}
+                    </a>
+                </div>
+            @endif
         @endforelse
 
         @if($packages->isNotEmpty())
