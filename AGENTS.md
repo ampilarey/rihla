@@ -12,6 +12,28 @@ Rihla Travels is a Laravel 13 (PHP 8.3+) travel website using TailwindCSS + Vite
 - Tests: `php artisan test` (PHPUnit; uses in-memory SQLite via `phpunit.xml`).
 
 ### Non-obvious gotchas
+### Links to give the owner after every merge and push
+
+The owner asked to be handed these every time, so include them in the reply
+that reports a merge — not only when a deploy happens.
+
+| | |
+|---|---|
+| Production site | https://rihla.mv |
+| Test site (this is what a merge actually updates) | https://test.rihla.mv |
+| Production health, with the running commit | https://rihla.mv/up |
+
+**Say plainly which of the two a merge touched.** Merging to `main` deploys to
+**test only**. `rihla.mv` is never deployed automatically — it takes
+`bash scripts/deploy-production.sh`, run by hand on the server. Handing over a
+production link after a merge, without that sentence, reads as "this is live",
+and it is not.
+
+The cPanel/StackCP control-panel URL is **not recorded here** because nobody
+has given it. Ask the owner rather than guessing one: a wrong `:2083` or
+StackCP link is the same class of defect as the invented social links and the
+`PLxxxxxxxxxx` playlist that reached the live site.
+
 ### TEST auto-deploy (like Bake & Grill)
 - **After CI passes** on `main` (not on the push itself), GitHub Actions calls `POST https://test.rihla.mv/api/deploy/test-pull` (see `.github/workflows/deploy-test-immediate.yml`). A red CI run deploys nothing and says so.
 - The workflow then polls `GET /api/health` with the deploy secret until it reports the commit it just deployed. A 202 from the webhook only means the pull *started*.
