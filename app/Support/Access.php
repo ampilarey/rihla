@@ -14,7 +14,8 @@ namespace App\Support;
  */
 final class Access
 {
-    // Roles — the nine real Rihla staff functions.
+    // Roles — the ten real Rihla functions. Nine are staff; the tenth is
+    // not, and that is the point of it.
     public const SUPER_ADMIN = 'Super Admin';
 
     public const OPERATIONS_MANAGER = 'Operations Manager';
@@ -33,6 +34,16 @@ final class Access
 
     public const REPORTING = 'Reporting';
 
+    /**
+     * The scholar who signs off religious content — §6.4.
+     *
+     * Not a member of staff. They review the Knowledge Centre and nothing
+     * else: no bookings, no customers, no money, no website. §6.4 makes
+     * editorial review before publish non-negotiable, and a reviewer who
+     * also holds the publish button is not a reviewer.
+     */
+    public const SCHOLAR = 'Scholar';
+
     /** @var list<string> */
     public const ROLES = [
         self::SUPER_ADMIN,
@@ -44,6 +55,7 @@ final class Access
         self::CONTENT_MANAGER,
         self::TOUR_LEADER,
         self::REPORTING,
+        self::SCHOLAR,
     ];
 
     /**
@@ -254,6 +266,23 @@ final class Access
         'notice.view',
         'notice.handle',
 
+        // The Knowledge Centre (§7.1) and the scholar review it cannot
+        // ship without (§6.4).
+        //
+        // `review` is a scholar's judgement about content; `publish` is the
+        // office's decision about timing. They are separate verbs because
+        // one button doing both would make the scholar the publisher, and
+        // because the whole point of §6.4 is that neither can be skipped.
+        //
+        // No delete verb: a withdrawn article keeps its reason, and a page
+        // that vanished for no recorded cause is one nobody can explain.
+        'knowledge.viewAny',
+        'knowledge.view',
+        'knowledge.create',
+        'knowledge.update',
+        'knowledge.review',
+        'knowledge.publish',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -436,6 +465,22 @@ final class Access
             fn (string $permission) => strtok($permission, '.') === 'announcement',
         ));
 
+        $knowledge = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'knowledge',
+        ));
+
+        // Writes it; neither reviews nor publishes it. The Content Manager
+        // owns the website's words, and religious content is the one place
+        // where owning the words is not enough.
+        $knowledgeWithoutSignOff = [
+            'knowledge.viewAny', 'knowledge.view', 'knowledge.create', 'knowledge.update',
+        ];
+
+        // A scholar reads the queue and signs off. They do not publish, and
+        // they do not write the site's marketing.
+        $knowledgeReview = ['knowledge.viewAny', 'knowledge.view', 'knowledge.review'];
+
         $notices = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'notice',
@@ -498,13 +543,21 @@ final class Access
                 $announcements,
                 $broadcasts,
                 $notices,
+                array_diff($knowledge, ['knowledge.review']),
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
 
             // Owns the public-facing content, but not the site's settings —
             // social links and contact details are an operations decision.
-            self::CONTENT_MANAGER => array_merge(['admin.access'], $content),
+            self::CONTENT_MANAGER => array_merge(
+                ['admin.access'],
+                $content,
+                // Drafts knowledge articles and sends them for review.
+                // Owning the website's words is not enough to sign off
+                // religious content (§6.4).
+                $knowledgeWithoutSignOff,
+            ),
 
             // Read-only across the board.
             // Read-only across content, plus the audit trail — reporting on
@@ -579,6 +632,12 @@ final class Access
                 // rearranging it is operations' job.
                 $roomingReadOnly,
             ),
+
+            // Reads the review queue and signs articles off. Nothing else
+            // — not bookings, not customers, not money, not the website.
+            // A reviewer who can also publish is not a reviewer (§6.4), so
+            // `knowledge.publish` is deliberately absent here.
+            self::SCHOLAR => array_merge(['admin.access'], $knowledgeReview),
 
             // Reconciles payments, so it reads bookings and who they belong
             // to. Editing one is booking staff's job; when refunds and
