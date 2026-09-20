@@ -29,11 +29,19 @@
 @php($parts = match ($format) {
     'j M Y' => ['j', 'M', 'Y'],
     'j F Y' => ['j', 'F', 'Y'],
+    // Day and month with no year. Still isolated, and for the same reason
+    // even though nothing follows the month inside the component: these sit
+    // in a sentence, and the next number along the line — "· about 6
+    // minutes" — is retyped by rule W2 exactly as a year would be.
+    'j M' => ['j', 'M', null],
+    'j F' => ['j', 'F', null],
     default => null,
 })
 
 @if($parts === null)
     <span dir="ltr" {{ $attributes }}>{{ $date->translatedFormat($format) }}</span>
+@elseif($parts[2] === null)
+    <span dir="ltr" {{ $attributes }}>{{ $date->translatedFormat($parts[0]) }} <bdi>{{ $date->translatedFormat($parts[1]) }}</bdi></span>
 @else
     <span dir="ltr" {{ $attributes }}>{{ $date->translatedFormat($parts[0]) }} <bdi>{{ $date->translatedFormat($parts[1]) }}</bdi> {{ $date->translatedFormat($parts[2]) }}</span>
 @endif

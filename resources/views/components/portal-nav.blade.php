@@ -1,10 +1,10 @@
 @props(['current' => 'home'])
 
 {{--
-    Three pages and a way out. Deliberately small: the portal's value is
+    Four pages and a way out. Deliberately small: the portal's value is
     that a pilgrim can find one thing quickly on a phone, and a navigation
     bar with twelve entries — most of them empty because nothing feeds them
-    yet — is worse than three that always have something in them.
+    yet — is worse than four that always have something in them.
 
     "Family links" earns its place because §6.2 puts the privacy controls in
     the pilgrim's hands, and a control nobody can find is not one they own.
@@ -41,6 +41,21 @@
        @if($current === 'family') aria-current="page" @endif
        dir="auto">
         {{ __('messages.Family links') }}
+    </a>
+
+    {{-- "Learning" earns its place for the same reason: §7.3's plan is
+         keyed to the departure date, so it changes under the pilgrim
+         without being opened, and a deadline nobody can find is not one
+         anybody meets. --}}
+    <a href="{{ route('learning.index', ['locale' => app()->getLocale()]) }}"
+       @class([
+           'rounded-xl px-4 py-2 text-sm font-medium',
+           'bg-wine-600 text-cream' => $current === 'learning',
+           'bg-cream text-ink hover:bg-cream-deep' => $current !== 'learning',
+       ])
+       @if($current === 'learning') aria-current="page" @endif
+       dir="auto">
+        {{ __('messages.Learning') }}
     </a>
 
     {{-- A POST, because signing out with a GET is something a link

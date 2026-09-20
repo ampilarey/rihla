@@ -300,6 +300,21 @@ final class Access
         'ziyarah.review',
         'ziyarah.publish',
 
+        // The Learning Academy (§7.3). The same six verbs again, and the
+        // same reason for the last two being apart: a module teaching
+        // somebody how to perform a rite is a religious claim, and the
+        // reader is about to act on it rather than merely read it.
+        //
+        // A learning *path* carries no editorial gate of its own — it is an
+        // ordering of modules a scholar has already signed off — so
+        // publishing one is an office act under `learning.publish`.
+        'learning.viewAny',
+        'learning.view',
+        'learning.create',
+        'learning.update',
+        'learning.review',
+        'learning.publish',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -510,6 +525,17 @@ final class Access
 
         $ziyarahReview = ['ziyarah.viewAny', 'ziyarah.view', 'ziyarah.review'];
 
+        $learning = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'learning',
+        ));
+
+        $learningWithoutSignOff = [
+            'learning.viewAny', 'learning.view', 'learning.create', 'learning.update',
+        ];
+
+        $learningReview = ['learning.viewAny', 'learning.view', 'learning.review'];
+
         $notices = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'notice',
@@ -574,6 +600,7 @@ final class Access
                 $notices,
                 array_diff($knowledge, ['knowledge.review']),
                 array_diff($ziyarah, ['ziyarah.review']),
+                array_diff($learning, ['learning.review']),
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -588,6 +615,7 @@ final class Access
                 // religious content (§6.4).
                 $knowledgeWithoutSignOff,
                 $ziyarahWithoutSignOff,
+                $learningWithoutSignOff,
             ),
 
             // Read-only across the board.
@@ -668,7 +696,7 @@ final class Access
             // — not bookings, not customers, not money, not the website.
             // A reviewer who can also publish is not a reviewer (§6.4), so
             // `knowledge.publish` is deliberately absent here.
-            self::SCHOLAR => array_merge(['admin.access'], $knowledgeReview, $ziyarahReview),
+            self::SCHOLAR => array_merge(['admin.access'], $knowledgeReview, $ziyarahReview, $learningReview),
 
             // Reconciles payments, so it reads bookings and who they belong
             // to. Editing one is booking staff's job; when refunds and
