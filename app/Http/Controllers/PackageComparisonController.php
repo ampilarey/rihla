@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Departure;
+use App\Models\Package;
 use App\Models\PriceTier;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -48,7 +50,16 @@ class PackageComparisonController extends Controller
                 // surprise.
                 ->upcoming()
                 ->whereKey($ids)
-                ->whereHas('package', fn ($query) => $query->published())
+                // whereHas() hands its callback a builder typed for the
+                // base Model, which has no published() scope — that, not the
+                // static call above, is what static analysis objected to.
+                // Naming the generic keeps the scope as the single source of
+                // truth; repeating `where('is_published', true)` here would
+                // work too and would be a second place to change.
+                ->whereHas('package', function ($query): void {
+                    /** @var Builder<Package> $query */
+                    $query->published();
+                })
                 ->with(['package', 'priceTiers', 'hotels', 'itinerary'])
                 ->get()
                 // Keep the order the visitor chose rather than the database's.
