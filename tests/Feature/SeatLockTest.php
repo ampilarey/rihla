@@ -3,10 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Departure;
+use App\Models\Package;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -27,33 +28,37 @@ use Tests\TestCase;
  * skipped there, loudly, and runs in the MySQL job that exists in CI for
  * exactly this.
  *
- * DatabaseTruncation rather than RefreshDatabase: RefreshDatabase wraps each
- * test in a transaction on the default connection, so a second connection
- * could not see the fixture at all and the test would fail for a reason
- * having nothing to do with locking.
+ * ## Why this file manages its own data
  *
- * ## Why tearDown is so careful
+ * It can use neither of the usual traits. `RefreshDatabase` wraps each test
+ * in a transaction on the default connection, so the second connection could
+ * not see the fixture at all and the test would fail for a reason having
+ * nothing to do with locking.
  *
- * The first version of this test hung CI for sixteen minutes — the whole run
- * normally takes two. It rolled both transactions back in a `finally`, with
- * the second connection's rollback first. When MySQL resolves the contention
- * as a deadlock rather than a lock-wait timeout it has *already* rolled that
- * transaction back, so `rollBack()` throws "there is no active transaction",
- * the second statement in the `finally` never runs, and the default
- * connection keeps its row lock. The next test's `TRUNCATE departures` then
- * waits on a metadata lock — and `lock_wait_timeout` defaults to a year.
+ * `DatabaseTruncation` was the first answer, and it broke twenty other tests
+ * in the MySQL job: it empties *every* table, including `roles` and
+ * `permissions`, which this application populates from migrations rather
+ * than a seeder. From that point on in the run, every test that assigned
+ * "Super Admin" failed with `RoleDoesNotExist` — a failure twenty files
+ * away from its cause, which is the worst kind to debug. Nothing in this
+ * file's own results hinted at it; both tests here passed.
  *
- * So cleanup does not depend on the test body reaching any particular line,
- * does not depend on one rollback succeeding for the next to be attempted,
- * and finishes by disconnecting both sessions, which releases every lock
- * whatever state the transactions were left in.
+ * So it commits its fixture and removes exactly that fixture afterwards,
+ * touching no other table. Two rows in, two rows out.
+ *
+ * Cleanup deliberately does not depend on the test body reaching any
+ * particular line, nor on one step succeeding for the next to be attempted.
+ * An open transaction still holding a row lock on `departures` would make
+ * the next test's writes wait, and `lock_wait_timeout` defaults to a year —
+ * so both sessions are disconnected at the end regardless of what state
+ * their transactions were left in.
  */
 class SeatLockTest extends TestCase
 {
-    use DatabaseTruncation;
-
     /** Long enough to prove the lock blocks, short enough not to stall CI. */
     private const LOCK_TIMEOUT_SECONDS = 1;
+
+    private ?Departure $fixture = null;
 
     protected function setUp(): void
     {
@@ -66,6 +71,13 @@ class SeatLockTest extends TestCase
             );
         }
 
+        // The suite's RefreshDatabase tests migrate the database once, before
+        // the first of them runs. Running this file on its own would not, so
+        // check rather than assume.
+        if (! Schema::hasTable('departures')) {
+            $this->artisan('migrate', ['--force' => true])->assertSuccessful();
+        }
+
         // A clone of the default connection, so the two transactions below
         // are genuinely two sessions rather than the same one twice.
         config(['database.connections.second' => config('database.connections.'.config('database.default'))]);
@@ -74,10 +86,9 @@ class SeatLockTest extends TestCase
 
     protected function tearDown(): void
     {
-        // Unconditional, independent, and quiet. See the class docblock: an
-        // open transaction surviving this method is what hung CI.
         $this->releaseQuietly('second');
         $this->releaseQuietly(null);
+        $this->removeFixture();
 
         parent::tearDown();
     }
@@ -92,9 +103,11 @@ class SeatLockTest extends TestCase
                 try {
                     $connection->rollBack();
                 } catch (\Throwable) {
-                    // MySQL may have rolled it back already. Disconnecting
-                    // below releases the locks regardless, which is the only
-                    // thing that actually matters here.
+                    // MySQL rolls the whole transaction back itself when it
+                    // resolves contention as a deadlock, and rollBack() then
+                    // throws "there is no active transaction". Disconnecting
+                    // below releases the locks either way, which is the only
+                    // thing that actually matters.
                     break;
                 }
             }
@@ -107,9 +120,33 @@ class SeatLockTest extends TestCase
     }
 
     /**
+     * Two rows out.
+     *
+     * A leaked departure would be published, upcoming and visible to every
+     * later test that counts what is on sale — so this runs after the
+     * sessions are released, on a connection that is certainly free.
+     */
+    private function removeFixture(): void
+    {
+        if ($this->fixture === null) {
+            return;
+        }
+
+        try {
+            Departure::whereKey($this->fixture->getKey())->delete();
+            Package::whereKey($this->fixture->package_id)->delete();
+        } catch (\Throwable) {
+            // Nothing useful to do here, and throwing would replace a real
+            // test result with a cleanup error.
+        }
+
+        $this->fixture = null;
+    }
+
+    /**
      * `unprepared()`, not `statement()`: a session variable set through the
      * prepared-statement protocol is not worth the doubt when the whole
-     * point is that this query gives up quickly.
+     * point is that the next query gives up quickly.
      */
     private function impatient(ConnectionInterface $connection): ConnectionInterface
     {
@@ -120,7 +157,7 @@ class SeatLockTest extends TestCase
 
     private function departure(): Departure
     {
-        return Departure::factory()->withSeats(1)->create();
+        return $this->fixture = Departure::factory()->withSeats(1)->create();
     }
 
     public function test_a_locked_departure_row_blocks_a_second_reader(): void

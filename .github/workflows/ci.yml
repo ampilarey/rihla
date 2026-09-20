@@ -16,11 +16,15 @@ permissions:
   contents: read
 
 # Every job carries `timeout-minutes: 15`. GitHub's default is six hours, and
-# a hung job is indistinguishable from a slow one until it has burned them:
-# the first version of SeatLockTest left an open transaction holding a row
-# lock, so the next test's TRUNCATE waited on a metadata lock whose timeout
-# defaults to a year. The whole run normally finishes in about two minutes,
-# so fifteen is generous and a hang now fails fast and visibly.
+# the whole run normally finishes in about two minutes, so nothing legitimate
+# comes near fifteen.
+#
+# Added after a job was misread as hanging when it had in fact already failed
+# — the check-runs API went on reporting it in_progress for a quarter of an
+# hour afterwards. A real hang is possible here (the booking tests take row
+# locks, and MySQL's `lock_wait_timeout` defaults to a year) and would be
+# indistinguishable from a slow job for six hours. This makes either case
+# end quickly and say so.
 
 jobs:
   tests:
