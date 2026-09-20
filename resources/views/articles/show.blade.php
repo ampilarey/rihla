@@ -21,7 +21,7 @@
 
                 <p class="mt-2 text-sm text-ink-muted" dir="auto">
                     <time datetime="{{ $article->published_at->toDateString() }}">
-                        {{ $article->published_at->translatedFormat('j F Y') }}
+                        <x-local-date :date="$article->published_at" format="j F Y" />
                     </time>
                     @if($article->author)
                         <span aria-hidden="true">·</span> {{ $article->author->name }}

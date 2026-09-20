@@ -106,6 +106,28 @@ class Package extends Model
         return $this->departures()->where('is_published', true);
     }
 
+    /**
+     * Every room type any published departure of this package prices.
+     *
+     * The union, in price-list order, because the booking form has to offer
+     * something before a departure is chosen. Whether *that* departure
+     * offers the room is re-checked on submit — a room the chosen date does
+     * not price comes back as an error rather than as a price of zero.
+     *
+     * @return list<string>
+     */
+    public function occupanciesOffered(): array
+    {
+        $offered = $this->publishedDepartures
+            ->flatMap(fn (Departure $departure): array => $departure->priceTiers->pluck('occupancy')->all())
+            ->unique();
+
+        return array_values(array_filter(
+            PriceTier::OCCUPANCIES,
+            fn (string $occupancy): bool => $offered->contains($occupancy),
+        ));
+    }
+
     /** @return list<string> */
     public function getInclusionListAttribute(): array
     {

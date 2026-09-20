@@ -17,7 +17,7 @@
     </h3>
 
     <p class="mt-1 font-medium text-ink-muted" dir="auto">
-        {{ $departure->date_start->translatedFormat('j M Y') }}
+        <x-local-date :date="$departure->date_start" />
     </p>
 
     <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">

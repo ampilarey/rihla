@@ -44,7 +44,35 @@ class PriceTier extends Model
 
     public const OCCUPANCIES = ['single', 'double', 'triple', 'quad', 'quint'];
 
-    public const PAX_TYPES = ['adult', 'child', 'infant'];
+    public const ADULT = 'adult';
+
+    public const CHILD = 'child';
+
+    public const INFANT = 'infant';
+
+    public const PAX_TYPES = [self::ADULT, self::CHILD, self::INFANT];
+
+    /**
+     * Which type a traveller of this age counts as, by the bands in
+     * config/booking.php. Null age means adult: the form asks for a date of
+     * birth, and somebody who did not give one is not thereby a child.
+     */
+    public static function paxTypeForAge(?int $age): string
+    {
+        if ($age === null) {
+            return self::ADULT;
+        }
+
+        foreach ([self::INFANT, self::CHILD] as $type) {
+            $ceiling = config("booking.pax_types.{$type}");
+
+            if (is_int($ceiling) && $age <= $ceiling) {
+                return $type;
+            }
+        }
+
+        return self::ADULT;
+    }
 
     /** @return BelongsTo<Departure, $this> */
     public function departure(): BelongsTo

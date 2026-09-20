@@ -162,7 +162,7 @@
                             <div class="space-y-2">
                                 <p class="text-sm text-ink-muted">{{ __('messages.Next departure') }}</p>
                                 <p class="font-semibold text-ink" dir="auto">
-                                    {{ $next->date_start->translatedFormat('j M Y') }}
+                                    <x-local-date :date="$next->date_start" />
                                 </p>
                                 <x-departure-countdown :departure="$next" />
 
