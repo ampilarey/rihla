@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\PortalSession;
 use App\Models\Booking;
 use App\Models\Document;
+use App\Models\FamilyAccess;
 use App\Models\NusukPermit;
 use App\Models\VisaApplication;
 use App\Services\Documents\DocumentWallet;
+use App\Services\Family\Doorkeeper;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Services\Payments\SlipVault;
 use App\Services\Portal\Gatekeeper;
@@ -39,7 +41,10 @@ use Illuminate\View\View;
  */
 class PortalController extends Controller
 {
-    public function __construct(private readonly Gatekeeper $gatekeeper) {}
+    public function __construct(
+        private readonly Gatekeeper $gatekeeper,
+        private readonly Doorkeeper $doorkeeper,
+    ) {}
 
     /**
      * The door: spend a link, open a session, and get the token out of the
@@ -72,6 +77,89 @@ class PortalController extends Controller
     public function locked(): View
     {
         return view('portal.locked');
+    }
+
+    /**
+     * The pilgrim's own privacy controls — §6.2.
+     *
+     * "Privacy controls the pilgrim owns" has to mean a screen the pilgrim
+     * can reach, or it means nothing. This is it: the links they have given
+     * out, what each one shows, and a button to turn any of them off.
+     */
+    public function family(Request $request): View
+    {
+        $booking = $this->booking($request);
+
+        return view('portal.family', [
+            'booking' => $booking,
+            'links' => FamilyAccess::where('booking_id', $booking->getKey())
+                ->orderByDesc('created_at')
+                ->get(),
+            // Shown once and never again. Held in the flash rather than the
+            // session proper so a refresh does not put it back on screen.
+            'freshLink' => session('family_link'),
+        ]);
+    }
+
+    /** Mint one. The plaintext is shown once, here, and never stored. */
+    public function storeFamilyLink(Request $request): RedirectResponse
+    {
+        $booking = $this->booking($request);
+
+        $validated = $request->validate([
+            'label' => ['nullable', 'string', 'max:60'],
+            'shares_attendance' => ['nullable', 'boolean'],
+        ]);
+
+        $token = $this->doorkeeper->issue(
+            $booking,
+            $validated['label'] ?? null,
+            (bool) ($validated['shares_attendance'] ?? false),
+        );
+
+        return redirect()->route('portal.family')
+            ->with('family_link', route('family.enter', ['token' => $token]));
+    }
+
+    /**
+     * Turn one off, now.
+     *
+     * The family session re-reads the access on every request, so this
+     * closes the page on whoever is already looking. A control that only
+     * takes effect at the next sign-in is not one you own.
+     */
+    public function revokeFamilyLink(Request $request, FamilyAccess $familyAccess): RedirectResponse
+    {
+        $booking = $this->booking($request);
+
+        // Never from the URL alone: a pilgrim must not be able to revoke
+        // somebody else's link by editing the address bar.
+        abort_unless($familyAccess->booking_id === $booking->getKey(), 404);
+
+        $this->doorkeeper->revoke($familyAccess);
+
+        return redirect()->route('portal.family')
+            ->with('status', __('messages.That link has been turned off.'));
+    }
+
+    /**
+     * Change what a link shows, without issuing a new one.
+     *
+     * Turning sharing *off* has to be as easy as turning it on, or the
+     * control is a one-way door dressed up as a choice.
+     */
+    public function updateFamilyLink(Request $request, FamilyAccess $familyAccess): RedirectResponse
+    {
+        $booking = $this->booking($request);
+
+        abort_unless($familyAccess->booking_id === $booking->getKey(), 404);
+
+        $familyAccess->forceFill([
+            'shares_attendance' => (bool) $request->boolean('shares_attendance'),
+        ])->save();
+
+        return redirect()->route('portal.family')
+            ->with('status', __('messages.What that link shows has been updated.'));
     }
 
     public function leave(): RedirectResponse

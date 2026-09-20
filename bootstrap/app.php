@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\FamilySession;
 use App\Http\Middleware\PortalSession;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -27,7 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // The Pilgrim Portal's own gate. An alias rather than a group, so
         // the entry route — the one that spends a link — is deliberately
         // outside it.
-        $middleware->alias(['portal' => PortalSession::class]);
+        $middleware->alias([
+            'portal' => PortalSession::class,
+            'family' => FamilySession::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // A URL that matches no route never reaches the web middleware group,

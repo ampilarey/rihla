@@ -22,6 +22,16 @@ return [
     'session_hours' => (int) env('PORTAL_SESSION_HOURS', 12),
 
     /*
+    | A family link (§6.2) lasts longer than a pilgrim's, because it is
+    | handed out once before somebody leaves and is meant to see them there
+    | and back. It is still bounded: a link with no end is one nobody
+    | remembers to turn off, and the pilgrim can revoke it at any point
+    | whatever this says.
+    */
+
+    'family_link_days' => (int) env('PORTAL_FAMILY_LINK_DAYS', 60),
+
+    /*
     |--------------------------------------------------------------------------
     | What the portal shows
     |--------------------------------------------------------------------------
