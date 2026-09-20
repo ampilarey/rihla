@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\LearningModule;
 use App\Models\LearningPath;
+use App\Models\ScholarQuestion;
 use App\Models\Traveller;
 use App\Services\Learning\Progress;
 use App\Support\StudyPlan;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -108,6 +110,49 @@ class LearningController extends Controller
                 : $module->completions()->where('traveller_id', $traveller->getKey())->first(),
             'results' => $outcome,
         ]);
+    }
+
+    /**
+     * Ask a Scholar — §6.4.
+     *
+     * On the learning pages rather than its own corner of the portal: the
+     * moment somebody wants to ask is while they are reading, and a
+     * question form two clicks away from the reading is one nobody uses.
+     */
+    public function questions(Request $request): View
+    {
+        $booking = $this->booking($request);
+
+        return view('learning.questions', [
+            'booking' => $booking,
+            'questions' => ScholarQuestion::where('booking_id', $booking->getKey())
+                ->with(['scholar', 'references'])
+                ->orderByDesc('created_at')
+                ->get(),
+        ]);
+    }
+
+    public function askQuestion(Request $request): RedirectResponse
+    {
+        $booking = $this->booking($request);
+
+        $data = $request->validate([
+            'body' => ['required', 'string', 'min:10', 'max:4000'],
+            // Consent, asked for at the moment of asking and never assumed
+            // afterwards. A checkbox that is absent means no.
+            'may_publish' => ['nullable', 'boolean'],
+        ]);
+
+        ScholarQuestion::create([
+            'booking_id' => $booking->getKey(),
+            'traveller_id' => $this->traveller($booking)?->getKey(),
+            'body' => $data['body'],
+            'locale' => app()->getLocale(),
+            'may_publish' => (bool) ($data['may_publish'] ?? false),
+        ]);
+
+        return redirect()->route('learning.questions')
+            ->with('status', __('messages.Your question has been sent. Somebody will come back to you.'));
     }
 
     private function booking(Request $request): Booking

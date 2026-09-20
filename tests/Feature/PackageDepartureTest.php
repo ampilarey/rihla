@@ -57,7 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `module_completions` restricts deleting a
+        // First of all: `scholar_questions` holds foreign keys into both
+        // `bookings` and `travellers` (§6.4 — a question outlives the
+        // booking that carried it, so it points at both).
+        __DIR__.'/../../database/migrations/2026_09_20_340000_create_ask_a_scholar.php',
+        // Then: `module_completions` restricts deleting a
         // traveller (§7.3 — progress belongs to the person, so it holds a
         // foreign key into `travellers`). SQLite never noticed this list
         // was out of date; MySQL refused to drop the table.

@@ -630,4 +630,15 @@ return [
     'It was due' => 'It was due',
     'Read it by' => 'Read it by',
     'Due today' => 'Due today',
+    // Ask a Scholar (§6.4).
+    'Ask a scholar' => 'Ask a scholar',
+    'Write your question and somebody will come back to you. What you write is only seen by the office and the scholar unless you say otherwise below.' => 'Write your question and somebody will come back to you. What you write is only seen by the office and the scholar unless you say otherwise below.',
+    'Your question' => 'Your question',
+    'Other pilgrims may find this useful. You can put my question and the answer on the website — without my name.' => 'Other pilgrims may find this useful. You can put my question and the answer on the website — without my name.',
+    'If you leave this unticked, your question stays between you, the office and the scholar.' => 'If you leave this unticked, your question stays between you, the office and the scholar.',
+    'Send the question' => 'Send the question',
+    'Your question has been sent. Somebody will come back to you.' => 'Your question has been sent. Somebody will come back to you.',
+    'What you have asked' => 'What you have asked',
+    'Answered by :name' => 'Answered by :name',
+    'Have a question?' => 'Have a question?',
 ];
