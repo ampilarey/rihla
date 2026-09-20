@@ -20,7 +20,9 @@ class RollCallMark extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['roll_call_id', 'traveller_id', 'state', 'note'];
+    protected $fillable = ['roll_call_id', 'traveller_id', 'state', 'note', 'marked_at'];
+
+    protected $casts = ['marked_at' => 'datetime'];
 
     public const PRESENT = 'present';
 
@@ -36,6 +38,9 @@ class RollCallMark extends Model
     {
         static::creating(function (self $mark): void {
             $mark->marked_by ??= Auth::id();
+            // A mark made on a phone with no signal carries the time it was
+            // made; one typed in the office is being made now.
+            $mark->marked_at ??= now();
         });
     }
 

@@ -9,6 +9,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -114,5 +115,20 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'password' => 'hashed',
             'is_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * The public-facing profile for this account, when there is one.
+     *
+     * A tour leader has one; finance does not. The Tour Leader Portal uses
+     * it to answer "which groups are mine", and an account with no profile
+     * is shown no groups at all — the failure mode of a missing link has to
+     * be less access, never more.
+     *
+     * @return HasOne<Person, $this>
+     */
+    public function person(): HasOne
+    {
+        return $this->hasOne(Person::class);
     }
 }

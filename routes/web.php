@@ -14,6 +14,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LeaderController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
@@ -97,6 +98,25 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
         // belongs to this booking before rendering a byte.
         Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
         Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
+    });
+
+    // The Tour Leader Portal (§6.3).
+    //
+    // Behind `auth` and a permission, not a portal token: a leader is a
+    // member of staff with a login, and these pages carry pilgrim names,
+    // ages and who is sharing a room with whom. The controller narrows
+    // further to the departures this person's profile is assigned to, so an
+    // account with no profile sees nothing rather than everything.
+    Route::middleware(['auth', 'can:attendance.create'])->prefix('leader')->name('leader.')->group(function () {
+        Route::get('/', [LeaderController::class, 'index'])->name('index');
+        Route::get('/{departure}', [LeaderController::class, 'departure'])->name('departure');
+        Route::get('/{departure}/snapshot', [LeaderController::class, 'snapshot'])->name('snapshot');
+        Route::get('/{departure}/count/{rollCall}', [LeaderController::class, 'count'])->name('count');
+
+        // Everything the phone queued while it had no signal. A POST, and
+        // therefore never served from the service worker's cache — a
+        // replayed write out of a cache would be a mark nobody made.
+        Route::post('/sync', [LeaderController::class, 'sync'])->name('sync');
     });
 
     Route::get('/people', [PeopleController::class, 'index'])->name('people.index');

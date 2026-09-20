@@ -129,8 +129,13 @@
 
     {{-- The customer call-to-actions and the floating WhatsApp buttons are for
          visitors. On the admin panel they are noise, and the floating stack
-         sits on top of the dashboard's own cards. --}}
-    @php($isAdminScreen = request()->routeIs('admin.*'))
+         sits on top of the dashboard's own cards.
+
+         The Tour Leader Portal is the same case with teeth: the floating
+         stack sat directly over the "Excused" button on one row of the head
+         count, so a leader at a coach door would tap WhatsApp instead of
+         marking somebody. Found by rendering the page at phone width. --}}
+    @php($hidesVisitorCallsToAction = request()->routeIs('admin.*') || request()->routeIs('leader.*'))
 
     <div class="min-h-screen bg-gray-50 overflow-x-hidden">
         <!-- Topbar -->
@@ -153,7 +158,7 @@
                         </a>
                     </div>
 
-                    @unless ($isAdminScreen)
+                    @unless ($hidesVisitorCallsToAction)
                         <!-- WhatsApp CTA - Always visible -->
                         <a href="{{ \App\Support\Contact::whatsappUrl() }}"
                            target="_blank"
@@ -364,7 +369,7 @@
                             </a>
                         @endif
                         
-                        @unless ($isAdminScreen)
+                        @unless ($hidesVisitorCallsToAction)
                             <!-- Mobile CTA Buttons -->
                             <div class="flex flex-col space-y-2 pt-2">
                                 <a href="{{ \App\Support\Contact::whatsappUrl() }}" target="_blank" rel="noopener"
@@ -561,7 +566,7 @@
     </div>
 
     <!-- Floating WhatsApp FAB -->
-    @unless ($isAdminScreen)
+    @unless ($hidesVisitorCallsToAction)
         @include('components.whatsapp-fab')
     @endunless
 
