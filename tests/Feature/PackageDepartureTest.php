@@ -57,7 +57,12 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `notices` hangs off `bookings`.
+        // First of all: `module_completions` restricts deleting a
+        // traveller (§7.3 — progress belongs to the person, so it holds a
+        // foreign key into `travellers`). SQLite never noticed this list
+        // was out of date; MySQL refused to drop the table.
+        __DIR__.'/../../database/migrations/2026_09_20_330000_create_the_learning_academy.php',
+        // Then: `notices` hangs off `bookings`.
         __DIR__.'/../../database/migrations/2026_09_20_300000_create_notices.php',
         // Then: `emergency_broadcasts` hangs off `departures` and
         // `incidents`, and `broadcast_deliveries` off `bookings`.

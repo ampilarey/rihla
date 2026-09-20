@@ -3,7 +3,9 @@
 namespace App\Filament\Pages;
 
 use App\Models\Departure;
+use App\Models\ZiyarahLocation;
 use App\Support\DepartureReadiness;
+use App\Support\StudyPlan;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -53,7 +55,7 @@ class DepartureBoard extends Page
      * leaves on Tuesday is the one to fix first, even if the one in March
      * has more wrong with it.
      *
-     * @return Collection<int, array{departure: Departure, concerns: list<array{area: string, severity: string, headline: string, detail: string}>, blocking: int, attention: int}>
+     * @return Collection<int, array{departure: Departure, concerns: list<array{area: string, severity: string, headline: string, detail: string}>, blocking: int, attention: int, unmatched_places: list<string>}>
      */
     public function getBoard(): Collection
     {
@@ -70,6 +72,18 @@ class DepartureBoard extends Page
                     'concerns' => $concerns,
                     'blocking' => self::countBy($concerns, DepartureReadiness::BLOCKING),
                     'attention' => self::countBy($concerns, DepartureReadiness::ATTENTION),
+                    // §7.3's itinerary tie-in matches a module's place
+                    // against the itinerary text, so it can miss a name the
+                    // office wrote differently. Not a concern — nothing is
+                    // wrong with the departure — but the office is the only
+                    // party that can fix a spelling, so the office is told
+                    // rather than the module being dropped in silence.
+                    'unmatched_places' => array_values(
+                        StudyPlan::build($departure)
+                            ->unmatchedLocations
+                            ->map(fn (ZiyarahLocation $location): string => (string) $location->name)
+                            ->all(),
+                    ),
                 ];
             });
     }

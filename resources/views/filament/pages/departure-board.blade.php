@@ -69,6 +69,21 @@
                         />
                     @endforeach
                 @endif
+
+                @if ($row['unmatched_places'] !== [])
+                    {{-- Not a concern: nothing is wrong with the departure.
+                         It is the one thing only this office can fix — the
+                         place is spelled differently in the itinerary than
+                         in the guide, so the reading never reaches the
+                         pilgrims going there. Said out loud rather than
+                         letting the module disappear. --}}
+                    <x-filament::callout
+                        color="gray"
+                        icon="heroicon-o-map-pin"
+                        heading="Reading about a place this itinerary does not name"
+                        :description="'Modules exist for ' . implode(', ', $row['unmatched_places']) . ', and nothing in this itinerary mentions them by that name. Pilgrims on this departure will not see them. Check the spelling in the itinerary, or leave it if the trip really does not go there.'"
+                    />
+                @endif
             </x-filament::section>
         @endforeach
 

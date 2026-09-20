@@ -16,6 +16,7 @@ use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LeaderController;
+use App\Http\Controllers\LearningController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
@@ -106,6 +107,13 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
         // The booking's own paperwork. The invoice takes no identifier at
         // all; the receipt names a payment and the controller proves it
         // belongs to this booking before rendering a byte.
+        // The Learning Academy (§7.3). Behind the portal session, because
+        // the plan is personal: it names what this pilgrim has and has not
+        // read, and is keyed to their departure date.
+        Route::get('/portal/learn', [LearningController::class, 'index'])->name('learning.index');
+        Route::get('/portal/learn/{slug}', [LearningController::class, 'show'])->name('learning.show');
+        Route::post('/portal/learn/{slug}', [LearningController::class, 'submitQuiz'])->name('learning.quiz');
+
         Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
         Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
     });

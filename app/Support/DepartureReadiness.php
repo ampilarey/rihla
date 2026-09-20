@@ -3,7 +3,9 @@
 namespace App\Support;
 
 use App\Models\Booking;
+use App\Models\BookingTraveller;
 use App\Models\Departure;
+use App\Models\ModuleCompletion;
 use App\Models\Traveller;
 use App\Models\WaitlistEntry;
 use Illuminate\Database\Eloquent\Collection;
@@ -64,6 +66,8 @@ final class DepartureReadiness
 
     public const EMERGENCY_CONTACT = 'emergency_contact';
 
+    public const LEARNING = 'learning';
+
     /**
      * Everything worth a person's attention on this departure.
      *
@@ -79,7 +83,70 @@ final class DepartureReadiness
             self::capacityConcerns($departure),
             self::waitlistConcerns($departure),
             self::emergencyContactConcerns($departure),
+            self::learningConcerns($departure),
         );
+    }
+
+    /**
+     * Who has not started the pre-departure reading — §7.3's business
+     * tie-in, at the honest strength.
+     *
+     * **Attention, never blocking.** A pilgrim who has read nothing still
+     * travels; making this a blocker would mean the platform withholding
+     * somebody's Umrah over homework, which is not a thing anybody sells
+     * and not a thing anybody should build. What it is worth is a phone
+     * call while there is still time, and that is what a named concern is
+     * for.
+     *
+     * Silent while nothing is published. Reporting "nobody has started"
+     * when there is nothing to start is the kind of alarm that teaches a
+     * board to be ignored.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function learningConcerns(Departure $departure): array
+    {
+        $plan = StudyPlan::build($departure);
+
+        if ($plan->total() === 0 || $plan->isHistory()) {
+            return [];
+        }
+
+        // A subquery rather than `whereHas('bookingTravellers.booking')`:
+        // a dotted relation path gives the closure a bare `Builder<Model>`,
+        // so the scope on it cannot be typed. This also reads as what it is
+        // — the people on this departure's live bookings.
+        $travellerIds = BookingTraveller::query()
+            ->whereIn(
+                'booking_id',
+                Booking::query()->where('departure_id', $departure->getKey())->active()->select('id'),
+            )
+            ->pluck('traveller_id')
+            ->unique();
+
+        if ($travellerIds->isEmpty()) {
+            return [];
+        }
+
+        $started = ModuleCompletion::whereIn('traveller_id', $travellerIds)
+            ->whereNotNull('read_at')
+            ->distinct()
+            ->count('traveller_id');
+
+        $notStarted = $travellerIds->count() - $started;
+
+        if ($notStarted < 1) {
+            return [];
+        }
+
+        return [[
+            'area' => self::LEARNING,
+            'severity' => self::ATTENTION,
+            'headline' => $notStarted === 1
+                ? 'One traveller has not opened the reading'
+                : $notStarted.' travellers have not opened the reading',
+            'detail' => 'Out of '.$travellerIds->count().' on this departure. Nobody is stopped from travelling by this — it is a call worth making while there is still time.',
+        ]];
     }
 
     /** Whether anything on this departure stops somebody travelling. */
