@@ -240,6 +240,14 @@ final class Access
         'cost.update',
         'profit.view',
 
+        // The executive dashboard — §8.5, §10.5. One verb, because the
+        // screen is a single disclosure: whoever may read the conversion
+        // rate may read the seat-fill rate. The margin row on it is gated
+        // separately by `profit.view` above, since a reporting analyst who
+        // should see how many enquiries convert has no business reading
+        // what each pilgrim left behind.
+        'kpi.view',
+
         // Rooming (§8.2). No delete verb for an assignment: taking somebody
         // out of a room is an update to the rooming list, and a separate
         // permission for it would only ever be granted alongside update.
@@ -688,7 +696,7 @@ final class Access
                 $tasks,
                 ['customer.tag'],
                 $costs,
-                ['profit.view'],
+                ['profit.view', 'kpi.view'],
                 $rooming,
                 $incidents,
                 $attendance,
@@ -728,7 +736,11 @@ final class Access
             // are separate permissions — a list is a different disclosure
             // from a record holding a passport number.
             self::REPORTING => array_merge(
-                ['admin.access', 'audit.viewAny', 'booking.viewAny'],
+                // The dashboard is what this role is for. Not `profit.view`:
+                // an analyst reading conversion and seat-fill rates has no
+                // need of the margin, and §8.5's board says so on the screen
+                // rather than leaving a blank where a row would be.
+                ['admin.access', 'audit.viewAny', 'booking.viewAny', 'kpi.view'],
                 $readOnly,
             ),
 
@@ -830,7 +842,7 @@ final class Access
                 // profitability is the report this operator does not have
                 // today — so this is the role that owns it.
                 $costs,
-                ['profit.view'],
+                ['profit.view', 'kpi.view'],
                 // Reads what was quoted, to reconcile against what came in.
                 $quotationsReadOnly,
             ),

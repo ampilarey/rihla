@@ -976,6 +976,30 @@ Payments, invoices, receipts, refunds and the audit trail were already here from
 
 Executive dashboard, sales/marketing/customer/financial/operational/learning analytics, forecasting, smart alerts. Start with ~10 KPIs (§10.5), not a warehouse.
 
+**The dashboard is built** (`App\Support\Kpis`, `/staff/performance`, "How the business is doing"). Computed at read time like every other read model here; nothing is stored, and there is no nightly job, because there is no queue worker (ADR 0002).
+
+**Nine of §10.5's thirteen measures are real arithmetic. Four are named absences, and that distinction is the point of the screen.** A KPI is in one of three states and says which:
+
+| State | Meaning |
+|---|---|
+| Measured | A figure, over real rows. |
+| Nothing to measure yet | The measure works; the input set is empty in this window. **Not a zero** — a fortnight in which nobody enquired is not a 0% conversion rate, and a dashboard that renders it as one starts a board meeting about a crisis that did not happen. |
+| Not measured — nothing records this | The instrumentation does not exist. Named rather than proxied. |
+
+The four in the third state, with what each would need:
+
+- **Visit → enquiry** — a page-view log. There is none, and a web-server access log cannot tell a reader from a crawler.
+- **Portal weekly-active pilgrims** and **family-portal engagement** — a visit log. `portal_accesses.last_used_at` and `family_accesses.last_used_at` are single timestamps overwritten on every visit: they answer "when was this person last here", miss everybody who came back twice, and count nobody's second visit. **A last-seen count reported as "weekly actives" is a number somebody quotes to a bank**, and there is no way back from that once it is quoted.
+- **NPS after return** — a survey. Nobody has been asked, and inferring it from repeat bookings would be a different measure wearing its name.
+
+Three further honesty rules the screen carries, each with a test that plants its opposite:
+
+- **An empty Nusuk permit register is not a 0% issue rate.** Zero permits recorded against travellers who flew may mean the permits were obtained and never typed in; reporting 0% is an accusation against the visa desk rather than a fact about it.
+- **A booking that has not flown has not failed to pay in full.** The deposit-to-full measure counts only journeys that have already departed, so the question is settled.
+- **The margin inherits §8.4's refusal to invent an exchange rate.** A journey whose money spans currencies with no configured rate is left out of the average, and the count left out is on the screen.
+
+`kpi.view` opens the dashboard; the margin row needs `profit.view` separately. The Reporting role holds the first and not the second, and the page says so where the row would have been — two people comparing this screen in a meeting must not find different lists and no explanation.
+
 ### 8.6 Deferred to "when the business asks"
 
 Partner/B2B agent portal, loyalty & membership, supplier procurement, OKR/executive platform, multi-tenancy, plugin marketplace. All are real ideas from the thread; none earns its build cost before Rihla has a working booking and operations platform.
@@ -1221,7 +1245,7 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | ~~**3 — Booking & payments**~~ ✅ **done, apart from what needs the owner** | Money online, spreadsheets retired | ~~booking domain + capacity invariant (§5.1, §5.2)~~, ~~public booking flow (§5.2)~~ **— stops at the seat hold: taking payment needs BML**, ~~staff booking admin~~, ~~waiting list with auto-promotion~~, ~~document wallet with versioning (§5.5) [R-8]~~, ~~visa applications (§5.4a)~~ and ~~Nusuk permits (§5.4b) + computed travel readiness~~ **as two separate deliverables [R-4]**, ~~payments abstraction + bank transfer and cash (§5.3)~~, ~~Pilgrim Portal v1 (§6.1)~~, ~~invoices and receipts (§5.3)~~, ~~import of historical customers with duplicate detection~~, ~~minimal CRM (§8.1)~~. **Not done, and not code:** BML Connect (§5.3) needs merchant onboarding; instalments need the operator's terms; the bank account, the GST position and the terms & conditions text are all one config line each once stated | **8–10 weeks** |
 | ~~**4 — Operations & portals**~~ ✅ **done, apart from what needs an account nobody has opened** | The journey runs on the platform | Journey planning & capacity (§8.2) — ~~rooming with conflict detection~~ and ~~the departure board~~ **both done; the allocator and the single readiness score deliberately not built, see §8.2**, operations (§8.3) — ~~incidents~~, ~~attendance~~ and ~~the daily log~~ **done**, checklists and flights to come, Tour Leader Portal (§6.3) — ~~roster, manifests, head count and the offline queue~~ **done**, ~~Family Portal (§6.2)~~ **done, with the pilgrim-owned privacy controls**, ~~safety & emergency (§6.5)~~ **the minimum done: contacts as a gate, and a broadcast honest about its reach**, ~~notifications~~ **done as notices: the chasing list and the portal**. **Not done, and not code:** WhatsApp Business needs an account and a cost model (§11.2); email needs SMTP; SMS needs a provider decision. All three are seams that refuse loudly and say what is missing, so each is a configuration change rather than a rewrite | **8–10 weeks** |
 | ~~**5 — Knowledge & learning**~~ ✅ **done, apart from the content and the rates nobody has supplied** | The differentiator ships | ~~Knowledge Centre (§7.1)~~ **— the editorial standard built as the state machine; no article ships, because the named reviewer does not exist yet**, ~~Ziyarah Guide with offline (§7.2)~~ **— the same gate, misconceptions as a first-class table, and a save-the-whole-guide control proved against a stopped server; no location ships, for the same reason**, ~~Learning Academy (§7.3)~~ **— the plan is arithmetic on the departure date, the quiz teaches rather than marks, and no module ships for the same reason as the other two**, ~~Scholar Portal (§6.4)~~ **— one queue across all four things waiting, and Ask a Scholar with consent that only the asker can give**, readiness score **— deliberately not a single score; named concerns instead, see §8.2**, ~~full CRM (§8.1)~~ **— quotations that are superseded rather than edited, follow-up tasks, a customer 360 that gathers without judging, and re-engagement as a list rather than a campaign**, ~~finance (§8.4)~~ **— per-journey profitability that distinguishes per-person from fixed costs and refuses to invent an exchange rate** | **10–12 weeks** |
-| **6 — Intelligence** | Decisions from data | BI dashboards (§8.5), forecasting, pilgrim AI assistant (§9.6), staff drafting assistant, personalisation | **6–8 weeks** |
+| **6 — Intelligence** | Decisions from data | ~~BI dashboard (§8.5)~~ **— done: nine of §10.5's thirteen KPIs computed, and the other four named as absences rather than proxied; "nothing to measure" is a state of its own, distinct from zero**, forecasting, smart alerts, pilgrim AI assistant (§9.6), staff drafting assistant, personalisation | **6–8 weeks** |
 | **7 — Expansion** | New revenue | Hajj, partner/B2B portal, loyalty & referrals, Arabic locale, native app shells, marketplace | **open-ended** |
 
 **MVP definition (if the timeline must compress):** P0 + Phase 2 + the booking half of Phase 3 (booking flow, deposit payment, document upload, permit tracker, pilgrim dashboard). That is a sellable platform in roughly four months and it is where the compounding starts.

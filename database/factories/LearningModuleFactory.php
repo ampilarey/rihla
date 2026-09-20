@@ -35,4 +35,20 @@ class LearningModuleFactory extends Factory
     {
         return $this->state(fn (): array => ['days_before_departure' => $days]);
     }
+
+    /**
+     * On the site, without going through the editorial gate.
+     *
+     * For fixtures that need a live module and are not testing the gate
+     * itself. The real route is a scholar approving it and somebody
+     * publishing it; this sets the two columns that route ends at, and no
+     * test of sign-off may use it.
+     */
+    public function published(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => LearningModule::PUBLISHED,
+            'published_at' => now()->subDay(),
+        ]);
+    }
 }
