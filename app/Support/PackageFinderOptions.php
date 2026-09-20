@@ -105,7 +105,10 @@ final class PackageFinderOptions
 
                 return [
                     'value' => $major,
-                    'label' => __('messages.Up to :amount', [
+                    // Cast: __() is typed array|string, because a key can
+                    // resolve to a whole group. This one resolves to a
+                    // sentence, and the shape above promises a string.
+                    'label' => (string) __('messages.Up to :amount', [
                         'amount' => Money::ofMajor($major)->format(),
                     ]),
                 ];
