@@ -25,7 +25,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach($departure->hotels as $hotel)
                         <li dir="auto" class="text-ink">
-                            {{ $hotel->city }}: {{ $hotel->name }}
+                            {{ $hotel->cityLabel() }}: {{ $hotel->name }}
                             <x-hotel-distance :hotel="$hotel" />
                         </li>
                     @endforeach

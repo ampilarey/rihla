@@ -121,6 +121,48 @@ class BidiTest extends TestCase
     }
 
     /**
+     * The footer's sentences, which are on every page in both languages.
+     *
+     * Found by rendering the Dhivehi portal and reading the bottom of the
+     * page: "© 2026 Rihla Travels. All rights reserved." came out as
+     * ".Rihla Travels. All rights reserved 2026 ©", and the company
+     * description ended ".and Madinah". Both are rule N1 again — neutral
+     * punctuation at the end of a Latin run inside an RTL paragraph is
+     * dragged to the visual front.
+     *
+     * Every paragraph in the footer whose text is Latin, or falls back to
+     * Latin because no Dhivehi translation exists, has to declare a
+     * direction. This is the third time this class of defect has been found
+     * by looking at a page rather than by a test.
+     */
+    public function test_footer_sentences_declare_their_direction(): void
+    {
+        $html = File::get(resource_path('views/layouts/app.blade.php'));
+
+        $footer = substr($html, (int) strpos($html, '<footer'));
+
+        $offenders = [];
+
+        foreach (self::elementsOf('p', $footer) as [$attributes, $content]) {
+            $text = trim($content);
+
+            if ($text === '' || str_contains($content, '<')) {
+                continue;
+            }
+
+            if (! str_contains($attributes, 'dir=')) {
+                $offenders[] = trim(substr(preg_replace('/\s+/', ' ', $text) ?? '', 0, 60));
+            }
+        }
+
+        $this->assertSame([], $offenders, implode("\n", array_merge(
+            ['Footer paragraphs need a direction. Without one, an English sentence',
+                'inside the Dhivehi footer has its final full stop dragged to the front:'],
+            $offenders,
+        )));
+    }
+
+    /**
      * @return list<array{string, string}> attributes and inner content
      */
     private static function elementsOf(string $tag, string $html): array

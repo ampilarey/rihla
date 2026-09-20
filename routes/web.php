@@ -18,6 +18,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentSlipController;
 use App\Http\Controllers\PeopleController;
+use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TripController;
@@ -69,6 +70,25 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     Route::get('/waitlist/claim/{entry}', [WaitlistController::class, 'claim'])
         ->name('waitlist.claim')
         ->middleware('signed');
+
+    // The Pilgrim Portal (§6.1).
+    //
+    // Two routes are outside the gate on purpose: the door, which spends a
+    // link and is the only place a token ever appears, and the locked page
+    // it lands on when the link will not work. Everything else is behind
+    // `portal`, which reads the booking from the session — no portal URL
+    // carries an identifier, so editing the address bar shows a visitor
+    // their own booking or nothing.
+    Route::get('/portal/enter/{token}', [PortalController::class, 'enter'])->name('portal.enter');
+    Route::get('/portal/locked', [PortalController::class, 'locked'])->name('portal.locked');
+
+    Route::middleware('portal')->group(function () {
+        Route::get('/portal', [PortalController::class, 'home'])->name('portal.home');
+        Route::get('/portal/documents', [PortalController::class, 'documents'])->name('portal.documents');
+        Route::post('/portal/documents', [PortalController::class, 'storeDocument'])->name('portal.documents.store');
+        Route::post('/portal/payments', [PortalController::class, 'storePayment'])->name('portal.payments.store');
+        Route::post('/portal/leave', [PortalController::class, 'leave'])->name('portal.leave');
+    });
 
     Route::get('/people', [PeopleController::class, 'index'])->name('people.index');
 
