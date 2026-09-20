@@ -36,8 +36,11 @@ class PackageComparisonController extends Controller
 
         $departures = $ids->isEmpty()
             ? new Collection
-            : Departure::query()
-                ->published()
+            // Departure::published(), not Departure::query()->published():
+            // the static call is typed as a builder for this model, so the
+            // local scope resolves. query() is typed as a builder for the
+            // base Model, which has no published().
+            : Departure::published()
                 // Upcoming only, matching the package page. A comparison
                 // link saved last season would otherwise resurrect
                 // departures that have already left and show them as
@@ -62,7 +65,17 @@ class PackageComparisonController extends Controller
         ]);
     }
 
-    /** @return Collection<int, int> */
+    /**
+     * The ids asked for, as an array or a comma-separated string.
+     *
+     * `positive-int`, not `int`: the filter below narrows the type, and a
+     * Collection's value type is not covariant, so a Collection of
+     * positive-int is not a Collection of int as far as static analysis is
+     * concerned. Saying what it actually holds is better than widening it
+     * back with a no-op map.
+     *
+     * @return Collection<int, positive-int>
+     */
     private function requestedIds(Request $request): Collection
     {
         /** @var array<int, mixed>|string $raw */
