@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Announcement;
 use App\Models\Article;
 use App\Models\AuditLog;
 use App\Models\Booking;
@@ -27,6 +28,7 @@ use App\Models\VisaApplication;
 use App\Models\WaitlistEntry;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
+use App\Policies\AnnouncementPolicy;
 use App\Policies\ArticlePolicy;
 use App\Policies\AuditLogPolicy;
 use App\Policies\BookingPolicy;
@@ -68,6 +70,7 @@ class AuthServiceProvider extends ServiceProvider
         NusukPermit::class => NusukPermitPolicy::class,
         Payment::class => PaymentPolicy::class,
         Enquiry::class => EnquiryPolicy::class,
+        Announcement::class => AnnouncementPolicy::class,
         Incident::class => IncidentPolicy::class,
         OperationsLogEntry::class => OperationsLogEntryPolicy::class,
         RollCall::class => RollCallPolicy::class,

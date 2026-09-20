@@ -582,4 +582,7 @@ return [
     'It needs to be valid for at least :months months after you come home.' => 'It needs to be valid for at least :months months after you come home.',
     'A photo or a scan of the page with your picture on it' => 'A photo or a scan of the page with your picture on it',
     'Thank you — we have it. Someone will check it and let you know.' => 'Thank you — we have it. Someone will check it and let you know.',
+    'Family links' => 'Family links',
+    'That link has been turned off.' => 'That link has been turned off.',
+    'What that link shows has been updated.' => 'What that link shows has been updated.',
 ];

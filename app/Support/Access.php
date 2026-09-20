@@ -222,6 +222,18 @@ final class Access
         'opslog.create',
         'opslog.update',
 
+        // Announcements (§6.2). Group-level news, read by the pilgrim and
+        // by whoever they have given a family link to. `publish` is its own
+        // verb because writing one and putting it in front of forty
+        // families are different acts, and the second is the one that
+        // cannot be taken back.
+        'announcement.viewAny',
+        'announcement.view',
+        'announcement.create',
+        'announcement.update',
+        'announcement.publish',
+        'announcement.delete',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -399,6 +411,18 @@ final class Access
 
         $opsLogReadOnly = ['opslog.viewAny', 'opslog.view'];
 
+        $announcements = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'announcement',
+        ));
+
+        // Writes and edits, but does not publish. A tour leader drafts what
+        // happened; the office decides it goes in front of forty families.
+        $announcementsWithoutPublishing = [
+            'announcement.viewAny', 'announcement.view',
+            'announcement.create', 'announcement.update',
+        ];
+
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
 
@@ -432,6 +456,7 @@ final class Access
                 $incidents,
                 $attendance,
                 $opsLog,
+                $announcements,
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -473,6 +498,9 @@ final class Access
                 ['attendance.viewAny', 'attendance.view', 'attendance.create', 'attendance.update'],
                 // And they write the day up.
                 $opsLog,
+                // They draft what the families should hear; the office
+                // decides it goes out.
+                $announcementsWithoutPublishing,
             ),
 
             // Takes and manages bookings. Reads the product to do it —
@@ -544,6 +572,9 @@ final class Access
                 $incidentsReadOnly,
                 $attendanceReadOnly,
                 $opsLogReadOnly,
+                // Reads them, because the phone call is often "I saw the
+                // announcement, what does it mean".
+                ['announcement.viewAny', 'announcement.view'],
             ),
 
             // The documents are the job: collecting them, checking them and

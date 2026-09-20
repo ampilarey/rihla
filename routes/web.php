@@ -12,6 +12,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
+use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LeaderController;
@@ -93,6 +94,14 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
         Route::post('/portal/payments', [PortalController::class, 'storePayment'])->name('portal.payments.store');
         Route::post('/portal/leave', [PortalController::class, 'leave'])->name('portal.leave');
 
+        // §6.2 puts the family-sharing controls in the pilgrim's hands, so
+        // they live behind the pilgrim's own gate and there is no staff
+        // path to any of them.
+        Route::get('/portal/family', [PortalController::class, 'family'])->name('portal.family');
+        Route::post('/portal/family', [PortalController::class, 'storeFamilyLink'])->name('portal.family.store');
+        Route::patch('/portal/family/{familyAccess}', [PortalController::class, 'updateFamilyLink'])->name('portal.family.update');
+        Route::delete('/portal/family/{familyAccess}', [PortalController::class, 'revokeFamilyLink'])->name('portal.family.revoke');
+
         // The booking's own paperwork. The invoice takes no identifier at
         // all; the receipt names a payment and the controller proves it
         // belongs to this booking before rendering a byte.
@@ -117,6 +126,20 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
         // therefore never served from the service worker's cache — a
         // replayed write out of a cache would be a mark nobody made.
         Route::post('/sync', [LeaderController::class, 'sync'])->name('sync');
+    });
+
+    // The Family Portal (§6.2).
+    //
+    // The same shape as the Pilgrim Portal and deliberately not the same
+    // gate: `family`, not `portal`. A family session must never satisfy a
+    // pilgrim-portal check — the two carry different amounts of somebody's
+    // life, and sharing the middleware is how they end up sharing a bug.
+    Route::get('/family/enter/{token}', [FamilyController::class, 'enter'])->name('family.enter');
+    Route::get('/family/locked', [FamilyController::class, 'locked'])->name('family.locked');
+
+    Route::middleware('family')->group(function () {
+        Route::get('/family', [FamilyController::class, 'home'])->name('family.home');
+        Route::post('/family/leave', [FamilyController::class, 'leave'])->name('family.leave');
     });
 
     Route::get('/people', [PeopleController::class, 'index'])->name('people.index');

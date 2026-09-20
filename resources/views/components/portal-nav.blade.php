@@ -1,10 +1,13 @@
 @props(['current' => 'home'])
 
 {{--
-    Two pages and a way out. Deliberately small: the portal's value is that a
-    pilgrim can find one thing quickly on a phone, and a navigation bar with
-    twelve entries — most of them empty because nothing feeds them yet — is
-    worse than two that always have something in them.
+    Three pages and a way out. Deliberately small: the portal's value is
+    that a pilgrim can find one thing quickly on a phone, and a navigation
+    bar with twelve entries — most of them empty because nothing feeds them
+    yet — is worse than three that always have something in them.
+
+    "Family links" earns its place because §6.2 puts the privacy controls in
+    the pilgrim's hands, and a control nobody can find is not one they own.
 --}}
 <nav class="mb-6 flex flex-wrap items-center gap-2" aria-label="{{ __('messages.Your booking') }}">
     <a href="{{ route('portal.home', ['locale' => app()->getLocale()]) }}"
@@ -27,6 +30,17 @@
        @if($current === 'documents') aria-current="page" @endif
        dir="auto">
         {{ __('messages.Documents') }}
+    </a>
+
+    <a href="{{ route('portal.family', ['locale' => app()->getLocale()]) }}"
+       @class([
+           'rounded-xl px-4 py-2 text-sm font-medium',
+           'bg-wine-600 text-cream' => $current === 'family',
+           'bg-cream text-ink hover:bg-cream-deep' => $current !== 'family',
+       ])
+       @if($current === 'family') aria-current="page" @endif
+       dir="auto">
+        {{ __('messages.Family links') }}
     </a>
 
     {{-- A POST, because signing out with a GET is something a link

@@ -57,7 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `roll_calls` hangs off `departures`, and
+        // First of all: `announcements` hangs off `departures`, and
+        // `family_accesses` restricts deleting a booking.
+        __DIR__.'/../../database/migrations/2026_09_20_280000_create_the_family_portal.php',
+        // Then: `roll_calls` hangs off `departures`, and
         // `roll_call_marks` restricts deleting a traveller. The daily log
         // is in the same migration and hangs off `departures` too.
         __DIR__.'/../../database/migrations/2026_09_20_260000_create_roll_calls_and_the_daily_log.php',
