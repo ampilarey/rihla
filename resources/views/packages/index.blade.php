@@ -11,6 +11,13 @@
             </p>
         </header>
 
+    {{--
+        A plain GET form. Ticking two boxes and pressing the button lands on
+        /packages/compare?departures[]=…, with no JavaScript involved — which
+        matters on a 3G phone in Malé, and means the comparison is a URL that
+        can be sent to whoever is paying.
+    --}}
+    <form method="GET" action="{{ route('packages.compare') }}">
         @forelse($packages as $package)
             @php($next = $package->publishedDepartures->first())
 
@@ -41,7 +48,19 @@
                             <div>
                                 <dt class="sr-only">{{ __('Departures') }}</dt>
                                 <dd dir="auto" class="text-ink-muted">
-                                    @if($package->publishedDepartures->isEmpty())
+                                    @if($next)
+                            <label class="mt-4 inline-flex items-center gap-2 text-sm">
+                                <input type="checkbox"
+                                       name="departures[]"
+                                       value="{{ $next->id }}"
+                                       class="h-4 w-4 rounded border-cream-deep text-wine-500 focus:ring-wine-500">
+                                <span class="text-ink-muted">
+                                    {{ __('messages.Compare this departure') }}
+                                </span>
+                            </label>
+                        @endif
+
+                        @if($package->publishedDepartures->isEmpty())
                                         {{ __('messages.No dates announced yet') }}
                                     @else
                                         {{ trans_choice(
@@ -98,5 +117,14 @@
         @empty
             <p class="py-12 text-center text-ink-muted">{{ __('messages.No packages are published yet.') }}</p>
         @endforelse
+
+        @if($packages->isNotEmpty())
+            <div class="sticky bottom-4 flex justify-center">
+                <button type="submit" class="btn-primary shadow-soft">
+                    {{ __('messages.Compare selected departures') }}
+                </button>
+            </div>
+        @endif
+    </form>
     </div>
 @endsection

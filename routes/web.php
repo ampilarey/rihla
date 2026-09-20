@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\WhyFeatureController;
 use App\Http\Controllers\Admin\WhySectionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
@@ -39,6 +40,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     // possible. Nothing redirects between the two yet — retiring `trips` is
     // a decision for after a full season runs on the new model.
     Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
+    // Before the {slug} route, or "compare" is read as a package slug.
+    Route::get('/packages/compare', PackageComparisonController::class)->name('packages.compare');
     Route::get('/packages/{slug}', [PackageController::class, 'show'])->name('packages.show');
 
     Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
