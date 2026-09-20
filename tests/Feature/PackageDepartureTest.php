@@ -57,7 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `emergency_broadcasts` hangs off `departures` and
+        // First of all: `notices` hangs off `bookings`.
+        __DIR__.'/../../database/migrations/2026_09_20_300000_create_notices.php',
+        // Then: `emergency_broadcasts` hangs off `departures` and
         // `incidents`, and `broadcast_deliveries` off `bookings`.
         __DIR__.'/../../database/migrations/2026_09_20_290000_create_emergency_broadcasts.php',
         // Then: `announcements` hangs off `departures`, and
