@@ -145,6 +145,32 @@
                                 @endif
                             </dl>
 
+                            {{-- Who travels with this party. The plan's
+                                 reason: pilgrims choose people, not
+                                 packages. Shown only when somebody has been
+                                 named. --}}
+                            @if($departure->tourLeader || $departure->scholar)
+                                <div>
+                                    <h4 class="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                                        {{ __('messages.Travelling with you') }}
+                                    </h4>
+                                    <ul class="space-y-1">
+                                        @foreach([$departure->tourLeader, $departure->scholar] as $person)
+                                            @if($person)
+                                                <li class="text-sm" dir="auto">
+                                                    <span class="font-medium text-ink">{{ $person->name }}</span>
+                                                    <span class="text-ink-muted">— {{ $person->title ?: $person->role_label }}</span>
+                                                </li>
+                                            @endif
+                                        @endforeach
+                                    </ul>
+                                    <a href="{{ route('people.index') }}"
+                                       class="mt-1 inline-block text-sm text-wine-600 hover:underline">
+                                        {{ __('messages.Meet the people who travel with you') }}
+                                    </a>
+                                </div>
+                            @endif
+
                             @if($departure->hotels->isNotEmpty())
                                 <div>
                                     <h4 class="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-muted">{{ __('Hotels') }}</h4>

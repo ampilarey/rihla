@@ -21,6 +21,7 @@ class Departure extends Model
 
     protected $fillable = [
         'package_id', 'trip_id', 'date_start', 'date_end', 'airline',
+        'tour_leader_id', 'scholar_id',
         'capacity_total', 'capacity_held', 'capacity_confirmed',
         'status', 'is_published',
     ];
@@ -58,6 +59,24 @@ class Departure extends Model
     public function trip(): BelongsTo
     {
         return $this->belongsTo(Trip::class);
+    }
+
+    /**
+     * Who travels with the party. Two separate roles, and a departure may
+     * have one, both or neither — publishing a leader nobody has named is
+     * worse than publishing none.
+     *
+     * @return BelongsTo<Person, $this>
+     */
+    public function tourLeader(): BelongsTo
+    {
+        return $this->belongsTo(Person::class, 'tour_leader_id');
+    }
+
+    /** @return BelongsTo<Person, $this> */
+    public function scholar(): BelongsTo
+    {
+        return $this->belongsTo(Person::class, 'scholar_id');
     }
 
     /** @return HasMany<PriceTier, $this> */

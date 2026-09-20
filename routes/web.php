@@ -13,6 +13,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TripController;
@@ -43,6 +44,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     // Before the {slug} route, or "compare" is read as a package slug.
     Route::get('/packages/compare', PackageComparisonController::class)->name('packages.compare');
     Route::get('/packages/{slug}', [PackageController::class, 'show'])->name('packages.show');
+
+    Route::get('/people', [PeopleController::class, 'index'])->name('people.index');
 
     Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
     Route::get('/trips/{slug}', [TripController::class, 'show'])->name('trips.show');

@@ -387,4 +387,17 @@ return [
     'Tell us who is travelling and when. We will say what is available and what it costs.' => 'Tell us who is travelling and when. We will say what is available and what it costs.',
     'Upcoming departures' => 'Upcoming departures',
     'View packages' => 'View packages',
+
+    // People (Phase 2.6).
+    'A group leader travels with every party from Malé and back. On some departures a scholar travels too.' => 'A group leader travels with every party from Malé and back. On some departures a scholar travels too.',
+    'Group leader' => 'Group leader',
+    'Group leaders' => 'Group leaders',
+    'Groups led' => 'Groups led',
+    'Nobody has been published here yet.' => 'Nobody has been published here yet.',
+    'Scholar' => 'Scholar',
+    'Scholars' => 'Scholars',
+    'Speaks' => 'Speaks',
+    'Travelling with you' => 'Travelling with you',
+    'Who travels with you' => 'Who travels with you',
+    'Meet the people who travel with you' => 'Meet the people who travel with you',
 ];

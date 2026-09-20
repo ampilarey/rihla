@@ -103,11 +103,17 @@
         {{ __('Skip to main content') }}
     </a>
 
-    {{-- Signed-in staff see eight navigation items; a visitor sees six. Eight
-         need 1280px, six fit from 768px. Sharing one breakpoint meant staff on
-         anything narrower than 1280 lost links off the right edge of a
+    {{-- Signed-in staff see eight navigation items; a visitor now sees seven.
+         Eight need 1280px; seven need 1024. Sharing one breakpoint meant staff
+         on anything narrower than 1280 lost links off the right edge of a
          container that clips rather than scrolls: no scrollbar, nothing to
          drag, the links simply gone.
+
+         The visitor breakpoint was md until Packages became a seventh item,
+         at which point Login sat past the right edge at exactly 768px —
+         measured, not guessed, and the same failure this note was written
+         about. NavigationFitTest measures it now, because a note is not a
+         guard.
 
          Each class string is written out in full. Tailwind scans source text
          for literal class names, so building one by interpolating a variable
@@ -118,8 +124,8 @@
          Blade's matching - the opener is left alone while the closer becomes a
          bare tag, and every page 500s. Keep to one form. For the same reason,
          do not write Blade directives inside a Blade comment; they compile. --}}
-    @php($navDesktop = Auth::check() ? 'hidden xl:flex' : 'hidden md:flex')
-    @php($navToggle = Auth::check() ? 'xl:hidden' : 'md:hidden')
+    @php($navDesktop = Auth::check() ? 'hidden xl:flex' : 'hidden lg:flex')
+    @php($navToggle = Auth::check() ? 'xl:hidden' : 'lg:hidden')
 
     {{-- The customer call-to-actions and the floating WhatsApp buttons are for
          visitors. On the admin panel they are noise, and the floating stack
@@ -432,6 +438,17 @@
                                 <a href="{{ route('trips.index') }}" 
                                    class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
                                     {{ __('Our Trips') }}
+                                </a>
+                            </li>
+                            {{-- In the footer rather than the header: the
+                                 desktop nav is at seven links and an eighth
+                                 would need the xl breakpoint, pushing every
+                                 visitor on a laptop onto the hamburger to
+                                 gain one page. --}}
+                            <li>
+                                <a href="{{ route('people.index') }}"
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                    {{ __('messages.Who travels with you') }}
                                 </a>
                             </li>
                             <li>
