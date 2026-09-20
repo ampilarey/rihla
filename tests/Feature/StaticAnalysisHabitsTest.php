@@ -6,13 +6,17 @@ use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 /**
- * Local guards for mistakes that otherwise only CI catches.
+ * Fast local guards for mistakes that keep happening.
  *
- * PHPStan cannot run here — it is dist-only in the lock file and cloning it
- * from source reached 5.7 GB — so static analysis is a CI-only check, and
- * every one of its findings costs a push, a run and several minutes. These
- * are the ones worth catching before that, because they are purely
- * syntactic and because they keep happening.
+ * This class was written believing PHPStan could not run here — the lock
+ * file has it dist-only and a *source* install reached 5.7 GB. That was
+ * wrong: the released phar is 28 MB, `./scripts/install-phpstan-locally.sh`
+ * fetches it, and `composer analyse` then works. Run that before pushing.
+ *
+ * These stay anyway, for two reasons. They run in the ordinary test suite,
+ * so they fire without anybody remembering a second command; and they are
+ * purely syntactic, so they take milliseconds where a full analysis takes
+ * half a minute.
  */
 class StaticAnalysisHabitsTest extends TestCase
 {
