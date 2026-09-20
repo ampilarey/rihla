@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Departure;
 use App\Models\HeroBanner;
 use App\Models\Media;
+use App\Models\Package;
 use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\WhySection;
+use Illuminate\Database\Eloquent\Builder;
 
 class HomeController extends Controller
 {
@@ -42,6 +45,23 @@ class HomeController extends Controller
             'features' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
         ])->where('is_active', true)->first());
 
-        return view('home', compact('currentTrip', 'upcomingTrip', 'recentMedia', 'socialSettings', 'heroBanners', 'why'));
+        // The three soonest departures anyone can still join, with
+        // everything the cards need: price, hotels and seats. Additive — the
+        // trip sections above are untouched and still render.
+        $upcomingDepartures = Departure::published()
+            ->upcoming()
+            ->whereHas('package', function ($package): void {
+                /** @var Builder<Package> $package */
+                $package->published();
+            })
+            ->with(['package', 'priceTiers', 'hotels'])
+            ->orderBy('date_start')
+            ->take(3)
+            ->get();
+
+        return view('home', compact(
+            'currentTrip', 'upcomingTrip', 'recentMedia', 'socialSettings',
+            'heroBanners', 'why', 'upcomingDepartures',
+        ));
     }
 }
