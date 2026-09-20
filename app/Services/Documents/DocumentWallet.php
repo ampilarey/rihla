@@ -79,7 +79,7 @@ final class DocumentWallet
             );
 
             $version = $document->versions()->create([
-                'version' => ($latest?->version ?? 0) + 1,
+                'version' => ($latest->version ?? 0) + 1,
                 'disk' => $this->disk(),
                 'path' => $path,
                 'original_filename' => $file->getClientOriginalName(),

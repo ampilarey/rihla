@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * One document about one traveller — a passport, a photograph, a bank slip.
@@ -102,9 +103,15 @@ class Document extends Model
         }
 
         $months = (int) config('documents.passport_validity_months', 6);
-        $reference = $travelDate ?? now();
 
-        return $this->expires_at->lt((clone $reference)->modify("+{$months} months"));
+        // Carbon::parse rather than modify(): DateTimeInterface promises
+        // neither modify() nor immutability, so cloning and modifying it is
+        // only safe for the subset of implementations that happen to be
+        // DateTime. Callers pass a departure date, which is a Carbon here
+        // and could be anything later.
+        $reference = Carbon::parse($travelDate ?? now());
+
+        return $this->expires_at->lt($reference->addMonths($months));
     }
 
     /** @param  Builder<$this>  $query */

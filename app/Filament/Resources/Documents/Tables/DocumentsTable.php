@@ -70,9 +70,16 @@ class DocumentsTable
 
                 Filter::make('expiring')
                     ->label('Expiring soon')
-                    ->query(fn (Builder $query): Builder => $query->expiringBefore(
-                        now()->addMonths((int) config('documents.passport_validity_months', 6)),
-                    )),
+                    // The generic is named for the same reason
+                    // PackageComparisonController names its own: the closure
+                    // is handed a builder typed for the base Model, which
+                    // has no expiringBefore() scope.
+                    ->query(function ($query): void {
+                        /** @var Builder<Document> $query */
+                        $query->expiringBefore(
+                            now()->addMonths((int) config('documents.passport_validity_months', 6)),
+                        );
+                    }),
             ])
             ->recordActions([
                 // A fresh signed URL each time the row is drawn, valid for
