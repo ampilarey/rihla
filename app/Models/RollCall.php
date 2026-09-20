@@ -41,11 +41,13 @@ class RollCall extends Model
         });
     }
 
+    /** @return BelongsTo<Departure, $this> */
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function taker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'taken_by');
@@ -75,7 +77,15 @@ class RollCall extends Model
      */
     public function expected(): Collection
     {
-        return Rooming::travellersOwedABed($this->departure);
+        // `departure_id` is NOT NULL with a cascade delete, so a roll call
+        // without a departure cannot exist — the row would have gone with
+        // it. PHPStan cannot read that from the schema, and the annotation
+        // says which constraint is doing the work rather than leaving a
+        // silent cast.
+        /** @var Departure $departure */
+        $departure = $this->departure;
+
+        return Rooming::travellersOwedABed($departure);
     }
 
     /**

@@ -36,11 +36,13 @@ class OperationsLogEntry extends Model
         });
     }
 
+    /** @return BelongsTo<Departure, $this> */
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function recorder(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');

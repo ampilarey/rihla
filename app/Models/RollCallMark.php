@@ -39,16 +39,19 @@ class RollCallMark extends Model
         });
     }
 
+    /** @return BelongsTo<RollCall, $this> */
     public function rollCall(): BelongsTo
     {
         return $this->belongsTo(RollCall::class);
     }
 
+    /** @return BelongsTo<Traveller, $this> */
     public function traveller(): BelongsTo
     {
         return $this->belongsTo(Traveller::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function marker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'marked_by');
