@@ -14,9 +14,11 @@ use App\Models\HeroBanner;
 use App\Models\Incident;
 use App\Models\Media;
 use App\Models\NusukPermit;
+use App\Models\OperationsLogEntry;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Person;
+use App\Models\RollCall;
 use App\Models\Room;
 use App\Models\Setting;
 use App\Models\Trip;
@@ -37,9 +39,11 @@ use App\Policies\HeroBannerPolicy;
 use App\Policies\IncidentPolicy;
 use App\Policies\MediaPolicy;
 use App\Policies\NusukPermitPolicy;
+use App\Policies\OperationsLogEntryPolicy;
 use App\Policies\PackagePolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\PersonPolicy;
+use App\Policies\RollCallPolicy;
 use App\Policies\RoomPolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\TripPolicy;
@@ -65,6 +69,8 @@ class AuthServiceProvider extends ServiceProvider
         Payment::class => PaymentPolicy::class,
         Enquiry::class => EnquiryPolicy::class,
         Incident::class => IncidentPolicy::class,
+        OperationsLogEntry::class => OperationsLogEntryPolicy::class,
+        RollCall::class => RollCallPolicy::class,
         Room::class => RoomPolicy::class,
         VisaApplication::class => VisaApplicationPolicy::class,
         WaitlistEntry::class => WaitlistEntryPolicy::class,
