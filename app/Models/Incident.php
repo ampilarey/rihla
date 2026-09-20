@@ -176,6 +176,10 @@ class Incident extends Model
      * The one query this table exists to answer. A screen that cannot find
      * these is a diary, not an operations tool.
      */
+    /**
+     * @param  Builder<Incident>  $query
+     * @return Builder<Incident>
+     */
     public function scopeUnattended(Builder $query): Builder
     {
         return $query->where('status', self::OPEN)
@@ -183,6 +187,10 @@ class Incident extends Model
             ->whereNull('assigned_to');
     }
 
+    /**
+     * @param  Builder<Incident>  $query
+     * @return Builder<Incident>
+     */
     public function scopeOpen(Builder $query): Builder
     {
         return $query->where('status', self::OPEN);

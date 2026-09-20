@@ -93,14 +93,21 @@ class IncidentsTable
                 ])
                 ->orderByDesc('happened_at'))
             ->filters([
+                // Both go through a named method rather than an inline
+                // arrow function so the builder's generic can be declared.
+                // PHPStan is CI-only here, and on a bare
+                // `Illuminate\Database\Eloquent\Builder` it cannot see a
+                // model scope at all — "Call to an undefined method
+                // Builder::unattended()", which is a false positive that
+                // only a `Builder<Incident>` docblock silences.
                 Filter::make('unattended')
                     ->label('Open emergencies with nobody on them')
-                    ->query(fn (Builder $query): Builder => $query->unattended()),
+                    ->query(self::onlyUnattended(...)),
 
                 Filter::make('open')
                     ->label('Open only')
                     ->default()
-                    ->query(fn (Builder $query): Builder => $query->open()),
+                    ->query(self::onlyOpen(...)),
 
                 SelectFilter::make('severity')
                     ->label('How bad')
@@ -127,6 +134,24 @@ class IncidentsTable
             ])
             ->emptyStateHeading('Nothing recorded')
             ->emptyStateDescription('An incident is anything that went wrong on a trip — from a lost bag to a hospital. Recording the small ones is what makes the pattern visible.');
+    }
+
+    /**
+     * @param  Builder<Incident>  $query
+     * @return Builder<Incident>
+     */
+    private static function onlyUnattended(Builder $query): Builder
+    {
+        return $query->unattended();
+    }
+
+    /**
+     * @param  Builder<Incident>  $query
+     * @return Builder<Incident>
+     */
+    private static function onlyOpen(Builder $query): Builder
+    {
+        return $query->open();
     }
 
     /**

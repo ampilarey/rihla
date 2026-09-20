@@ -61,6 +61,75 @@ class StaticAnalysisHabitsTest extends TestCase
     }
 
     /**
+     * A model scope called on a bare `Builder` inside an arrow function.
+     *
+     * Larastan resolves scopes only when the builder's generic is known.
+     * On a plain `Illuminate\Database\Eloquent\Builder` it reports "Call
+     * to an undefined method Builder::unattended()" — and an arrow function
+     * cannot carry a docblock, so there is nowhere to declare
+     * `Builder<Incident>` and no way to silence it in place. The fix is
+     * always the same: move the body into a named method with the generic
+     * declared.
+     *
+     * This cost a CI run on the incidents table, which is the whole reason
+     * these guards exist.
+     */
+    public function test_no_model_scope_called_on_a_bare_builder_in_an_arrow_function(): void
+    {
+        $scopes = $this->modelScopeNames();
+        $offenders = [];
+
+        foreach ($this->phpFiles() as $file) {
+            foreach (file($file->getPathname()) as $number => $line) {
+                if ($this->isComment($line)) {
+                    continue;
+                }
+
+                // fn (Builder $q): Builder => $q->someScope(...)
+                if (! preg_match('/fn\s*\(\s*Builder\s+\$(\w+)\s*\)[^=]*=>\s*\$(\w+)->(\w+)\(/', $line, $m)) {
+                    continue;
+                }
+
+                [, $parameter, $used, $method] = $m;
+
+                if ($parameter === $used && in_array($method, $scopes, true)) {
+                    $offenders[] = sprintf('%s:%d — %s', $this->relative($file->getPathname()), $number + 1, trim($line));
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, implode("\n", array_merge(
+            ['A model scope on a bare `Builder` inside an arrow function: Larastan cannot see it,',
+                'and an arrow function has nowhere to declare `Builder<Model>`.',
+                'Move it to a named method with the generic in a docblock.'],
+            $offenders,
+        )));
+    }
+
+    /**
+     * Every `scopeFoo` on a model, as `foo`.
+     *
+     * Read from the source rather than listed, so a scope added tomorrow is
+     * covered without anybody remembering this test exists.
+     *
+     * @return list<string>
+     */
+    private function modelScopeNames(): array
+    {
+        $names = [];
+
+        foreach (File::files(app_path('Models')) as $file) {
+            preg_match_all('/function\s+scope([A-Z]\w*)\s*\(/', (string) file_get_contents($file->getPathname()), $matches);
+
+            foreach ($matches[1] as $name) {
+                $names[] = lcfirst($name);
+            }
+        }
+
+        return array_values(array_unique($names));
+    }
+
+    /**
      * A line that is nothing but a comment.
      *
      * Deliberately crude: a line starting `//`, `#`, `/*` or a docblock
