@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Package;
 use App\Models\Setting;
+use App\Support\PackageFilters;
+use App\Support\PackageFinderOptions;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -16,9 +19,11 @@ use Illuminate\View\View;
  */
 class PackageController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $packages = Package::published()
+        $filters = PackageFilters::fromRequest($request);
+
+        $packages = $filters->apply(Package::published())
             ->with([
                 // Only departures that are themselves published, and only
                 // ones that have not left. A package whose every departure
@@ -33,6 +38,8 @@ class PackageController extends Controller
 
         return view('packages.index', [
             'packages' => $packages,
+            'filters' => $filters,
+            'options' => PackageFinderOptions::build(),
             'socialSettings' => Setting::getSocialSettings(),
         ]);
     }

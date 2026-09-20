@@ -4,8 +4,109 @@
 <!-- Hero Section -->
 <x-hero-banner :banners="$heroBanners" />
 
+{{--
+    Three routes in, immediately under the hero: browse what is for sale,
+    read about the rite, or talk to a person. The plan asks for exactly these
+    three, and all three destinations exist.
+
+    Below the hero rather than inside it: the banners are admin-written and
+    carry their own calls to action, and overriding those would take the
+    choice away from whoever writes them.
+--}}
+<section class="bg-cream-deep py-5 md:py-6">
+    <div class="container mx-auto grid gap-3 px-4 sm:grid-cols-3">
+        <a href="{{ route('packages.index') }}" class="btn-primary text-center">
+            {{ __('messages.View packages') }}
+        </a>
+        <a href="{{ route('guide') }}" class="btn-secondary text-center">
+            {{ __('messages.Learn about Umrah') }}
+        </a>
+        <a href="{{ \App\Support\Contact::whatsappUrl() }}"
+           class="btn-outline text-center" target="_blank" rel="noopener noreferrer">
+            {{ __('messages.Talk to an advisor') }}
+        </a>
+    </div>
+</section>
+
+{{--
+    What is actually for sale, with seats and a countdown — the section the
+    plan puts fifth and the one that does the selling. Absent entirely when
+    nothing is upcoming, rather than showing an empty rail.
+--}}
+@if($upcomingDepartures->isNotEmpty())
+    <section class="section-y bg-cream">
+        <div class="container mx-auto px-4">
+            <h2 class="section-title">{{ __('messages.Upcoming departures') }}</h2>
+
+            {{-- The rail is capped to what it holds. A single card in a
+                 three-column grid sits against the left edge with two empty
+                 columns beside it, which reads as a page that failed to
+                 load rather than as a season with one departure left.
+
+                 Each class string is written out in full. Tailwind scans
+                 source text for literal class names, so building one by
+                 interpolating a count into it — md:grid-cols-{{ '{{ $n }}' }} —
+                 compiles to no CSS whatsoever. That is D57 in the defect
+                 register, and the same note sits in layouts/app.blade.php.
+                 The first draft of this line did exactly that. --}}
+            @php($rail = match ($upcomingDepartures->count()) {
+                1 => 'max-w-sm',
+                2 => 'max-w-3xl md:grid-cols-2',
+                default => 'md:grid-cols-2 lg:grid-cols-3',
+            })
+
+            <div class="mx-auto grid gap-6 {{ $rail }}">
+                @foreach($upcomingDepartures as $departure)
+                    <x-departure-card :departure="$departure" />
+                @endforeach
+            </div>
+
+            <div class="mt-8 text-center">
+                <a href="{{ route('packages.index') }}" class="btn-secondary">
+                    {{ __('messages.See all packages and dates') }}
+                </a>
+            </div>
+        </div>
+    </section>
+@endif
+
 <!-- Why Section -->
 <x-section-why :why="$why" />
+
+{{--
+    What happens between deciding to go and coming home.
+
+    Written as the real journey, not as this website's checkout: there is no
+    online booking yet (Phase 3), and a timeline implying one would promise a
+    button that does not exist. Every stage below is something Rihla actually
+    does for a pilgrim today, including the visa and the Nusuk permit, which
+    are two separate authorisations and are named separately here for the
+    same reason they are two deliverables in the plan — a traveller can hold
+    a valid visa and still be barred from the Rawdah without a permit.
+--}}
+<section class="section-y bg-white">
+    <div class="container mx-auto px-4">
+        <h2 class="section-title">{{ __('messages.How the journey works') }}</h2>
+
+        <ol class="mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach ([
+                ['messages.Talk to us', 'messages.Tell us who is travelling and when. We will say what is available and what it costs.'],
+                ['messages.Reserve your place', 'messages.A place is held for your party while the paperwork starts.'],
+                ['messages.Documents and visa', 'messages.Passports are checked for validity and the Umrah visa is applied for.'],
+                ['messages.Nusuk permit', 'messages.A separate authorisation from the visa, and needed for the Mataf and the Rawdah.'],
+                ['messages.Before you fly', 'messages.A briefing on the rites, what to pack, and what happens on arrival.'],
+                ['messages.Madinah and Makkah', 'messages.A Dhivehi-speaking group leader travels with the party throughout.'],
+            ] as $index => [$heading, $body])
+                <li class="relative ps-12">
+                    <span class="absolute start-0 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-wine-500 font-bold text-white"
+                          aria-hidden="true" dir="ltr">{{ $index + 1 }}</span>
+                    <h3 class="font-bold text-ink" dir="auto">{{ __($heading) }}</h3>
+                    <p class="mt-1 text-sm text-brand-body" dir="auto">{{ __($body) }}</p>
+                </li>
+            @endforeach
+        </ol>
+    </div>
+</section>
 
 <!-- Current Trip Section -->
 @if($currentTrip)
