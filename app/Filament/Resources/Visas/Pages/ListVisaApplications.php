@@ -16,8 +16,13 @@ class ListVisaApplications extends ListRecords
     public function getTabs(): array
     {
         return [
+            // The generic is named because the closure is handed a builder
+            // typed for the base Model, which has no open() scope.
             'open' => Tab::make('Open')
-                ->modifyQueryUsing(fn (Builder $query) => $query->open())
+                ->modifyQueryUsing(function ($query): void {
+                    /** @var Builder<VisaApplication> $query */
+                    $query->open();
+                })
                 ->badge(VisaApplication::open()->count()),
 
             'issued' => Tab::make('Issued')

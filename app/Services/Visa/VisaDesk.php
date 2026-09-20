@@ -42,7 +42,7 @@ final class VisaDesk
         return VisaApplication::create([
             'booking_id' => $booking->getKey(),
             'traveller_id' => $traveller->getKey(),
-            'attempt' => ($existing?->attempt ?? 0) + 1,
+            'attempt' => ($existing->attempt ?? 0) + 1,
             'visa_type' => $visaType ?? $existing?->visa_type,
             'assigned_to' => $existing?->assigned_to,
         ]);
