@@ -26,6 +26,16 @@ class AuditLog extends Model
 
     public const DELETED = 'deleted';
 
+    /**
+     * Somebody pulled a file out of the document wallet.
+     *
+     * For most records the interesting event is a change; for a passport
+     * scan it is a read. "Who has had a copy of this?" is the question that
+     * gets asked after something goes wrong, and a trail recording only
+     * uploads cannot answer it.
+     */
+    public const DOWNLOADED = 'downloaded';
+
     public const UPDATED_AT = null;
 
     protected $guarded = [];
