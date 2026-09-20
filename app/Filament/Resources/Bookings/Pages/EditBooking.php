@@ -6,18 +6,25 @@ use App\Exceptions\NoSeatsAvailable;
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
 use App\Models\NusukPermit;
+use App\Models\Payment;
 use App\Models\SeatHold;
 use App\Services\Booking\SeatAllocator;
 use App\Services\Nusuk\PermitDesk;
+use App\Services\Payments\Gateways;
+use App\Services\Payments\SlipVault;
 use App\Services\Visa\VisaDesk;
+use App\Support\Money;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 /**
- * One booking, and the five things staff can do to it.
+ * One booking, and the six things staff can do to it.
  *
  * Every action goes through the domain rather than writing a column:
  * {@see Booking::transitionTo()} refuses an illegal move and records who and
@@ -32,6 +39,7 @@ class EditBooking extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            $this->recordPaymentAction(),
             $this->confirmAction(),
             $this->openVisasAction(),
             $this->openPermitsAction(),
@@ -118,6 +126,99 @@ class EditBooking extends EditRecord
                         $opened->count(),
                         ['count' => $opened->count()],
                     ))
+                    ->send();
+            });
+    }
+
+    /**
+     * Record money against this booking (§5.3).
+     *
+     * Recording is not reconciling. Anybody taking the booking can enter
+     * what a customer says they have sent; saying the money has arrived is
+     * a separate act by somebody holding `payment.reconcile`, on the
+     * payments screen. Collapsing the two is how an unchecked slip becomes a
+     * confirmed booking and a seat nobody paid for.
+     *
+     * Only the methods that can actually be used are offered. Card is absent
+     * while BML has no merchant account, rather than present and throwing.
+     */
+    private function recordPaymentAction(): Action
+    {
+        return Action::make('recordPayment')
+            ->label('Record a payment')
+            ->icon('heroicon-o-banknotes')
+            ->color('success')
+            ->visible(fn (): bool => auth()->user()?->can('payment.create') === true
+                && app(Gateways::class)->available() !== [])
+            ->schema([
+                Select::make('method')
+                    ->label('How it came')
+                    ->options(fn (): array => app(Gateways::class)->options())
+                    ->default(Payment::BANK_TRANSFER)
+                    ->required()
+                    ->live(),
+
+                TextInput::make('amount')
+                    ->label('Amount')
+                    ->numeric()
+                    ->required()
+                    ->prefix(fn (): string => $this->booking()->currency)
+                    ->helperText(fn (): string => 'Whole rufiyaa. The balance is '
+                        .$this->booking()->balance()->format().'.'),
+
+                DatePicker::make('paid_at')
+                    ->label('When they say it was sent')
+                    ->native(false)
+                    ->maxDate(now()),
+
+                TextInput::make('payer_name')
+                    ->label('Sent by')
+                    ->maxLength(255)
+                    ->helperText('Often not one of the travellers — a father, an employer, a relative abroad.'),
+
+                TextInput::make('payer_reference')
+                    ->label('Their reference')
+                    ->maxLength(80)
+                    ->visible(fn (callable $get): bool => $get('method') === Payment::BANK_TRANSFER)
+                    ->helperText('Whatever the sender typed into the box. Kept as they wrote it — it is what matches a statement.'),
+
+                FileUpload::make('slip')
+                    ->label('Transfer slip')
+                    ->disk(config('payments.slips.disk'))
+                    ->visibility('private')
+                    ->acceptedFileTypes(config('payments.slips.mime_types'))
+                    ->maxSize((int) config('payments.slips.max_kilobytes'))
+                    // The vault stores it, not Filament: it checksums the
+                    // file, keeps any superseded one and records the event.
+                    ->storeFiles(false)
+                    ->visible(fn (callable $get): bool => $get('method') === Payment::BANK_TRANSFER),
+
+                Textarea::make('notes')->label('Note')->rows(2),
+            ])
+            ->action(function (array $data): void {
+                $booking = $this->booking();
+
+                $payment = app(Gateways::class)->for($data['method'])->start(
+                    $booking,
+                    Money::ofMajor((int) $data['amount'], $booking->currency),
+                    [
+                        'paid_at' => $data['paid_at'] ?: null,
+                        'payer_name' => $data['payer_name'] ?: null,
+                        'payer_reference' => $data['payer_reference'] ?? null,
+                        'notes' => $data['notes'] ?: null,
+                    ],
+                );
+
+                if (($data['slip'] ?? null) !== null) {
+                    app(SlipVault::class)->attach($payment, $data['slip']);
+                }
+
+                Notification::make()
+                    ->success()
+                    ->title('Recorded '.$payment->money()->format())
+                    // Said plainly, because the difference between "recorded"
+                    // and "received" is the whole point of the separation.
+                    ->body('Nothing has been added to the paid total yet. Finance checks it on the payments screen.')
                     ->send();
             });
     }

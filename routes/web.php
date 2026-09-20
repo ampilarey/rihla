@@ -16,6 +16,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PaymentSlipController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
@@ -145,6 +146,13 @@ Route::middleware('auth')->group(function () {
     // file, not a page.
     Route::get('/documents/{version}/download', [DocumentController::class, 'download'])
         ->name('documents.download')
+        ->middleware('signed');
+
+    // The only route to a transfer slip, on the same terms as a document:
+    // signed as well as authenticated, on a private disk, audited on the
+    // way through. A slip carries an account number and a name.
+    Route::get('/payments/{payment}/slip', [PaymentSlipController::class, 'show'])
+        ->name('payments.slip')
         ->middleware('signed');
 });
 

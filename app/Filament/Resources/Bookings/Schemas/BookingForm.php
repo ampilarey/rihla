@@ -6,6 +6,7 @@ use App\Filament\Resources\Bookings\Tables\BookingsTable;
 use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\SeatHold;
+use App\Support\Money;
 use App\Support\TravelReadiness;
 use Filament\Forms\Components\Textarea;
 use Filament\Infolists\Components\TextEntry;
@@ -93,10 +94,11 @@ class BookingForm
                 TextEntry::make('paid_minor')
                     ->label('Paid')
                     ->state(fn (Booking $record): string => $record->paid()->format())
-                    // Always zero until payments exist. Said out loud rather
-                    // than left to look like a bug: nothing writes this yet,
-                    // because taking money needs a BML merchant account.
-                    ->helperText('Payments are not recorded yet — this stays at zero until BML is connected.'),
+                    // Recomputed from reconciled payments under a row lock,
+                    // never typed and never incremented. A claim that
+                    // nobody has checked is not in this figure, which is
+                    // the point of the separation.
+                    ->helperText(fn (Booking $record): string => self::unchecked($record)),
 
                 TextEntry::make('balance')
                     ->label('Balance')
@@ -147,6 +149,25 @@ class BookingForm
                     ->helperText('What was said on the phone. Visible to staff only.'),
             ]),
         ]);
+    }
+
+    /**
+     * What is claimed but not yet checked, said next to the paid figure.
+     *
+     * Without this the two numbers disagree silently: a customer has sent a
+     * slip, the booking says MVR 0 paid, and the person on the phone has no
+     * way to see that anything is waiting.
+     */
+    private static function unchecked(Booking $booking): string
+    {
+        $claimed = (int) $booking->payments()->awaitingReview()->sum('amount_minor');
+
+        if ($claimed === 0) {
+            return 'Recomputed from checked payments. Nothing is typed into this figure.';
+        }
+
+        return Money::ofMinor($claimed, $booking->currency)->format()
+            .' is claimed but not checked yet, and is not in this figure.';
     }
 
     /**

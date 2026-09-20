@@ -60,6 +60,52 @@
                 </p>
             @endif
 
+            {{--
+                Where to send the money, **only when somebody has actually
+                said**. `$transfer` is null while no account is configured,
+                and then this block does not render at all: an invented
+                account number is not a placeholder, it is an instruction to
+                a customer to send money somewhere. The WhatsApp button below
+                is the route in the meantime, which is what happens today.
+            --}}
+            @if($transfer !== null)
+                <div dir="auto" class="mb-6 rounded-xl border border-cream-deep bg-cream p-4 text-start">
+                    <h2 class="mb-2 font-semibold text-ink">{{ __('messages.Paying by bank transfer') }}</h2>
+
+                    <dl class="space-y-1 text-sm text-ink">
+                        @if($transfer['bank'])
+                            <div class="flex justify-between gap-4">
+                                <dt class="text-ink-muted">{{ __('messages.Bank') }}</dt>
+                                <dd class="text-end font-medium">{{ $transfer['bank'] }}</dd>
+                            </div>
+                        @endif
+                        @if($transfer['account_name'])
+                            <div class="flex justify-between gap-4">
+                                <dt class="text-ink-muted">{{ __('messages.Account name') }}</dt>
+                                <dd class="text-end font-medium">{{ $transfer['account_name'] }}</dd>
+                            </div>
+                        @endif
+                        <div class="flex justify-between gap-4">
+                            <dt class="text-ink-muted">{{ __('messages.Account number') }}</dt>
+                            {{-- Latin digits, left to right, whatever the page language. --}}
+                            <dd class="text-end font-medium" dir="ltr">{{ $transfer['account'] }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <dt class="text-ink-muted">{{ __('messages.Amount') }}</dt>
+                            <dd class="text-end font-bold" dir="ltr">{{ $transfer['amount'] }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <dt class="text-ink-muted">{{ __('messages.Reference') }}</dt>
+                            <dd class="text-end font-medium" dir="ltr">{{ $reference }}</dd>
+                        </div>
+                    </dl>
+
+                    <p class="mt-3 text-sm text-ink-muted">
+                        {{ __('messages.Send us the slip and we will confirm once the money is in.') }}
+                    </p>
+                </div>
+            @endif
+
             <a href="{{ \App\Support\Contact::whatsappUrl(__('messages.Hello Rihla, I would like to complete booking :reference.', ['reference' => $reference])) }}"
                class="btn-primary w-full"
                target="_blank" rel="noopener noreferrer">

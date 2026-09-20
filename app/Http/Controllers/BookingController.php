@@ -14,6 +14,7 @@ use App\Models\Traveller;
 use App\Models\WaitlistEntry;
 use App\Services\Booking\SeatAllocator;
 use App\Services\Booking\Waitlist;
+use App\Services\Payments\Drivers\BankTransfer;
 use App\Support\Checkout;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -258,12 +259,22 @@ class BookingController extends Controller
             return $this->holdLapsed();
         }
 
+        $bank = app(BankTransfer::class);
+
         return view('booking.confirmation', [
             'booking' => $booking,
             'hold' => Checkout::hold(),
             'departure' => $booking->departure,
             'package' => $booking->departure->package,
             'socialSettings' => Setting::getSocialSettings(),
+            // Where to send the money — when anybody has said. While
+            // config/payments.php has no account on file this is null and
+            // the page asks the customer to get in touch, rather than
+            // printing an invented account number. A made-up account is not
+            // a placeholder: it is an instruction to send money somewhere.
+            'transfer' => $bank->isAvailable() && $bank->hasAccountFor($booking->currency)
+                ? $bank->instructions($booking->total())
+                : null,
         ]);
     }
 

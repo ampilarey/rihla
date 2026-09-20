@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\IllegalBookingTransition;
+use App\Services\Payments\Ledger;
 use App\Support\Money;
 use App\Support\PackageSnapshot;
 use Illuminate\Database\Eloquent\Builder;
@@ -136,6 +137,20 @@ class Booking extends Model
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
+    }
+
+    /**
+     * Money recorded against this booking, newest first.
+     *
+     * Read here; written only through
+     * {@see Ledger}, which owns `paid_minor` under
+     * a row lock for the same reason SeatAllocator owns the seat counters.
+     *
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->orderByDesc('id');
     }
 
     /** @return HasMany<BookingTraveller, $this> */
