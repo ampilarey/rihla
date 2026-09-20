@@ -52,8 +52,15 @@ class BookingTraveller extends Model
         return $this->belongsTo(PriceTier::class);
     }
 
+    /**
+     * `->booking`, not `?->booking`: `booking_id` is NOT NULL, so the
+     * relationship cannot be absent on a row that exists, and static
+     * analysis correctly reads the nullsafe operator here as dead code.
+     * The booking is the only place the currency lives — a copy on this
+     * row would be a second thing to keep in step.
+     */
     public function money(): Money
     {
-        return Money::ofMinor($this->amount_minor, $this->booking?->currency ?? 'MVR');
+        return Money::ofMinor($this->amount_minor, $this->booking->currency);
     }
 }
