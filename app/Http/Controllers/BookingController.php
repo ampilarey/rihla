@@ -169,7 +169,7 @@ class BookingController extends Controller
                 'customer_id' => $customer->getKey(),
                 'departure_id' => $departure->getKey(),
                 'seats' => $hold->seats,
-                'currency' => $departure->lead_price?->currency ?? 'MVR',
+                'currency' => $departure->lead_price->currency ?? 'MVR',
             ]);
 
             foreach (array_values($validated['travellers']) as $index => $details) {
@@ -305,9 +305,9 @@ class BookingController extends Controller
         $line = $booking->travellers()->create([
             'traveller_id' => $traveller->getKey(),
             'occupancy' => $occupancy,
-            'pax_type' => $tier?->pax_type ?? PriceTier::ADULT,
+            'pax_type' => $tier->pax_type ?? PriceTier::ADULT,
             'price_tier_id' => $tier?->getKey(),
-            'amount_minor' => $tier?->amount_minor ?? 0,
+            'amount_minor' => $tier->amount_minor ?? 0,
             'is_lead' => $isLead,
         ]);
 
@@ -355,11 +355,17 @@ class BookingController extends Controller
             : __('messages.At least one adult must travel with the party.');
     }
 
+    /**
+     * `->` rather than `?->` on the left of `??` throughout this class, and
+     * on purpose: `??` already suppresses the null access, so the nullsafe
+     * operator adds nothing and static analysis says so. `$tier` and
+     * `fresh()` really can be null; the coalesce is what handles it.
+     */
     private function seatsGoneMessage(Departure $departure): string
     {
         return $departure->has_capacity
             ? __('messages.Those seats have just gone. :count are left on this departure.', [
-                'count' => $departure->fresh()?->seats_remaining ?? 0,
+                'count' => $departure->fresh()->seats_remaining ?? 0,
             ])
             : __('messages.Booking is not open for this departure yet. Message us and we will arrange it.');
     }
