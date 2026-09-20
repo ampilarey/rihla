@@ -36,6 +36,22 @@ class DepartureFactory extends Factory
         ]);
     }
 
+    /**
+     * A known number of empty seats.
+     *
+     * The default state confirms a random number of seats, which is right
+     * for a page that draws a seats-remaining bar and useless for a test
+     * about capacity arithmetic.
+     */
+    public function withSeats(int $total): static
+    {
+        return $this->state(fn (): array => [
+            'capacity_total' => $total,
+            'capacity_held' => 0,
+            'capacity_confirmed' => 0,
+        ]);
+    }
+
     /** No capacity recorded, which is how a backfilled departure starts. */
     public function withoutCapacity(): static
     {

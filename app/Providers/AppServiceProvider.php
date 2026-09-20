@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
+use App\Models\Customer;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
 use App\Models\Media;
 use App\Models\Setting;
+use App\Models\Traveller;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\WhyFeature;
@@ -43,6 +46,19 @@ class AppServiceProvider extends ServiceProvider
      * @var list<class-string<Model>>
      */
     private const AUDITED = [
+        // The booking domain. Money and identity documents, so the trail
+        // matters more here than anywhere else in the application — and the
+        // observer masks passport and national-id values rather than
+        // copying them into a table many more people can read.
+        //
+        // A booking's own status history lives in
+        // `booking_status_transitions`, which records why as well as what.
+        // This covers everything else: an amount corrected, a traveller's
+        // details edited, a note changed.
+        Booking::class,
+        Customer::class,
+        Traveller::class,
+
         Trip::class,
         Media::class,
         GuideStep::class,

@@ -382,4 +382,22 @@ class DeploymentToolingTest extends TestCase
         $this->assertStringContainsString('(LIVE)', $script,
             'A real deploy should say so plainly.');
     }
+
+    /**
+     * [R-5] is a live question, not a note in a document: nobody has read
+     * the production MySQL version, and on anything older than 8.0.16 the
+     * overbooking CHECK constraint is parsed and ignored. Preflight runs on
+     * every deploy, so it is the one thing that can answer it from the host
+     * itself — and it must not answer wrongly in either direction.
+     *
+     * Here the migration has run, so the constraint is installed and
+     * preflight must be silent about it. The other direction is covered by
+     * SeatAllocationTest, which proves the constraint is doing something.
+     */
+    public function test_preflight_does_not_warn_when_the_capacity_constraint_is_installed(): void
+    {
+        $this->artisan('rihla:preflight')
+            ->doesntExpectOutputToContain('overbooking constraint')
+            ->assertSuccessful();
+    }
 }

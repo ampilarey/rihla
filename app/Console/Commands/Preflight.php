@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Setting;
 use App\Models\Trip;
 use Illuminate\Console\Command;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
@@ -35,6 +36,7 @@ class Preflight extends Command
         $production = $this->option('production') || app()->isProduction();
 
         $this->checkDatabase();
+        $this->checkCapacityConstraint();
         $this->checkBuild();
         $this->checkStorage();
 
@@ -82,6 +84,67 @@ class Preflight extends Command
 
         if ($pending > 0) {
             $this->addWarning('migrations', "{$pending} pending — the deploy will run them, so take the backup first");
+        }
+    }
+
+    /**
+     * Is the overbooking backstop actually installed on this database?
+     *
+     * [R-5]: nobody has read the production MySQL version. MySQL enforces
+     * CHECK constraints from 8.0.16 and MariaDB from 10.2.1; anything older
+     * parses the clause and silently ignores it, so the migration declines
+     * to add one it knows will do nothing. That is the right call — but it
+     * leaves a guarantee the plan asked for missing on a host nobody can
+     * inspect from here, and the only honest thing to do is say so out loud
+     * on every deploy rather than assume.
+     *
+     * A warning, not a failure: the `SELECT … FOR UPDATE` row lock in
+     * App\Services\Booking\SeatAllocator still carries the guarantee. What
+     * is missing is the net underneath it.
+     */
+    private function checkCapacityConstraint(): void
+    {
+        $connection = DB::connection();
+        $name = 'departures_capacity_not_exceeded';
+
+        try {
+            $installed = match ($connection->getDriverName()) {
+                'sqlite' => $connection->table('sqlite_master')
+                    ->where('type', 'trigger')
+                    ->where('name', 'like', $name.'%')
+                    ->count() > 0,
+                'mysql', 'mariadb' => $connection->table('information_schema.table_constraints')
+                    ->whereRaw('table_schema = database()')
+                    ->where('table_name', 'departures')
+                    ->where('constraint_name', $name)
+                    ->count() > 0,
+                'pgsql' => $connection->table('pg_constraint')->where('conname', $name)->count() > 0,
+                default => false,
+            };
+        } catch (\Throwable $e) {
+            $this->addWarning('overbooking constraint', 'could not be checked: '.$e->getMessage());
+
+            return;
+        }
+
+        if ($installed) {
+            return;
+        }
+
+        $this->addWarning('overbooking constraint', sprintf(
+            'not installed on this database (%s). Seat capacity is still enforced by row locking, '
+            .'but the database-level backstop the plan asks for is missing. MySQL 8.0.16+ or '
+            .'MariaDB 10.2.1+ is needed for it.',
+            $this->databaseVersion($connection),
+        ));
+    }
+
+    private function databaseVersion(Connection $connection): string
+    {
+        try {
+            return (string) ($connection->getPdo()->getAttribute(\PDO::ATTR_SERVER_VERSION) ?: 'unknown version');
+        } catch (\Throwable) {
+            return 'unknown version';
         }
     }
 

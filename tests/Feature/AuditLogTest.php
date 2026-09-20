@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\AuditLog;
+use App\Models\Booking;
+use App\Models\Traveller;
 use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
@@ -219,6 +221,45 @@ class AuditLogTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('admin.audit.index'))
             ->assertForbidden();
+    }
+
+    /**
+     * A passport number is not a password — staff have to read one to do
+     * their job — but copying it into the audit trail puts it in a table far
+     * more people can read, for ever. The *fact* of the change is kept,
+     * because losing that is what a trail exists to prevent; the number is
+     * not.
+     */
+    public function test_identity_document_numbers_are_masked_in_the_log(): void
+    {
+        $traveller = Traveller::factory()->create(['passport_number' => 'A1234567']);
+        $traveller->update(['passport_number' => 'B7654321']);
+
+        $logs = AuditLog::where('auditable_type', Traveller::class)->get();
+
+        $this->assertNotEmpty($logs);
+
+        foreach ($logs as $log) {
+            $encoded = json_encode([$log->old_values, $log->new_values]);
+
+            $this->assertStringNotContainsString('A1234567', $encoded);
+            $this->assertStringNotContainsString('B7654321', $encoded);
+        }
+
+        $update = $logs->firstWhere('event', AuditLog::UPDATED);
+        $this->assertArrayHasKey('passport_number', $update->new_values,
+            'The trail must still show that the passport number changed.');
+    }
+
+    /** Money and identity data are the records an audit trail is most for. */
+    public function test_bookings_are_audited(): void
+    {
+        $booking = Booking::factory()->create();
+        $booking->forceFill(['notes' => 'Wheelchair at Velana'])->save();
+
+        $this->assertNotEmpty(
+            AuditLog::where('auditable_type', Booking::class)->get(),
+        );
     }
 
     /**

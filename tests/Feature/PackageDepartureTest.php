@@ -169,9 +169,16 @@ class PackageDepartureTest extends TestCase
         $this->assertFalse($departure->is_sold_out);
     }
 
+    /**
+     * `make()`, not `create()`: since Phase 3 the database refuses to store
+     * an oversold row at all (see SeatAllocationTest). This is still worth
+     * asserting, because the display guard has to hold for a row written
+     * before the constraint existed — and on a MySQL too old to enforce it,
+     * which [R-5] leaves open until somebody reads the production version.
+     */
     public function test_an_oversold_departure_never_shows_negative_seats(): void
     {
-        $departure = Departure::factory()->create([
+        $departure = Departure::factory()->make([
             'capacity_total' => 24,
             'capacity_confirmed' => 27,
         ]);

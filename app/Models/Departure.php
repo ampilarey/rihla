@@ -97,6 +97,26 @@ class Departure extends Model
         return $this->hasMany(ItineraryItem::class)->orderBy('day_number');
     }
 
+    /** @return HasMany<Booking, $this> */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Seats taken off this departure while somebody decides.
+     *
+     * Read through App\Services\Booking\SeatAllocator, never written
+     * directly: the counters on this row and the rows in this relationship
+     * have to move together, under a lock, or the departure oversells.
+     *
+     * @return HasMany<SeatHold, $this>
+     */
+    public function seatHolds(): HasMany
+    {
+        return $this->hasMany(SeatHold::class);
+    }
+
     // ── Seats ────────────────────────────────────────────────────────────
     //
     // A held seat is neither free nor sold, so it is counted separately. In
@@ -134,6 +154,22 @@ class Departure extends Model
     public function getIsSoldOutAttribute(): bool
     {
         return $this->has_capacity && $this->seats_remaining < 1;
+    }
+
+    /**
+     * Whether seats can be sold at all.
+     *
+     * A departure with no capacity recorded is not unlimited — it is
+     * unconfigured, and the allocator refuses it. Stated here so a screen
+     * can say "booking not open yet" rather than offering a button that
+     * throws.
+     */
+    public function getIsBookableAttribute(): bool
+    {
+        return $this->is_published
+            && $this->has_capacity
+            && ! $this->is_sold_out
+            && $this->date_start->isFuture();
     }
 
     // ── Price ────────────────────────────────────────────────────────────
