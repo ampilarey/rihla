@@ -2,19 +2,15 @@
 
 namespace App\Filament\Concerns;
 
-use Illuminate\Database\Eloquent\Model;
-use Spatie\Translatable\HasTranslations;
-
 /**
- * Lets a Filament form edit a spatie-translatable column in both languages,
- * in both directions.
+ * Helpers for editing spatie-translatable columns in a Filament form.
  *
  * **Filling.** `$package->title` is the translation for the *current* locale
  * — a string. A form bound to it edits one language and silently discards the
  * other. What a form needs is the whole `{"en": …, "dv": …}` array, which is
  * what getTranslations() returns and what assigning an array back sets. So
- * the translatable keys are expanded before the form fills, and the fields
- * are named `title.en` / `title.dv`.
+ * the pages expand the translatable keys before the form fills, and the
+ * fields are named `title.en` / `title.dv`.
  *
  * **Saving.** The form always submits every locale tab, so a package written
  * only in English arrives carrying `dv => ''` or `dv => []`. Stored, that is
@@ -23,6 +19,12 @@ use Spatie\Translatable\HasTranslations;
  * title or an empty inclusions list where it should show the English. An
  * empty box is not a translation — the same rule the media captions follow.
  *
+ * Both helpers work on plain arrays and take the attribute list, rather than
+ * taking a model and reaching for its trait methods. A model parameter would
+ * have to be typed `Model`, which does not have getTranslations() — the first
+ * draft did that, guarded it with class_uses_recursive(), and static analysis
+ * rightly refused to accept a runtime check as a type.
+ *
  * Hand-rolled rather than adding filament/spatie-laravel-translatable-plugin:
  * Filament already brought in 32 packages that have to be upgraded by hand
  * over SSH (ADR 0002, ADR 0003).
@@ -30,36 +32,19 @@ use Spatie\Translatable\HasTranslations;
 trait EditsTranslations
 {
     /**
+     * Replace each translatable key with its whole `{locale: value}` array.
+     *
      * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $translations  attribute => translations
      * @return array<string, mixed>
      */
-    protected function expandTranslations(array $data, ?Model $record = null): array
+    public static function withTranslationArrays(array $data, array $translations): array
     {
-        $record ??= $this->getRecord();
-
-        foreach (self::translatableAttributes($record) as $attribute) {
-            $data[$attribute] = $record->getTranslations($attribute);
-        }
-
-        return $data;
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    protected function pruneEmptyTranslations(array $data, ?Model $record = null): array
-    {
-        $record ??= $this->getRecord();
-
-        return self::withoutEmptyLocales($data, self::translatableAttributes($record));
+        return array_replace($data, $translations);
     }
 
     /**
      * Drop every locale whose value is blank, for each named attribute.
-     *
-     * Static and public so a Repeater inside a relation manager can reach it
-     * for its own nested translatable rows.
      *
      * @param  array<string, mixed>  $data
      * @param  iterable<int, string>  $attributes
@@ -79,16 +64,5 @@ trait EditsTranslations
         }
 
         return $data;
-    }
-
-    /** @return array<int, string> */
-    private static function translatableAttributes(?Model $record): array
-    {
-        if (! $record || ! in_array(HasTranslations::class, class_uses_recursive($record), true)) {
-            return [];
-        }
-
-        /** @var array<int, string> */
-        return $record->translatable ?? [];
     }
 }

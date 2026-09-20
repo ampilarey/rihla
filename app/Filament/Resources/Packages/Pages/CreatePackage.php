@@ -25,6 +25,6 @@ class CreatePackage extends CreateRecord
      */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        return $this->pruneEmptyTranslations($data, new Package);
+        return self::withoutEmptyLocales($data, (new Package)->translatable);
     }
 }
