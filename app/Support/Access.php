@@ -234,6 +234,18 @@ final class Access
         'announcement.publish',
         'announcement.delete',
 
+        // Emergency broadcasts (§6.5). `send` is separate from `create` for
+        // the same reason publishing is separate from writing, only more
+        // so: this reaches every household on a departure at once and
+        // cannot be unsent. No delete verb — what was sent in an emergency
+        // is the record of what was said, and a record that can be removed
+        // is not one.
+        'broadcast.viewAny',
+        'broadcast.view',
+        'broadcast.create',
+        'broadcast.update',
+        'broadcast.send',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -416,6 +428,18 @@ final class Access
             fn (string $permission) => strtok($permission, '.') === 'announcement',
         ));
 
+        $broadcasts = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'broadcast',
+        ));
+
+        // Drafts one from the ground and cannot send it. A leader in the
+        // middle of an incident is the worst-placed person to decide that
+        // forty households should hear about it.
+        $broadcastsWithoutSending = [
+            'broadcast.viewAny', 'broadcast.view', 'broadcast.create', 'broadcast.update',
+        ];
+
         // Writes and edits, but does not publish. A tour leader drafts what
         // happened; the office decides it goes in front of forty families.
         $announcementsWithoutPublishing = [
@@ -457,6 +481,7 @@ final class Access
                 $attendance,
                 $opsLog,
                 $announcements,
+                $broadcasts,
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -501,6 +526,7 @@ final class Access
                 // They draft what the families should hear; the office
                 // decides it goes out.
                 $announcementsWithoutPublishing,
+                $broadcastsWithoutSending,
             ),
 
             // Takes and manages bookings. Reads the product to do it —
@@ -573,8 +599,10 @@ final class Access
                 $attendanceReadOnly,
                 $opsLogReadOnly,
                 // Reads them, because the phone call is often "I saw the
-                // announcement, what does it mean".
+                // announcement, what does it mean". The same for a
+                // broadcast, only the call is more urgent.
                 ['announcement.viewAny', 'announcement.view'],
+                ['broadcast.viewAny', 'broadcast.view'],
             ),
 
             // The documents are the job: collecting them, checking them and

@@ -15,6 +15,8 @@
             <x-local-date :date="$departure->date_end" />
         </p>
 
+        <x-emergency-notice :broadcasts="$broadcasts" />
+
         {{-- Where the group is. Derived from the recorded hotel nights, and
              honest about not knowing — see App\Support\JourneyProgress. --}}
         <section class="card mb-6">

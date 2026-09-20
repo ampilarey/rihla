@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
+use App\Models\EmergencyBroadcast;
 use App\Models\FamilyAccess;
 use App\Models\RollCall;
 use App\Models\Traveller;
@@ -81,6 +82,14 @@ class FamilyController extends Controller
             'access' => $access,
             'departure' => $departure,
             'progress' => JourneyProgress::of($departure),
+            // Group-level and urgent, so it needs no permission from
+            // anybody: an emergency message that waits for a privacy
+            // setting is not an emergency message.
+            'broadcasts' => EmergencyBroadcast::where('departure_id', $departure->getKey())
+                ->sent()
+                ->orderByDesc('sent_at')
+                ->limit(5)
+                ->get(),
             'announcements' => Announcement::where('departure_id', $departure->getKey())
                 ->live()
                 ->orderByDesc('published_at')
