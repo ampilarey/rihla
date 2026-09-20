@@ -24,6 +24,12 @@ class Departure extends Model
         'tour_leader_id', 'scholar_id',
         'capacity_total', 'capacity_held', 'capacity_confirmed',
         'status', 'is_published',
+        // Recorded in Nusuk, and the gate every permit on this departure
+        // waits behind (§5.4b). Mass-assignable because the admin form
+        // writes them through update(): left out of this list they are
+        // dropped without a word, and the only symptom is permits that can
+        // never be requested for a departure whose form says they can.
+        'nusuk_accommodation_recorded_at', 'nusuk_transport_recorded_at',
     ];
 
     protected $casts = [
@@ -33,6 +39,8 @@ class Departure extends Model
         'capacity_held' => 'integer',
         'capacity_confirmed' => 'integer',
         'is_published' => 'boolean',
+        'nusuk_accommodation_recorded_at' => 'datetime',
+        'nusuk_transport_recorded_at' => 'datetime',
     ];
 
     public const STATUS_UPCOMING = 'upcoming';
