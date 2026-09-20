@@ -18,7 +18,8 @@ class ArticleReferenceFactory extends Factory
     public function definition(): array
     {
         return [
-            'knowledge_article_id' => KnowledgeArticle::factory(),
+            'referenceable_type' => KnowledgeArticle::class,
+            'referenceable_id' => KnowledgeArticle::factory(),
             'kind' => ArticleReference::QURAN,
             'citation' => 'Placeholder citation for a test fixture',
         ];

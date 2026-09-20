@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * A source for a claim — §7.1's "every claim carries a source".
@@ -33,7 +33,7 @@ class ArticleReference extends Model
     use HasFactory;
 
     protected $fillable = [
-        'knowledge_article_id', 'kind', 'citation', 'grading', 'note', 'sort_order',
+        'referenceable_type', 'referenceable_id', 'kind', 'citation', 'grading', 'note', 'sort_order',
     ];
 
     protected $casts = ['sort_order' => 'integer'];
@@ -84,10 +84,21 @@ class ArticleReference extends Model
         });
     }
 
-    /** @return BelongsTo<KnowledgeArticle, $this> */
-    public function article(): BelongsTo
+    /**
+     * Whatever makes the claim.
+     *
+     * Polymorphic because a Ziyarah location (§7.2) asserts history,
+     * significance and etiquette exactly as an article does, and its
+     * "common misconceptions" are claims about what is *not* true —
+     * which need a source more than most. Two reference tables would be
+     * two copies of the grading rule, and the second copy is the one that
+     * drifts.
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function referenceable(): MorphTo
     {
-        return $this->belongsTo(KnowledgeArticle::class, 'knowledge_article_id');
+        return $this->morphTo();
     }
 
     public function isCautionary(): bool

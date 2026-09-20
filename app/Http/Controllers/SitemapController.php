@@ -6,6 +6,7 @@ use App\Http\Middleware\SetLocale;
 use App\Models\Article;
 use App\Models\Package;
 use App\Models\Trip;
+use App\Models\ZiyarahLocation;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 
@@ -39,6 +40,14 @@ class SitemapController extends Controller
             ->orderByDesc('published_at')
             ->get(['slug', 'updated_at']);
 
+        // Only what a scholar has signed off and published. The index is
+        // listed only when it has something on it: submitting a page that
+        // reads "nothing here yet" is how a crawler learns to discount the
+        // rest of this sitemap.
+        $ziyarah = ZiyarahLocation::live()
+            ->orderBy('sort_order')
+            ->get(['slug', 'updated_at']);
+
         $entries = [];
 
         // Static pages. Weekly rather than daily: claiming a change frequency
@@ -61,6 +70,24 @@ class SitemapController extends Controller
                 'lastmod' => null,
                 'changefreq' => $page['changefreq'],
                 'priority' => $page['priority'],
+            ];
+        }
+
+        if ($ziyarah->isNotEmpty()) {
+            $entries[] = [
+                'path' => '/ziyarah',
+                'lastmod' => null,
+                'changefreq' => 'monthly',
+                'priority' => '0.7',
+            ];
+        }
+
+        foreach ($ziyarah as $location) {
+            $entries[] = [
+                'path' => '/ziyarah/'.$location->slug,
+                'lastmod' => $location->updated_at?->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
             ];
         }
 

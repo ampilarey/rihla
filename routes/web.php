@@ -28,6 +28,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StaffInvoiceController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\WaitlistController;
+use App\Http\Controllers\ZiyarahController;
 use App\Models\GuideStep;
 use App\Models\Media;
 use App\Models\Trip;
@@ -158,6 +159,13 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiries.store');
     Route::get('/guide', [PageController::class, 'guide'])->name('guide');
     Route::get('/guide/pdf', [PageController::class, 'guidePdf'])->name('guide.pdf');
+
+    // The Ziyarah Guide (§7.2). The manifest is declared before {slug} or
+    // "offline" is read as a location slug — the same ordering trap the
+    // package comparison route carries a comment about.
+    Route::get('/ziyarah', [ZiyarahController::class, 'index'])->name('ziyarah.index');
+    Route::get('/ziyarah/offline', [ZiyarahController::class, 'offlineManifest'])->name('ziyarah.manifest');
+    Route::get('/ziyarah/{slug}', [ZiyarahController::class, 'show'])->name('ziyarah.show');
 });
 
 // The bare domain picks a language from the session, then Accept-Language, and

@@ -283,6 +283,23 @@ final class Access
         'knowledge.review',
         'knowledge.publish',
 
+        // The Ziyarah Guide (§7.2). The same six verbs, and the same
+        // reason for the last two being separate: a location page makes
+        // the same kind of religious claim an article does, and a
+        // reviewer who can also publish performs the check on themselves.
+        //
+        // A separate resource from `knowledge` rather than a reuse of it,
+        // because the two are edited by different people: the office that
+        // writes trip content owns the places pilgrims visit, and the
+        // Knowledge Centre is a library. Sharing one permission would mean
+        // granting one to grant the other.
+        'ziyarah.viewAny',
+        'ziyarah.view',
+        'ziyarah.create',
+        'ziyarah.update',
+        'ziyarah.review',
+        'ziyarah.publish',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -481,6 +498,18 @@ final class Access
         // they do not write the site's marketing.
         $knowledgeReview = ['knowledge.viewAny', 'knowledge.view', 'knowledge.review'];
 
+        $ziyarah = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'ziyarah',
+        ));
+
+        // Writes the location pages; neither reviews nor publishes them.
+        $ziyarahWithoutSignOff = [
+            'ziyarah.viewAny', 'ziyarah.view', 'ziyarah.create', 'ziyarah.update',
+        ];
+
+        $ziyarahReview = ['ziyarah.viewAny', 'ziyarah.view', 'ziyarah.review'];
+
         $notices = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'notice',
@@ -544,6 +573,7 @@ final class Access
                 $broadcasts,
                 $notices,
                 array_diff($knowledge, ['knowledge.review']),
+                array_diff($ziyarah, ['ziyarah.review']),
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -557,6 +587,7 @@ final class Access
                 // Owning the website's words is not enough to sign off
                 // religious content (§6.4).
                 $knowledgeWithoutSignOff,
+                $ziyarahWithoutSignOff,
             ),
 
             // Read-only across the board.
@@ -637,7 +668,7 @@ final class Access
             // — not bookings, not customers, not money, not the website.
             // A reviewer who can also publish is not a reviewer (§6.4), so
             // `knowledge.publish` is deliberately absent here.
-            self::SCHOLAR => array_merge(['admin.access'], $knowledgeReview),
+            self::SCHOLAR => array_merge(['admin.access'], $knowledgeReview, $ziyarahReview),
 
             // Reconciles payments, so it reads bookings and who they belong
             // to. Editing one is booking staff's job; when refunds and

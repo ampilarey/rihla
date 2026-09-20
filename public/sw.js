@@ -11,9 +11,22 @@
  * it did manage to store would be served stale forever.
  */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL_CACHE = `rihla-shell-${VERSION}`;
 const RUNTIME_CACHE = `rihla-runtime-${VERSION}`;
+
+/**
+ * The Ziyarah Guide a pilgrim deliberately saved — §7.2.
+ *
+ * Deliberately **not** versioned. The shell and runtime caches are wiped
+ * whenever VERSION changes, which is correct for them and would be a
+ * serious bug here: somebody saves the guide the night before they fly, the
+ * site ships a fix while they are in Makkah, their phone picks up the new
+ * worker on the hotel wifi, and the guide they saved is gone the next time
+ * they need it with no data. A cache holding what the user asked for is
+ * cleared when the user asks, not when we deploy.
+ */
+const ZIYARAH_CACHE = 'rihla-ziyarah';
 
 /**
  * Precached individually rather than with addAll, so a single missing file
@@ -43,7 +56,9 @@ self.addEventListener('activate', (event) => {
 
         await Promise.all(
             names
-                .filter((name) => name !== SHELL_CACHE && name !== RUNTIME_CACHE)
+                .filter((name) => name !== SHELL_CACHE
+                    && name !== RUNTIME_CACHE
+                    && name !== ZIYARAH_CACHE)
                 .map((name) => caches.delete(name)),
         );
 
@@ -80,6 +95,16 @@ async function handleNavigation(request) {
 
         return response;
     } catch (error) {
+        // The deliberately saved guide first. A pilgrim who pressed "save
+        // all pages" gets that copy rather than whatever the runtime cache
+        // happens to hold, and gets it whether or not they ever browsed to
+        // this particular page.
+        const kept = await caches.match(request, { cacheName: ZIYARAH_CACHE });
+
+        if (kept) {
+            return kept;
+        }
+
         const cached = await cache.match(request);
 
         if (cached) {
@@ -113,6 +138,55 @@ async function handleAsset(request) {
 
     return response;
 }
+
+/**
+ * Fetch every page of the Ziyarah Guide, because the pilgrim asked.
+ *
+ * Reports what it actually saved. Answering "done" for a batch where three
+ * requests failed would mean the pilgrim finds out in Mina, which is the
+ * failure the whole feature exists to prevent — so the counts are real and
+ * the page says so.
+ *
+ * `reload` skips the HTTP cache: somebody pressing "save again" after a
+ * correction went up is asking for the corrected page, and a 200 served
+ * from the browser's own cache would hand them the old one.
+ */
+async function saveZiyarah(urls) {
+    const cache = await caches.open(ZIYARAH_CACHE);
+
+    const results = await Promise.all(urls.map(async (url) => {
+        try {
+            const response = await fetch(url, { cache: 'reload', credentials: 'same-origin' });
+
+            if (!response.ok || response.type !== 'basic') {
+                return false;
+            }
+
+            await cache.put(url, response.clone());
+
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }));
+
+    return {
+        saved: results.filter(Boolean).length,
+        failed: results.filter((ok) => !ok).length,
+    };
+}
+
+self.addEventListener('message', (event) => {
+    if (event.data?.type !== 'ziyarah-save' || !Array.isArray(event.data.urls)) {
+        return;
+    }
+
+    const port = event.ports[0];
+
+    event.waitUntil(saveZiyarah(event.data.urls).then((result) => {
+        port?.postMessage(result);
+    }));
+});
 
 self.addEventListener('fetch', (event) => {
     const { request } = event;

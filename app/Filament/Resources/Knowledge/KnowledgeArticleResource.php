@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Knowledge;
 
+use App\Filament\RelationManagers\ReferencesRelationManager;
 use App\Filament\Resources\Knowledge\Pages\ListKnowledgeArticles;
 use App\Filament\Resources\Knowledge\Schemas\KnowledgeArticleForm;
 use App\Filament\Resources\Knowledge\Tables\KnowledgeArticlesTable;
@@ -47,7 +48,7 @@ class KnowledgeArticleResource extends Resource
 
     public static function getRelations(): array
     {
-        return [RelationManagers\ReferencesRelationManager::class];
+        return [ReferencesRelationManager::class];
     }
 
     public static function getNavigationBadge(): ?string
