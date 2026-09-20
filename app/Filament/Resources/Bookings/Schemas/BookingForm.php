@@ -109,12 +109,17 @@ class BookingForm
             Section::make('History')->schema([
                 TextEntry::make('transitions')
                     ->hiddenLabel()
+                    // `->user->name`, not `?->`: `??` suppresses a property
+                    // access on null, so the nullsafe operator adds nothing
+                    // and static analysis says so. A *method* call is the
+                    // opposite — `$null->format() ?? 'x'` throws — which is
+                    // why `lead_price?->format()` elsewhere keeps its `?->`.
                     ->state(fn (Booking $record): array => $record->transitions
                         ->map(fn ($transition): string => sprintf(
                             '%s → %s · %s%s',
                             $transition->from_status ?? 'new',
                             $transition->to_status,
-                            $transition->user?->name ?? 'system',
+                            $transition->user->name ?? 'system',
                             $transition->reason !== null ? ' · '.$transition->reason : '',
                         ))
                         ->all())
