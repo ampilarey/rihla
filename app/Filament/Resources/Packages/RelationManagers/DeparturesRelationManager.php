@@ -6,12 +6,16 @@ use App\Filament\Concerns\EditsTranslations;
 use App\Models\Departure;
 use App\Models\DepartureHotel;
 use App\Models\ItineraryItem;
+use App\Models\NusukPermit;
 use App\Models\PriceTier;
 use App\Support\Money;
+use App\Support\TravelReadiness;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -61,7 +65,7 @@ class DeparturesRelationManager extends RelationManager
             ]),
 
             Section::make('Seats')
-                ->description('A held seat is neither free nor sold. Nothing moves "held" yet — booking does, in Phase 3.')
+                ->description('A held seat is neither free nor sold. "Held" is moved by the booking engine under a row lock and must not be typed here [R-2].')
                 ->columns(3)
                 ->schema([
                     TextInput::make('capacity_total')->label('Total seats')->numeric()->minValue(0)->default(0)
@@ -69,6 +73,30 @@ class DeparturesRelationManager extends RelationManager
                     TextInput::make('capacity_confirmed')->label('Confirmed')->numeric()->minValue(0)->default(0),
                     TextInput::make('capacity_held')->label('Held')->numeric()->minValue(0)->default(0)->disabled()
                         ->helperText('Set by the booking engine.'),
+                ]),
+
+            Section::make('Nusuk')
+                ->description('§5.4b: accommodation and transport have to be entered in Nusuk before any Umrah permit can be requested for anybody on this departure. These record that it was done — the dates are a note of when, not a check that Nusuk agrees.')
+                ->columns(2)
+                ->schema([
+                    DateTimePicker::make('nusuk_accommodation_recorded_at')
+                        ->label('Accommodation recorded')
+                        ->native(false)
+                        ->seconds(false)
+                        // Shown to everybody, editable only by the roles that
+                        // deal with Nusuk. A Content Manager who edits the
+                        // website has no business asserting a dealing with a
+                        // Saudi system, and hiding it outright would leave
+                        // them unable to see why a permit is stuck.
+                        ->disabled(fn (): bool => auth()->user()?->can('departure.nusuk') !== true)
+                        ->helperText('Leave blank until it actually is.'),
+
+                    DateTimePicker::make('nusuk_transport_recorded_at')
+                        ->label('Transport recorded')
+                        ->native(false)
+                        ->seconds(false)
+                        ->disabled(fn (): bool => auth()->user()?->can('departure.nusuk') !== true)
+                        ->helperText('Either one missing blocks every permit on this departure.'),
                 ]),
 
             Section::make('Prices')
@@ -175,6 +203,35 @@ class DeparturesRelationManager extends RelationManager
         ]);
     }
 
+    /**
+     * §5.4a's gate, asked on demand: "can this departure actually fly?"
+     *
+     * An action rather than a column, because answering it costs a handful
+     * of queries per traveller and paying that on every row of every
+     * departure list — to draw a tick almost nobody reads — is the wrong
+     * trade. Read-only: there is no "mark ready" to press, because
+     * readiness is computed from the underlying records and never stored.
+     */
+    private static function readinessAction(): Action
+    {
+        return Action::make('readiness')
+            ->label('Readiness')
+            ->icon('heroicon-o-clipboard-document-check')
+            ->color('gray')
+            ->modalHeading('Can this departure fly?')
+            ->modalContent(fn (Departure $record) => view('filament.departure-readiness', [
+                'blockers' => TravelReadiness::departureBlockers($record),
+                'missingPrerequisites' => NusukPermit::missingPrerequisites($record),
+                'labels' => [
+                    TravelReadiness::PASSPORT => 'a usable passport',
+                    TravelReadiness::VISA => 'a visa',
+                    TravelReadiness::PERMIT => 'an Umrah permit',
+                ],
+            ]))
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Close');
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -190,11 +247,22 @@ class DeparturesRelationManager extends RelationManager
                     ->state(fn (Departure $record): string => $record->has_capacity
                         ? $record->seats_taken.' of '.$record->capacity_total
                         : 'not tracked'),
+                TextColumn::make('nusuk')
+                    ->label('Nusuk')
+                    ->badge()
+                    ->state(fn (Departure $record): string => NusukPermit::missingPrerequisites($record) === []
+                        ? 'recorded'
+                        : 'no '.implode(' or ', NusukPermit::missingPrerequisites($record)))
+                    ->color(fn (Departure $record): string => NusukPermit::missingPrerequisites($record) === []
+                        ? 'success'
+                        : 'warning')
+                    ->toggleable(),
+
                 IconColumn::make('is_published')->label('Live')->boolean(),
             ])
             ->defaultSort('date_start')
             ->headerActions([CreateAction::make()])
-            ->recordActions([EditAction::make(), DeleteAction::make()])
+            ->recordActions([self::readinessAction(), EditAction::make(), DeleteAction::make()])
             ->emptyStateHeading('No departures yet')
             ->emptyStateDescription('A departure is one dated run of this package.');
     }

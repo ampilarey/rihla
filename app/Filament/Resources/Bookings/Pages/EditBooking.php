@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Bookings\Pages;
 use App\Exceptions\NoSeatsAvailable;
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
+use App\Models\NusukPermit;
 use App\Models\SeatHold;
 use App\Services\Booking\SeatAllocator;
+use App\Services\Nusuk\PermitDesk;
 use App\Services\Visa\VisaDesk;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -15,7 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 /**
- * One booking, and the four things staff can do to it.
+ * One booking, and the five things staff can do to it.
  *
  * Every action goes through the domain rather than writing a column:
  * {@see Booking::transitionTo()} refuses an illegal move and records who and
@@ -32,6 +34,7 @@ class EditBooking extends EditRecord
         return [
             $this->confirmAction(),
             $this->openVisasAction(),
+            $this->openPermitsAction(),
             $this->extendHoldAction(),
             $this->cancelAction(),
         ];
@@ -76,6 +79,69 @@ class EditBooking extends EditRecord
                     ))
                     ->send();
             });
+    }
+
+    /**
+     * The booking's way into the Nusuk workflow (§5.4b).
+     *
+     * A second button beside the visa one, never the same button [R-4].
+     * They are different authorisations from different systems, and one
+     * control that started both would teach the person pressing it that
+     * they are one thing — which is the mental shortcut that strands a
+     * pilgrim holding a valid visa outside the Mataf.
+     *
+     * Umrah permits only. Rawdah slots are asked for one at a time from the
+     * permits screen: not everybody wants one, the slots are scarce, and
+     * requesting one for a party that did not ask spends a slot another
+     * pilgrim needed.
+     */
+    private function openPermitsAction(): Action
+    {
+        return Action::make('openPermits')
+            ->label('Open Umrah permits')
+            ->icon('heroicon-o-ticket')
+            ->visible(fn (): bool => auth()->user()?->can('permit.create') === true
+                && $this->booking()->travellers()->exists())
+            ->requiresConfirmation()
+            // Said before the button is pressed rather than after, because
+            // the gate bites at *request* time: opening the records
+            // succeeds, and the person would find out a screen later.
+            ->modalDescription(fn (): string => $this->permitGateWarning()
+                ?? 'One Umrah permit per traveller. Pressing this twice does not put two requests into a Saudi system for one person.')
+            ->action(function (): void {
+                $opened = app(PermitDesk::class)->openForBooking($this->booking());
+
+                Notification::make()
+                    ->success()
+                    ->title(trans_choice(
+                        '{1}:count Umrah permit open|[2,*]:count Umrah permits open',
+                        $opened->count(),
+                        ['count' => $opened->count()],
+                    ))
+                    ->send();
+            });
+    }
+
+    /**
+     * What Nusuk still wants recorded on this departure, in a sentence, or
+     * null when there is nothing to warn about.
+     */
+    private function permitGateWarning(): ?string
+    {
+        // No null guard on the relation: `bookings.departure_id` is NOT NULL
+        // and restricts deletes, so a booking without a departure is not a
+        // state this table can hold. The first draft guarded it and static
+        // analysis would have called it dead, the same way it did for
+        // Departure's date columns.
+        $missing = NusukPermit::missingPrerequisites($this->booking()->departure);
+
+        if ($missing === []) {
+            return null;
+        }
+
+        return 'The permits will open, but none can be requested until this departure\'s '
+            .implode(' and ', $missing)
+            .' is recorded in Nusuk. That is set on the departure.';
     }
 
     private function booking(): Booking

@@ -134,6 +134,21 @@ final class Access
         'visa.create',
         'visa.update',
 
+        // Nusuk permits (§5.4b). Its own prefix rather than sharing the
+        // visa one [R-4]: they are different authorisations from different
+        // systems, and the role that chases a Saudi permit portal may not
+        // be the role that files embassy paperwork. No delete — a refusal
+        // that can be removed is evidence that can be removed.
+        'permit.viewAny',
+        'permit.view',
+        'permit.create',
+        'permit.update',
+
+        // Recording in Nusuk that a departure's accommodation and transport
+        // are entered. The prerequisite gate for requesting any permit, and
+        // a property of the dated run rather than of a person.
+        'departure.nusuk',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -215,7 +230,14 @@ final class Access
                 strtok($permission, '.'),
                 ['trip', 'package', 'departure', 'person', 'article', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
                 true,
-            ),
+            )
+                // `departure.nusuk` is not content. It records a dealing
+                // with a Saudi system, and the Content Manager — who edits
+                // the website — has no business asserting one. The content
+                // set is defined by inclusion precisely so that adding a
+                // verb under an existing prefix cannot grant it by accident,
+                // and this is that case arriving.
+                && $permission !== 'departure.nusuk',
         ));
 
         // Bookings and the customers attached to them. A separate set from
@@ -237,6 +259,13 @@ final class Access
         ));
 
         $visasReadOnly = ['visa.viewAny', 'visa.view'];
+
+        $permits = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'permit',
+        ));
+
+        $permitsReadOnly = ['permit.viewAny', 'permit.view'];
 
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
@@ -264,6 +293,8 @@ final class Access
                 $bookings,
                 $documents,
                 $visas,
+                $permits,
+                ['departure.nusuk'],
                 $content,
             ),
 
@@ -304,6 +335,7 @@ final class Access
                 // then?" without being able to move it — that is Visa
                 // Staff's call.
                 $visasReadOnly,
+                $permitsReadOnly,
                 ['package.viewAny', 'package.view', 'departure.viewAny', 'departure.view'],
             ),
 
@@ -323,6 +355,7 @@ final class Access
                 // separate verb.
                 $documentsReadOnly,
                 $visasReadOnly,
+                $permitsReadOnly,
             ),
 
             // The documents are the job: collecting them, checking them and
@@ -333,6 +366,10 @@ final class Access
                 ['admin.access'],
                 $documents,
                 $visas,
+                $permits,
+                // Records the accommodation and transport the permit gate
+                // needs, because this is the role sitting in front of Nusuk.
+                ['departure.nusuk', 'departure.viewAny', 'departure.view'],
                 $bookingsReadOnly,
             ),
         ];

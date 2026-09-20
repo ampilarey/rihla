@@ -11,6 +11,7 @@ use App\Models\Document;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
 use App\Models\Media;
+use App\Models\NusukPermit;
 use App\Models\Package;
 use App\Models\Person;
 use App\Models\Setting;
@@ -29,6 +30,7 @@ use App\Policies\DocumentPolicy;
 use App\Policies\GuideStepPolicy;
 use App\Policies\HeroBannerPolicy;
 use App\Policies\MediaPolicy;
+use App\Policies\NusukPermitPolicy;
 use App\Policies\PackagePolicy;
 use App\Policies\PersonPolicy;
 use App\Policies\SettingPolicy;
@@ -51,6 +53,7 @@ class AuthServiceProvider extends ServiceProvider
         Booking::class => BookingPolicy::class,
         Customer::class => CustomerPolicy::class,
         Document::class => DocumentPolicy::class,
+        NusukPermit::class => NusukPermitPolicy::class,
         VisaApplication::class => VisaApplicationPolicy::class,
         WaitlistEntry::class => WaitlistEntryPolicy::class,
         Trip::class => TripPolicy::class,

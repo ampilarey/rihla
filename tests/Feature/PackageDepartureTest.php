@@ -57,6 +57,13 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Before both the wallet and the booking domain: `nusuk_permits`
+        // references `bookings` and `travellers`, and
+        // `nusuk_permit_events` references `documents`. The two timestamp
+        // columns it adds to `departures` are plain columns, so SQLite adds
+        // them in place rather than rebuilding the table — the trap the
+        // people migration falls into does not apply here.
+        __DIR__.'/../../database/migrations/2026_09_20_190000_create_nusuk_permits.php',
         // Before the wallet: visa_application_events references `documents`.
         __DIR__.'/../../database/migrations/2026_09_20_180000_create_visa_applications.php',
         __DIR__.'/../../database/migrations/2026_09_20_170000_create_document_wallet.php',

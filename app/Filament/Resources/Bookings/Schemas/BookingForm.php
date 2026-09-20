@@ -6,6 +6,7 @@ use App\Filament\Resources\Bookings\Tables\BookingsTable;
 use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\SeatHold;
+use App\Support\TravelReadiness;
 use Filament\Forms\Components\Textarea;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -73,6 +74,17 @@ class BookingForm
                     ->bulleted(),
             ]),
 
+            Section::make('Can they actually go?')
+                ->description('A passport, a visa and an Umrah permit are three separate authorisations from three different bodies [R-4]. Computed here on every read (§5.4a) and never stored, because a stored "ready" is wrong from the moment any of the three changes — and the one time that matters is the morning somebody leaves for the airport.')
+                ->schema([
+                    TextEntry::make('readiness')
+                        ->hiddenLabel()
+                        ->state(fn (Booking $record): array => self::readiness($record))
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->placeholder('No travellers entered yet.'),
+                ]),
+
             Section::make('Money')->columns(3)->schema([
                 TextEntry::make('total_minor')
                     ->label('Total')
@@ -136,6 +148,48 @@ class BookingForm
             ]),
         ]);
     }
+
+    /**
+     * Each traveller, and what is still missing for them.
+     *
+     * Named requirements rather than one tick, because "not ready" is
+     * useless to the person who has to fix it and "visa issued, permit not
+     * requested" is a morning's work. A Rawdah slot is deliberately absent:
+     * missing it is a disappointment, and folding it in would make a pilgrim
+     * who cannot pray in the Rawdah look like one who cannot perform Umrah.
+     *
+     * @return list<string>
+     */
+    private static function readiness(Booking $booking): array
+    {
+        return $booking->travellers
+            ->map(function (BookingTraveller $line) use ($booking): string {
+                $missing = array_keys(array_filter(
+                    TravelReadiness::forTraveller($booking, $line->traveller),
+                    fn (bool $met): bool => ! $met,
+                ));
+
+                // Words rather than a tick and a cross. A glyph reads as
+                // "check mark" to a screen reader and as nothing at all
+                // when the font lacks it, and the whole value of this
+                // section is that somebody can act on it without decoding
+                // it.
+                return $line->traveller->full_name.' — '.($missing === []
+                    ? 'ready to travel'
+                    : 'still needs '.implode(', ', array_map(
+                        fn (string $requirement): string => self::REQUIREMENT_LABELS[$requirement],
+                        $missing,
+                    )));
+            })
+            ->all();
+    }
+
+    /** @var array<string, string> */
+    private const REQUIREMENT_LABELS = [
+        TravelReadiness::PASSPORT => 'passport',
+        TravelReadiness::VISA => 'visa',
+        TravelReadiness::PERMIT => 'Umrah permit',
+    ];
 
     private static function holdState(Booking $booking): string
     {
