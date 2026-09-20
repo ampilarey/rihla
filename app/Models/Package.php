@@ -41,10 +41,27 @@ class Package extends Model
         'title', 'summary', 'details', 'inclusions', 'exclusions', 'accessibility_notes',
     ];
 
+    /**
+     * The three list-valued translatable columns are cast to `array`, the
+     * same way a guide step's checklist is. Two reasons, and the second is
+     * not cosmetic: spatie merges the cast when it initialises, and without
+     * it static analysis reads the json column as a string and reports every
+     * is_array() guard below as dead.
+     *
+     * The guards stay regardless. A translated attribute with nothing stored
+     * for the current locale comes back as an empty *string*, not null and
+     * not an empty array — which is how a string once reached code that
+     * foreach'd over it.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'nights' => 'integer',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'inclusions' => 'array',
+        'exclusions' => 'array',
+        'accessibility_notes' => 'array',
     ];
 
     protected static function booted(): void

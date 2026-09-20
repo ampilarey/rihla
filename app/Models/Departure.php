@@ -129,21 +129,21 @@ class Departure extends Model
 
     // ── Dates ────────────────────────────────────────────────────────────
 
-    public function getNightsAttribute(): ?int
+    /**
+     * Both date columns are NOT NULL, so these need no null guard — the
+     * first draft had one and static analysis correctly called it dead. A
+     * departure without dates is not a state this table can hold; if that
+     * ever changes, the migration changes first and these follow.
+     */
+    public function getNightsAttribute(): int
     {
-        if (! $this->date_start || ! $this->date_end) {
-            return null;
-        }
-
         return (int) $this->date_start->diffInDays($this->date_end);
     }
 
     /** Whole days until departure; negative once it has left. */
-    public function getDaysUntilAttribute(): ?int
+    public function getDaysUntilAttribute(): int
     {
-        return $this->date_start
-            ? (int) now()->startOfDay()->diffInDays($this->date_start->startOfDay(), false)
-            : null;
+        return (int) now()->startOfDay()->diffInDays($this->date_start->startOfDay(), false);
     }
 
     /** @param Builder<$this> $query */
