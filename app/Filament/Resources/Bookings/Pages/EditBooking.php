@@ -26,7 +26,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 /**
- * One booking, and the seven things staff can do to it.
+ * One booking, and the eight things staff can do to it.
  *
  * Every action goes through the domain rather than writing a column:
  * {@see Booking::transitionTo()} refuses an illegal move and records who and
@@ -42,6 +42,7 @@ class EditBooking extends EditRecord
     {
         return [
             $this->recordPaymentAction(),
+            $this->invoiceAction(),
             $this->portalLinkAction(),
             $this->confirmAction(),
             $this->openVisasAction(),
@@ -131,6 +132,23 @@ class EditBooking extends EditRecord
                     ))
                     ->send();
             });
+    }
+
+    /**
+     * The booking as a document, for sending or printing.
+     *
+     * Generated on demand rather than stored: an invoice is a rendering of
+     * the booking as it stands, and a saved PDF is a second copy of the
+     * truth that drifts the moment a line changes. What is immutable is
+     * already in `booking_lines` and `payments`.
+     */
+    private function invoiceAction(): Action
+    {
+        return Action::make('invoice')
+            ->label('Invoice')
+            ->icon('heroicon-o-document-arrow-down')
+            ->color('gray')
+            ->url(fn (): string => route('staff.invoice', ['booking' => $this->booking()]), shouldOpenInNewTab: true);
     }
 
     /**

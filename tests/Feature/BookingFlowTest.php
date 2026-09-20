@@ -10,6 +10,7 @@ use App\Models\PriceTier;
 use App\Models\SeatHold;
 use App\Models\Traveller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
@@ -487,6 +488,16 @@ class BookingFlowTest extends TestCase
      * No identifier in any checkout URL. A booking reference in the path
      * would let anyone who guessed one read a stranger's passport number and
      * phone number.
+     *
+     * **Unauthenticated routes only**, which is the threat this guards
+     * against: "anyone who guessed one". A staff route behind `auth` is
+     * reached by somebody the booking policy has already been asked about,
+     * and every screen in the admin panel carries a record id in its path —
+     * `/staff/bookings/{record}/edit` among them. Narrowed when the invoice
+     * download was added, because the substring match was catching
+     * `staff-documents/booking/{booking}/invoice`; the public checkout and
+     * portal routes, which are what this is about, are unaffected and the
+     * test below proves it still bites on one.
      */
     public function test_no_checkout_url_carries_a_booking_identifier(): void
     {
@@ -494,6 +505,10 @@ class BookingFlowTest extends TestCase
 
         foreach (app('router')->getRoutes() as $route) {
             if (! str_contains($route->uri(), 'book')) {
+                continue;
+            }
+
+            if (in_array('auth', $route->gatherMiddleware(), true)) {
                 continue;
             }
 
@@ -507,5 +522,32 @@ class BookingFlowTest extends TestCase
         $this->assertSame([], $offenders, implode("\n", array_merge(
             ['Checkout routes must not take a booking identifier:'], $offenders,
         )));
+    }
+
+    /**
+     * The guard above, proved.
+     *
+     * It was narrowed to unauthenticated routes when the staff invoice
+     * download was added, and a narrowed guard that nobody re-proves is a
+     * guard that has quietly stopped working. This registers a public route
+     * of exactly the shape the rule forbids and asserts it is caught.
+     */
+    public function test_that_guard_still_catches_a_public_route(): void
+    {
+        Route::get('/en/book/{booking}/peek', fn () => '')->name('test.peek');
+
+        $caught = false;
+
+        foreach (app('router')->getRoutes() as $route) {
+            if (! str_contains($route->uri(), 'book') || in_array('auth', $route->gatherMiddleware(), true)) {
+                continue;
+            }
+
+            if (in_array('booking', $route->parameterNames(), true)) {
+                $caught = true;
+            }
+        }
+
+        $this->assertTrue($caught, 'The guard no longer catches a public route carrying a booking id.');
     }
 }

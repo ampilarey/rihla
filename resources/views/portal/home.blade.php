@@ -118,12 +118,30 @@
                                             <x-local-date :date="$payment->paid_at" />
                                         </span>
                                     @endif
+                                    {{-- A receipt only for money somebody has
+                                         checked. Offering one for a claim
+                                         would hand the customer a document
+                                         saying it arrived before anybody
+                                         looked. --}}
+                                    @if($payment->status === \App\Models\Payment::SUCCEEDED)
+                                        <a dir="auto"
+                                           class="block text-sm font-medium text-wine-700 underline"
+                                           href="{{ route('portal.receipt', ['payment' => $payment]) }}">
+                                            {{ __('messages.Receipt') }}
+                                        </a>
+                                    @endif
                                 </span>
                                 <span class="shrink-0 font-medium text-ink" dir="ltr">{{ $payment->money()->format() }}</span>
                             </li>
                         @endforeach
                     </ul>
                 @endif
+
+                <a dir="auto"
+                   class="mt-4 inline-block text-sm font-medium text-wine-700 underline"
+                   href="{{ route('portal.invoice') }}">
+                    {{ __('messages.Download the invoice') }}
+                </a>
 
                 {{--
                     Where to send it — only when somebody has actually said.

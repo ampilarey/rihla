@@ -106,6 +106,7 @@ class PaymentsTable
             // screen laid out flat.
             ->recordActions([
                 ActionGroup::make([
+                    self::receiptAction(),
                     self::slipAction(),
                     self::uploadSlipAction(),
                     self::reconcileAction(),
@@ -115,6 +116,23 @@ class PaymentsTable
             ])
             ->emptyStateHeading('No payments recorded')
             ->emptyStateDescription('Payments are opened from a booking. Nothing here writes a booking\'s paid total directly — that is recomputed from these rows under a lock.');
+    }
+
+    /**
+     * A receipt, for money that actually arrived.
+     *
+     * Only on a succeeded payment: a receipt for a claim nobody has checked
+     * is a document telling a customer their money was received before
+     * anybody looked at it.
+     */
+    private static function receiptAction(): Action
+    {
+        return Action::make('receipt')
+            ->label(fn (Payment $record): string => $record->isRefund() ? 'Refund note' : 'Receipt')
+            ->icon('heroicon-o-document-arrow-down')
+            ->visible(fn (Payment $record): bool => $record->status === Payment::SUCCEEDED
+                && auth()->user()?->can('payment.view') === true)
+            ->url(fn (Payment $record): string => route('staff.receipt', ['payment' => $record]), shouldOpenInNewTab: true);
     }
 
     /**

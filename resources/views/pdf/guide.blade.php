@@ -11,8 +11,24 @@
                  guide downloaded as boxes — and unlike a web page, a PDF is
                  what a pilgrim carries with them. The real font ships at
                  public/fonts/A_faruma.ttf. --}}
+            {{-- Two faces from one file, and the second one is the point.
+                 A_Faruma ships Regular only. Without a bold face declared,
+                 dompdf resolves <strong> and any font-weight:bold to a
+                 *different family* — Helvetica-Bold — which has no Thaana
+                 glyphs, and every bold Dhivehi word renders as a row of
+                 question marks. It is silent: the document downloads, the
+                 body text is perfect, and only the headings are ruined.
+
+                 Thaana has no true bold, so pointing bold at the regular
+                 file loses nothing that exists. --}}
             @font-face {
                 font-family: 'A_Faruma';
+                font-weight: normal;
+                src: url('{{ public_path('fonts/A_faruma.ttf') }}') format('truetype');
+            }
+            @font-face {
+                font-family: 'A_Faruma';
+                font-weight: bold;
                 src: url('{{ public_path('fonts/A_faruma.ttf') }}') format('truetype');
             }
             body { font-family: 'A_Faruma', 'MV Waheed', sans-serif; }
