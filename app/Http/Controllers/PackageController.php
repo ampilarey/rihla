@@ -56,7 +56,7 @@ class PackageController extends Controller
             ->with([
                 'publishedDepartures' => fn ($query) => $query
                     ->upcoming()
-                    ->with(['priceTiers', 'hotels', 'itinerary']),
+                    ->with(['priceTiers', 'hotels', 'itinerary', 'tourLeader', 'scholar']),
             ])
             ->firstOrFail();
 

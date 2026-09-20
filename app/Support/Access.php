@@ -80,6 +80,14 @@ final class Access
         'departure.update',
         'departure.delete',
 
+        // Group leaders and scholars. Content: a profile is public-facing
+        // copy, edited by whoever edits the rest of the site.
+        'person.viewAny',
+        'person.view',
+        'person.create',
+        'person.update',
+        'person.delete',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -159,7 +167,7 @@ final class Access
             self::PERMISSIONS,
             fn (string $permission) => in_array(
                 strtok($permission, '.'),
-                ['trip', 'package', 'departure', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
+                ['trip', 'package', 'departure', 'person', 'media', 'guide', 'heroBanner', 'whySection', 'whyFeature'],
                 true,
             ),
         ));
