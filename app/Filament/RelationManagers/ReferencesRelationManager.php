@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\Knowledge\RelationManagers;
+namespace App\Filament\RelationManagers;
 
 use App\Models\ArticleReference;
+use App\Models\Concerns\EditorialGate;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -17,6 +18,10 @@ use Filament\Tables\Table;
 
 /**
  * The sources — §7.1's "every claim carries a source".
+ *
+ * Shared by the Knowledge Centre and the Ziyarah Guide rather than copied
+ * into each, for the reason {@see EditorialGate}
+ * gives: the second copy of a rule is the one that drifts.
  *
  * The grading field appears only for a hadith and is required there. The
  * model enforces the same rule and would throw regardless; this is the
@@ -96,6 +101,6 @@ class ReferencesRelationManager extends RelationManager
             ->headerActions([CreateAction::make()->label('Add a source')])
             ->recordActions([EditAction::make(), DeleteAction::make()])
             ->emptyStateHeading('No sources yet')
-            ->emptyStateDescription('This article cannot be signed off until it has one. Every claim carries a source (§7.1).');
+            ->emptyStateDescription('This cannot be signed off until it has one. Every claim carries a source (§7.1).');
     }
 }

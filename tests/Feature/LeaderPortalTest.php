@@ -295,12 +295,17 @@ class LeaderPortalTest extends TestCase
         [$departure, $travellers, $profile] = $this->groupOnTheGround();
         $rollCall = $this->headCount($departure);
 
+        // Held still, because `now()` is read twice below and the clock
+        // ticking between the two reads failed this test one run in five —
+        // a one-second difference that says nothing about the sync.
+        $markedAt = now()->subHours(5);
+
         $result = $this->sync($this->leader($profile), [
             'type' => Outbox::MARK,
             'roll_call_id' => $rollCall->getKey(),
             'traveller_id' => $travellers[0]->getKey(),
             'state' => RollCallMark::PRESENT,
-            'marked_at' => now()->subHours(5)->toIso8601String(),
+            'marked_at' => $markedAt->toIso8601String(),
         ]);
 
         $this->assertSame(Outbox::APPLIED, $result['result'], $result['reason'] ?? '');
@@ -310,7 +315,7 @@ class LeaderPortalTest extends TestCase
         $this->assertSame(RollCallMark::PRESENT, $mark->state);
         // A count taken at the coach door at nine and synced at two is a
         // nine o'clock count.
-        $this->assertSame(now()->subHours(5)->toDateTimeString(), $mark->marked_at->toDateTimeString());
+        $this->assertSame($markedAt->toDateTimeString(), $mark->marked_at->toDateTimeString());
     }
 
     /**
@@ -448,6 +453,11 @@ class LeaderPortalTest extends TestCase
         $leader = $this->leader($profile);
         $uuid = (string) Str::uuid();
 
+        // Held still for the same reason as the queued mark above: `now()`
+        // is read again in the assertion, and a tick between the two says
+        // nothing about replay.
+        $happenedAt = now()->subHours(3);
+
         $item = [
             'type' => Outbox::INCIDENT,
             'client_uuid' => $uuid,
@@ -455,7 +465,7 @@ class LeaderPortalTest extends TestCase
             'severity' => Incident::SERIOUS,
             'category' => Incident::TRANSPORT,
             'summary' => 'The coach to Madinah did not arrive.',
-            'happened_at' => now()->subHours(3)->toIso8601String(),
+            'happened_at' => $happenedAt->toIso8601String(),
         ];
 
         $this->assertSame(Outbox::APPLIED, $this->sync($leader, $item)['result']);
@@ -464,7 +474,7 @@ class LeaderPortalTest extends TestCase
 
         $this->assertSame(1, Incident::where('client_uuid', $uuid)->count());
         $this->assertSame(
-            now()->subHours(3)->toDateTimeString(),
+            $happenedAt->toDateTimeString(),
             Incident::where('client_uuid', $uuid)->sole()->happened_at->toDateTimeString(),
         );
     }

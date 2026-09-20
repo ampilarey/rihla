@@ -33,7 +33,7 @@ class KnowledgeCentreAdminTest extends TestCase
     private function sourcedArticle(): KnowledgeArticle
     {
         $article = KnowledgeArticle::factory()->create();
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
 
         return $article->fresh();
     }

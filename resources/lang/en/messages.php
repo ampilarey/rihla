@@ -586,4 +586,25 @@ return [
     'That link has been turned off.' => 'That link has been turned off.',
     'What that link shows has been updated.' => 'What that link shows has been updated.',
     'What we need from you' => 'What we need from you',
+    // The Ziyarah Guide (§7.2). No Dhivehi here: these go up when somebody
+    // translates them, and a machine-filled religious page is the defect
+    // AGENTS.md records this site already shipped once.
+    'Ziyarah Guide' => 'Ziyarah Guide',
+    'The places pilgrims visit, what is known about them, and what to do when you are there.' => 'The places pilgrims visit, what is known about them, and what to do when you are there.',
+    'Keep this guide on your phone' => 'Keep this guide on your phone',
+    'Saving works in most phone browsers. Open this page once on the phone you are taking, before you fly.' => 'Saving works in most phone browsers. Open this page once on the phone you are taking, before you fly.',
+    'Save all :count pages' => 'Save all :count pages',
+    ':count thing people get told that is not so|:count things people get told that are not so' => ':count thing people get told that is not so|:count things people get told that are not so',
+    'Nothing here yet. Every page in this guide is checked by a named scholar before it goes up, and none has been yet.' => 'Nothing here yet. Every page in this guide is checked by a named scholar before it goes up, and none has been yet.',
+    'Checked by :name' => 'Checked by :name',
+    'When you are there' => 'When you are there',
+    'Best time to go' => 'Best time to go',
+    'Why it matters' => 'Why it matters',
+    'History' => 'History',
+    'Things people get told that are not so' => 'Things people get told that are not so',
+    'What people say' => 'What people say',
+    'What is actually the case' => 'What is actually the case',
+    'Sources' => 'Sources',
+    'Open in maps' => 'Open in maps',
+    'Also in :city' => 'Also in :city',
 ];

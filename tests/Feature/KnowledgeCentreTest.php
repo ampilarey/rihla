@@ -43,7 +43,7 @@ class KnowledgeCentreTest extends TestCase
         $article = $this->article();
 
         $this->expectException(EditorialStandardNotMet::class);
-        $this->expectExceptionMessage('no source');
+        $this->expectExceptionMessage('No source yet');
 
         $article->approve($this->scholar());
     }
@@ -51,7 +51,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_article_with_a_source_can_be_approved(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
 
         $article->fresh()->approve($this->scholar(), 'Checked the citation.');
 
@@ -68,7 +68,7 @@ class KnowledgeCentreTest extends TestCase
 
         $this->assertStringContainsString('No source', (string) $article->whyNotApprovable());
 
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
 
         $this->assertNull($article->fresh()->whyNotApprovable());
     }
@@ -90,7 +90,7 @@ class KnowledgeCentreTest extends TestCase
         $this->expectExceptionMessage('must carry a grading');
 
         ArticleReference::create([
-            'knowledge_article_id' => $article->getKey(),
+            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
             'kind' => ArticleReference::HADITH,
             'citation' => 'Placeholder collection 1',
         ]);
@@ -101,7 +101,7 @@ class KnowledgeCentreTest extends TestCase
         $article = $this->article();
 
         $reference = ArticleReference::create([
-            'knowledge_article_id' => $article->getKey(),
+            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
             'kind' => ArticleReference::QURAN,
             'citation' => 'Placeholder citation',
         ]);
@@ -118,7 +118,7 @@ class KnowledgeCentreTest extends TestCase
         $article = $this->article();
 
         $reference = ArticleReference::create([
-            'knowledge_article_id' => $article->getKey(),
+            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
             'kind' => ArticleReference::QURAN,
             'citation' => 'Placeholder citation',
             'grading' => ArticleReference::SAHIH,
@@ -141,7 +141,7 @@ class KnowledgeCentreTest extends TestCase
         $article = $this->article();
 
         ArticleReference::factory()->hadith(ArticleReference::DAIF)->create([
-            'knowledge_article_id' => $article->getKey(),
+            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
             'note' => 'Included as a caution — pilgrims are often told this.',
         ]);
 
@@ -192,7 +192,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_unapproved_article_cannot_be_published(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
 
         $this->expectException(EditorialStandardNotMet::class);
         $this->expectExceptionMessage('non-negotiable');
@@ -203,7 +203,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_article_in_review_cannot_be_published(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
         $article->sendForReview();
 
         $this->expectException(EditorialStandardNotMet::class);
@@ -214,7 +214,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_approved_article_publishes_and_names_its_scholar(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
 
         $article->fresh()->approve($this->scholar());
         $article->fresh()->publish();
@@ -235,7 +235,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_approval_alone_does_not_put_it_on_the_site(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
 
         $article->fresh()->approve($this->scholar());
 
@@ -258,7 +258,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_withdrawing_takes_it_down_and_keeps_the_reason(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
         $article->fresh()->approve($this->scholar());
         $article->fresh()->publish();
 
@@ -275,13 +275,19 @@ class KnowledgeCentreTest extends TestCase
     public function test_the_review_queue_holds_only_what_is_waiting(): void
     {
         $waiting = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $waiting->getKey()]);
+        ArticleReference::factory()->create([
+            'referenceable_type' => KnowledgeArticle::class,
+            'referenceable_id' => $waiting->getKey(),
+        ]);
         $waiting->sendForReview();
 
         $this->article();
 
         $done = $this->article();
-        ArticleReference::factory()->create(['knowledge_article_id' => $done->getKey()]);
+        ArticleReference::factory()->create([
+            'referenceable_type' => KnowledgeArticle::class,
+            'referenceable_id' => $done->getKey(),
+        ]);
         $done->fresh()->approve($this->scholar());
 
         $this->assertSame([$waiting->getKey()], KnowledgeArticle::awaitingAScholar()->pluck('id')->all());
