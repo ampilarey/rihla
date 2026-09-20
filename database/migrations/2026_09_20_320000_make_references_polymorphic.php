@@ -44,27 +44,32 @@ return new class extends Migration
                 'referenceable_id' => DB::raw('knowledge_article_id'),
             ]);
 
-        // The index first, then the foreign key, then the column — in that
-        // order and in separate statements.
+        // The foreign key first, then the index, then the column — in that
+        // order and in separate statements. Both halves of that order were
+        // learned the hard way, from opposite engines:
         //
-        // `dropConstrainedForeignId()` does the last two in one blueprint
-        // and leaves the index alone, which fails on SQLite: dropping a
-        // column there rebuilds the table, and a composite index still
-        // naming the departing column takes the rebuild down with it
-        // ("error in index … after drop column"). The first attempt at this
-        // migration failed exactly there and left the morph columns behind
-        // with nothing recorded.
-        Schema::table('article_references', function (Blueprint $table) {
-            $table->dropIndex(['knowledge_article_id', 'sort_order']);
-        });
-
-        // On every driver, including SQLite — which needs it most. SQLite
-        // keeps the foreign key in the table definition, so dropping the
-        // column without removing the constraint first fails the rebuild
-        // with "unknown column in foreign key definition". Skipping this on
-        // SQLite was the second wrong guess at this migration.
+        // - **The foreign key has to go first, because of MySQL.** InnoDB
+        //   needs an index on a constrained column, so dropping the index
+        //   while the constraint is still there is refused outright:
+        //   errno 1553, "Cannot drop index … needed in a foreign key
+        //   constraint". Doing it the other way round passed every SQLite
+        //   run and took the entire MySQL suite down — every test class,
+        //   because `RefreshDatabase` re-migrates and the failure is not in
+        //   any test.
+        // - **Both have to go before the column, because of SQLite.**
+        //   Dropping a column there rebuilds the whole table, and the
+        //   rebuild fails on anything still naming the departing column:
+        //   a composite index ("error in index … after drop column") or a
+        //   foreign key SQLite keeps in the table definition ("unknown
+        //   column … in foreign key definition"). `dropConstrainedForeignId()`
+        //   bundles the constraint and the column into one blueprint and
+        //   leaves the index alone, so it cannot express this at all.
         Schema::table('article_references', function (Blueprint $table) {
             $table->dropForeign(['knowledge_article_id']);
+        });
+
+        Schema::table('article_references', function (Blueprint $table) {
+            $table->dropIndex(['knowledge_article_id', 'sort_order']);
         });
 
         Schema::table('article_references', function (Blueprint $table) {
