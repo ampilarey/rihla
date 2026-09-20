@@ -14,6 +14,7 @@ use App\Models\Enquiry;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
 use App\Models\Incident;
+use App\Models\KnowledgeArticle;
 use App\Models\Media;
 use App\Models\Notice;
 use App\Models\NusukPermit;
@@ -42,6 +43,7 @@ use App\Policies\EnquiryPolicy;
 use App\Policies\GuideStepPolicy;
 use App\Policies\HeroBannerPolicy;
 use App\Policies\IncidentPolicy;
+use App\Policies\KnowledgeArticlePolicy;
 use App\Policies\MediaPolicy;
 use App\Policies\NoticePolicy;
 use App\Policies\NusukPermitPolicy;
@@ -77,6 +79,7 @@ class AuthServiceProvider extends ServiceProvider
         Announcement::class => AnnouncementPolicy::class,
         EmergencyBroadcast::class => EmergencyBroadcastPolicy::class,
         Incident::class => IncidentPolicy::class,
+        KnowledgeArticle::class => KnowledgeArticlePolicy::class,
         Notice::class => NoticePolicy::class,
         OperationsLogEntry::class => OperationsLogEntryPolicy::class,
         RollCall::class => RollCallPolicy::class,

@@ -830,6 +830,20 @@ History of Makkah and Madinah; the Kaaba, Hajar al-Aswad, Maqam Ibrahim, Hijr Is
 
 **Editorial standard:** every claim carries a source (Qur'an reference or graded Hadith), every article has a named scholar reviewer, and disputed/weak narrations are labelled as such. Build this into the CMS as required fields, not as a style guide people forget.
 
+**Shipped (5.1): the editorial standard, as the schema and the state machine.** The sentence above is the whole deliverable, and it is enforced rather than documented:
+
+- an article **cannot be approved with no source**, and the screen says why rather than returning a validation code;
+- a **hadith reference cannot exist without a grading** — enforced on the model, not in a form, because a form rule is bypassed by a seeder, a console command, or the next screen somebody writes;
+- a **Qur'an reference is never given a grading**; one entered is dropped, because a grading on a verse is a category error a reader would take seriously;
+- **weak, fabricated and disputed narrations are kept and labelled**, not deleted. Naming a weak narration as weak is what stops a pilgrim repeating it; removing it leaves them hearing it elsewhere with no correction. The label says what the grading *means*, not only what it is called;
+- an article **cannot be published without having been approved**, and the approval **names a scholar** a reader can see.
+
+**Approving and publishing are separate permissions held by different roles.** §6.4 calls editorial review before publish non-negotiable, and a reviewer who also holds the publish button performs the check on themselves. A test sweeps every role to prove none holds both — so a future widening fails CI rather than passing review.
+
+A tenth role exists for this: **Scholar**, which is not a staff role. It reaches the Knowledge Centre and nothing else — no bookings, no customers, no money, no website.
+
+**Not one article ships.** AGENTS.md records that fabricated Dhivehi and invented guide steps have already reached this codebase; religious text is the worst possible place to repeat that. The machinery is the deliverable and the content is a scholar's. A test asserts the seeders produce zero articles, and the factories carry deliberately non-religious placeholder text so no fixture can be mistaken for a real narration.
+
 ### 7.2 Interactive Ziyarah Guide
 
 Map-first. Each location: history, significance, references, photos, video, audio guide, GPS directions, nearby locations, best visiting time, duas, etiquette, **common misconceptions** (the thread flags this and it is genuinely valuable — it prevents the innovations pilgrims are warned about). Plus scholar-curated walking routes (Around Masjid al-Haram; Madinah Essentials), "Before you visit / After you visit" prompts, and **full offline support** — this is the feature pilgrims use with no data in Saudi Arabia.
