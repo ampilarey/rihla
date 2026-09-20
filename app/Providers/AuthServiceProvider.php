@@ -16,6 +16,7 @@ use App\Models\Person;
 use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
+use App\Models\VisaApplication;
 use App\Models\WaitlistEntry;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
@@ -33,6 +34,7 @@ use App\Policies\PersonPolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\TripPolicy;
 use App\Policies\UserPolicy;
+use App\Policies\VisaApplicationPolicy;
 use App\Policies\WaitlistEntryPolicy;
 use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
@@ -49,6 +51,7 @@ class AuthServiceProvider extends ServiceProvider
         Booking::class => BookingPolicy::class,
         Customer::class => CustomerPolicy::class,
         Document::class => DocumentPolicy::class,
+        VisaApplication::class => VisaApplicationPolicy::class,
         WaitlistEntry::class => WaitlistEntryPolicy::class,
         Trip::class => TripPolicy::class,
         Package::class => PackagePolicy::class,

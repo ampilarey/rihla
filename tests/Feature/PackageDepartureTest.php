@@ -57,6 +57,8 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Before the wallet: visa_application_events references `documents`.
+        __DIR__.'/../../database/migrations/2026_09_20_180000_create_visa_applications.php',
         __DIR__.'/../../database/migrations/2026_09_20_170000_create_document_wallet.php',
         __DIR__.'/../../database/migrations/2026_09_20_160000_create_waitlist_entries.php',
         __DIR__.'/../../database/migrations/2026_09_20_141000_add_the_departure_capacity_constraint.php',
