@@ -16,6 +16,7 @@ use App\Models\NusukPermit;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Person;
+use App\Models\Room;
 use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
@@ -37,6 +38,7 @@ use App\Policies\NusukPermitPolicy;
 use App\Policies\PackagePolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\PersonPolicy;
+use App\Policies\RoomPolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\TripPolicy;
 use App\Policies\UserPolicy;
@@ -60,6 +62,7 @@ class AuthServiceProvider extends ServiceProvider
         NusukPermit::class => NusukPermitPolicy::class,
         Payment::class => PaymentPolicy::class,
         Enquiry::class => EnquiryPolicy::class,
+        Room::class => RoomPolicy::class,
         VisaApplication::class => VisaApplicationPolicy::class,
         WaitlistEntry::class => WaitlistEntryPolicy::class,
         Trip::class => TripPolicy::class,
