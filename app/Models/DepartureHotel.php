@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Where a departure stays, and how far that is from the Haram.
@@ -37,6 +38,20 @@ class DepartureHotel extends Model
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
+    }
+
+    /**
+     * The rooms in this hotel on this departure (§8.2).
+     *
+     * Hung off the hotel stay rather than the departure, because a party is
+     * in a four-bed room in Makkah and a two-bed room in Madinah, and the
+     * rooming is not the same in both.
+     *
+     * @return HasMany<Room, $this>
+     */
+    public function rooms(): HasMany
+    {
+        return $this->hasMany(Room::class)->orderBy('label');
     }
 
     /**

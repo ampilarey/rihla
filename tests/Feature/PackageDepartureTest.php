@@ -57,7 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `enquiries` holds foreign keys into `packages`,
+        // First of all: `rooms` hangs off `departure_hotels`, which this
+        // very migration creates, and `room_assignments` reaches into
+        // `travellers` and `bookings` besides.
+        __DIR__.'/../../database/migrations/2026_09_20_230000_create_rooms.php',
+        // Then: `enquiries` holds foreign keys into `packages`,
         // `departures`, `customers` and `bookings` — the only table that
         // reaches into all four.
         __DIR__.'/../../database/migrations/2026_09_20_220000_create_enquiries.php',

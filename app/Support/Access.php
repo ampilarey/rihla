@@ -179,6 +179,13 @@ final class Access
         // enquiry everybody can reassign is one nobody owns.
         'enquiry.assign',
 
+        // Rooming (§8.2). No delete verb for an assignment: taking somebody
+        // out of a room is an update to the rooming list, and a separate
+        // permission for it would only ever be granted alongside update.
+        'rooming.viewAny',
+        'rooming.view',
+        'rooming.update',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -314,6 +321,13 @@ final class Access
         // Works the enquiries they are given; does not hand them out.
         $enquiriesWithoutAssigning = ['enquiry.viewAny', 'enquiry.view', 'enquiry.create', 'enquiry.update'];
 
+        $rooming = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'rooming',
+        ));
+
+        $roomingReadOnly = ['rooming.viewAny', 'rooming.view'];
+
         // Seeing that a document exists, without pulling the file.
         $documentsReadOnly = ['document.viewAny', 'document.view'];
 
@@ -343,6 +357,7 @@ final class Access
                 $permits,
                 $payments,
                 $enquiries,
+                $rooming,
                 ['departure.nusuk'],
                 $content,
             ),
@@ -368,7 +383,12 @@ final class Access
 
             // Trip-facing staff need to read trips to do their job, but the
             // trip listing is content, not theirs to change.
-            self::TOUR_LEADER => ['admin.access', 'trip.viewAny', 'trip.view'],
+            // Carries the rooming list on the trip: it is the document they
+            // stand at a hotel desk with.
+            self::TOUR_LEADER => array_merge(
+                ['admin.access', 'trip.viewAny', 'trip.view'],
+                $roomingReadOnly,
+            ),
 
             // Takes and manages bookings. Reads the product to do it —
             // which departure, which room, what it costs — but does not
@@ -394,6 +414,9 @@ final class Access
                 // The people who answer the phone are the people who work
                 // the enquiries.
                 $enquiriesWithoutAssigning,
+                // Reads the rooming to answer "who am I sharing with?";
+                // rearranging it is operations' job.
+                $roomingReadOnly,
             ),
 
             // Reconciles payments, so it reads bookings and who they belong
@@ -421,6 +444,7 @@ final class Access
                 $paymentsReadOnly,
                 // Answering the phone is where most enquiries come from.
                 $enquiriesWithoutAssigning,
+                $roomingReadOnly,
             ),
 
             // The documents are the job: collecting them, checking them and
