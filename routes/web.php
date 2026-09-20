@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\WhySectionController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MediaController;
@@ -108,6 +109,10 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     Route::get('/gallery', [MediaController::class, 'gallery'])->name('gallery');
     Route::get('/social', [PageController::class, 'social'])->name('social');
     Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+    // §8.1: a message sent here becomes a tracked lead with somewhere to
+    // put an owner and a next action, rather than another line in a shared
+    // inbox.
+    Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiries.store');
     Route::get('/guide', [PageController::class, 'guide'])->name('guide');
     Route::get('/guide/pdf', [PageController::class, 'guidePdf'])->name('guide.pdf');
 });

@@ -23,7 +23,13 @@ class PageController extends Controller
     {
         $socialSettings = Setting::getSocialSettings();
 
-        return view('pages.contact', compact('socialSettings'));
+        return view('pages.contact', [
+            'socialSettings' => $socialSettings,
+            // For the enquiry form's "which package" field. Published only:
+            // a visitor should not be able to ask about something that is
+            // not on sale.
+            'packages' => EnquiryController::packageOptions(),
+        ]);
     }
 
     /**
