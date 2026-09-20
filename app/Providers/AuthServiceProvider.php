@@ -3,18 +3,22 @@
 namespace App\Providers;
 
 use App\Models\AuditLog;
+use App\Models\Departure;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
 use App\Models\Media;
+use App\Models\Package;
 use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Policies\AuditLogPolicy;
+use App\Policies\DeparturePolicy;
 use App\Policies\GuideStepPolicy;
 use App\Policies\HeroBannerPolicy;
 use App\Policies\MediaPolicy;
+use App\Policies\PackagePolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\TripPolicy;
 use App\Policies\UserPolicy;
@@ -31,6 +35,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Trip::class => TripPolicy::class,
+        Package::class => PackagePolicy::class,
+        Departure::class => DeparturePolicy::class,
         Media::class => MediaPolicy::class,
         GuideStep::class => GuideStepPolicy::class,
         HeroBanner::class => HeroBannerPolicy::class,
