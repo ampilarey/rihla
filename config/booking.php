@@ -23,6 +23,18 @@ return [
 
     'holds' => [
         'minutes' => (int) env('BOOKING_HOLD_MINUTES', 15),
+
+        // What "extend the hold" gives a booking when staff do it from the
+        // admin. Fifteen minutes is right for somebody at a checkout and
+        // far too short for somebody who has rung up to ask a question.
+        //
+        // A fixed extension rather than an open-ended hold, on purpose: an
+        // indefinite hold is how a departure ends up showing sold out while
+        // half empty, and nobody notices because nothing ever expires.
+        // Twenty-four hours is a working default for "the bank transfer is
+        // coming tomorrow"; the real figure belongs with the payment terms
+        // the owner has not set yet.
+        'extension_minutes' => (int) env('BOOKING_HOLD_EXTENSION_MINUTES', 1440),
     ],
 
     /*
