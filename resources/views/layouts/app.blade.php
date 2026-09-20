@@ -434,7 +434,16 @@
                         <div class="flex items-center mb-4">
                             <x-brand-logo class="w-16" loading="lazy" on="dark" />
                         </div>
-                        <p class="text-gray-300 mb-4 max-w-md">
+                        {{-- dir="auto" because this sentence has no Dhivehi
+                             translation and falls back to English. Inside the
+                             RTL footer the browser gave it the paragraph's
+                             own direction, and bidi rule N1 dragged the final
+                             full stop to the front: "and Madinah." rendered
+                             as ".and Madinah". dir="auto" makes the browser
+                             judge by the first strong character, so the
+                             English reads as English and a real Dhivehi
+                             translation would still read as Dhivehi. --}}
+                        <p dir="auto" class="text-gray-300 mb-4 max-w-md">
                             {{ __('Rihla Travels provides exceptional Islamic travel services, specializing in Umrah packages and spiritual journeys to the holy cities of Makkah and Madinah.') }}
                         </p>
                         <div class="flex items-center gap-4">
@@ -503,7 +512,10 @@
                                 </svg>
                                 <div>
                                     <p class="text-gray-300">{{ __('Malé, Maldives') }}</p>
-                                    <p class="text-sm text-gray-400">{{ __('REG NO: C11452023') }}</p>
+                                    {{-- A registration number is Latin in
+                                         both languages, and the colon is a
+                                         neutral that bidi moves. --}}
+                                    <p dir="ltr" class="text-sm text-gray-400">{{ __('REG NO: C11452023') }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -534,7 +546,13 @@
                     {{-- Was text-gray-600, which is 1.96:1 against bg-ink — not
                          dim, unreadable. gray-400 is 5.84:1. --}}
                     <p class="text-gray-400 mb-2">{{ __('messages.footer_tagline') }}</p>
-                    <p class="text-gray-400">
+                    {{-- Same bidi problem, and worse because it is on every
+                         page: "© 2026 Rihla Travels. All rights reserved."
+                         came out as ".Rihla Travels. All rights reserved 2026 ©".
+                         The year and the company name are Latin, so the line
+                         is English whatever the page language, and dir="ltr"
+                         says so outright. --}}
+                    <p dir="ltr" class="text-gray-400">
                         &copy; {{ date('Y') }} {{ config('app.name', 'Rihla Travels') }}. {{ __('All rights reserved.') }}
                     </p>
                 </div>

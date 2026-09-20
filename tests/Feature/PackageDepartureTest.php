@@ -57,6 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Before the booking domain: `portal_accesses` references
+        // `bookings` and restricts their deletion.
+        __DIR__.'/../../database/migrations/2026_09_20_210000_create_portal_accesses.php',
         // Before the booking domain: `payments` references `bookings`, and
         // restricts their deletion.
         __DIR__.'/../../database/migrations/2026_09_20_200000_create_payment_domain.php',

@@ -39,6 +39,28 @@ class DepartureHotel extends Model
         return $this->belongsTo(Departure::class);
     }
 
+    /**
+     * The city, in words, in the reader's language.
+     *
+     * `city` holds 'makkah' and 'madinah', and two views were printing that
+     * raw — including the checkout review page, where a customer read
+     * "makkah: Swissotel Al Maqam". Found by rendering the page rather than
+     * by any test, because a lowercase enum value is a perfectly valid
+     * string.
+     *
+     * Whole literal keys in a match rather than `__('messages.'.$city)`:
+     * a concatenated key cannot be checked by anything, which is what
+     * TranslationTest exists to enforce.
+     */
+    public function cityLabel(): string
+    {
+        return match ($this->city) {
+            self::CITY_MAKKAH => __('messages.Makkah'),
+            self::CITY_MADINAH => __('messages.Madinah'),
+            default => ucfirst((string) $this->city),
+        };
+    }
+
     /** "300 m" under a kilometre, "1.2 km" over it. */
     public function getDistanceLabelAttribute(): ?string
     {

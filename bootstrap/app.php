@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\PortalSession;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Every response, not just web: the JSON API and the deploy webhook
         // should not advertise the PHP version either.
         $middleware->append(SecurityHeaders::class);
+
+        // The Pilgrim Portal's own gate. An alias rather than a group, so
+        // the entry route — the one that spends a link — is deliberately
+        // outside it.
+        $middleware->alias(['portal' => PortalSession::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // A URL that matches no route never reaches the web middleware group,
