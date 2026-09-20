@@ -246,6 +246,14 @@ final class Access
         'broadcast.update',
         'broadcast.send',
 
+        // Notices (§11.2). Who has not been told what, and who still owes
+        // us something. No create verb: a notice is raised from a record
+        // that already exists, never typed — the moment somebody can write
+        // one by hand, the portal starts carrying claims nothing backs.
+        'notice.viewAny',
+        'notice.view',
+        'notice.handle',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -428,6 +436,13 @@ final class Access
             fn (string $permission) => strtok($permission, '.') === 'announcement',
         ));
 
+        $notices = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'notice',
+        ));
+
+        $noticesReadOnly = ['notice.viewAny', 'notice.view'];
+
         $broadcasts = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'broadcast',
@@ -482,6 +497,7 @@ final class Access
                 $opsLog,
                 $announcements,
                 $broadcasts,
+                $notices,
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -555,8 +571,10 @@ final class Access
                 // in: that is `payment.reconcile`, and it is Finance's.
                 ['payment.viewAny', 'payment.view', 'payment.create', 'payment.download'],
                 // The people who answer the phone are the people who work
-                // the enquiries.
+                // the enquiries — and the chasing list, which is the same
+                // job by another name.
                 $enquiriesWithoutAssigning,
+                $notices,
                 // Reads the rooming to answer "who am I sharing with?";
                 // rearranging it is operations' job.
                 $roomingReadOnly,
@@ -603,6 +621,7 @@ final class Access
                 // broadcast, only the call is more urgent.
                 ['announcement.viewAny', 'announcement.view'],
                 ['broadcast.viewAny', 'broadcast.view'],
+                $notices,
             ),
 
             // The documents are the job: collecting them, checking them and

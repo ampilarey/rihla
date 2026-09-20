@@ -7,15 +7,18 @@ use App\Models\Booking;
 use App\Models\Document;
 use App\Models\EmergencyBroadcast;
 use App\Models\FamilyAccess;
+use App\Models\Notice;
 use App\Models\NusukPermit;
 use App\Models\VisaApplication;
 use App\Services\Documents\DocumentWallet;
 use App\Services\Family\Doorkeeper;
+use App\Services\Notices\Sweep;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Services\Payments\SlipVault;
 use App\Services\Portal\Gatekeeper;
 use App\Support\Money;
 use App\Support\TravelReadiness;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -45,6 +48,7 @@ class PortalController extends Controller
     public function __construct(
         private readonly Gatekeeper $gatekeeper,
         private readonly Doorkeeper $doorkeeper,
+        private readonly Sweep $sweep,
     ) {}
 
     /**
@@ -163,6 +167,45 @@ class PortalController extends Controller
             ->with('status', __('messages.What that link shows has been updated.'));
     }
 
+    /**
+     * What this booking still needs to do.
+     *
+     * Marked seen as a side effect, which is the honest meaning of the
+     * column: the customer has opened the page it is on. It deliberately
+     * does not clear the staff queue — a notice disappearing because
+     * somebody loaded a page is how a passport request goes unchased for a
+     * fortnight.
+     *
+     * @return Collection<int, Notice>
+     */
+    private function outstandingNotices(Booking $booking)
+    {
+        // Raised on read, not only by cron.
+        //
+        // Nobody has confirmed that cron runs on this cPanel account, and
+        // unlike a lapsed seat hold — which the next booking reclaims
+        // inside its own row lock — a notice that is never raised simply
+        // does not exist. So the portal computes its own, the same way the
+        // booking path heals capacity: it is correct whether or not
+        // `notices:sweep` has ever run.
+        //
+        // Idempotent, so opening the page twice does not stack anything.
+        foreach ($this->sweep->noticesFor($booking) as $kind => $notice) {
+            Notice::raise($booking, $kind, $notice['headline'], $notice['body']);
+        }
+
+        $notices = Notice::where('booking_id', $booking->getKey())
+            ->outstanding()
+            ->orderByDesc('created_at')
+            ->get();
+
+        foreach ($notices as $notice) {
+            $notice->markSeen();
+        }
+
+        return $notices;
+    }
+
     public function leave(): RedirectResponse
     {
         $this->gatekeeper->leave();
@@ -176,6 +219,11 @@ class PortalController extends Controller
 
         return view('portal.home', [
             'booking' => $booking,
+            // §11.2. Outstanding only — a passport request that has been
+            // dealt with is not news. Marked seen here, because opening
+            // the page is what "seen" means; whether *staff* have dealt
+            // with it is a different fact and a different column.
+            'notices' => $this->outstandingNotices($booking),
             // §6.5. At the top of the page a pilgrim actually opens, and
             // needing no credentials — which on this host is the whole
             // reason a broadcast reaches anybody at all.
