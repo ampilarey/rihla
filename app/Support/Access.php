@@ -95,6 +95,22 @@ final class Access
         'article.update',
         'article.delete',
 
+        // Bookings. Deliberately no `booking.create` and no
+        // `booking.delete`: a booking is created by the checkout flow, and a
+        // booking is a financial record that is cancelled — a status, with a
+        // row saying who and why — never deleted. Defining verbs for neither
+        // would produce permissions that look enforced and gate nothing.
+        'booking.viewAny',
+        'booking.view',
+        'booking.update',
+
+        // The people who book and pay. No delete for the same reason: a
+        // customer with bookings cannot be removed, and the database refuses
+        // it.
+        'customer.viewAny',
+        'customer.view',
+        'customer.update',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -179,6 +195,19 @@ final class Access
             ),
         ));
 
+        // Bookings and the customers attached to them. A separate set from
+        // $content on purpose: this is where passport numbers, phone numbers
+        // and money live, and nobody gets it by editing the website.
+        $bookings = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => in_array(strtok($permission, '.'), ['booking', 'customer'], true),
+        ));
+
+        $bookingsReadOnly = array_values(array_filter(
+            $bookings,
+            fn (string $permission) => str_contains($permission, '.view'),
+        ));
+
         // Built from $content, not from every permission. Filtering the whole
         // list for '.view' swept up `user.view` and `user.viewAny` the moment
         // those existed, which handed the Reporting role a list of every
@@ -191,9 +220,10 @@ final class Access
         return [
             self::SUPER_ADMIN => [],
 
-            // Runs the operation: all content, plus settings.
+            // Runs the operation: all content, plus settings and bookings.
             self::OPERATIONS_MANAGER => array_merge(
                 ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny'],
+                $bookings,
                 $content,
             ),
 
@@ -207,17 +237,42 @@ final class Access
             // It used to hold that by accident: `audit.viewAny` contains
             // '.view', and $readOnly was built by matching that substring
             // against every permission. Stated deliberately now.
-            self::REPORTING => array_merge(['admin.access', 'audit.viewAny'], $readOnly),
+            // Reporting sees that bookings exist and how many; it does not
+            // open one. `viewAny` without `view` is the whole reason those
+            // are separate permissions — a list is a different disclosure
+            // from a record holding a passport number.
+            self::REPORTING => array_merge(
+                ['admin.access', 'audit.viewAny', 'booking.viewAny'],
+                $readOnly,
+            ),
 
             // Trip-facing staff need to read trips to do their job, but the
             // trip listing is content, not theirs to change.
             self::TOUR_LEADER => ['admin.access', 'trip.viewAny', 'trip.view'],
 
-            // No functionality exists for these yet. See the class docblock.
-            self::BOOKING_STAFF => ['admin.access'],
-            self::FINANCE => ['admin.access'],
+            // Takes and manages bookings. Reads the product to do it —
+            // which departure, which room, what it costs — but does not
+            // write it: prices and descriptions are content.
+            self::BOOKING_STAFF => array_merge(
+                ['admin.access'],
+                $bookings,
+                ['package.viewAny', 'package.view', 'departure.viewAny', 'departure.view'],
+            ),
+
+            // Reconciles payments, so it reads bookings and who they belong
+            // to. Editing one is booking staff's job; when refunds and
+            // payment records exist, this is the role that gets them.
+            self::FINANCE => array_merge(['admin.access'], $bookingsReadOnly),
+
+            // Answers the phone. Needs to find a booking and read it back to
+            // whoever is calling, and nothing more until the pilgrim portal
+            // and the CRM give it something to change.
+            self::PILGRIM_SUPPORT => array_merge(['admin.access'], $bookingsReadOnly),
+
+            // No functionality exists for this yet: visa applications and
+            // Nusuk permits are the next slice of Phase 3. See the class
+            // docblock.
             self::VISA_STAFF => ['admin.access'],
-            self::PILGRIM_SUPPORT => ['admin.access'],
         ];
     }
 }

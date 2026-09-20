@@ -182,12 +182,25 @@ class AuthorizationTest extends TestCase
      * reachable by any role that can open the panel at all, which includes
      * the roles seeded with nothing but admin.access.
      */
-    public function test_no_admin_route_is_reachable_by_a_role_with_only_panel_access(): void
+    /**
+     * Booking Staff used to hold `admin.access` and nothing else, which is
+     * what this test was named for. It now holds `booking.*`, `customer.*`
+     * and read-only access to the product — and still none of the content
+     * routes below, which is the point. Visa Staff is checked alongside it
+     * as the role that genuinely has only the panel.
+     */
+    public function test_no_content_route_is_reachable_by_a_role_without_content_permissions(): void
     {
         $trip = $this->trip();
         $step = GuideStep::factory()->create();
-        $booking = $this->staff(Access::BOOKING_STAFF);
 
+        foreach ([Access::BOOKING_STAFF, Access::VISA_STAFF] as $role) {
+            $this->assertNoContentRouteIsReachable($this->staff($role), $trip, $step);
+        }
+    }
+
+    private function assertNoContentRouteIsReachable(User $user, Trip $trip, GuideStep $step): void
+    {
         foreach ([
             ['get', route('admin.trips.index')],
             ['get', route('admin.trips.create')],
@@ -199,9 +212,13 @@ class AuthorizationTest extends TestCase
             ['get', route('admin.settings.index')],
             ['get', route('admin.why-sections.index')],
         ] as [$method, $url]) {
-            $this->actingAs($booking)
+            $this->actingAs($user)
                 ->{$method}($url)
-                ->assertForbidden("{$url} was reachable by a role holding only admin.access.");
+                ->assertForbidden(sprintf(
+                    '%s was reachable by %s, which holds no content permissions.',
+                    $url,
+                    $user->getRoleNames()->implode(', '),
+                ));
         }
     }
 

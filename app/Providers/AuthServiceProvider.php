@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\Article;
 use App\Models\AuditLog;
+use App\Models\Booking;
+use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
@@ -17,6 +19,8 @@ use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Policies\ArticlePolicy;
 use App\Policies\AuditLogPolicy;
+use App\Policies\BookingPolicy;
+use App\Policies\CustomerPolicy;
 use App\Policies\DeparturePolicy;
 use App\Policies\GuideStepPolicy;
 use App\Policies\HeroBannerPolicy;
@@ -38,6 +42,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        Booking::class => BookingPolicy::class,
+        Customer::class => CustomerPolicy::class,
         Trip::class => TripPolicy::class,
         Package::class => PackagePolicy::class,
         Departure::class => DeparturePolicy::class,
