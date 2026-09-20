@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
@@ -24,9 +25,23 @@ class Person extends Model
     protected $table = 'people';
 
     protected $fillable = [
+        'user_id',
         'slug', 'name', 'role', 'title', 'bio', 'photo_path',
         'languages', 'groups_led', 'is_published', 'sort_order',
     ];
+
+    /**
+     * The staff login this profile belongs to, when it has one.
+     *
+     * Most people here are not staff — a scholar who writes for the site is
+     * a profile with no account — so this is null far more often than not.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * The name is deliberately absent. A person's name is their name, and

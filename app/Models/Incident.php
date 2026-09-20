@@ -32,6 +32,7 @@ class Incident extends Model
     use HasFactory;
 
     protected $fillable = [
+        'client_uuid',
         'departure_id', 'traveller_id',
         'severity', 'category', 'summary', 'detail',
         'happened_at', 'location',
