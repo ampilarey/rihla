@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -120,8 +121,44 @@ class Enquiry extends Model
         return $this->belongsTo(Booking::class);
     }
 
-    /** Everything that has happened to it, oldest first. Append-only. */
-    /** @return HasMany<EnquiryNote, $this> */
+    /**
+     * The priced offers sent for this lead — §8.1.
+     *
+     * Newest first: "what did we quote them?" means the current price,
+     * and the older ones are the trail behind it.
+     *
+     * @return HasMany<Quotation, $this>
+     */
+    public function quotations(): HasMany
+    {
+        return $this->hasMany(Quotation::class)->orderByDesc('created_at');
+    }
+
+    /** @return MorphMany<CrmTask, $this> */
+    public function tasks(): MorphMany
+    {
+        return $this->morphMany(CrmTask::class, 'about')->orderBy('due_on');
+    }
+
+    /**
+     * The offer that still stands, if one does.
+     *
+     * Not simply the newest: a superseded or declined quotation is not an
+     * offer, and showing one as the current price is how somebody gets
+     * quoted a number that was withdrawn a month ago.
+     */
+    public function currentQuotation(): ?Quotation
+    {
+        return $this->quotations()
+            ->get()
+            ->first(fn (Quotation $quotation): bool => $quotation->isOpen());
+    }
+
+    /**
+     * Everything that has happened to it, oldest first. Append-only.
+     *
+     * @return HasMany<EnquiryNote, $this>
+     */
     public function notes(): HasMany
     {
         return $this->hasMany(EnquiryNote::class)->orderBy('created_at')->orderBy('id');

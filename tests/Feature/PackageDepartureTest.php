@@ -57,7 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `scholar_questions` holds foreign keys into both
+        // First of all: `quotations` points at `bookings`, `departures` and
+        // `packages`, and `crm_tasks` and `customers.referred_by_customer_id`
+        // ride along in the same migration (§8.1).
+        __DIR__.'/../../database/migrations/2026_09_20_350000_create_the_full_crm.php',
+        // Then: `scholar_questions` holds foreign keys into both
         // `bookings` and `travellers` (§6.4 — a question outlives the
         // booking that carried it, so it points at both).
         __DIR__.'/../../database/migrations/2026_09_20_340000_create_ask_a_scholar.php',
