@@ -51,6 +51,14 @@ class RollCall extends Model
         return $this->belongsTo(User::class, 'taken_by');
     }
 
+    /**
+     * The generic is declared because Larastan otherwise types the
+     * collection as `Model`, and every closure that takes a
+     * `RollCallMark` becomes an argument-type error in CI — which is
+     * exactly what happened here.
+     *
+     * @return HasMany<RollCallMark, $this>
+     */
     public function marks(): HasMany
     {
         return $this->hasMany(RollCallMark::class);
@@ -100,12 +108,19 @@ class RollCall extends Model
      */
     public function unaccountedFor(): Collection
     {
-        $absent = $this->marks
-            ->where('state', RollCallMark::ABSENT)
-            ->map(fn (RollCallMark $mark) => $mark->traveller)
-            ->filter();
+        /** @var Collection<int, Traveller> $absent */
+        $absent = collect();
 
-        return $this->unmarked()->concat($absent)->unique('id')->values();
+        foreach ($this->marks as $mark) {
+            if ($mark->state === RollCallMark::ABSENT && $mark->traveller !== null) {
+                $absent->push($mark->traveller);
+            }
+        }
+
+        /** @var Collection<int, Traveller> $all */
+        $all = $this->unmarked()->concat($absent);
+
+        return $all->unique('id')->values();
     }
 
     /** A count is finished when everybody expected has a mark. */
