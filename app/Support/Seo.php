@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Http\Middleware\SetLocale;
 use App\Models\GuideStep;
+use App\Models\Package;
 use App\Models\Setting;
 use App\Models\Trip;
 use Illuminate\Http\Request;
@@ -198,6 +199,80 @@ class Seo
                 'availability' => 'https://schema.org/InStock',
                 'url' => $url,
             ];
+        }
+
+        return $schema;
+    }
+
+    /**
+     * A package, as a TouristTrip with an offer per departure.
+     *
+     * Everything below comes from what the page shows. No field is filled to
+     * satisfy a schema: a structured-data property that does not match the
+     * visible page is a Google policy violation, and on a licensed travel
+     * operator's site an invented credential or price is worse than a missing
+     * rich result.
+     *
+     * So: no aggregateRating, because there is no review system; no
+     * itinerary Place unless a hotel names a city; and no offer at all for a
+     * departure that has left, rather than an offer marked unavailable.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function package(Package $package, string $url): ?array
+    {
+        $title = $package->getTranslation('title', app()->getLocale());
+
+        if (blank($title)) {
+            return null;
+        }
+
+        $schema = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'TouristTrip',
+            'name' => $title,
+            'description' => $package->getTranslation('summary', app()->getLocale()) ?: null,
+            'url' => $url,
+            'provider' => [
+                '@type' => 'TravelAgency',
+                'name' => config('app.name'),
+                'identifier' => self::REGISTRATION_NUMBER,
+            ],
+        ]);
+
+        if ($package->cover_image) {
+            $schema['image'] = url(Storage::url($package->cover_image));
+        }
+
+        // One offer per upcoming departure, priced from its cheapest tier.
+        // A departure with no price carries no offer: "from nothing" is not
+        // a price, and omitting the field is honest where a zero is not.
+        $offers = [];
+
+        foreach ($package->publishedDepartures as $departure) {
+            $lead = $departure->lead_price;
+
+            if ($lead === null || $departure->date_start->isPast()) {
+                continue;
+            }
+
+            $offers[] = array_filter([
+                '@type' => 'Offer',
+                // Whole units, as schema.org expects — the column is minor
+                // units, and publishing 2850000 would advertise a hundredfold
+                // price to every crawler that reads it.
+                'price' => (string) $lead->major(),
+                'priceCurrency' => $lead->currency,
+                'availability' => $departure->is_sold_out
+                    ? 'https://schema.org/SoldOut'
+                    : 'https://schema.org/InStock',
+                'validFrom' => $departure->date_start->toDateString(),
+                'url' => $url,
+            ]);
+        }
+
+        if ($offers !== []) {
+            $schema['offers'] = $offers;
         }
 
         return $schema;

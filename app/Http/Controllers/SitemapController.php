@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetLocale;
+use App\Models\Package;
 use App\Models\Trip;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -29,13 +30,21 @@ class SitemapController extends Controller
             ->orderByDesc('date_start')
             ->get(['slug', 'updated_at']);
 
+        $packages = Package::published()
+            ->orderBy('sort_order')
+            ->get(['slug', 'updated_at']);
+
         $entries = [];
 
         // Static pages. Weekly rather than daily: claiming a change frequency
         // the site does not honour teaches the crawler to ignore the hint.
         foreach ([
             ['path' => '', 'changefreq' => 'weekly', 'priority' => '1.0'],
+            // Packages first: it is the page that sells, and it changes
+            // whenever a departure is added.
+            ['path' => '/packages', 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['path' => '/trips', 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['path' => '/people', 'changefreq' => 'monthly', 'priority' => '0.6'],
             ['path' => '/guide', 'changefreq' => 'monthly', 'priority' => '0.8'],
             ['path' => '/gallery', 'changefreq' => 'monthly', 'priority' => '0.6'],
             ['path' => '/contact', 'changefreq' => 'yearly', 'priority' => '0.5'],
@@ -46,6 +55,15 @@ class SitemapController extends Controller
                 'lastmod' => null,
                 'changefreq' => $page['changefreq'],
                 'priority' => $page['priority'],
+            ];
+        }
+
+        foreach ($packages as $package) {
+            $entries[] = [
+                'path' => '/packages/'.$package->slug,
+                'lastmod' => $package->updated_at?->toAtomString(),
+                'changefreq' => 'weekly',
+                'priority' => '0.8',
             ];
         }
 

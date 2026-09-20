@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
@@ -66,6 +67,21 @@ class Package extends Model
 
     protected static function booted(): void
     {
+        // The sitemap lists every published package and is cached for an
+        // hour. Without this, publishing one would leave it out of the
+        // sitemap for up to an hour after it went live — the same gap Trip
+        // already closes.
+        //
+        // Must return nothing: Cache::forget() returns false when the key is
+        // not cached, and a model-event listener returning false halts every
+        // later listener for that event.
+        $bustSitemap = function (): void {
+            Cache::forget('sitemap.xml');
+        };
+
+        static::saved($bustSitemap);
+        static::deleted($bustSitemap);
+
         static::creating(function (self $package): void {
             if (blank($package->slug)) {
                 $package->slug = Str::slug($package->getTranslation('title', 'en'));

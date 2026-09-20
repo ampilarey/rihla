@@ -2,6 +2,13 @@
 
 @section('title', $package->title)
 
+@push('schema')
+    @php($packageSchema = \App\Support\Seo::package($package, url()->current()))
+    @if($packageSchema)
+        <script type="application/ld+json">{!! \App\Support\Seo::json($packageSchema) !!}</script>
+    @endif
+@endpush
+
 @section('content')
     <div class="container mx-auto px-4 section-y-tight">
         <nav class="mb-6 text-sm" aria-label="{{ __('Breadcrumb') }}">
