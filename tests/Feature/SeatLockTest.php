@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Departure;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
@@ -24,17 +25,35 @@ use Tests\TestCase;
  *
  * It needs an engine with real row locking, which SQLite is not — it is
  * skipped there, loudly, and runs in the MySQL job that exists in CI for
- * exactly this. A concurrency test that only ever runs on SQLite reports
- * green while proving nothing.
+ * exactly this.
  *
  * DatabaseTruncation rather than RefreshDatabase: RefreshDatabase wraps each
  * test in a transaction on the default connection, so a second connection
  * could not see the fixture at all and the test would fail for a reason
  * having nothing to do with locking.
+ *
+ * ## Why tearDown is so careful
+ *
+ * The first version of this test hung CI for sixteen minutes — the whole run
+ * normally takes two. It rolled both transactions back in a `finally`, with
+ * the second connection's rollback first. When MySQL resolves the contention
+ * as a deadlock rather than a lock-wait timeout it has *already* rolled that
+ * transaction back, so `rollBack()` throws "there is no active transaction",
+ * the second statement in the `finally` never runs, and the default
+ * connection keeps its row lock. The next test's `TRUNCATE departures` then
+ * waits on a metadata lock — and `lock_wait_timeout` defaults to a year.
+ *
+ * So cleanup does not depend on the test body reaching any particular line,
+ * does not depend on one rollback succeeding for the next to be attempted,
+ * and finishes by disconnecting both sessions, which releases every lock
+ * whatever state the transactions were left in.
  */
 class SeatLockTest extends TestCase
 {
     use DatabaseTruncation;
+
+    /** Long enough to prove the lock blocks, short enough not to stall CI. */
+    private const LOCK_TIMEOUT_SECONDS = 1;
 
     protected function setUp(): void
     {
@@ -53,6 +72,52 @@ class SeatLockTest extends TestCase
         DB::purge('second');
     }
 
+    protected function tearDown(): void
+    {
+        // Unconditional, independent, and quiet. See the class docblock: an
+        // open transaction surviving this method is what hung CI.
+        $this->releaseQuietly('second');
+        $this->releaseQuietly(null);
+
+        parent::tearDown();
+    }
+
+    /** Roll back whatever is open and drop the session; never throw. */
+    private function releaseQuietly(?string $name): void
+    {
+        try {
+            $connection = DB::connection($name);
+
+            while ($connection->transactionLevel() > 0) {
+                try {
+                    $connection->rollBack();
+                } catch (\Throwable) {
+                    // MySQL may have rolled it back already. Disconnecting
+                    // below releases the locks regardless, which is the only
+                    // thing that actually matters here.
+                    break;
+                }
+            }
+
+            DB::disconnect($name);
+        } catch (\Throwable) {
+            // A connection that was never opened, or a config entry that was
+            // never registered because setUp skipped. Nothing to release.
+        }
+    }
+
+    /**
+     * `unprepared()`, not `statement()`: a session variable set through the
+     * prepared-statement protocol is not worth the doubt when the whole
+     * point is that this query gives up quickly.
+     */
+    private function impatient(ConnectionInterface $connection): ConnectionInterface
+    {
+        $connection->unprepared('SET SESSION innodb_lock_wait_timeout = '.self::LOCK_TIMEOUT_SECONDS);
+
+        return $connection;
+    }
+
     private function departure(): Departure
     {
         return Departure::factory()->withSeats(1)->create();
@@ -65,11 +130,7 @@ class SeatLockTest extends TestCase
         DB::beginTransaction();
         Departure::whereKey($departure->getKey())->lockForUpdate()->firstOrFail();
 
-        $second = DB::connection('second');
-        // Without this the second connection waits fifty seconds for a lock
-        // it is never going to get, and the test times out instead of
-        // failing usefully.
-        $second->statement('SET SESSION innodb_lock_wait_timeout = 1');
+        $second = $this->impatient(DB::connection('second'));
         $second->beginTransaction();
 
         $blocked = false;
@@ -77,10 +138,9 @@ class SeatLockTest extends TestCase
         try {
             $second->table('departures')->where('id', $departure->getKey())->lockForUpdate()->first();
         } catch (QueryException) {
+            // A lock-wait timeout or a deadlock. Either is MySQL saying the
+            // row is spoken for, which is the whole assertion.
             $blocked = true;
-        } finally {
-            $second->rollBack();
-            DB::rollBack();
         }
 
         $this->assertTrue($blocked, 'A second session read the departure row while it was locked for update.');
@@ -98,13 +158,10 @@ class SeatLockTest extends TestCase
     {
         $departure = $this->departure();
 
-        $second = DB::connection('second');
-        $second->statement('SET SESSION innodb_lock_wait_timeout = 1');
+        $second = $this->impatient(DB::connection('second'));
         $second->beginTransaction();
 
         $row = $second->table('departures')->where('id', $departure->getKey())->lockForUpdate()->first();
-
-        $second->rollBack();
 
         $this->assertNotNull($row);
         $this->assertSame(1, (int) $row->capacity_total);
