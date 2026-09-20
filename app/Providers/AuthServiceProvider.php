@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
 use App\Models\AuditLog;
 use App\Models\Departure;
 use App\Models\GuideStep;
@@ -14,6 +15,7 @@ use App\Models\Trip;
 use App\Models\User;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
+use App\Policies\ArticlePolicy;
 use App\Policies\AuditLogPolicy;
 use App\Policies\DeparturePolicy;
 use App\Policies\GuideStepPolicy;
@@ -40,6 +42,7 @@ class AuthServiceProvider extends ServiceProvider
         Package::class => PackagePolicy::class,
         Departure::class => DeparturePolicy::class,
         Person::class => PersonPolicy::class,
+        Article::class => ArticlePolicy::class,
         Media::class => MediaPolicy::class,
         GuideStep::class => GuideStepPolicy::class,
         HeroBanner::class => HeroBannerPolicy::class,

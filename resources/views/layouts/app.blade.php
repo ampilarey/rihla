@@ -451,6 +451,14 @@
                                     {{ __('messages.Who travels with you') }}
                                 </a>
                             </li>
+                            {{-- Footer, again: the desktop nav is full at
+                                 seven. See NavigationFitTest. --}}
+                            <li>
+                                <a href="{{ route('articles.index') }}"
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                    {{ __('messages.Articles') }}
+                                </a>
+                            </li>
                             <li>
                                 <a href="{{ route('gallery') }}" 
                                    class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">

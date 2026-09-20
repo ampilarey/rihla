@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\Admin\WhyFeatureController;
 use App\Http\Controllers\Admin\WhySectionController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
@@ -46,6 +47,9 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     Route::get('/packages/{slug}', [PackageController::class, 'show'])->name('packages.show');
 
     Route::get('/people', [PeopleController::class, 'index'])->name('people.index');
+
+    Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+    Route::get('/articles/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 
     Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
     Route::get('/trips/{slug}', [TripController::class, 'show'])->name('trips.show');
