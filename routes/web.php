@@ -114,6 +114,12 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
         Route::get('/portal/learn/{slug}', [LearningController::class, 'show'])->name('learning.show');
         Route::post('/portal/learn/{slug}', [LearningController::class, 'submitQuiz'])->name('learning.quiz');
 
+        // Ask a Scholar (§6.4). Declared before /learn/{slug} would catch
+        // it — "questions" is not a module slug, and the ordering trap is
+        // the same one the packages and ziyarah routes carry a note about.
+        Route::get('/portal/questions', [LearningController::class, 'questions'])->name('learning.questions');
+        Route::post('/portal/questions', [LearningController::class, 'askQuestion'])->name('learning.questions.store');
+
         Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
         Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
     });

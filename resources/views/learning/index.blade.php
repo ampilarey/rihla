@@ -111,6 +111,18 @@
             @endforeach
         @endif
 
+        {{-- §6.4, on the page somebody is reading rather than in its own
+             corner of the portal: the moment you want to ask is while you
+             are reading, and a form two clicks away is one nobody uses. --}}
+        <div class="card mb-8">
+            <h2 class="mb-1 font-semibold text-ink">{{ __('messages.Have a question?') }}</h2>
+            <p class="text-sm text-brand-body">
+                {{ __('messages.Write your question and somebody will come back to you. What you write is only seen by the office and the scholar unless you say otherwise below.') }}
+            </p>
+            <a href="{{ route('learning.questions', ['locale' => app()->getLocale()]) }}"
+               class="btn-secondary mt-3">{{ __('messages.Ask a scholar') }}</a>
+        </div>
+
         @if($paths->isNotEmpty())
             <section class="mb-8">
                 <h2 class="mb-3 text-lg font-bold text-ink">{{ __('messages.If you would rather read in order') }}</h2>

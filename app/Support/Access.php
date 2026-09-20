@@ -315,6 +315,19 @@ final class Access
         'learning.review',
         'learning.publish',
 
+        // Ask a Scholar (§6.4). Three verbs, not six: nobody in the office
+        // writes a question — a pilgrim does — and nobody deletes one,
+        // because a question that vanished is one the person who asked it
+        // is still waiting on.
+        //
+        // `answer` is the scholar's. `publish` is the office's, and it is
+        // gated on the asker's consent besides: a question is a private
+        // message unless the person who wrote it said otherwise.
+        'question.viewAny',
+        'question.view',
+        'question.answer',
+        'question.publish',
+
         'media.viewAny',
         'media.view',
         'media.create',
@@ -536,6 +549,16 @@ final class Access
 
         $learningReview = ['learning.viewAny', 'learning.view', 'learning.review'];
 
+        $questions = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'question',
+        ));
+
+        // The scholar reads the queue and answers. Putting an answer in
+        // front of other people is an office decision and needs the
+        // asker's consent, so it is not theirs.
+        $questionsAnswerOnly = ['question.viewAny', 'question.view', 'question.answer'];
+
         $notices = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'notice',
@@ -601,6 +624,7 @@ final class Access
                 array_diff($knowledge, ['knowledge.review']),
                 array_diff($ziyarah, ['ziyarah.review']),
                 array_diff($learning, ['learning.review']),
+                array_diff($questions, ['question.answer']),
                 ['departure.nusuk', 'departure.board'],
                 $content,
             ),
@@ -696,7 +720,13 @@ final class Access
             // — not bookings, not customers, not money, not the website.
             // A reviewer who can also publish is not a reviewer (§6.4), so
             // `knowledge.publish` is deliberately absent here.
-            self::SCHOLAR => array_merge(['admin.access'], $knowledgeReview, $ziyarahReview, $learningReview),
+            self::SCHOLAR => array_merge(
+                ['admin.access'],
+                $knowledgeReview,
+                $ziyarahReview,
+                $learningReview,
+                $questionsAnswerOnly,
+            ),
 
             // Reconciles payments, so it reads bookings and who they belong
             // to. Editing one is booking staff's job; when refunds and
