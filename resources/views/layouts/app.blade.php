@@ -244,6 +244,9 @@
                             </div>
                         @else
                             <!-- User is not logged in - show regular website navigation -->
+                            <x-site-nav-link href="{{ route('packages.index') }}" :active="request()->routeIs('packages.*')">
+                                {{ __('Packages') }}
+                            </x-site-nav-link>
                             <x-site-nav-link href="{{ route('trips.index') }}" :active="request()->routeIs('trips.*')">
                                 {{ __('Trips') }}
                             </x-site-nav-link>
@@ -325,6 +328,10 @@
                             </form>
                         @else
                             <!-- User is not logged in - show regular website navigation -->
+                            <a href="{{ route('packages.index') }}"
+                               class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                {{ __('Packages') }}
+                            </a>
                             <a href="{{ route('trips.index') }}" 
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Trips') }}
@@ -415,6 +422,12 @@
                     <div>
                         <h3 class="text-lg font-semibold mb-4 text-gold-500">{{ __('Quick Links') }}</h3>
                         <ul class="space-y-2">
+                            <li>
+                                <a href="{{ route('packages.index') }}"
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                    {{ __('Packages') }}
+                                </a>
+                            </li>
                             <li>
                                 <a href="{{ route('trips.index') }}" 
                                    class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">

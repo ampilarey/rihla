@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\WhyFeatureController;
 use App\Http\Controllers\Admin\WhySectionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
@@ -32,6 +33,14 @@ use Illuminate\Support\Facades\Route;
 // so route('trips.show', $slug) keeps working and emits the right prefix.
 Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    // Additive. /trips is untouched and still served by TripController; a
+    // package is the product and a departure one dated run of it, which is
+    // what makes seats, a countdown, an itinerary and hotel distances
+    // possible. Nothing redirects between the two yet — retiring `trips` is
+    // a decision for after a full season runs on the new model.
+    Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
+    Route::get('/packages/{slug}', [PackageController::class, 'show'])->name('packages.show');
+
     Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
     Route::get('/trips/{slug}', [TripController::class, 'show'])->name('trips.show');
     Route::get('/gallery', [MediaController::class, 'gallery'])->name('gallery');
