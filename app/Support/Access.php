@@ -226,6 +226,20 @@ final class Access
         // preferences, who referred them.
         'customer.tag',
 
+        // What a departure costs to run, and the margin that comes out of
+        // it — §8.4. `cost.*` is Finance's and Operations', and the report
+        // is a separate verb because "what did this journey make?" is a
+        // number the office should not have to hand out to read.
+        //
+        // No delete: a cost somebody entered and then thought better of is
+        // corrected, and a margin that changed because a row vanished is
+        // one nobody can explain.
+        'cost.viewAny',
+        'cost.view',
+        'cost.create',
+        'cost.update',
+        'profit.view',
+
         // Rooming (§8.2). No delete verb for an assignment: taking somebody
         // out of a room is an update to the rooming list, and a separate
         // permission for it would only ever be granted alongside update.
@@ -518,6 +532,13 @@ final class Access
         // Works the list and cannot hand work to somebody else.
         $tasksWithoutAssigning = ['task.viewAny', 'task.view', 'task.create', 'task.update'];
 
+        $costs = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'cost',
+        ));
+
+        $costsReadOnly = ['cost.viewAny', 'cost.view'];
+
         $rooming = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'rooming',
@@ -666,6 +687,8 @@ final class Access
                 $quotations,
                 $tasks,
                 ['customer.tag'],
+                $costs,
+                ['profit.view'],
                 $rooming,
                 $incidents,
                 $attendance,
@@ -802,6 +825,14 @@ final class Access
                 ['admin.access', 'departure.board'],
                 $bookingsReadOnly,
                 $payments,
+                // The other half of the arithmetic. Finance is the role
+                // that knows what was paid out, and §8.4's per-journey
+                // profitability is the report this operator does not have
+                // today — so this is the role that owns it.
+                $costs,
+                ['profit.view'],
+                // Reads what was quoted, to reconcile against what came in.
+                $quotationsReadOnly,
             ),
 
             // Answers the phone. Needs to find a booking and read it back to

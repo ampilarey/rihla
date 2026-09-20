@@ -57,7 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `quotations` points at `bookings`, `departures` and
+        // First of all: `departure_costs` hangs off `departures` (§8.4).
+        __DIR__.'/../../database/migrations/2026_09_20_360000_create_journey_costs.php',
+        // Then: `quotations` points at `bookings`, `departures` and
         // `packages`, and `crm_tasks` and `customers.referred_by_customer_id`
         // ride along in the same migration (§8.1).
         __DIR__.'/../../database/migrations/2026_09_20_350000_create_the_full_crm.php',
