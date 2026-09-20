@@ -517,6 +517,29 @@ return [
     'Visa' => 'Visa',
     'Umrah permit' => 'Umrah permit',
     'Not sent yet' => 'Not sent yet',
+
+    // Invoices and receipts (§5.3). English only for now, like the rest of
+    // the portal: the Dhivehi files are being cleaned of machine-generated
+    // entries rather than added to.
+    'Invoice' => 'Invoice',
+    'Receipt' => 'Receipt',
+    'Refund' => 'Refund',
+    'Refunded' => 'Refunded',
+    'Billed to' => 'Billed to',
+    'Received from' => 'Received from',
+    'For booking' => 'For booking',
+    'Description' => 'Description',
+    'Quantity' => 'Quantity',
+    'Date' => 'Date',
+    'Payments received' => 'Payments received',
+    'Balance on the booking' => 'Balance on the booking',
+    'Payment towards booking :reference' => 'Payment towards booking :reference',
+    'Refund against booking :reference' => 'Refund against booking :reference',
+    'This booking was agreed as a single amount. Message us if you need it broken down.' => 'This booking was agreed as a single amount. Message us if you need it broken down.',
+    'Quote :reference when you pay, so we can match it to your booking.' => 'Quote :reference when you pay, so we can match it to your booking.',
+    'Questions about this document? Message us on :number.' => 'Questions about this document? Message us on :number.',
+    'Download the invoice' => 'Download the invoice',
+    'Receipts' => 'Receipts',
     // Read by App\Support\PortalWords, which maps each status to a whole
     // literal key rather than building one by concatenation — see that
     // class for why.

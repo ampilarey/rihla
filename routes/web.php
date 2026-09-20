@@ -12,6 +12,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\StaffInvoiceController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\WaitlistController;
 use App\Models\GuideStep;
@@ -88,6 +90,12 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
         Route::post('/portal/documents', [PortalController::class, 'storeDocument'])->name('portal.documents.store');
         Route::post('/portal/payments', [PortalController::class, 'storePayment'])->name('portal.payments.store');
         Route::post('/portal/leave', [PortalController::class, 'leave'])->name('portal.leave');
+
+        // The booking's own paperwork. The invoice takes no identifier at
+        // all; the receipt names a payment and the controller proves it
+        // belongs to this booking before rendering a byte.
+        Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
+        Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
     });
 
     Route::get('/people', [PeopleController::class, 'index'])->name('people.index');
@@ -174,6 +182,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/payments/{payment}/slip', [PaymentSlipController::class, 'show'])
         ->name('payments.slip')
         ->middleware('signed');
+
+    // The same two documents, for staff. Authenticated and authorised by the
+    // booking policy rather than by a portal session, and deliberately not
+    // signed: a member of staff opening a booking they may already read is
+    // not the same threat as a link sent over WhatsApp.
+    Route::get('/staff-documents/booking/{booking}/invoice', [StaffInvoiceController::class, 'invoice'])
+        ->name('staff.invoice');
+    Route::get('/staff-documents/payment/{payment}/receipt', [StaffInvoiceController::class, 'receipt'])
+        ->name('staff.receipt');
 });
 
 // Admin routes (require authentication and admin privileges)
