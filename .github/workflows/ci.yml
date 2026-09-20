@@ -15,10 +15,22 @@ concurrency:
 permissions:
   contents: read
 
+# Every job carries `timeout-minutes: 15`. GitHub's default is six hours, and
+# the whole run normally finishes in about two minutes, so nothing legitimate
+# comes near fifteen.
+#
+# Added after a job was misread as hanging when it had in fact already failed
+# — the check-runs API went on reporting it in_progress for a quarter of an
+# hour afterwards. A real hang is possible here (the booking tests take row
+# locks, and MySQL's `lock_wait_timeout` defaults to a year) and would be
+# indistinguishable from a slow job for six hours. This makes either case
+# end quickly and say so.
+
 jobs:
   tests:
     name: Tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -63,6 +75,7 @@ jobs:
   mysql:
     name: Tests (MySQL)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # The booking engine's capacity guarantee rests on SELECT ... FOR UPDATE
     # row locking, which SQLite cannot exercise. A concurrency test that only
     # ever runs on SQLite reports green while proving nothing, so the suite
@@ -115,6 +128,7 @@ jobs:
   static:
     name: Static analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -155,6 +169,7 @@ jobs:
   assets:
     name: Committed build is current
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # public/build is committed because the cPanel host has no Node, and the
     # deploy script serves exactly what is in git. A stale build therefore
     # ships silently: edit a stylesheet, forget to rebuild, and production
@@ -182,6 +197,7 @@ jobs:
   security:
     name: Dependency audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 

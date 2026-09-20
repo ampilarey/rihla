@@ -29,6 +29,22 @@ class PackageDepartureTest extends TestCase
 
     private const MIGRATION = __DIR__.'/../../database/migrations/2026_09_20_100000_create_packages_and_departures.php';
 
+    /**
+     * The booking tables hold foreign keys into `packages`, `departures` and
+     * `price_tiers`, so they have to come off before those tables can be
+     * dropped and go back on after. MySQL refuses the drop otherwise —
+     * "Cannot drop table 'price_tiers' referenced by a foreign key
+     * constraint" — while SQLite allows it and leaves the references
+     * dangling, so this ordering is invisible until CI runs against the
+     * engine production uses.
+     *
+     * @var list<string>
+     */
+    private const DEPENDENT_MIGRATIONS = [
+        __DIR__.'/../../database/migrations/2026_09_20_141000_add_the_departure_capacity_constraint.php',
+        __DIR__.'/../../database/migrations/2026_09_20_140000_create_booking_domain.php',
+    ];
+
     // ── The split ────────────────────────────────────────────────────────
 
     public function test_one_package_carries_many_departures(): void
@@ -169,9 +185,16 @@ class PackageDepartureTest extends TestCase
         $this->assertFalse($departure->is_sold_out);
     }
 
+    /**
+     * `make()`, not `create()`: since Phase 3 the database refuses to store
+     * an oversold row at all (see SeatAllocationTest). This is still worth
+     * asserting, because the display guard has to hold for a row written
+     * before the constraint existed — and on a MySQL too old to enforce it,
+     * which [R-5] leaves open until somebody reads the production version.
+     */
     public function test_an_oversold_departure_never_shows_negative_seats(): void
     {
-        $departure = Departure::factory()->create([
+        $departure = Departure::factory()->make([
             'capacity_total' => 24,
             'capacity_confirmed' => 27,
         ]);
@@ -240,6 +263,11 @@ class PackageDepartureTest extends TestCase
      */
     public function test_each_trip_is_copied_into_a_package_and_a_departure(): void
     {
+        foreach (self::DEPENDENT_MIGRATIONS as $migration) {
+            $this->artisan('migrate:rollback', ['--path' => $migration, '--realpath' => true])
+                ->assertSuccessful();
+        }
+
         $this->artisan('migrate:rollback', ['--path' => self::MIGRATION, '--realpath' => true])
             ->assertSuccessful();
 
@@ -255,6 +283,11 @@ class PackageDepartureTest extends TestCase
 
         $this->artisan('migrate', ['--path' => self::MIGRATION, '--realpath' => true])
             ->assertSuccessful();
+
+        foreach (array_reverse(self::DEPENDENT_MIGRATIONS) as $migration) {
+            $this->artisan('migrate', ['--path' => $migration, '--realpath' => true])
+                ->assertSuccessful();
+        }
 
         $departure = Departure::sole();
         $package = $departure->package;

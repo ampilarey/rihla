@@ -27,6 +27,23 @@ class AuditObserver
     ];
 
     /**
+     * Attributes whose *change* is worth recording but whose *value* is not.
+     *
+     * A passport number is not a secret the way a password hash is — staff
+     * have to be able to see one to do their job — but copying it into the
+     * audit trail puts it somewhere far more people can read, in a table
+     * nobody thinks of as holding identity documents, for ever. Dropping
+     * the key entirely (as NEVER_RECORD does) would lose the fact that
+     * somebody changed it, which is precisely what a trail is for. So the
+     * key stays and the value is masked.
+     *
+     * @var list<string>
+     */
+    private const REDACT = ['passport_number', 'national_id'];
+
+    private const REDACTED = '[redacted]';
+
+    /**
      * Timestamps change on every write and say nothing the log does not
      * already say more precisely.
      *
@@ -109,6 +126,12 @@ class AuditObserver
             $attributes,
             array_flip(array_merge(self::NEVER_RECORD, self::NOISE)),
         );
+
+        foreach (self::REDACT as $key) {
+            if (array_key_exists($key, $attributes)) {
+                $attributes[$key] = $attributes[$key] === null ? null : self::REDACTED;
+            }
+        }
 
         // A translatable column holds `{"en": "...", "dv": "..."}` as one JSON
         // string. Logged raw, a trail that exists to show what someone changed
