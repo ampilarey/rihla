@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\InitialsAvatarProvider;
+use App\Http\Middleware\RequireSecondFactor;
 use App\Support\Brand;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -86,6 +87,10 @@ class StaffPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                // §10.4's second factor. After Authenticate, because it
+                // needs a user to have an opinion about, and it never
+                // locks anybody out — see the middleware.
+                RequireSecondFactor::class,
             ]);
     }
 }

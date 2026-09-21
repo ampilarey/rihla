@@ -26,6 +26,7 @@ use App\Http\Controllers\PaymentSlipController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SecondFactorController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StaffInvoiceController;
 use App\Http\Controllers\TripController;
@@ -316,6 +317,28 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
         ->shallow()
         ->except(['show', 'create', 'index'])
         ->parameters(['why-sections' => 'section', 'features' => 'feature']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| The second step at sign-in — §10.4
+|--------------------------------------------------------------------------
+|
+| Outside the Filament panel on purpose. The challenge has to be reachable
+| by somebody who has not yet passed it, and a screen inside the panel that
+| the panel's own middleware guards cannot be the way through that
+| middleware.
+|
+| Not locale-prefixed: these are staff screens, and the panel is English.
+|
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/two-factor', [SecondFactorController::class, 'settings'])->name('mfa.settings');
+    Route::get('/two-factor/set-up', [SecondFactorController::class, 'enrol'])->name('mfa.enrol');
+    Route::post('/two-factor/set-up', [SecondFactorController::class, 'confirm'])->name('mfa.confirm');
+    Route::get('/two-factor/challenge', [SecondFactorController::class, 'challenge'])->name('mfa.challenge');
+    Route::post('/two-factor/challenge', [SecondFactorController::class, 'verify'])->name('mfa.verify');
+    Route::post('/two-factor/off', [SecondFactorController::class, 'disable'])->name('mfa.disable');
 });
 
 require __DIR__.'/auth.php';
