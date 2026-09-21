@@ -3,6 +3,7 @@
     <div class="relative mb-4">
         <x-stored-image :path="$trip->cover_image"
                         :alt="$trip->title"
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                         class="w-full h-48 object-cover rounded-2xl" />
         <div class="absolute top-3 left-3">
             @if($trip->status === 'current')

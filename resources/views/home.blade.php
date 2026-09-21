@@ -122,11 +122,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     @if($currentTrip->cover_image)
                     <div class="relative">
-                        <img src="{{ Storage::url($currentTrip->cover_image) }}" 
-                             alt="{{ $currentTrip->title }}" 
-                             class="w-full h-64 object-cover rounded-2xl"
-         loading="lazy"
-         decoding="async">
+                        {{-- sizes says half the viewport above the md
+                             breakpoint because this card is one of two
+                             columns there. Without it the browser assumes
+                             100vw and fetches the largest file, which is
+                             the whole problem srcset exists to solve. --}}
+                        <x-stored-image :path="$currentTrip->cover_image"
+                                           :alt="$currentTrip->title"
+                                           sizes="(min-width: 768px) 50vw, 100vw"
+                                           class="w-full h-64 object-cover rounded-2xl"
+                                           loading="lazy"
+                                           decoding="async" />
                         <div class="absolute top-4 left-4 bg-wine-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                             {{ __('Now') }}
                         </div>
@@ -215,11 +221,12 @@
                     </div>
                     @if($upcomingTrip->cover_image)
                     <div class="relative">
-                        <img src="{{ Storage::url($upcomingTrip->cover_image) }}" 
-                             alt="{{ $upcomingTrip->title }}" 
-                             class="w-full h-64 object-cover rounded-2xl"
-         loading="lazy"
-         decoding="async">
+                        <x-stored-image :path="$upcomingTrip->cover_image"
+                                           :alt="$upcomingTrip->title"
+                                           sizes="(min-width: 768px) 50vw, 100vw"
+                                           class="w-full h-64 object-cover rounded-2xl"
+                                           loading="lazy"
+                                           decoding="async" />
                         <div class="absolute top-4 left-4 bg-gold-500 text-ink px-3 py-1 rounded-full text-sm font-medium">
                             {{ __('Coming Soon') }}
                         </div>

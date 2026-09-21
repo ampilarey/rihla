@@ -34,6 +34,7 @@
                         <div class="relative overflow-hidden rounded-2xl shadow-soft hover:shadow-lg transition-shadow duration-300">
                             <x-stored-image :path="$item->thumb_path ?? $item->file_path"
                                             :alt="$item->title"
+                                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                             class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
                             
                             @if($item->title || $item->caption)

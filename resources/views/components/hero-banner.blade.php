@@ -13,7 +13,15 @@
             
             <!-- Responsive Aspect Ratio Stage -->
             <div class="hero-stage">
-                @if($banner->image_path)
+                {{-- The file has to be there, not just the path. x-stored-image
+                     renders the dhoni mark on cream when a file is missing,
+                     which is right for a gallery thumbnail and wrong here: the
+                     hero's title is white and sits over the image, so a cream
+                     stand-in leaves white text on near-white and the headline
+                     disappears. The gradient below is the fallback this
+                     component already had for exactly this case, so a missing
+                     file takes it. --}}
+                @if($banner->image_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($banner->image_path))
                 <!-- Image Container with Background -->
                 <div class="hero-image-container">
                     @php
@@ -24,23 +32,31 @@
                     @unless($isCover)
                     <!-- Blurred Background for Contain Mode only -->
                     <div class="hero-bg" aria-hidden="true">
-                        <img src="{{ $banner->image_url ?? asset($banner->image_path) }}" 
-                             alt=""
-                             class="hero-bg-image"
-         loading="lazy"
-         decoding="async">
+                        <x-stored-image :path="$banner->image_path"
+                                           alt=""
+                                           sizes="100vw"
+                                           class="hero-bg-image"
+                                           loading="lazy"
+                                           decoding="async" />
                     </div>
                     @endunless
                     
                     <!-- Main Image -->
-                    <img src="{{ $banner->image_url ?? asset($banner->image_path) }}" 
-                         alt="{{ $banner->title ?? 'Banner image' }}"
+                    {{-- The hero is the homepage's Largest Contentful Paint
+                         element. Its _768w/_1280w/_1920w variants have been
+                         generated on upload since Phase 2 and no view ever
+                         used them, so a telephone downloaded the 1920-pixel
+                         file to show it 390 pixels wide (§10.1). sizes is
+                         100vw because the hero really is full-bleed. --}}
+                    <x-stored-image :path="$banner->image_path"
+                         :alt="$banner->title ?? 'Banner image'"
+                         sizes="100vw"
                          class="hero-banner-image {{ $isCover ? 'hero-img--cover' : 'hero-img--contain' }}"
                          loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
                          fetchpriority="{{ $index === 0 ? 'high' : 'auto' }}"
                          decoding="{{ $index === 0 ? 'sync' : 'async' }}"
                          draggable="false"
-                         style="{{ $isCover && $fx !== null && $fy !== null ? 'object-position:' . $fx . '% ' . $fy . '%' : '' }}">
+                         style="{{ $isCover && $fx !== null && $fy !== null ? 'object-position:' . $fx . '% ' . $fy . '%' : '' }}" />
                 </div>
                 @else
                 <!-- Gradient Fallback -->
