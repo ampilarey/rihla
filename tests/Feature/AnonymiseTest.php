@@ -11,10 +11,13 @@ use App\Models\Package;
 use App\Models\PortalAccess;
 use App\Models\Traveller;
 use App\Models\User;
+use App\Services\Documents\DocumentWallet;
 use App\Support\Anonymisation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -287,6 +290,84 @@ class AnonymiseTest extends TestCase
     }
 
     /** @return list<string> */
+    /**
+     * A `null` strategy on a NOT NULL column fails the whole run.
+     *
+     * `document_versions.path` is NOT NULL and was mapped to `null`, so
+     * `data:anonymise` threw an integrity-constraint violation on **any
+     * database holding a single document** — which is every real one. The
+     * suite stayed green because no test here had ever stored a document,
+     * so the command that exists to keep passport numbers off a public
+     * server would have failed the first time it was run in earnest.
+     *
+     * Checked against the live schema rather than a list, because the trap
+     * is a column somebody makes NOT NULL later.
+     */
+    public function test_every_column_emptied_outright_is_one_the_schema_allows_to_be_null(): void
+    {
+        $offenders = [];
+
+        foreach (Anonymisation::SCRUB as $table => $columns) {
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+
+            foreach ($columns as $column => $strategy) {
+                if ($strategy !== 'null' || ! Schema::hasColumn($table, $column)) {
+                    continue;
+                }
+
+                if (! $this->isNullable($table, $column)) {
+                    $offenders[] = $table.'.'.$column;
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, implode("\n", array_merge(
+            ['These columns are mapped to the `null` strategy but the schema will not accept null,',
+                'so the scrub throws and nothing is scrubbed at all. Use `gone`, `text` or `name`:'],
+            $offenders,
+        )));
+    }
+
+    /**
+     * And the command survives the thing that broke it.
+     *
+     * A stored document and a stored slip, which is what every real
+     * database has and what no test here had.
+     */
+    public function test_it_survives_a_database_that_actually_holds_documents(): void
+    {
+        Storage::fake('documents');
+
+        $customer = $this->somebodyReal();
+
+        app(DocumentWallet::class)->store(
+            Traveller::factory()->create(['customer_id' => $customer->getKey()]),
+            UploadedFile::fake()->createWithContent('passport.pdf', 'A real passport scan.'),
+            'travel',
+            'passport',
+        );
+
+        $this->artisan('data:anonymise', ['--force' => true])->assertSuccessful();
+
+        $version = DB::table('document_versions')->first();
+
+        $this->assertNotNull($version);
+        $this->assertNotSame('passport.pdf', $version->original_filename);
+    }
+
+    private function isNullable(string $table, string $column): bool
+    {
+        foreach (Schema::getColumns($table) as $described) {
+            if ($described['name'] === $column) {
+                return (bool) $described['nullable'];
+            }
+        }
+
+        return true;
+    }
+
     private function tables(): array
     {
         return collect(Schema::getTableListing())
