@@ -21,6 +21,10 @@ export default {
         // Arabic, for du'a and Qur'anic text.
         'arabic': ['Cairo', 'Segoe UI', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
+        // The lockup only. Subset to nine letters, so it must never be used
+        // for running text — anything outside RIHLA TRAVELS falls straight
+        // through to Inter and the two faces sit side by side.
+        'wordmark': ['Montserrat', 'Inter', 'sans-serif'],
       },
 
       // Display sizes, added rather than redefining Tailwind's text-* scale:
@@ -46,17 +50,21 @@ export default {
           // the tour leader's head count and the family portal, which no
           // test can see because the markup is there and only the colour
           // is missing.
-          DEFAULT: '#8E2653',
-          50: '#FCF5F8',
-          100: '#F9E7EF',
-          200: '#F1CBDB',
-          300: '#E7A6C3',
-          400: '#DA76A2',
-          500: '#8E2653', // brand primary
-          600: '#731F43', // hover
-          700: '#5B1835', // active
-          800: '#441228',
-          900: '#300D1C',
+          //
+          // DEMO: the ramp now carries the violet from the 2026 colour
+          // guide (#5F498A). The token name stays `wine` so no view has to
+          // change; only the values moved.
+          DEFAULT: '#5F498A',
+          50: '#F7F5FA',
+          100: '#EDE8F5',
+          200: '#D9CFEA',
+          300: '#BBACD6',
+          400: '#9481BA',
+          500: '#5F498A', // brand primary — white on this is 7.48:1
+          600: '#4C3A70', // hover
+          700: '#3C2E59', // active
+          800: '#2E2245',
+          900: '#1E162E',
         },
 
         // Accent only, never a second primary. As a filled background it takes
@@ -64,23 +72,42 @@ export default {
         gold: {
           // As for wine: `border-s-gold` was doing nothing on the notices
           // banner and the leader's offline banner.
-          DEFAULT: '#D2A03C',
-          400: '#E8C270',
-          500: '#D2A03C',
-          600: '#A87F2C',
-          700: '#7A5A16', // safe as a text colour on cream
+          //
+          // DEMO: lemon chiffon from the 2026 guide. It is a HIGHLIGHT, not
+          // an action colour — chiffon-500 against the cream ground is
+          // 1.46:1, so a button filled with it has no findable edge. Use it
+          // on dark grounds, where it reads 9.85:1 against ink.
+          DEFAULT: '#EFD34D',
+          400: '#F8E57A',
+          500: '#EFD34D',
+          600: '#A88C1F', // the darkest that still reads as gold on cream
+          700: '#7A6413', // safe as a text colour on cream (5.62:1)
+        },
+
+        // The dark accent the violet/chiffon pair cannot supply. No single
+        // colour can clear 3:1 against BOTH violet-500 and the cream ground
+        // — they are only 7:1 apart — so marks on light grounds need their
+        // own colour. Teal is the strongest hue left that no status colour
+        // has claimed (31° from the success green).
+        teal: {
+          DEFAULT: '#0A5754',
+          100: '#D6EBEA',
+          400: '#2A9D96',
+          500: '#0E6E6B',
+          600: '#0A5754', // white on this is 8.39:1
+          700: '#084B49',
         },
 
         // Softer than pure black, which is what keeps the UI feeling premium
         // rather than harsh.
         ink: {
-          DEFAULT: '#2E2621',
-          muted: '#6B6159',
+          DEFAULT: '#2E2245',
+          muted: '#6B6080',
         },
 
         cream: {
-          DEFAULT: '#FBF6EC',
-          deep: '#F4EDDF',
+          DEFAULT: '#FFFDF0',
+          deep: '#FEF9CD',
         },
 
         // Semantic only. Never stand in for the brand just because an element
@@ -97,16 +124,16 @@ export default {
         // existing gray-* class keeps its contrast ratio (verified within 0.05)
         // while no longer fighting the cream ground.
         gray: {
-          50: '#FFF9F4',
-          100: '#FAF3EE',
-          200: '#EDE6E1',
-          300: '#DBD3CE',
-          400: '#AAA19C',
-          500: '#746B66',
-          600: '#5B524D',
-          700: '#483F39',
-          800: '#2F2721',
-          900: '#1F1610',
+          50: '#FBF9FD',
+          100: '#F4F1F8',
+          200: '#E8E3EF',
+          300: '#D4CDE0',
+          400: '#A49CB4',
+          500: '#6E6680',
+          600: '#564F66',
+          700: '#433C52',
+          800: '#2B2437',
+          900: '#1B1526',
         },
 
         // ── Legacy brand tokens ────────────────────────────────────────────
@@ -114,7 +141,7 @@ export default {
         // during the migration still renders in the new colours instead of
         // silently losing its style. Remove once `grep -r "brand-" resources/`
         // comes back clean.
-        'brand-gold': '#D2A03C',
+        'brand-gold': '#EFD34D',
 
         // WhatsApp's own brand green, for the one button that is theirs rather
         // than ours. Recolouring their mark into wine makes a worse button:
@@ -123,22 +150,22 @@ export default {
         // #128C7E is their darker official green if the lighter one's 1.98:1
         // against white ever has to give way.
         whatsapp: '#25D366',
-        'brand-sky-blue': '#8E2653',
-        'brand-black': '#2E2621',
+        'brand-sky-blue': '#5F498A',
+        'brand-black': '#2E2245',
         'brand-white': '#FFFFFF',
-        'brand-dark-grey': '#2E2621',
-        'brand-light-beige': '#FBF6EC',
-        'brand-emerald': '#8E2653',
-        'brand-green': '#8E2653',
-        'brand-900': '#2E2621',
-        'brand-700': '#8E2653',
-        'brand-600': '#D2A03C',
+        'brand-dark-grey': '#2E2245',
+        'brand-light-beige': '#FFFDF0',
+        'brand-emerald': '#5F498A',
+        'brand-green': '#5F498A',
+        'brand-900': '#2E2245',
+        'brand-700': '#5F498A',
+        'brand-600': '#EFD34D',
       },
       borderRadius: {
         '2xl': '1rem',
       },
       boxShadow: {
-        'soft': '0 2px 15px -3px rgba(46, 38, 33, 0.07), 0 10px 20px -2px rgba(46, 38, 33, 0.04)',
+        'soft': '0 2px 15px -3px rgba(30, 22, 46, 0.07), 0 10px 20px -2px rgba(30, 22, 46, 0.04)',
       },
     },
   },

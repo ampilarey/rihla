@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\Brand;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -159,14 +160,28 @@ class PwaTest extends TestCase
             ->assertSee('@media print', false);
     }
 
+    /**
+     * The offline page paints itself, so it goes stale on its own.
+     *
+     * It is a standalone document with an inline stylesheet — no Tailwind, no
+     * `Brand::` — and the service worker precaches it, so it is genuinely
+     * served. This assertion named one retired blue, which meant it kept
+     * passing through the whole wine-to-violet change while the page sat at a
+     * wine-to-ink gradient with gold ticks. Naming one dead colour only ever
+     * catches that colour.
+     *
+     * `BrandColourTest` now scans this file against the full retired list.
+     * What is left here is the other half: the page must actually carry the
+     * brand, not merely avoid one old hex.
+     */
     public function test_the_offline_page_is_served_and_branded(): void
     {
         $offline = file_get_contents(public_path('offline.html'));
 
-        $this->assertStringNotContainsString(
-            '#1C9FE2',
-            $offline,
-            'The offline page still uses the pre-rebrand blue.',
-        );
+        $this->assertStringContainsString(Brand::WINE, $offline,
+            'The offline page does not carry the brand primary.');
+
+        $this->assertStringContainsString(Brand::INK, $offline,
+            'The offline page does not carry the brand ink.');
     }
 }

@@ -205,7 +205,7 @@ class AdminWritePathTest extends TestCase
         $this->actingAs($this->admin())
             ->put(route('admin.why-sections.update', $section), [
                 'title' => 'Why travel with Rihla',
-                'primary_cta_bg_color' => '#8E2653',
+                'primary_cta_bg_color' => '#5F498A',
             ])
             ->assertSessionHasNoErrors()
             ->assertRedirect();

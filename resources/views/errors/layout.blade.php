@@ -38,11 +38,11 @@
             unicode-range: U+0780-07BF, U+FDF2;
         }
         :root {
-            --wine: #8E2653;
-            --gold: #D2A03C;
-            --ink: #2E2621;
-            --ink-muted: #6B6159;
-            --cream: #FBF6EC;
+            --wine: #5F498A;
+            --gold: #EFD34D;
+            --ink: #2E2245;
+            --ink-muted: #6B6080;
+            --cream: #FFFDF0;
         }
         * { box-sizing: border-box; }
         body {
@@ -97,7 +97,7 @@
         a.button.secondary {
             background: transparent;
             color: var(--ink);
-            border: 1px solid #DBD3CE;
+            border: 1px solid #D4CDE0;
         }
         a.button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
         @media (max-width: 480px) { h1 { font-size: 1.5rem; } }

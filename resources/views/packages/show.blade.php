@@ -240,7 +240,7 @@
                                  next page is worse than no button. --}}
                             @if($departure->is_bookable)
                                 <a href="{{ route('booking.start', ['slug' => $package->slug, 'departure' => $departure->id]) }}"
-                                   class="btn-primary w-full">
+                                   class="btn-action w-full">
                                     {{ __('messages.Book now') }}
                                 </a>
                             @elseif($departure->is_sold_out && $departure->date_start->isFuture())

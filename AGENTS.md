@@ -74,6 +74,35 @@ playlist that reached the live site.
 
 - **A colour class for a palette with no `DEFAULT` compiles to nothing, and nothing looks like styling that merely did not apply.** `ink`, `cream`, `error`, `success` and `warning` all had one, so `text-ink` and `bg-cream` worked everywhere and everybody wrote the bare form; `wine` and `gold` did not, so `bg-wine`, `text-wine`, `border-s-wine` and `border-s-gold` produced **no rule at all**. The element renders, the markup is right, every assertion passes, and `bg-wine px-3 py-1 text-white` is white text on no background — which was live on the tour leader's head count ("3 missing") and the Family Portal's "Not yet counted". Both palettes now carry a `DEFAULT` and `BrandColourTest` fails if any view again names one that does not. **`grep` the built CSS before believing a class exists**: `grep -c '\.bg-wine{' public/build/assets/app-*.css`.
 
+- **A palette has more than one source of truth, and the extra ones go stale silently.** The
+Tailwind tokens are not the palette; they are one copy of it. `app/Support/Brand.php` holds
+literals for hero banners and the Filament panel, `public/offline.html` and
+`resources/views/errors/layout.blade.php` each carry a private stylesheet with no access to
+either, the two PDF templates carry a third and fourth, `public/manifest.json` a fifth, and the
+logo SVGs a sixth. A token swap reaches the first two and nothing else. **`BrandColourTest::RETIRED`
+is the mechanism that catches the rest — so the first step of any palette change is adding the
+outgoing values to that list and watching it fail.** Skipping that is how `offline.html` served
+the previous brand in full, and how `#DBD3CE` and `#5B524D` survived in live views. The list also
+has to scan `public/`, not just `resources/views`, or the standalone pages stay invisible to it.
+
+- **A migration must never write a constant.** `2026_09_18_170000_rebrand_stored_banner_colours`
+rewrote stored colours to `Brand::WINE`. It ran on test and production while that held the old
+wine, stamping the rows *and the live column default*; the next palette change moved the constant
+and reached neither, so the deployed homepage would have rendered its call-to-action in the
+retired brand. A migration records what happened on the day it ran — point it at a constant and
+its meaning moves afterwards. **Literals on both sides, always.** Note the test that missed it:
+`migrate:fresh` in CI re-runs the old migration with the *current* constants, so a fresh-database
+assertion never sees the state a deployed database is actually in. Testing a data migration means
+seeding the old state and calling `up()` on it.
+
+- **A sameness assertion cannot catch a contrast bug.** `BrandColourTest` asserted the two logo
+variants "differ only in the hull colour", on the stated belief that the sails held against
+either ground. Measured, the wine sail was **1.8:1** against the ink footer and the gold sail
+2.38:1 on white — both under the 3:1 a shape needs, both live for as long as the inverse mark
+existed. The assertion compared the two files **to each other** and neither to its background, so
+it could not have failed. When the property that matters is legibility, assert the ratio against
+the surface, not the equality of two artefacts.
+
 - **A `null` scrub strategy on a `NOT NULL` column throws, and takes the whole command with it.** `document_versions.path` is `NOT NULL`; `Anonymisation::SCRUB` mapped it to `null`. So `data:anonymise` — the command whose entire job is keeping real passport numbers off the public test server — died with an integrity-constraint violation on **any database holding a single document**, which is every real one. It shipped that way and stayed green because no test had ever stored a document. Use the `gone` stand-in for a file pointer that cannot be null, and note the shape of the mistake: **a fixture that never exercises the common case is not a passing test.**
 
 - **`./vendor/bin/pint` with no path argument reformats the whole tree.** This codebase carries many pre-existing style violations (CI only checks changed files), so a bare `pint` quietly adds a dozen unrelated files to the diff. Always name the files.

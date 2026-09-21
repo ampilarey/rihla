@@ -218,7 +218,7 @@
                                 <input type="color" 
                                        id="primary_cta_bg_color" 
                                        name="primary_cta_bg_color" 
-                                       value="#8E2653"
+                                       value="#5F498A"
                                        class="w-full h-10 border border-gray-300 rounded-md">
                             </div>
                             <div>

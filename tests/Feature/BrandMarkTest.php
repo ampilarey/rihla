@@ -30,11 +30,19 @@ class BrandMarkTest extends TestCase
     // file succeeded while /en was returning 500.
     use RefreshDatabase;
 
-    /** The only colours that may appear in brand artwork. */
-    private const PALETTE = ['#8E2653', '#D2A03C', '#2E2621'];
+    /**
+     * The only colours that may appear in brand artwork.
+     *
+     * Two golds, deliberately. The guide's lemon chiffon is legible on ink
+     * (13.73:1) and invisible on cream (1.05:1); the dark one is the reverse. A mark is
+     * cut for one ground or the other, so each uses the gold that works on
+     * its own — see BrandColourTest, which measures every fill against the
+     * surface its variant is for.
+     */
+    private const PALETTE = ['#5F498A', '#9481BA', '#FEF9CD', '#EFD34D', '#A88C1F', '#2E2245'];
 
     /** Cream, the field every icon is cut on. Matches the manifest. */
-    private const FIELD = [251, 246, 236];
+    private const FIELD = [255, 253, 240];
 
     public function test_the_mark_is_a_vector_master(): void
     {
@@ -58,7 +66,7 @@ class BrandMarkTest extends TestCase
             preg_match_all('/#[0-9A-Fa-f]{6}/', File::get(public_path($file)), $matches);
 
             $found = array_unique(array_map('strtoupper', $matches[0]));
-            $allowed = array_merge(self::PALETTE, ['#FBF6EC']);
+            $allowed = array_merge(self::PALETTE, ['#FFFDF0']);
 
             $this->assertSame([], array_values(array_diff($found, $allowed)),
                 "{$file} uses colours outside the palette: ".implode(', ', array_diff($found, $allowed)));
@@ -223,7 +231,7 @@ class BrandMarkTest extends TestCase
                 "rihla-logo-brand-{$width}.png still has {$blue} pixels of pre-rebrand blue.");
             $this->assertSame(0, $pureBlack,
                 "rihla-logo-brand-{$width}.png still has {$pureBlack} pixels of pure black; "
-                .'the palette calls for ink #2E2621.');
+                .'the palette calls for ink #2E2245.');
         }
     }
 

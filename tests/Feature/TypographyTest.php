@@ -32,6 +32,46 @@ class TypographyTest extends TestCase
         return file_get_contents(resource_path('views/layouts/app.blade.php'));
     }
 
+    /**
+     * The lockup's tracking is solved from the face's metrics, not chosen.
+     *
+     * The mark and both name lines are all one width by construction — that
+     * is the whole lockup. Each line reaches that width by letter-spacing,
+     * so the two numbers belong to Montserrat specifically: swap the face and
+     * leave them, and the name silently stops lining up with the boat.
+     * They were 0.58em and 0.21em when the face was Inter.
+     */
+    public function test_the_wordmark_carries_its_own_face_and_the_tracking_that_face_needs(): void
+    {
+        $logo = file_get_contents(resource_path('views/components/brand-logo.blade.php'));
+
+        $this->assertSame(2, substr_count($logo, 'font-wordmark'),
+            'Both name lines must name the wordmark family, or they render in two different faces.');
+
+        $this->assertStringContainsString('letter-spacing: 0.7114em', $logo,
+            'RIHLA is not tracked to the mark width for Montserrat.');
+
+        $this->assertStringContainsString('letter-spacing: 0.2347em', $logo,
+            'TRAVELS is not tracked to the mark width for Montserrat.');
+
+        $this->assertFileExists(public_path('fonts/montserrat-wordmark.woff2'),
+            'The wordmark face is not on disk.');
+
+        $this->assertLessThan(8192, filesize(public_path('fonts/montserrat-wordmark.woff2')),
+            'The wordmark face is subset to nine letters; anything this large is the full family.');
+
+        $css = file_get_contents(resource_path('css/app.css'));
+
+        $this->assertStringContainsString("url('/fonts/montserrat-wordmark.woff2') format('woff2')", $css);
+        $this->assertStringContainsString('unicode-range: U+0052', $css,
+            'Without a unicode-range a nine-glyph face gets asked for the whole page.');
+
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('montserrat-wordmark.woff2', $layout,
+            'The wordmark face is not preloaded, so the lockup reflows when it lands.');
+    }
+
     public function test_the_thaana_font_is_served_from_this_origin(): void
     {
         $this->assertFileExists(public_path('fonts/A_faruma.woff2'));

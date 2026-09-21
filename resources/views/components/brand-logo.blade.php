@@ -18,12 +18,32 @@
     header, w-16 in the footer.
 
     `on="dark"` swaps the hull to cream and the name to cream. The hull is ink
-    #2E2621 and the footer is `bg-ink`, the same #2E2621 — so on the footer the
+    #2E2245 and the footer is `bg-ink`, the same #2E2245 — so on the footer the
     hull disappeared entirely and the logo rendered as two sails floating above
-    nothing. The sails are unaffected: wine and gold both hold against ink.
+    nothing.
+
+    The sails are NOT unaffected, which this comment used to claim. Measured,
+    the old wine sail was 1.8:1 against ink — all but invisible on the footer
+    for as long as the inverse mark has existed — and the old gold sail was
+    2.38:1 on white. Both are below the 3:1 a graphic element needs, and no
+    test could see it because the SVG was present and only the colour was
+    wrong. The two marks now carry different sail colours on purpose: the
+    light mark uses the darker gold (#A88C1F, 3.26:1 on white) and the guide's
+    violet #5F498A exactly; the inverse uses the guide's lemon chiffon #FEF9CD
+    exactly (13.73:1 on ink) and a lighter violet (#9481BA, 4.27:1). Each
+    variant therefore carries one of the two brand hexes untouched — the one
+    its own background can actually show. Neither can carry both: the pair is
+    7.0:1 apart and clearing 3:1 off a shared ground would take 9:1. Recolouring one and copying it to the other
+    reintroduces exactly this bug.
 
     The two lines carry different tracking because they are different lengths:
-    five letters and seven letters, each spread to the same span.
+    five letters and seven letters, each spread to the same span. The numbers
+    are solved, not chosen: at 16.5cqw, Montserrat SemiBold sets RIHLA at
+    0.5305 of the lockup width and TRAVELS at 0.7676, so the tracking that
+    makes each span exactly 1.0 is 0.7114em and 0.2347em. They were 0.58em
+    and 0.21em for Inter. Change the face and both must be re-solved, or the
+    lockup stops being justified to the mark and the whole construction —
+    mark and both lines sharing one width — quietly stops holding.
 
     Sizes are in cqw — a percentage of the lockup's own width — so the name
     scales with the mark instead of being pinned to one pixel size. A px value
@@ -51,10 +71,10 @@
     <span class="sr-only">{{ config('app.name') }}</span>
 
     <span aria-hidden="true"
-          class="mt-1.5 block w-full text-center font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
-          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.58em; text-indent: 0.58em;">RIHLA</span>
+          class="mt-1.5 block w-full text-center font-wordmark font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
+          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.7114em; text-indent: 0.7114em;">RIHLA</span>
 
     <span aria-hidden="true"
-          class="mt-0.5 block w-full text-center font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
-          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.21em; text-indent: 0.21em;">TRAVELS</span>
+          class="mt-0.5 block w-full text-center font-wordmark font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
+          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.2347em; text-indent: 0.2347em;">TRAVELS</span>
 </span>

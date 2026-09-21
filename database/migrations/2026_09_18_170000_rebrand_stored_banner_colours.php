@@ -1,6 +1,5 @@
 <?php
 
-use App\Support\Brand;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +16,20 @@ use Illuminate\Support\Facades\Schema;
  * Only values that still equal the old defaults are rewritten. A colour an
  * editor chose deliberately is left alone, even if it happens to be blue —
  * this is a rebrand, not a veto.
+ *
+ * The new values below were written as constants when this was made. They are
+ * literals now. A migration records what happened on the day it ran; pointing
+ * it at a constant meant its meaning moved the next time the palette did, so
+ * on databases that had already run it the rows said one thing and the code
+ * said another. See the 2026_09_21 migration, which exists to clean up exactly
+ * that.
  */
 return new class extends Migration
 {
     /** Old default => new default, per column. */
     private const REMAP = [
-        'primary_cta_bg_color' => ['#0ea5e9', Brand::WINE],
-        'subheading_color' => ['#f3f4f6', Brand::CREAM],
+        'primary_cta_bg_color' => ['#0ea5e9', '#8E2653'],
+        'subheading_color' => ['#f3f4f6', '#FBF6EC'],
     ];
 
     public function up(): void
@@ -33,8 +39,8 @@ return new class extends Migration
         }
 
         Schema::table('hero_banners', function (Blueprint $table) {
-            $table->string('primary_cta_bg_color', 20)->default(Brand::WINE)->change();
-            $table->string('subheading_color', 20)->default(Brand::CREAM)->change();
+            $table->string('primary_cta_bg_color', 20)->default('#8E2653')->change();
+            $table->string('subheading_color', 20)->default('#FBF6EC')->change();
         });
     }
 

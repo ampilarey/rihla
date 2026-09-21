@@ -9,6 +9,7 @@ use Database\Seeders\SettingsSeeder;
 use Database\Seeders\TripSeeder;
 use Database\Seeders\WhySectionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -49,26 +50,89 @@ class BrandColourTest extends TestCase
         '#1f2937' => 'gray-800, a cool neutral',
         '#6b7280' => 'gray-500, a cool neutral',
         '#374151' => 'gray-700, a cool neutral',
+
+        // The wine and gold palette, retired for violet and lemon chiffon.
+        // Adding these is the whole point of this list, and not adding them
+        // last time is why #DBD3CE survived in the error layout and #5B524D
+        // in the guide PDF: the guard built to catch a half-finished palette
+        // change was not told what had just been retired.
+        '#8E2653' => 'wine-500, the previous primary',
+        '#731F43' => 'wine-600',
+        '#5B1835' => 'wine-700',
+        '#D2A03C' => 'gold-500, the previous accent',
+        '#E8C270' => 'gold-400',
+        '#A87F2C' => 'gold-600',
+        '#7A5A16' => 'gold-700',
+        '#2E2621' => 'the previous ink',
+        '#6B6159' => 'the previous ink-muted',
+        '#FBF6EC' => 'the previous cream',
+        '#F4EDDF' => 'the previous cream-deep',
+        '#FFF9F4' => 'warm gray-50',
+        '#FAF3EE' => 'warm gray-100',
+        '#EDE6E1' => 'warm gray-200',
+        '#DBD3CE' => 'warm gray-300',
+        '#AAA19C' => 'warm gray-400',
+        '#746B66' => 'warm gray-500',
+        '#5B524D' => 'warm gray-600',
+        '#483F39' => 'warm gray-700',
+        '#2F2721' => 'warm gray-800',
+        '#1F1610' => 'warm gray-900',
+    ];
+
+    /**
+     * Files outside `resources/views` that still paint the brand themselves.
+     *
+     * `public/offline.html` is the reason this list exists. It is a complete
+     * standalone page with its own inline stylesheet — no Tailwind, no
+     * `Brand::` — and the service worker precaches it, so it is genuinely
+     * served. It sat at the old wine-to-ink gradient through a palette change
+     * that touched everything else, because the scan below only ever walked
+     * the Blade directory.
+     *
+     * @var array<int, string>
+     */
+    private const PAINTED_ELSEWHERE = [
+        'offline.html',
+        'favicon.svg',
+        'images/rihla-mark.svg',
+        'images/rihla-mark-inverse.svg',
+        'manifest.json',
     ];
 
     public function test_no_view_still_uses_a_retired_colour(): void
     {
         $offenders = [];
 
+        $files = [];
+
         foreach (File::allFiles(resource_path('views')) as $file) {
-            $contents = File::get($file->getPathname());
+            $files[$file->getRelativePathname()] = $file->getPathname();
+        }
+
+        foreach (self::PAINTED_ELSEWHERE as $relative) {
+            $path = public_path($relative);
+
+            $this->assertFileExists($path,
+                "public/{$relative} is listed as painting the brand itself but does not exist; "
+                .'either restore it or take it off the list.');
+
+            $files['public/'.$relative] = $path;
+        }
+
+        foreach ($files as $name => $path) {
+            $contents = File::get($path);
 
             foreach (self::RETIRED as $hex => $what) {
                 if (stripos($contents, $hex) === false) {
                     continue;
                 }
 
-                $offenders[] = $file->getRelativePathname().": {$hex} ({$what})";
+                $offenders[] = "{$name}: {$hex} ({$what})";
             }
         }
 
         $this->assertSame([], $offenders, implode("\n", array_merge(
-            ['Views still contain pre-rebrand colours:'], $offenders,
+            ['Pre-rebrand colours are still being painted:'], $offenders,
         )));
     }
 
@@ -182,6 +246,51 @@ class BrandColourTest extends TestCase
     }
 
     /**
+     * A fresh database is the easy case. The hard one is a database that
+     * already ran the last rebrand.
+     *
+     * `2026_09_18_170000_rebrand_stored_banner_colours` wrote its new values
+     * as `Brand::WINE` and `Brand::CREAM`. It ran on test and on production
+     * while those constants held `#8E2653` and `#FBF6EC`, so those rows are
+     * stamped with the old palette and changing the constants does not reach
+     * them. The test above still passed throughout, because `migrate:fresh`
+     * in CI re-runs that migration with the *current* constants and never
+     * sees the stamped state a deployed database is actually in.
+     *
+     * So this one reproduces the deployed state — old hexes in the rows —
+     * and runs the follow-up migration over it.
+     */
+    public function test_colours_stamped_by_the_previous_rebrand_are_carried_forward(): void
+    {
+        $id = DB::table('hero_banners')->insertGetId([
+            'title' => json_encode(['en' => 'Stamped by the last rebrand']),
+            'primary_cta_bg_color' => '#8E2653',   // the old wine
+            'subheading_color' => '#FBF6EC',       // the old cream
+            'heading_color' => '#1a2b3c',          // an editor's own choice
+            'is_active' => true,
+            'sort_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $migration = require database_path(
+            'migrations/2026_09_21_090000_recolour_stored_brand_values.php'
+        );
+        $migration->up();
+
+        $row = DB::table('hero_banners')->where('id', $id)->first();
+
+        $this->assertSame(Brand::WINE, $row->primary_cta_bg_color,
+            'A banner stamped with the old wine still renders in the retired brand.');
+
+        $this->assertSame(Brand::CREAM, $row->subheading_color,
+            'A banner stamped with the old cream still renders in the retired brand.');
+
+        $this->assertSame('#1a2b3c', $row->heading_color,
+            'A colour an editor chose deliberately was overwritten; this is a rebrand, not a veto.');
+    }
+
+    /**
      * White on the primary is the single most repeated colour pairing on the
      * site, so it is the one worth asserting rather than assuming.
      */
@@ -286,6 +395,15 @@ class BrandColourTest extends TestCase
      * and the logo rendered as two sails floating above nothing — visible
      * immediately on a phone, and invisible to every test that only asked
      * whether the logo was present.
+     *
+     * This test used to assert that the two marks differed ONLY in the hull,
+     * on the belief that the sails held against either ground. They did not:
+     * measured, the old wine sail was 1.8:1 against ink and the old gold sail
+     * 2.38:1 on white, both well under the 3:1 a graphic element needs — and
+     * the sameness assertion could never have caught it, because it compared
+     * the two files to each other rather than either one to its background.
+     * It now checks what actually matters: identical geometry, and every fill
+     * legible against the surface that variant is for.
      */
     public function test_the_logo_hull_is_visible_on_a_dark_surface(): void
     {
@@ -297,14 +415,36 @@ class BrandColourTest extends TestCase
         $this->assertStringContainsString(Brand::CREAM, $inverse,
             'The dark-surface logo should carry a cream hull.');
 
-        // Same geometry, different hull: only the fill may differ.
         $light = File::get(public_path('images/rihla-mark.svg'));
 
-        $this->assertSame(
-            str_replace(Brand::INK, 'HULL', $light),
-            str_replace(Brand::CREAM, 'HULL', $inverse),
-            'The two logo variants have drifted apart; only the hull colour should differ.',
-        );
+        // Geometry is shared; only the fills may differ between the variants.
+        $geometry = static fn (string $svg): array => (function () use ($svg): array {
+            preg_match_all('/ d="([^"]+)"/', $svg, $m);
+
+            return $m[1];
+        })();
+
+        $this->assertSame($geometry($light), $geometry($inverse),
+            'The two logo variants have drifted apart; the artwork must be identical.');
+
+        // Each variant's fills must clear 3:1 against the surface it is for.
+        $fills = static function (string $svg): array {
+            preg_match_all('/fill="(#[0-9A-Fa-f]{6})"/', $svg, $m);
+
+            return $m[1];
+        };
+
+        foreach ([[$light, Brand::WHITE, 'light'], [$inverse, Brand::INK, 'dark']] as [$svg, $ground, $which]) {
+            foreach ($fills($svg) as $fill) {
+                if (strcasecmp($fill, $ground) === 0) {
+                    continue;   // the hull of the light mark IS the ink; it is the shape, not a shape on it
+                }
+
+                $this->assertGreaterThanOrEqual(3.0, $this->contrast($fill, $ground),
+                    "The {$which}-surface mark paints {$fill} on {$ground}, which is "
+                    .round($this->contrast($fill, $ground), 2).':1 — under the 3:1 a shape needs to be seen.');
+            }
+        }
 
         $this->assertStringContainsString('on="dark"', $this->footerMarkup(),
             'The footer does not ask for the dark-surface logo.');
