@@ -1,0 +1,21 @@
+GIMP Palette
+Name: Rihla Travels
+Columns: 4
+#
+ 95  73 138	wine-500 Violet — brand primary
+ 76  58 112	wine-600 Violet deep — hover
+ 60  46  89	wine-700 Violet deeper — active
+ 46  34  69	ink Ink — text, dark sections
+107  96 128	ink-muted Ink muted — body text
+148 129 186	wine-400 Violet light — on dark
+237 232 245	wine-100 Violet tint — surfaces
+239 211  77	gold-500 Lemon chiffon — highlight
+254 249 205	cream-deep Chiffon pale — logo sail
+168 140  31	gold-600 Gold dark — gold on light
+122 100  19	gold-700 Gold text — on cream
+255 253 240	cream Cream — page ground
+ 10  87  84	teal-600 Teal — action button
+ 42 157 150	teal-400 Teal light — on dark
+ 15 122  84	success Success
+158 106  13	warning Warning
+217  45  32	error Error

@@ -1,0 +1,20 @@
+/* Rihla Travels brand colours */
+:root {
+  --rihla-wine-500: #5F498A; /* Violet — brand primary */
+  --rihla-wine-600: #4C3A70; /* Violet deep — hover */
+  --rihla-wine-700: #3C2E59; /* Violet deeper — active */
+  --rihla-ink: #2E2245; /* Ink — text, dark sections */
+  --rihla-ink-muted: #6B6080; /* Ink muted — body text */
+  --rihla-wine-400: #9481BA; /* Violet light — on dark */
+  --rihla-wine-100: #EDE8F5; /* Violet tint — surfaces */
+  --rihla-gold-500: #EFD34D; /* Lemon chiffon — highlight */
+  --rihla-cream-deep: #FEF9CD; /* Chiffon pale — logo sail */
+  --rihla-gold-600: #A88C1F; /* Gold dark — gold on light */
+  --rihla-gold-700: #7A6413; /* Gold text — on cream */
+  --rihla-cream: #FFFDF0; /* Cream — page ground */
+  --rihla-teal-600: #0A5754; /* Teal — action button */
+  --rihla-teal-400: #2A9D96; /* Teal light — on dark */
+  --rihla-success: #0F7A54; /* Success */
+  --rihla-warning: #9E6A0D; /* Warning */
+  --rihla-error: #D92D20; /* Error */
+}
