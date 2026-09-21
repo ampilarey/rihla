@@ -21,6 +21,10 @@ export default {
         // Arabic, for du'a and Qur'anic text.
         'arabic': ['Cairo', 'Segoe UI', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
+        // The lockup only. Subset to nine letters, so it must never be used
+        // for running text — anything outside RIHLA TRAVELS falls straight
+        // through to Inter and the two faces sit side by side.
+        'wordmark': ['Montserrat', 'Inter', 'sans-serif'],
       },
 
       // Display sizes, added rather than redefining Tailwind's text-* scale:

@@ -37,7 +37,13 @@
     reintroduces exactly this bug.
 
     The two lines carry different tracking because they are different lengths:
-    five letters and seven letters, each spread to the same span.
+    five letters and seven letters, each spread to the same span. The numbers
+    are solved, not chosen: at 16.5cqw, Montserrat SemiBold sets RIHLA at
+    0.5305 of the lockup width and TRAVELS at 0.7676, so the tracking that
+    makes each span exactly 1.0 is 0.7114em and 0.2347em. They were 0.58em
+    and 0.21em for Inter. Change the face and both must be re-solved, or the
+    lockup stops being justified to the mark and the whole construction —
+    mark and both lines sharing one width — quietly stops holding.
 
     Sizes are in cqw — a percentage of the lockup's own width — so the name
     scales with the mark instead of being pinned to one pixel size. A px value
@@ -65,10 +71,10 @@
     <span class="sr-only">{{ config('app.name') }}</span>
 
     <span aria-hidden="true"
-          class="mt-1.5 block w-full text-center font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
-          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.58em; text-indent: 0.58em;">RIHLA</span>
+          class="mt-1.5 block w-full text-center font-wordmark font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
+          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.7114em; text-indent: 0.7114em;">RIHLA</span>
 
     <span aria-hidden="true"
-          class="mt-0.5 block w-full text-center font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
-          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.21em; text-indent: 0.21em;">TRAVELS</span>
+          class="mt-0.5 block w-full text-center font-wordmark font-semibold {{ $dark ? 'text-cream' : 'text-ink' }}"
+          style="font-size: 13px; font-size: 16.5cqw; letter-spacing: 0.2347em; text-indent: 0.2347em;">TRAVELS</span>
 </span>

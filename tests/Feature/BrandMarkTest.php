@@ -231,7 +231,7 @@ class BrandMarkTest extends TestCase
                 "rihla-logo-brand-{$width}.png still has {$blue} pixels of pre-rebrand blue.");
             $this->assertSame(0, $pureBlack,
                 "rihla-logo-brand-{$width}.png still has {$pureBlack} pixels of pure black; "
-                .'the palette calls for ink #2E2621.');
+                .'the palette calls for ink #2E2245.');
         }
     }
 

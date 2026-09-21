@@ -145,7 +145,7 @@
             margin-bottom: 10px;
             padding: 10px;
             font-style: italic;
-            color: #5B524D;
+            color: #564F66;
             border-left: 3px solid #A88C1F;
         }
 

@@ -1,9 +1,9 @@
 # Rihla Brand & Design System
 
-**Version:** 1.0
-**Date:** 2026-09-18
-**Status:** Colour system **implemented** (`488ffee`). Logo decision **open** (§4).
-**Implemented in:** `tailwind.config.js`, `resources/css/app.css`
+**Version:** 2.0
+**Date:** 2026-09-21
+**Status:** Violet palette **implemented**. Logo **settled** (§4).
+**Implemented in:** `tailwind.config.js`, `app/Support/Brand.php`, `resources/css/app.css`
 
 This is the reference for Rihla's visual system. The roadmap that depends on it is
 [`WEBSITE_UPGRADE_PLAN.md`](WEBSITE_UPGRADE_PLAN.md); this document is the spec.
@@ -12,43 +12,50 @@ This is the reference for Rihla's visual system. The roadmap that depends on it 
 
 ## 1. The palette
 
-Rihla's previous palette — gold `#C39A3A` with sky blue `#1C9FE2` — failed WCAG AA at the two
-jobs it was used for most: white text on a button, and coloured text on white. Sky blue scored
-**2.95:1** and gold **2.62:1**, against a 4.5:1 requirement. That, not taste, is why it changed.
+The palette is violet `#5F498A` and lemon chiffon `#FEF9CD`. It replaced a wine-and-gold scheme,
+which had itself replaced a gold-and-sky-blue one that failed AA at the two jobs it was used for
+most.
 
-The replacement keeps a warm, premium character and passes at every interactive combination.
+**The one thing to understand before using it.** The two brand colours are **7.0:1 apart**. For
+two shapes to each clear 3:1 against one shared background they must be at least 9:1 apart, so
+**no background shows both**. On cream the chiffon is 1.46:1 — not faint, absent. On ink the
+violet is 1.96:1. Everything awkward below follows from that single fact: gold needs two values,
+one per ground; the logo needs two variants; and the button that means "book" is neither of them.
+
+The token *names* are historical — `wine` holds the violet and `gold` holds the chiffon. Renaming
+them would have touched every view for no gain; the values are what changed.
 
 ### Primary — Wine
 
 | Token | Hex | Use |
 |---|---|---|
-| `wine-50` | `#FCF5F8` | Section tints, secondary-button hover, progress track |
-| `wine-100` | `#F9E7EF` | Subtle fills |
-| `wine-200` | `#F1CBDB` | Progress tracks, dividers |
-| `wine-300` | `#E7A6C3` | Borders on tinted grounds |
-| `wine-400` | `#DA76A2` | Illustration, dark-mode accent |
-| **`wine-500`** | **`#8E2653`** | **Brand primary.** CTAs, active nav, links, selected states |
-| `wine-600` | `#731F43` | Button hover, link hover |
-| `wine-700` | `#5B1835` | Button active |
-| `wine-800` | `#441228` | Deep grounds |
-| `wine-900` | `#300D1C` | Deepest ground |
+| `wine-50` | `#F7F5FA` | Tints, hover washes |
+| `wine-100` | `#EDE8F5` | |
+| `wine-200` | `#D9CFEA` | |
+| `wine-300` | `#BBACD6` | |
+| `wine-400` | `#9481BA` | The sail on the dark logo — 4.27:1 on ink |
+| **`wine-500`** | **`#5F498A`** | **Primary. Buttons, links, active states** |
+| `wine-600` | `#4C3A70` | Hover |
+| `wine-700` | `#3C2E59` | Active |
+| `wine-800` | `#2E2245` | Dark sections, the footer, the logo hull |
+| `wine-900` | `#1E162E` | |
 
 Hover and active states move **down the wine ramp**, never sideways into another hue.
 
-**Why this wine and not a brighter red.** Maroon is not a hue — it is a red with chroma held
-down. An earlier attempt raised vividness from 37 to 56 while leaving the hue alone and the
-result read as crimson. The lever that keeps it wine is the **blue lean** (`b*` in CIE L\*a\*b\*):
-the old maroon sat at `+6.5` and the crimson at `+8.7`, both leaning orange. `#8E2653` sits at
-`−1.7`, on the purple side of pure red, which is why it holds its character at a vividness of 47.
+**Why the violet is not more vivid.** It measures 31% saturation, which is far quieter than the
+colours it sits beside in travel. That is not a missed opportunity — violet at this lightness
+cannot be loud, and the pair does not need it to be. Chiffon is 83–90% saturated and does the
+shouting; purple and yellow are complementary, the same relationship as blue and orange, so the
+contrast is there. It just comes from the yellow.
 
 ### Accent — Gold
 
 | Token | Hex | Use |
 |---|---|---|
-| `gold-400` | `#E8C270` | On dark grounds |
-| **`gold-500`** | **`#D2A03C`** | **Accent.** Rules, dividers, kiswah band, icons on dark |
-| `gold-600` | `#A87F2C` | Gold-fill hover, focus rings |
-| `gold-700` | `#7A5A16` | Gold as a **text** colour on white or cream |
+| `gold-400` | `#F8E57A` | |
+| **`gold-500`** | **`#EFD34D`** | **Highlight — dark grounds only. 9.85:1 on ink, 1.46:1 on cream** |
+| `gold-600` | `#A88C1F` | The same gold where the ground is light. 3.26:1 on white |
+| `gold-700` | `#7A6413` | Gold as text on cream — 5.62:1 |
 
 **Gold is an accent, never a second primary.** Two hard rules:
 
@@ -61,10 +68,10 @@ the old maroon sat at `+6.5` and the crimson at `+8.7`, both leaning orange. `#8
 
 | Token | Hex | Use |
 |---|---|---|
-| `ink` | `#2E2621` | All body text, headings, dark UI. Softer than black, which is what keeps it premium |
-| `ink-muted` | `#6B6159` | Secondary text, captions |
-| `cream` | `#FBF6EC` | Main warm background |
-| `cream-deep` | `#F4EDDF` | Alternating sections, sunken surfaces |
+| `ink` | `#2E2245` | All body text, headings, dark UI. Softer than black, which is what keeps it premium |
+| `ink-muted` | `#6B6080` | Secondary text, captions |
+| `cream` | `#FFFDF0` | Main warm background |
+| `cream-deep` | `#FEF9CD` | Alternating sections, sunken surfaces |
 
 The page should **not** become uniformly cream. Hierarchy runs **cream → wine → gold → ink**,
 with white surfaces carrying content and wine marking the things that matter.
@@ -89,17 +96,33 @@ Two notes that matter in practice:
 
 ### Warm neutrals
 
-Tailwind's default `gray` scale is cool and fights the cream ground, so it is **overridden** with
-a warm ramp in `tailwind.config.js`. Each step is matched to the lightness of the Tailwind step
-it replaces, so every existing `gray-*` class keeps its contrast ratio.
+Tailwind's default `gray` is cool and fights the ground, so it is **overridden**. The ramp was
+warm under the wine palette and is violet-tinted under this one, matched step for step to the
+lightness it replaces. Every step measures equal or better contrast than the warm step it
+replaced; none regressed.
 
-| Step | Warm | Step | Warm |
+| Step | Violet-tinted | Step | Violet-tinted |
 |---|---|---|---|
-| 50 | `#FFF9F4` | 500 | `#746B66` |
-| 100 | `#FAF3EE` | 600 | `#5B524D` |
-| 200 | `#EDE6E1` | 700 | `#483F39` |
-| 300 | `#DBD3CE` | 800 | `#2F2721` |
-| 400 | `#AAA19C` | 900 | `#1F1610` |
+| 50 | `#FBF9FD` | 500 | `#6E6680` |
+| 100 | `#F4F1F8` | 600 | `#564F66` |
+| 200 | `#E8E3EF` | 700 | `#433C52` |
+| 300 | `#D4CDE0` | 800 | `#2B2437` |
+| 400 | `#A49CB4` | 900 | `#1B1526` |
+
+### Teal — the action colour
+
+Neither brand colour can be the button that means *book*: chiffon is invisible on the page, and
+violet is already the colour of the navigation, the headings and every other button. Teal is the
+strongest hue left that no status colour has claimed — 31° from the success green.
+
+| Token | Hex | Use |
+|---|---|---|
+| `teal-500` | `#0E6E6B` | |
+| **`teal-600`** | **`#0A5754`** | **`.btn-action` — the booking call to action. Light grounds only** |
+| `teal-700` | `#084B49` | Hover |
+
+`teal-600` is 8.21:1 against the cream page, so its edge is findable, and white on it is 8.39:1.
+On a dark section it is **1.75:1** and disappears — use `.btn-gold` there.
 
 ---
 
@@ -114,6 +137,7 @@ Defined once each in `resources/css/app.css`, inside `@layer components`.
 | `.btn-gold` | `gold-500` fill, **ink text**, hover `gold-600` |
 | `.btn-outline` | Ink border and text, hover ink fill with cream text |
 | `.btn-sky` | Legacy alias, folded onto `.btn-primary` |
+| `.btn-action` | `teal-600` fill, white text, hover `teal-700`. The booking call to action. **Light grounds only** |
 | `.card` | White, warm border, soft shadow |
 | `.section-y` | Section rhythm: `py-10 md:py-14 lg:py-16` |
 | `.section-y-tight` | Section rhythm for pages without a hero: `py-8 md:py-10 lg:py-12` |
@@ -159,21 +183,26 @@ large text and meaningful graphics.
 
 | Combination | Ratio | |
 |---|---|---|
-| White on `wine-500` (primary button) | 8.23 | AAA |
-| White on `wine-600` (hover) | 10.47 | AAA |
-| White on `wine-700` (active) | 12.91 | AAA |
-| `wine-500` text on white (links) | 8.23 | AAA |
-| `wine-500` text on cream | 7.64 | AAA |
-| `wine-600` text on cream | 9.72 | AAA |
-| Ink on `gold-500` (gold button) | 6.24 | AA |
-| `gold-700` text on white | 6.36 | AA |
-| `gold-700` text on cream | 5.90 | AA |
-| `gold-500` on ink (footer) | 6.24 | AA |
-| **`gold-500` text on white** | **2.38** | **Fails — never do this** |
-| Ink on white | 14.84 | AAA |
-| Ink on cream | 13.77 | AAA |
-| Status chips (pale tint, dark text) | 6.09–7.11 | AA |
-| Brand wine vs error red separation | ΔE 56 | Clearly distinct |
+| White on `wine-500` (primary button) | 7.48 | AAA |
+| White on `wine-600` (hover) | 9.78 | AAA |
+| White on `wine-700` (active) | 12.16 | AAA |
+| `wine-500` text on white (links) | 7.48 | AAA |
+| `wine-500` text on cream | 7.33 | AAA |
+| `wine-600` text on cream | 9.58 | AAA |
+| White on `teal-600` (`.btn-action`) | 8.39 | AAA |
+| `teal-600` fill against cream — its own edge | 8.21 | AAA |
+| **`teal-600` fill against a dark section** | **1.75** | **Fails — use `.btn-gold` there** |
+| Ink on `gold-500` (gold button) | 9.85 | AAA |
+| `gold-500` on ink (footer, highlights) | 9.85 | AAA |
+| `gold-700` text on cream | 5.62 | AA |
+| `gold-600` as a shape on white (the logo sail) | 3.26 | Graphics only |
+| **`gold-500` fill against cream — its own edge** | **1.46** | **Fails — a button with no findable edge** |
+| **`gold-500` text on white** | **1.49** | **Fails — never do this** |
+| Ink on white | 14.68 | AAA |
+| Ink on cream | 14.37 | AAA |
+| Ink on `cream-deep` | 13.73 | AAA |
+| `ink-muted` on cream | 5.70 | AA |
+| **`wine-500` and `cream-deep`, the two brand colours** | **7.00** | **Why no ground shows both at 3:1** |
 
 ---
 
@@ -195,8 +224,18 @@ and seven, each spread to the same span. The two lines are `aria-hidden`; one `s
 supplies "Rihla Travels" so a screen reader says the name rather than spelling out two
 letter-spaced fragments.
 
-`public/images/rihla-mark.svg` — 461 bytes, three paths, wine `#8E2653`, gold `#D2A03C`,
-ink `#2E2621`. Lifted from the vector paths inside
+`public/images/rihla-mark.svg` — three paths: hull `#2E2245`, fore sail `#A88C1F`, main sail
+`#5F498A`. `rihla-mark-inverse.svg` carries hull `#FFFDF0`, fore sail `#FEF9CD`, main sail
+`#9481BA`.
+
+**The two variants are not one artwork recoloured, and this matters.** Each carries the gold and
+the violet that *its own background* can show. Measured: the light mark's fore sail is 3.26:1 on
+white; the dark mark's is 13.73:1 on ink. Recolour one and copy it over the other and the sails
+drop to 1.8:1 — which is exactly what the previous marks did, invisibly, for as long as the
+inverse mark existed. `BrandColourTest` now measures every fill against the surface its variant
+is for.
+
+The geometry was lifted from the vector paths inside
 [`docs/brand/Rihla-Palette.pdf`](brand/Rihla-Palette.pdf): the geometry is the designer's own curve
 data, extracted rather than traced.
 
@@ -214,7 +253,7 @@ that would change.
 
 ### The icon set
 
-Every icon is cut from the same master, on a cream `#FBF6EC` field. Cream rather than transparency,
+Every icon is cut from the same master, on a cream `#FFFDF0` field. Cream rather than transparency,
 because a transparent icon loses its ink hull against a dark browser theme.
 
 | File | Size | Purpose |

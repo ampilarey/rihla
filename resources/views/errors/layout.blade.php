@@ -97,7 +97,7 @@
         a.button.secondary {
             background: transparent;
             color: var(--ink);
-            border: 1px solid #DBD3CE;
+            border: 1px solid #D4CDE0;
         }
         a.button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
         @media (max-width: 480px) { h1 { font-size: 1.5rem; } }

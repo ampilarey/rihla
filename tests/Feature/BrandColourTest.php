@@ -9,6 +9,7 @@ use Database\Seeders\SettingsSeeder;
 use Database\Seeders\TripSeeder;
 use Database\Seeders\WhySectionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -49,26 +50,89 @@ class BrandColourTest extends TestCase
         '#1f2937' => 'gray-800, a cool neutral',
         '#6b7280' => 'gray-500, a cool neutral',
         '#374151' => 'gray-700, a cool neutral',
+
+        // The wine and gold palette, retired for violet and lemon chiffon.
+        // Adding these is the whole point of this list, and not adding them
+        // last time is why #DBD3CE survived in the error layout and #5B524D
+        // in the guide PDF: the guard built to catch a half-finished palette
+        // change was not told what had just been retired.
+        '#8E2653' => 'wine-500, the previous primary',
+        '#731F43' => 'wine-600',
+        '#5B1835' => 'wine-700',
+        '#D2A03C' => 'gold-500, the previous accent',
+        '#E8C270' => 'gold-400',
+        '#A87F2C' => 'gold-600',
+        '#7A5A16' => 'gold-700',
+        '#2E2621' => 'the previous ink',
+        '#6B6159' => 'the previous ink-muted',
+        '#FBF6EC' => 'the previous cream',
+        '#F4EDDF' => 'the previous cream-deep',
+        '#FFF9F4' => 'warm gray-50',
+        '#FAF3EE' => 'warm gray-100',
+        '#EDE6E1' => 'warm gray-200',
+        '#DBD3CE' => 'warm gray-300',
+        '#AAA19C' => 'warm gray-400',
+        '#746B66' => 'warm gray-500',
+        '#5B524D' => 'warm gray-600',
+        '#483F39' => 'warm gray-700',
+        '#2F2721' => 'warm gray-800',
+        '#1F1610' => 'warm gray-900',
+    ];
+
+    /**
+     * Files outside `resources/views` that still paint the brand themselves.
+     *
+     * `public/offline.html` is the reason this list exists. It is a complete
+     * standalone page with its own inline stylesheet — no Tailwind, no
+     * `Brand::` — and the service worker precaches it, so it is genuinely
+     * served. It sat at the old wine-to-ink gradient through a palette change
+     * that touched everything else, because the scan below only ever walked
+     * the Blade directory.
+     *
+     * @var array<int, string>
+     */
+    private const PAINTED_ELSEWHERE = [
+        'offline.html',
+        'favicon.svg',
+        'images/rihla-mark.svg',
+        'images/rihla-mark-inverse.svg',
+        'manifest.json',
     ];
 
     public function test_no_view_still_uses_a_retired_colour(): void
     {
         $offenders = [];
 
+        $files = [];
+
         foreach (File::allFiles(resource_path('views')) as $file) {
-            $contents = File::get($file->getPathname());
+            $files[$file->getRelativePathname()] = $file->getPathname();
+        }
+
+        foreach (self::PAINTED_ELSEWHERE as $relative) {
+            $path = public_path($relative);
+
+            $this->assertFileExists($path,
+                "public/{$relative} is listed as painting the brand itself but does not exist; "
+                .'either restore it or take it off the list.');
+
+            $files['public/'.$relative] = $path;
+        }
+
+        foreach ($files as $name => $path) {
+            $contents = File::get($path);
 
             foreach (self::RETIRED as $hex => $what) {
                 if (stripos($contents, $hex) === false) {
                     continue;
                 }
 
-                $offenders[] = $file->getRelativePathname().": {$hex} ({$what})";
+                $offenders[] = "{$name}: {$hex} ({$what})";
             }
         }
 
         $this->assertSame([], $offenders, implode("\n", array_merge(
-            ['Views still contain pre-rebrand colours:'], $offenders,
+            ['Pre-rebrand colours are still being painted:'], $offenders,
         )));
     }
 
@@ -179,6 +243,51 @@ class BrandColourTest extends TestCase
 
         $this->assertSame(Brand::WINE, $banner->fresh()->primary_cta_bg_color);
         $this->assertSame(Brand::CREAM, $banner->fresh()->subheading_color);
+    }
+
+    /**
+     * A fresh database is the easy case. The hard one is a database that
+     * already ran the last rebrand.
+     *
+     * `2026_09_18_170000_rebrand_stored_banner_colours` wrote its new values
+     * as `Brand::WINE` and `Brand::CREAM`. It ran on test and on production
+     * while those constants held `#8E2653` and `#FBF6EC`, so those rows are
+     * stamped with the old palette and changing the constants does not reach
+     * them. The test above still passed throughout, because `migrate:fresh`
+     * in CI re-runs that migration with the *current* constants and never
+     * sees the stamped state a deployed database is actually in.
+     *
+     * So this one reproduces the deployed state — old hexes in the rows —
+     * and runs the follow-up migration over it.
+     */
+    public function test_colours_stamped_by_the_previous_rebrand_are_carried_forward(): void
+    {
+        $id = DB::table('hero_banners')->insertGetId([
+            'title' => json_encode(['en' => 'Stamped by the last rebrand']),
+            'primary_cta_bg_color' => '#8E2653',   // the old wine
+            'subheading_color' => '#FBF6EC',       // the old cream
+            'heading_color' => '#1a2b3c',          // an editor's own choice
+            'is_active' => true,
+            'sort_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $migration = require database_path(
+            'migrations/2026_09_21_090000_recolour_stored_brand_values.php'
+        );
+        $migration->up();
+
+        $row = DB::table('hero_banners')->where('id', $id)->first();
+
+        $this->assertSame(Brand::WINE, $row->primary_cta_bg_color,
+            'A banner stamped with the old wine still renders in the retired brand.');
+
+        $this->assertSame(Brand::CREAM, $row->subheading_color,
+            'A banner stamped with the old cream still renders in the retired brand.');
+
+        $this->assertSame('#1a2b3c', $row->heading_color,
+            'A colour an editor chose deliberately was overwritten; this is a rebrand, not a veto.');
     }
 
     /**
