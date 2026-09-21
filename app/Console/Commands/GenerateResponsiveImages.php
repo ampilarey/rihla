@@ -85,9 +85,7 @@ class GenerateResponsiveImages extends Command
     /** @return array{int, int} how many were made, how many were already there */
     private function generate(string $path, bool $dry): array
     {
-        $made = 0;
         $already = 0;
-
         $wanted = [];
 
         foreach (ResponsiveImage::WIDTHS as $width) {
@@ -99,56 +97,27 @@ class GenerateResponsiveImages extends Command
                 continue;
             }
 
-            $wanted[$width] = $variant;
+            $wanted[] = $variant;
         }
 
         if ($wanted === []) {
             return [0, $already];
         }
 
-        $source = @imagecreatefromstring((string) Storage::disk('public')->get($path));
-
-        if ($source === false) {
-            $this->warn('not an image GD can read: '.$path);
-
-            return [0, $already];
-        }
-
-        $originalWidth = imagesx($source);
-
-        foreach ($wanted as $width => $variant) {
-            // Never upscale. A 900px original gives a 768 and nothing else;
-            // a 1920 invented from it is a bigger file that looks worse.
-            if ($width > $originalWidth) {
-                continue;
-            }
-
+        foreach ($wanted as $variant) {
             $this->line('  '.$variant);
-            $made++;
-
-            if ($dry) {
-                continue;
-            }
-
-            $height = (int) round(imagesy($source) * ($width / $originalWidth));
-            $resized = imagescale($source, $width, $height);
-
-            if ($resized === false) {
-                $this->warn('could not resize: '.$path);
-
-                continue;
-            }
-
-            ob_start();
-            imagewebp($resized, null, 82);
-            $bytes = (string) ob_get_clean();
-            imagedestroy($resized);
-
-            Storage::disk('public')->put($variant, $bytes);
         }
 
-        imagedestroy($source);
+        if ($dry) {
+            // Counts what is missing rather than what would be written: a
+            // dry run does not decode the image, so it cannot know which
+            // widths the original is too small for. It over-reports for a
+            // small image, which is the safe direction for a preview.
+            return [count($wanted), $already];
+        }
 
-        return [$made, $already];
+        // The encoding itself lives in ResponsiveImage, because the upload
+        // observer needs the same thing and two copies of it would drift.
+        return [ResponsiveImage::generate($path), $already];
     }
 }

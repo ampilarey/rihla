@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Observers\CoverImageObserver;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -114,5 +115,76 @@ final class ResponsiveImage
         }
 
         return $variants[array_key_last($variants)];
+    }
+
+    /**
+     * Make the variants a path is missing, and say how many were written.
+     *
+     * Lives here rather than in the command because two things need it:
+     * `images:responsive` for the backfill, and {@see CoverImageObserver}
+     * the moment somebody uploads a cover through an admin form. A
+     * generator only the command can reach means every new upload is
+     * full-size until a human remembers a command — which is the state
+     * this whole thing existed to leave.
+     *
+     * **It never upscales.** A 900-pixel original gives a 768 and nothing
+     * else: inventing a 1920-wide file from it makes a larger download
+     * that looks worse, which is the opposite of the point.
+     *
+     * @return int how many files were written
+     */
+    public static function generate(string $path, string $disk = 'public'): int
+    {
+        if ($path === '' || ! function_exists('imagewebp') || ! Storage::disk($disk)->exists($path)) {
+            return 0;
+        }
+
+        $wanted = [];
+
+        foreach (self::WIDTHS as $width) {
+            $variant = self::variantPath($path, $width);
+
+            if (! Storage::disk($disk)->exists($variant)) {
+                $wanted[$width] = $variant;
+            }
+        }
+
+        if ($wanted === []) {
+            return 0;
+        }
+
+        $source = @imagecreatefromstring((string) Storage::disk($disk)->get($path));
+
+        if ($source === false) {
+            return 0;
+        }
+
+        $originalWidth = imagesx($source);
+        $written = 0;
+
+        foreach ($wanted as $width => $variant) {
+            if ($width > $originalWidth) {
+                continue;
+            }
+
+            $height = (int) round(imagesy($source) * ($width / $originalWidth));
+            $resized = imagescale($source, $width, $height);
+
+            if ($resized === false) {
+                continue;
+            }
+
+            ob_start();
+            imagewebp($resized, null, 82);
+            $bytes = (string) ob_get_clean();
+            imagedestroy($resized);
+
+            Storage::disk($disk)->put($variant, $bytes);
+            $written++;
+        }
+
+        imagedestroy($source);
+
+        return $written;
     }
 }
