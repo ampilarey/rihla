@@ -127,6 +127,49 @@
         </x-filament::section>
     @endif
 
+    @php($credit = $this->getReferralCredit())
+    @php($referrer = $this->getReferrer())
+
+    @if ($credit !== null || $referrer !== null)
+        <x-filament::section>
+            <x-slot name="heading">Referrals</x-slot>
+
+            <x-slot name="description">
+                §8.1 records a referral against a customer already on file rather than a name in a
+                box, so the person who made it can actually be found afterwards. This is that.
+            </x-slot>
+
+            @if ($referrer !== null)
+                <x-filament::callout
+                    color="gray"
+                    icon="heroicon-o-user-plus"
+                    :heading="'Sent to us by ' . $referrer->name"
+                >
+                    <x-slot name="footer">
+                        <x-filament::link :href="route('filament.staff.resources.customers.view', $referrer)">
+                            Open their record
+                        </x-filament::link>
+                    </x-slot>
+                </x-filament::callout>
+            @endif
+
+            @if ($credit !== null)
+                <x-filament::callout
+                    :color="$credit->tone()"
+                    icon="heroicon-o-hand-raised"
+                    :heading="'They have sent us ' . $credit->spoken()"
+                    :description="$credit->isUnacknowledged()
+                        ? 'Their most recent referral travelled on ' . $credit->lastArrival->format('j M Y')
+                            . ', and nothing has been written down about them since. A follow-up task is the place to put that.'
+                        : ($credit->lastArrival === null
+                            ? 'None of them has travelled yet, so nothing is owed here — it is counted so it is not forgotten.'
+                            : 'Last follow-up recorded ' . $credit->lastNoted->format('j M Y')
+                                . '. That is not the same as having thanked them, and this screen does not claim it is.')"
+                />
+            @endif
+        </x-filament::section>
+    @endif
+
     {{--
         Rendered by hand, because this page has a custom view and a custom
         view is not the one Filament draws relation managers from: the tags
