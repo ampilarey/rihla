@@ -1168,16 +1168,20 @@ Nothing the drafter produces is sent, saved, published or quoted: `draft.use` is
 
 | Metric | Target | Notes |
 |---|---|---|
-| LCP (mobile, 4G) | < 2.5 s | **Reported in CI.** Homepage 2.3 s, packages 2.1 s — **the guide is 3.0 s and misses it** |
-| CLS | < 0.1 | **Gated in CI** — measures layout, not timing, so it is an error rather than a warning. All three pages measure 0 |
-| INP | < 200 ms | No lab equivalent exists — it needs a real finger on a real screen. Total Blocking Time stands in, reported in CI: 10 ms, 0 ms, 40 ms |
+| LCP (mobile, 4G) | < 2.5 s | **Reported in CI, and all three pages miss it**: homepage 2.7 s, packages 2.7 s, **guide 4.0 s** |
+| CLS | < 0.1 | **Gated in CI** — measures layout, not timing, so it is an error rather than a warning. Homepage 0, packages 0.013, guide 0.01: all well inside it |
+| INP | < 200 ms | No lab equivalent exists — it needs a real finger on a real screen. Total Blocking Time stands in, reported in CI: 0 ms, 0 ms, **270 ms on the guide** |
 | Lighthouse performance (mobile) | ≥ 90 | **Done — in CI.** Measured 90–97 on the three audited pages |
 | Server response (TTFB) | < 400 ms | Cache package/departure queries; index them properly |
 | Image delivery | WebP/AVIF, responsive `srcset`, CDN | **WebP and `srcset` done.** No CDN (ADR 0002) |
 
 **The three metrics §10.1 names are now reported on every pull request**, which they were not: the table above set targets for LCP, CLS and INP and nothing measured any of them. `lighthouse-budget.json` carries them, and the split is the same one the categories use. **CLS is an error**, because it measures layout rather than timing — a page that jumps under the reader's finger jumps the same way on any machine, and it is the regression a carelessly sized image actually causes. LCP and Total Blocking Time are warnings, because they are timing on a shared runner. **INP has no lab equivalent at all** — it needs a real finger on a real screen — so TBT stands in for it, which is what Lighthouse itself recommends and is not the same thing; the honest reading of that row is "nothing here measures INP".
 
-  It found something on its first run. **The Umrah guide's LCP is 3.0 seconds and misses the 2.5-second target**; the homepage and the packages list are inside it at 2.3 and 2.1. The guide is also the heaviest page at 322 KB. It is a warning rather than a gate, so it does not block a merge — but it is now visible on every pull request instead of nowhere, which is the difference between a target and a wish.
+  It found something on its first run, and the first number reported here was wrong in the safe direction's opposite. Measured in an agent sandbox the three pages read 2.3 s, 2.1 s and 3.0 s; **measured on a CI runner with working network they are 2.7 s, 2.7 s and 4.0 s**. The sandbox cannot reach the two font CDNs (its proxy's certificate is not trusted), which makes a text LCP finish *earlier* rather than later, and every page here has a text LCP element. So the sandbox flatters the site, and any performance figure taken there is worthless — the same trap AGENTS.md already records for Chrome against the live sites, in a direction that is easy to mistake for good news.
+
+  The real picture: **all three pages miss the 2.5-second LCP target**, the homepage and packages list narrowly at 2.7 s and **the Umrah guide badly at 4.0 s**. The guide also blocks the main thread for 270 ms against a 200 ms ceiling and weighs 455 KB, which is where its performance score of 77 comes from. None of it gates a merge — all three are warnings, deliberately — but it is now printed on every pull request instead of nowhere, which is the difference between a target and a wish.
+
+  **The guide's weight is mostly its own HTML** (202 KB of the 455), because the page ships every step inline. That is what makes it readable in Makkah with no signal, which is the whole of §7.2. So this is a trade somebody chose, not a defect somebody missed, and the honest framing is "loads slowly once, then works without data" — which is a decision for the owner rather than something to optimise away quietly. The homepage and packages list have no such excuse and are the cheaper win.
 
 **Responsive image delivery — done, and the variants were already there.** Hero uploads have been writing `_768w`, `_1280w` and `_1920w` WebP files since Phase 2, and `HeroBanner::getResponsiveImageUrlsAttribute()` has been returning their URLs the whole time. **No view ever called it.** Every visitor on every device was served the full-size file — and on the homepage that file is the Largest Contentful Paint element, so a telephone on a Maldivian mobile connection downloaded a 1920-pixel photograph to show it 390 pixels wide. The variants existed; the `srcset` did not.
 
