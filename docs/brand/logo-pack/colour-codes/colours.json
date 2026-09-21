@@ -1,0 +1,240 @@
+{
+  "wine-500": {
+    "hex": "#5F498A",
+    "rgb": [
+      95,
+      73,
+      138
+    ],
+    "hsl": [
+      260,
+      31,
+      41
+    ],
+    "name": "Violet \u2014 brand primary"
+  },
+  "wine-600": {
+    "hex": "#4C3A70",
+    "rgb": [
+      76,
+      58,
+      112
+    ],
+    "hsl": [
+      260,
+      32,
+      33
+    ],
+    "name": "Violet deep \u2014 hover"
+  },
+  "wine-700": {
+    "hex": "#3C2E59",
+    "rgb": [
+      60,
+      46,
+      89
+    ],
+    "hsl": [
+      260,
+      32,
+      26
+    ],
+    "name": "Violet deeper \u2014 active"
+  },
+  "ink": {
+    "hex": "#2E2245",
+    "rgb": [
+      46,
+      34,
+      69
+    ],
+    "hsl": [
+      261,
+      34,
+      20
+    ],
+    "name": "Ink \u2014 text, dark sections"
+  },
+  "ink-muted": {
+    "hex": "#6B6080",
+    "rgb": [
+      107,
+      96,
+      128
+    ],
+    "hsl": [
+      261,
+      14,
+      44
+    ],
+    "name": "Ink muted \u2014 body text"
+  },
+  "wine-400": {
+    "hex": "#9481BA",
+    "rgb": [
+      148,
+      129,
+      186
+    ],
+    "hsl": [
+      260,
+      29,
+      62
+    ],
+    "name": "Violet light \u2014 on dark"
+  },
+  "wine-100": {
+    "hex": "#EDE8F5",
+    "rgb": [
+      237,
+      232,
+      245
+    ],
+    "hsl": [
+      263,
+      39,
+      94
+    ],
+    "name": "Violet tint \u2014 surfaces"
+  },
+  "gold-500": {
+    "hex": "#EFD34D",
+    "rgb": [
+      239,
+      211,
+      77
+    ],
+    "hsl": [
+      50,
+      84,
+      62
+    ],
+    "name": "Lemon chiffon \u2014 highlight"
+  },
+  "cream-deep": {
+    "hex": "#FEF9CD",
+    "rgb": [
+      254,
+      249,
+      205
+    ],
+    "hsl": [
+      54,
+      96,
+      90
+    ],
+    "name": "Chiffon pale \u2014 logo sail"
+  },
+  "gold-600": {
+    "hex": "#A88C1F",
+    "rgb": [
+      168,
+      140,
+      31
+    ],
+    "hsl": [
+      48,
+      69,
+      39
+    ],
+    "name": "Gold dark \u2014 gold on light"
+  },
+  "gold-700": {
+    "hex": "#7A6413",
+    "rgb": [
+      122,
+      100,
+      19
+    ],
+    "hsl": [
+      47,
+      73,
+      28
+    ],
+    "name": "Gold text \u2014 on cream"
+  },
+  "cream": {
+    "hex": "#FFFDF0",
+    "rgb": [
+      255,
+      253,
+      240
+    ],
+    "hsl": [
+      52,
+      100,
+      97
+    ],
+    "name": "Cream \u2014 page ground"
+  },
+  "teal-600": {
+    "hex": "#0A5754",
+    "rgb": [
+      10,
+      87,
+      84
+    ],
+    "hsl": [
+      178,
+      79,
+      19
+    ],
+    "name": "Teal \u2014 action button"
+  },
+  "teal-400": {
+    "hex": "#2A9D96",
+    "rgb": [
+      42,
+      157,
+      150
+    ],
+    "hsl": [
+      176,
+      58,
+      39
+    ],
+    "name": "Teal light \u2014 on dark"
+  },
+  "success": {
+    "hex": "#0F7A54",
+    "rgb": [
+      15,
+      122,
+      84
+    ],
+    "hsl": [
+      159,
+      78,
+      27
+    ],
+    "name": "Success"
+  },
+  "warning": {
+    "hex": "#9E6A0D",
+    "rgb": [
+      158,
+      106,
+      13
+    ],
+    "hsl": [
+      38,
+      85,
+      34
+    ],
+    "name": "Warning"
+  },
+  "error": {
+    "hex": "#D92D20",
+    "rgb": [
+      217,
+      45,
+      32
+    ],
+    "hsl": [
+      4,
+      74,
+      49
+    ],
+    "name": "Error"
+  }
+}

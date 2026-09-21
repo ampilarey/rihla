@@ -41,8 +41,25 @@ class BrandMarkTest extends TestCase
      */
     private const PALETTE = ['#5F498A', '#9481BA', '#FEF9CD', '#EFD34D', '#A88C1F', '#2E2245'];
 
-    /** Cream, the field every icon is cut on. Matches the manifest. */
-    private const FIELD = [255, 253, 240];
+    /**
+     * Ultra violet, the field every app and browser icon is cut on.
+     *
+     * It was cream until the icon set moved to the brand pair. The two guide
+     * colours — lemon chiffon #FEF9CD and ultra violet #5F498A — are 7.00:1
+     * apart, which is AAA for one shape on the other and hopeless for two
+     * shapes on a third: that needs about 9:1, so no ground shows both. The
+     * icons therefore use them as field and figure rather than as two sails,
+     * which is the one arrangement where both are at full strength on every
+     * browser chrome, light or dark.
+     *
+     * The inline mark in `images/rihla-mark.svg` still uses the two-gold
+     * split described above PALETTE, because it has no field of its own —
+     * it sits directly on the page.
+     *
+     * Not the manifest's `background_color`, which stays cream: that paints
+     * the splash screen behind the icon, not the icon.
+     */
+    private const ICON_FIELD = [95, 73, 138];
 
     public function test_the_mark_is_a_vector_master(): void
     {
@@ -172,7 +189,7 @@ class BrandMarkTest extends TestCase
 
                     // Allow for the resampler's edge blending.
                     foreach ($pixel as $i => $channel) {
-                        if (abs($channel - self::FIELD[$i]) > 12) {
+                        if (abs($channel - self::ICON_FIELD[$i]) > 12) {
                             $outside++;
                             break;
                         }
@@ -198,11 +215,107 @@ class BrandMarkTest extends TestCase
             $alpha = ($corner >> 24) & 0x7F;
 
             $this->assertSame(0, $alpha, "{$file} has a transparent corner.");
-            $this->assertSame(self::FIELD, [($corner >> 16) & 0xFF, ($corner >> 8) & 0xFF, $corner & 0xFF],
-                "{$file} is not cut on the cream field.");
+            $this->assertSame(self::ICON_FIELD, [($corner >> 16) & 0xFF, ($corner >> 8) & 0xFF, $corner & 0xFF],
+                "{$file} is not cut on the brand field.");
 
             imagedestroy($image);
         }
+    }
+
+    /**
+     * The icon masters carry the two guide colours and nothing else.
+     *
+     * `images/rihla-icon.svg` is the geometry every raster below is cut from,
+     * so a third colour creeping in here reaches the tab bar, the home screen
+     * and the install prompt at once.
+     */
+    public function test_the_icon_master_is_the_brand_pair(): void
+    {
+        foreach (['images/rihla-icon.svg', 'images/rihla-icon-small.svg', 'favicon.svg'] as $file) {
+            preg_match_all('/#[0-9A-Fa-f]{6}/', File::get(public_path($file)), $matches);
+
+            $found = array_values(array_unique(array_map('strtoupper', $matches[0])));
+
+            sort($found);
+
+            $this->assertSame(['#5F498A', '#FEF9CD'], $found,
+                "{$file} should be lemon chiffon and ultra violet only; it has ".implode(', ', $found));
+        }
+    }
+
+    /**
+     * favicon.ico shipped the retired maroon brand and nothing noticed.
+     *
+     * The only assertion this file ever had was `filesize() > 0`. So while
+     * every other icon was recut for the violet palette, the .ico kept a
+     * wine sail and an old gold one, and went on being the icon every
+     * browser with no SVG support showed — which is the icon in most
+     * bookmark bars. A size check is not a guard: it passes for any bytes at
+     * all, including last year's artwork.
+     *
+     * An .ico is a directory of images rather than one image, so each entry
+     * has to be decoded on its own. GD cannot open the container, but every
+     * entry written here is a PNG, and `imagecreatefromstring` reads those.
+     */
+    public function test_the_ico_carries_the_current_brand(): void
+    {
+        $bytes = File::get(public_path('favicon.ico'));
+
+        $count = unpack('v', substr($bytes, 4, 2))[1];
+
+        $this->assertGreaterThanOrEqual(3, $count,
+            'favicon.ico holds one size, so small tab icons are downsampled from a large one.');
+
+        $retired = ['#8E2653', '#731F43', '#D2A03C', '#A87F2C', '#2E2621', '#FBF6EC', '#C39A3A', '#1C9FE2'];
+        $checked = 0;
+        $found = [];
+        $brandSeen = false;
+
+        for ($i = 0; $i < $count; $i++) {
+            $entry = substr($bytes, 6 + $i * 16, 16);
+            [$length, $offset] = array_values(unpack('V2', substr($entry, 8, 8)));
+
+            $payload = substr($bytes, $offset, $length);
+
+            // A BMP-encoded entry would need its own decoder; the PNG ones
+            // carry the same artwork, so checking those is enough.
+            if (! str_starts_with($payload, "\x89PNG\r\n\x1a\n")) {
+                continue;
+            }
+
+            $image = imagecreatefromstring($payload);
+
+            $this->assertNotFalse($image, "Entry {$i} of favicon.ico is not a readable image.");
+
+            $width = imagesx($image);
+            $height = imagesy($image);
+
+            for ($y = 0; $y < $height; $y++) {
+                for ($x = 0; $x < $width; $x++) {
+                    $rgb = imagecolorat($image, $x, $y);
+                    $hex = sprintf('#%02X%02X%02X', ($rgb >> 16) & 0xFF, ($rgb >> 8) & 0xFF, $rgb & 0xFF);
+
+                    if (in_array($hex, $retired, true)) {
+                        $found[$hex] = true;
+                    }
+
+                    if ($hex === '#5F498A' || $hex === '#FEF9CD') {
+                        $brandSeen = true;
+                    }
+                }
+            }
+
+            imagedestroy($image);
+            $checked++;
+        }
+
+        $this->assertGreaterThan(0, $checked, 'No entry of favicon.ico could be decoded.');
+
+        $this->assertSame([], array_keys($found),
+            'favicon.ico still paints retired brand colours: '.implode(', ', array_keys($found)));
+
+        $this->assertTrue($brandSeen,
+            'favicon.ico carries neither brand colour, so it is not the current mark.');
     }
 
     public function test_the_layout_offers_the_vector_favicon_first(): void

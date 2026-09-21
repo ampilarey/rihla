@@ -251,25 +251,69 @@ choice, not an oversight. If it ever needs the name, the fix is to set "Rihla Tr
 beside the mark rather than to go back to the old lockup — `<x-brand-logo>` is the single place
 that would change.
 
-### The icon set
+### The icon set — a second mark, and why
 
-Every icon is cut from the same master, on a cream `#FFFDF0` field. Cream rather than transparency,
-because a transparent icon loses its ink hull against a dark browser theme.
+The site's inline mark and the app icon are **not the same artwork**, and the reason is the 7.0:1
+in §1.
+
+The inline mark sits directly on the page, so its two sails have to survive whatever ground the
+page gives them — which is why each variant carries the gold *its own* background can show. That
+works, but it means neither variant is the guide's pair: the light mark's fore sail is `#A88C1F`,
+not chiffon.
+
+An icon has a field of its own. So the icon set uses the two guide colours as **field and figure**
+— a chiffon `#FEF9CD` disc on an ultra violet `#5F498A` ground, carrying the violet ship. Violet on
+chiffon is 7.00:1 and the disc on the field is 7.00:1, on every browser chrome, light or dark.
+That is the one arrangement in which both brand colours appear at full strength, and it is the
+answer to "can the sails be the two brand colours": as two shapes on a third ground they cannot,
+because that needs about 9:1; as field and figure they can.
+
+The field is violet rather than cream. Cream was chosen when the icon was an ink-hulled dhoni that
+would have vanished on a dark browser theme; a violet field solves the same problem and carries
+the brand while doing it. The manifest's `background_color` stays cream — that paints the splash
+screen behind the icon, not the icon.
 
 | File | Size | Purpose |
 |---|---|---|
-| `public/images/rihla-mark.svg` | 461 B | The logo itself, everywhere on the site |
-| `public/favicon.svg` | 589 B | Offered first; sharp at any pixel density |
-| `public/favicon.ico` | 16/32/48 | Legacy browsers, Windows pins |
+| `public/images/rihla-mark.svg` | 461 B | The logo itself, in the header and footer |
+| `public/images/rihla-icon.svg` | — | The icon master: every raster below is cut from it |
+| `public/images/rihla-icon-small.svg` | — | 48px and under; see below |
+| `public/favicon.svg` | — | Offered first; sharp at any pixel density |
+| `public/favicon.ico` | 16–256 | Legacy browsers, Windows pins, bookmark bars |
 | `public/favicon-16x16.png`, `-32x32.png` | 16, 32 | Browser tab |
 | `public/apple-touch-icon.png` | 180 | iOS home screen |
 | `public/images/icon-192.png`, `-512.png` | 192, 512 | PWA, `purpose: any`; 512 also serves the structured-data logo |
 | `public/images/icon-maskable-192.png`, `-512.png` | 192, 512 | PWA, `purpose: maskable` |
 | `public/images/rihla-social.png` | 1200×630 | `og:image` and `twitter:image` — scrapers cannot read SVG |
 
-**Maskable icons carry extra padding on purpose.** Android crops them to a circle or squircle and
-keeps only the middle 80%; at the inset the other icons use, the dhoni loses the tip of a sail.
-`BrandMarkTest` asserts every pixel of artwork sits inside that safe zone.
+**There are two icon masters.** The standard one leaves a violet margin around the disc that is
+thinner than a pixel at 16px, so the small sizes would lose their ground. `rihla-icon-small.svg`
+fills more of the square and is what 16, 32 and 48 are cut from — including the first three
+entries of the `.ico`.
+
+**Maskable icons need no extra file.** Android crops to the middle 80%, and the disc's radius is
+38 of 100 for exactly that reason, so the standard master is already inside the safe zone.
+`BrandMarkTest` asserts every pixel of artwork sits inside it, and that everything outside is the
+solid field.
+
+**`favicon.ico` is checked by pixel, not by size.** For one palette change it was the only icon
+still carrying the maroon brand, because the only assertion on it was `filesize() > 0` — which
+passes for any bytes at all. `BrandMarkTest::test_the_ico_carries_the_current_brand` now walks the
+container's directory, decodes each entry and scans it against the retired list.
+
+### The print pack
+
+[`docs/brand/logo-pack/`](brand/logo-pack/) holds the vector masters, a 100 mm PDF of each mark,
+the palette in seven formats (`.txt`, `.json`, `.css`, `.scss`, `.gpl`, `.ase`, Tailwind) and a
+one-page A4 sheet to hand a printer. **No CMYK or Pantone values are recorded anywhere**, on
+purpose: a conversion made without the printer's paper and ink profile prints wrong, and a guessed
+Pantone is the same class of mistake as an invented social link. The printer converts from the hex
+against their own profile and sends a proof.
+
+It also holds `rihla-two-sails-*.svg` — the mark with the two guide colours as the two sails, which
+is what was asked for and what print can carry. It is **not used anywhere on the site**: on ink its
+violet sail is 1.96:1 and on cream its chiffon sail is 1.05:1, and no ground exists that shows
+both. `which-mark-to-use.png` is the measured comparison.
 
 ### The retired wordmark
 

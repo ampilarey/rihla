@@ -95,6 +95,16 @@ its meaning moves afterwards. **Literals on both sides, always.** Note the test 
 assertion never sees the state a deployed database is actually in. Testing a data migration means
 seeding the old state and calling `up()` on it.
 
+- **`filesize() > 0` is not a guard, and a raster is the one thing a palette change cannot reach.**
+`favicon.ico` was the only icon still carrying the retired maroon brand — `#8E2653` sail,
+`#D2A03C` sail, `#2E2621` hull, measured by decoding it, not guessed — through an entire
+rebrand, because the only assertion `BrandMarkTest` ever made about it was that the file was
+not empty. That passes for any bytes at all, including last year's artwork. Every *other* icon
+was caught, because those tests read pixels. An `.ico` is a directory of images rather than
+one image, so GD cannot open it; walk the 16-byte directory entries yourself and
+`imagecreatefromstring` each PNG payload. The shape of the mistake generalises: when a guard
+cannot see the thing it is named after, it reports green about something else.
+
 - **A sameness assertion cannot catch a contrast bug.** `BrandColourTest` asserted the two logo
 variants "differ only in the hull colour", on the stated belief that the sails held against
 either ground. Measured, the wine sail was **1.8:1** against the ink footer and the gold sail

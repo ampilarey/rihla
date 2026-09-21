@@ -1,0 +1,29 @@
+RIHLA TRAVELS — brand colours
+================================================================
+
+HEX       RGB               HSL                 TOKEN / USE
+------------------------------------------------------------------------------
+#5F498A   (95, 73, 138)     260, 31%, 41%       wine-500 — brand primary
+#4C3A70   (76, 58, 112)     260, 32%, 33%       wine-600 — hover
+#3C2E59   (60, 46, 89)      260, 32%, 26%       wine-700 — active
+#2E2245   (46, 34, 69)      261, 34%, 20%       ink — text, dark sections
+#6B6080   (107, 96, 128)    261, 14%, 44%       ink-muted — body text
+#9481BA   (148, 129, 186)   260, 29%, 62%       wine-400 — on dark
+#EDE8F5   (237, 232, 245)   263, 39%, 94%       wine-100 — surfaces
+#EFD34D   (239, 211, 77)    50, 84%, 62%        gold-500 — highlight
+#FEF9CD   (254, 249, 205)   54, 96%, 90%        cream-deep — logo sail
+#A88C1F   (168, 140, 31)    48, 69%, 39%        gold-600 — gold on light
+#7A6413   (122, 100, 19)    47, 73%, 28%        gold-700 — on cream
+#FFFDF0   (255, 253, 240)   52, 100%, 97%       cream — page ground
+#0A5754   (10, 87, 84)      178, 79%, 19%       teal-600 — action button
+#2A9D96   (42, 157, 150)    176, 58%, 39%       teal-400 — on dark
+#0F7A54   (15, 122, 84)     159, 78%, 27%       success — Success
+#9E6A0D   (158, 106, 13)    38, 85%, 34%        warning — Warning
+#D92D20   (217, 45, 32)     4, 74%, 49%         error — Error
+
+
+The logo uses exactly two of these:
+  #FEF9CD  lemon chiffon
+  #5F498A  ultra violet
+
+They are 7.0:1 apart.

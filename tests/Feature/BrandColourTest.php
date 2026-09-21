@@ -96,6 +96,8 @@ class BrandColourTest extends TestCase
         'favicon.svg',
         'images/rihla-mark.svg',
         'images/rihla-mark-inverse.svg',
+        'images/rihla-icon.svg',
+        'images/rihla-icon-small.svg',
         'manifest.json',
     ];
 
