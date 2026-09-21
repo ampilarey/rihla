@@ -1168,12 +1168,32 @@ Nothing the drafter produces is sent, saved, published or quoted: `draft.use` is
 
 | Metric | Target | Notes |
 |---|---|---|
-| LCP (mobile, 4G) | < 2.5 s | Homepage hero must not block it; use a poster image, lazy-load video |
-| CLS | < 0.1 | Reserve space for hero, cards, images |
-| INP | < 200 ms | Alpine is fine; avoid heavy JS on the homepage |
+| LCP (mobile, 4G) | < 2.5 s | **Reported in CI.** Over two runs: homepage 2.7–2.9 s, packages 2.5–2.7 s, **guide 3.9–4.0 s**. The guide misses it plainly; the homepage narrowly; packages sits on the line |
+| CLS | < 0.1 | **Gated in CI** — measures layout, not timing, so it is an error rather than a warning. Homepage 0, packages 0.013, guide 0.01: all well inside it |
+| INP | < 200 ms | No lab equivalent exists — it needs a real finger on a real screen. Total Blocking Time stands in and is **too noisy to read**: the guide gave 270 ms and 50 ms on two runs of identical code |
 | Lighthouse performance (mobile) | ≥ 90 | **Done — in CI.** Measured 90–97 on the three audited pages |
 | Server response (TTFB) | < 400 ms | Cache package/departure queries; index them properly |
 | Image delivery | WebP/AVIF, responsive `srcset`, CDN | **WebP and `srcset` done.** No CDN (ADR 0002) |
+
+**The three metrics §10.1 names are now reported on every pull request**, which they were not: the table above set targets for LCP, CLS and INP and nothing measured any of them. `lighthouse-budget.json` carries them, and the split is the same one the categories use. **CLS is an error**, because it measures layout rather than timing — a page that jumps under the reader's finger jumps the same way on any machine, and it is the regression a carelessly sized image actually causes. LCP and Total Blocking Time are warnings, because they are timing on a shared runner. **INP has no lab equivalent at all** — it needs a real finger on a real screen — so TBT stands in for it, which is what Lighthouse itself recommends and is not the same thing; the honest reading of that row is "nothing here measures INP".
+
+  It found something on its first run, and the first number reported here was wrong in the safe direction's opposite. Measured in an agent sandbox the three pages read 2.3 s, 2.1 s and 3.0 s; **measured on a CI runner with working network they are 2.7 s, 2.7 s and 4.0 s**. The sandbox cannot reach the two font CDNs (its proxy's certificate is not trusted), which makes a text LCP finish *earlier* rather than later, and every page here has a text LCP element. So the sandbox flatters the site, and any performance figure taken there is worthless — the same trap AGENTS.md already records for Chrome against the live sites, in a direction that is easy to mistake for good news.
+
+  **Read it over runs, not from one.** Two CI runs of identical code gave:
+
+  | | run 1 | run 2 |
+  |---|---|---|
+  | homepage LCP | 2.7 s | 2.9 s |
+  | packages LCP | 2.7 s | 2.5 s |
+  | guide LCP | 4.0 s | 3.9 s |
+  | guide performance | 77 | 83 |
+  | guide Total Blocking Time | 270 ms | 50 ms |
+
+  So: **the guide's ~4 s is real and stable**, and it plainly misses the target. The homepage is consistently over at 2.7–2.9 s, narrowly. The packages list sits *on* the line and passed one of the two runs, so calling it a miss would be over-reading. And the guide's Total Blocking Time is **too noisy to conclude anything from** — 270 ms and 50 ms are the same page on the same commit. This is the whole reason these are warnings rather than gates, and it is worth having the evidence written down rather than the principle alone: a single run of a timing metric is an anecdote.
+
+  Weight, by contrast, does not move at all: 274, 256 and 455 KB on both runs. That is why the byte budget is the gate.
+
+  **The guide's weight is mostly its own HTML** (202 KB of the 455), because the page ships every step inline. That is what makes it readable in Makkah with no signal, which is the whole of §7.2. So this is a trade somebody chose, not a defect somebody missed, and the honest framing is "loads slowly once, then works without data" — which is a decision for the owner rather than something to optimise away quietly. The homepage and packages list have no such excuse and are the cheaper win.
 
 **Responsive image delivery — done, and the variants were already there.** Hero uploads have been writing `_768w`, `_1280w` and `_1920w` WebP files since Phase 2, and `HeroBanner::getResponsiveImageUrlsAttribute()` has been returning their URLs the whole time. **No view ever called it.** Every visitor on every device was served the full-size file — and on the homepage that file is the Largest Contentful Paint element, so a telephone on a Maldivian mobile connection downloaded a 1920-pixel photograph to show it 390 pixels wide. The variants existed; the `srcset` did not.
 
@@ -1222,7 +1242,7 @@ Roles/permissions (§9.3) **— done**; audit log **— foundation done (`2e81a3
 
   **It ships with enforcement off**, and that is deliberate rather than timid. Enforcing on release would mean the owner signs in after the next deploy, is sent to enrolment, and needs an authenticator app on the telephone in their hand before they can reach a booking — at whatever moment the deploy happened to land. Changing how somebody signs in to a live system is their decision, on a morning they choose, not a side effect of a release. Off does not mean absent: anybody can enrol at `/two-factor` today and everybody who has is still asked for a code. **Set `MFA_ENFORCE=true` when you have enrolled**, and the roles above are then compelled. The same switch is the emergency stop.
 
-  **Signed, expiring URLs for document access — done, and were before this was written.** `DocumentWallet::downloadUrl()` and `SlipVault` issue `URL::temporarySignedRoute` links that expire in `documents.download_link_minutes` (5), the disks are private and not servable, and the route records who walked through it. This line said "still open" for several phases after it stopped being true, which is exactly how a real gap gets waved through — the eye skips a list it has read before. Still open here: rate limiting on auth **— done (D35): registration, password reset (capped per caller *and* per address), reset submission, password confirmation and password update; login was already covered by `LoginRequest`**, booking and payment endpoints; CSRF on all forms (Laravel default — verify on the new AJAX paths); **security response headers — done (D36): `nosniff`, `SAMEORIGIN`, `strict-origin-when-cross-origin`, a `Permissions-Policy` denying the features the site does not use, HSTS over HTTPS only, and `X-Powered-By` removed.**
+  **Signed, expiring URLs for document access — done, and were before this was written.** `DocumentWallet::downloadUrl()` and `SlipVault` issue `URL::temporarySignedRoute` links that expire in `documents.download_link_minutes` (5), the disks are private and not servable, and the route records who walked through it. This line said "still open" for several phases after it stopped being true, which is exactly how a real gap gets waved through — the eye skips a list it has read before. Still open here: rate limiting on auth **— done (D35): registration, password reset (capped per caller *and* per address), reset submission, password confirmation and password update; login was already covered by `LoginRequest`**, booking and payment endpoints; CSRF on all forms **— verified**: there are no exemptions anywhere, and all four paths that write over AJAX (hero banner reordering, guide-step reordering and status toggling, and the tour leader's offline sync) send `X-CSRF-TOKEN`; the leader's token is put on the page by `leader/count.blade.php`, which is where the sync runs; **security response headers — done (D36): `nosniff`, `SAMEORIGIN`, `strict-origin-when-cross-origin`, a `Permissions-Policy` denying the features the site does not use, HSTS over HTTPS only, and `X-Powered-By` removed.**
 
 **Session security and device management — done.** `/devices` lists every browser an account is currently signed in on, names it, says when it was last used and from what address, marks the one being used now, and signs out one or all of the others. It reads the `sessions` table directly and `App\Support\SignedInDevices` explains why: the session *is* the record of being signed in, and a separate devices table would be a second copy of the same fact that parts company with it the first time a session expires quietly — leaving a screen that offers to sign out a telephone somebody sold last year, does nothing, and says it worked.
 
