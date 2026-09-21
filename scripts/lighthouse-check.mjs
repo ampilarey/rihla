@@ -74,6 +74,22 @@ for (const path of budget.urls) {
     ;(rule.level === 'warn' ? warnings : failures).push(message)
   }
 
+  // The §10.1 metrics the plan named and nothing ever reported.
+  for (const [id, rule] of Object.entries(budget.metrics ?? {})) {
+    const audit = report.audits[id]
+
+    if (!audit || audit.numericValue == null) continue
+
+    row[rule.label] = audit.displayValue ?? audit.numericValue
+
+    if (audit.numericValue <= rule.max) continue
+
+    const message =
+      `${path} — ${audit.title} is ${audit.displayValue}, over ${rule.max}${rule.unit}`
+
+    ;(rule.level === 'warn' ? warnings : failures).push(message)
+  }
+
   const bytes = Math.round(report.audits['total-byte-weight']?.numericValue ?? 0)
   row.KB = Math.round(bytes / 1024)
 

@@ -38,6 +38,27 @@
     "best-practices": { "min": 0.95, "level": "error" },
     "performance": { "min": 0.8, "level": "warn" }
   },
+  "_metricsComment": [
+    "The three §10.1 targets, which the plan named and nothing reported.",
+    "",
+    "cumulative-layout-shift is an ERROR, unlike the performance score.",
+    "It measures layout, not timing: a page that jumps under the reader's",
+    "finger jumps the same way on any machine, and it is the regression a",
+    "carelessly sized image actually causes. 0.1 is the plan's own target",
+    "and the homepage measures 0.",
+    "",
+    "The other two are timing and so are warnings, for the same reason the",
+    "performance score is. INP has no lab equivalent at all — it needs a",
+    "real finger on a real screen — so total-blocking-time stands in for",
+    "it, which is what Lighthouse itself recommends and is not the same",
+    "thing. Measured: LCP 2.3 s, CLS 0, TBT 10 ms."
+  ],
+  "metrics": {
+    "largest-contentful-paint": { "label": "LCP", "max": 2500, "level": "warn", "unit": "ms" },
+    "cumulative-layout-shift": { "label": "CLS", "max": 0.1, "level": "error", "unit": "" },
+    "total-blocking-time": { "label": "TBT", "max": 200, "level": "warn", "unit": "ms" }
+  },
+
   "maxBytes": 921600,
   "urls": [
     "/en",
