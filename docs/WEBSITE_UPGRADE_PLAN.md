@@ -1168,9 +1168,9 @@ Nothing the drafter produces is sent, saved, published or quoted: `draft.use` is
 
 | Metric | Target | Notes |
 |---|---|---|
-| LCP (mobile, 4G) | < 2.5 s | **Reported in CI, and all three pages miss it**: homepage 2.7 s, packages 2.7 s, **guide 4.0 s** |
+| LCP (mobile, 4G) | < 2.5 s | **Reported in CI.** Over two runs: homepage 2.7–2.9 s, packages 2.5–2.7 s, **guide 3.9–4.0 s**. The guide misses it plainly; the homepage narrowly; packages sits on the line |
 | CLS | < 0.1 | **Gated in CI** — measures layout, not timing, so it is an error rather than a warning. Homepage 0, packages 0.013, guide 0.01: all well inside it |
-| INP | < 200 ms | No lab equivalent exists — it needs a real finger on a real screen. Total Blocking Time stands in, reported in CI: 0 ms, 0 ms, **270 ms on the guide** |
+| INP | < 200 ms | No lab equivalent exists — it needs a real finger on a real screen. Total Blocking Time stands in and is **too noisy to read**: the guide gave 270 ms and 50 ms on two runs of identical code |
 | Lighthouse performance (mobile) | ≥ 90 | **Done — in CI.** Measured 90–97 on the three audited pages |
 | Server response (TTFB) | < 400 ms | Cache package/departure queries; index them properly |
 | Image delivery | WebP/AVIF, responsive `srcset`, CDN | **WebP and `srcset` done.** No CDN (ADR 0002) |
@@ -1179,7 +1179,19 @@ Nothing the drafter produces is sent, saved, published or quoted: `draft.use` is
 
   It found something on its first run, and the first number reported here was wrong in the safe direction's opposite. Measured in an agent sandbox the three pages read 2.3 s, 2.1 s and 3.0 s; **measured on a CI runner with working network they are 2.7 s, 2.7 s and 4.0 s**. The sandbox cannot reach the two font CDNs (its proxy's certificate is not trusted), which makes a text LCP finish *earlier* rather than later, and every page here has a text LCP element. So the sandbox flatters the site, and any performance figure taken there is worthless — the same trap AGENTS.md already records for Chrome against the live sites, in a direction that is easy to mistake for good news.
 
-  The real picture: **all three pages miss the 2.5-second LCP target**, the homepage and packages list narrowly at 2.7 s and **the Umrah guide badly at 4.0 s**. The guide also blocks the main thread for 270 ms against a 200 ms ceiling and weighs 455 KB, which is where its performance score of 77 comes from. None of it gates a merge — all three are warnings, deliberately — but it is now printed on every pull request instead of nowhere, which is the difference between a target and a wish.
+  **Read it over runs, not from one.** Two CI runs of identical code gave:
+
+  | | run 1 | run 2 |
+  |---|---|---|
+  | homepage LCP | 2.7 s | 2.9 s |
+  | packages LCP | 2.7 s | 2.5 s |
+  | guide LCP | 4.0 s | 3.9 s |
+  | guide performance | 77 | 83 |
+  | guide Total Blocking Time | 270 ms | 50 ms |
+
+  So: **the guide's ~4 s is real and stable**, and it plainly misses the target. The homepage is consistently over at 2.7–2.9 s, narrowly. The packages list sits *on* the line and passed one of the two runs, so calling it a miss would be over-reading. And the guide's Total Blocking Time is **too noisy to conclude anything from** — 270 ms and 50 ms are the same page on the same commit. This is the whole reason these are warnings rather than gates, and it is worth having the evidence written down rather than the principle alone: a single run of a timing metric is an anecdote.
+
+  Weight, by contrast, does not move at all: 274, 256 and 455 KB on both runs. That is why the byte budget is the gate.
 
   **The guide's weight is mostly its own HTML** (202 KB of the 455), because the page ships every step inline. That is what makes it readable in Makkah with no signal, which is the whole of §7.2. So this is a trade somebody chose, not a defect somebody missed, and the honest framing is "loads slowly once, then works without data" — which is a decision for the owner rather than something to optimise away quietly. The homepage and packages list have no such excuse and are the cheaper win.
 
