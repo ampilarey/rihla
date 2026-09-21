@@ -28,9 +28,12 @@
     2.38:1 on white. Both are below the 3:1 a graphic element needs, and no
     test could see it because the SVG was present and only the colour was
     wrong. The two marks now carry different sail colours on purpose: the
-    light mark uses the darker gold (#A88C1F, 3.26:1 on white) and the mid
-    violet; the inverse uses the bright chiffon (9.85:1 on ink) and a lighter
-    violet (#9481BA, 4.27:1). Recolouring one and copying it to the other
+    light mark uses the darker gold (#A88C1F, 3.26:1 on white) and the guide's
+    violet #5F498A exactly; the inverse uses the guide's lemon chiffon #FEF9CD
+    exactly (13.73:1 on ink) and a lighter violet (#9481BA, 4.27:1). Each
+    variant therefore carries one of the two brand hexes untouched — the one
+    its own background can actually show. Neither can carry both: the pair is
+    7.0:1 apart and clearing 3:1 off a shared ground would take 9:1. Recolouring one and copying it to the other
     reintroduces exactly this bug.
 
     The two lines carry different tracking because they are different lengths:

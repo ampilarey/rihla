@@ -33,13 +33,13 @@ class BrandMarkTest extends TestCase
     /**
      * The only colours that may appear in brand artwork.
      *
-     * Two golds, deliberately. The bright chiffon is legible on ink (9.85:1)
-     * and invisible on cream (1.49:1); the dark one is the reverse. A mark is
+     * Two golds, deliberately. The guide's lemon chiffon is legible on ink
+     * (13.73:1) and invisible on cream (1.05:1); the dark one is the reverse. A mark is
      * cut for one ground or the other, so each uses the gold that works on
      * its own — see BrandColourTest, which measures every fill against the
      * surface its variant is for.
      */
-    private const PALETTE = ['#5F498A', '#9481BA', '#EFD34D', '#A88C1F', '#2E2245'];
+    private const PALETTE = ['#5F498A', '#9481BA', '#FEF9CD', '#EFD34D', '#A88C1F', '#2E2245'];
 
     /** Cream, the field every icon is cut on. Matches the manifest. */
     private const FIELD = [255, 253, 240];
