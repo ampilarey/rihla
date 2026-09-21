@@ -194,6 +194,78 @@ jobs:
           fi
           echo "Committed build matches a fresh build."
 
+  lighthouse:
+    name: Lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # `npm run lighthouse` existed in package.json and CI never ran it, so
+    # nothing stopped an accessibility or SEO regression reaching the site.
+    # The first run of this found two: a "Learn More" link that tells a
+    # screen-reader user nothing, and a footer heading that skipped a level
+    # on any page with no h2 of its own.
+    #
+    # The thresholds live in lighthouse-budget.json and every one of them was
+    # measured against the real pages before it was written down. Only the
+    # deterministic categories gate a merge; performance is reported and does
+    # not fail, because it is timing on a shared runner and a gate that flakes
+    # is one people learn to re-run until it passes.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, tokenizer, pdo, pdo_sqlite, gd
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      # The homepage queries the trips table and the guide needs its steps,
+      # so an unseeded database audits an empty page and proves nothing.
+      - name: Migrate and seed
+        run: |
+          touch database/database.sqlite
+          php artisan migrate --force --seed
+
+      # Served and audited in one step. A server backgrounded in one step
+      # and used in the next depends on the runner not reaping the step
+      # shell's children, which is a thing that happens to be true rather
+      # than a thing that is promised.
+      - name: Serve and audit
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 --no-reload &
+          SERVER=$!
+          trap 'kill $SERVER 2>/dev/null || true' EXIT
+
+          up=0
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8000/en; then
+              up=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$up" -ne 1 ]; then
+            echo "::error::The site never came up, so nothing was audited."
+            exit 1
+          fi
+
+          node scripts/lighthouse-check.mjs http://127.0.0.1:8000
+
   security:
     name: Dependency audit
     runs-on: ubuntu-latest

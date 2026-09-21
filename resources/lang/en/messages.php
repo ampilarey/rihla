@@ -700,4 +700,5 @@ return [
     'Last used :when' => 'Last used :when',
     'Sign out everywhere except here. You will stay signed in on this device.' => 'Sign out everywhere except here. You will stay signed in on this device.',
     'Sign out everywhere else' => 'Sign out everywhere else',
+    'Read more about :subject' => 'Read more about :subject',
 ];

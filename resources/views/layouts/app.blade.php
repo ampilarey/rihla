@@ -458,7 +458,15 @@
 
                     <!-- Quick Links -->
                     <div>
-                        <h3 class="text-lg font-semibold mb-4 text-gold-500">{{ __('Quick Links') }}</h3>
+                        {{-- h2, not h3. These are top-level sections of the
+                             footer and sit under no h2 of their own, so an h3
+                             here skips a level. On a page whose content has no
+                             h2 at all — the packages list is one — a screen
+                             reader navigating by heading goes straight from the
+                             page's h1 to an h3 and is told a section is missing.
+                             Lighthouse flags it as `heading-order`; the visual
+                             size is set by the class, not the tag. --}}
+                        <h2 class="text-lg font-semibold mb-4 text-gold-500">{{ __('Quick Links') }}</h2>
                         <ul class="space-y-2">
                             <li>
                                 <a href="{{ route('packages.index') }}"
@@ -508,7 +516,7 @@
 
                     <!-- Contact Info -->
                     <div>
-                        <h3 class="text-lg font-semibold mb-4 text-gold-500">{{ __('Contact Info') }}</h3>
+                        <h2 class="text-lg font-semibold mb-4 text-gold-500">{{ __('Contact Info') }}</h2>
                         <div class="space-y-3">
                             <div class="flex items-start gap-3">
                                 <svg aria-hidden="true" focusable="false" class="w-5 h-5 text-gold-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

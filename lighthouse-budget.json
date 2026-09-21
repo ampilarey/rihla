@@ -1,0 +1,47 @@
+{
+  "_comment": [
+    "Thresholds for the Lighthouse job in CI (§10.1). Every number here was",
+    "measured against the real site before it was written down — a gate set",
+    "by guesswork is either meaningless or flaky, and a flaky gate is worse",
+    "than none because people learn to ignore it.",
+    "",
+    "accessibility and seo are ERRORS at 1.0 because both are rule-based and",
+    "deterministic: the same page scores the same on any machine, so a drop",
+    "is a real regression somebody introduced. Both pages measured 100 once",
+    "the two defects this job found were fixed.",
+    "",
+    "performance is a WARNING and deliberately not a gate. It is timing on a",
+    "shared CI runner and moves several points between identical runs.",
+    "Failing a merge on that teaches people to re-run until it passes.",
+    "",
+    "The real performance regression on a site like this is somebody",
+    "committing a four-megabyte hero photograph, and bytes ARE deterministic.",
+    "So maxBytes is the performance gate. The measured weights are 178 KB",
+    "(home), 159 KB (packages) and 330 KB (guide); 900 KB leaves room for",
+    "ordinary growth and still catches an unoptimised image on sight."
+  ],
+  "_lighthouseVersion": [
+    "Pinned exactly, and fetched with npx rather than added to",
+    "package.json. Scoring changes between Lighthouse releases, so a",
+    "floating version turns this gate red for no code reason — which is the",
+    "one thing it must not do. Kept out of the dependency tree because it is",
+    "CI-only and never shipped: as a devDependency its 170-odd transitive",
+    "packages would join `npm audit` in the security job, where an advisory",
+    "in a tool that only ever visits our own site would block an unrelated",
+    "merge. Bump it here, deliberately, and re-measure the thresholds below."
+  ],
+  "lighthouseVersion": "12.8.2",
+
+  "categories": {
+    "accessibility": { "min": 1.0, "level": "error" },
+    "seo": { "min": 1.0, "level": "error" },
+    "best-practices": { "min": 0.95, "level": "error" },
+    "performance": { "min": 0.8, "level": "warn" }
+  },
+  "maxBytes": 921600,
+  "urls": [
+    "/en",
+    "/en/packages",
+    "/en/guide"
+  ]
+}
