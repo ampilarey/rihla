@@ -40,6 +40,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Encryption at rest
+    |--------------------------------------------------------------------------
+    |
+    | Passport scans and bank transfer slips are written as ciphertext under
+    | APP_KEY. See App\Support\EncryptedFile for what that does and does not
+    | protect against — it is a layer, not a safe, and on cPanel somebody
+    | with a shell has both the files and the key.
+    |
+    | Turning this off stops new files being encrypted; it does not make the
+    | encrypted ones unreadable, because every payload says which it is.
+    | Existing plaintext files keep working either way, and
+    | `documents:encrypt` converts them when convenient.
+    |
+    */
+
+    'encrypt_at_rest' => (bool) env('DOCUMENTS_ENCRYPT_AT_REST', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Download links
     |--------------------------------------------------------------------------
     |

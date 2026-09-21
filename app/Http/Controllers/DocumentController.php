@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\DocumentVersion;
 use App\Services\Documents\DocumentWallet;
+use App\Support\EncryptedFile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -34,9 +34,19 @@ class DocumentController extends Controller
 
         $this->recordDownload($version, $request);
 
-        return Storage::disk($version->disk)->download(
-            $version->path,
+        // Read and decrypted rather than streamed: a file has to be whole
+        // in memory to be decrypted (§10.4, App\Support\EncryptedFile).
+        // Uploads are capped at documents.max_kilobytes, which is what
+        // makes that affordable. A file written before encryption existed
+        // comes back untouched.
+        $contents = EncryptedFile::contents($version->disk, $version->path);
+
+        abort_if($contents === null, 404);
+
+        return response()->streamDownload(
+            fn () => print $contents,
             $version->original_filename,
+            ['Content-Type' => $version->mime_type ?: 'application/octet-stream'],
         );
     }
 
