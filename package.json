@@ -6,7 +6,7 @@
         "dev": "vite",
         "build": "vite build",
         "watch": "vite build --watch",
-        "lighthouse": "lighthouse http://localhost:8000 --output html --output-path ./lighthouse-report.html"
+        "lighthouse": "node scripts/lighthouse-check.mjs"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",

@@ -20,7 +20,10 @@ class WhySectionSeeder extends Seeder
             'subtitle' => 'Discover the unique advantages that make us your perfect travel partner',
             'primary_cta_text' => 'Start Your Journey',
             'primary_cta_url' => '/trips',
-            'secondary_cta_text' => 'Learn More',
+            // Not "Learn More": a screen reader offers its user the links
+            // on a page out of context, and "Learn More" in that list says
+            // nothing. Lighthouse fails the homepage on it (§10.1).
+            'secondary_cta_text' => 'Read the Umrah guide',
             'secondary_cta_url' => '/guide',
             'is_active' => true,
         ]);

@@ -1171,9 +1171,18 @@ Nothing the drafter produces is sent, saved, published or quoted: `draft.use` is
 | LCP (mobile, 4G) | < 2.5 s | Homepage hero must not block it; use a poster image, lazy-load video |
 | CLS | < 0.1 | Reserve space for hero, cards, images |
 | INP | < 200 ms | Alpine is fine; avoid heavy JS on the homepage |
-| Lighthouse performance (mobile) | ≥ 90 | `npm run lighthouse` already exists — put it in CI |
+| Lighthouse performance (mobile) | ≥ 90 | **Done — in CI.** Measured 90–97 on the three audited pages |
 | Server response (TTFB) | < 400 ms | Cache package/departure queries; index them properly |
 | Image delivery | WebP/AVIF, responsive `srcset`, CDN | Currently unoptimised |
+
+**Lighthouse runs in CI — done, and its first run found two defects.** `npm run lighthouse` had existed in `package.json` since the beginning and nothing ever ran it, so nothing stopped an accessibility or SEO regression reaching the site. The job audits the homepage, the packages list and the Umrah guide against `lighthouse-budget.json`, and the numbers in that file were **measured against the real pages before they were written down** — a threshold set by guesswork is either meaningless or flaky, and a flaky gate is worse than none because people learn to re-run it until it passes.
+
+  **Only the deterministic categories gate a merge.** Accessibility and SEO are rule-based: the same page scores the same on any machine, so a drop is a real regression somebody introduced, and both are required at 100. Performance is timing on a shared runner and moves several points between identical runs, so it is reported and does not fail. The realistic performance regression here is somebody committing a four-megabyte hero photograph, and **bytes are deterministic** — so page weight is the performance gate instead, budgeted at 900 KB against measured weights of 174, 155 and 322 KB. The Lighthouse version is pinned exactly, because scoring changes between releases and a floating version turns the gate red for no code reason.
+
+  The two defects it found on its first run, both invisible to every existing test:
+
+  - **"Learn More" is not link text.** The homepage's why-section button said it, and a screen reader offers its user the links on a page as a list, out of context — where "Learn More" says nothing at all. It is also the only thing a search engine has to go on about what is at the other end. Now "Read the Umrah guide". The same button had already been repointed once, from an `/about` that 404ed; this gives it words. The migration matches the exact seeded value in each locale, so text an editor chose is untouched.
+  - **The footer skipped a heading level.** "Quick Links" and "Contact Info" were `<h3>` under no `<h2>`, so on any page whose own content has no `<h2>` — the packages list is one — a screen reader navigating by heading went from the page's `<h1>` straight to an `<h3>` and was told a section was missing. Now `<h2>`; the visual size was always set by the class, not the tag, so nothing moved.
 
 ### 10.2 Accessibility — WCAG 2.2 AA
 
