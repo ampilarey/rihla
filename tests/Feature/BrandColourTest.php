@@ -73,6 +73,75 @@ class BrandColourTest extends TestCase
     }
 
     /**
+     * A colour class that compiles to nothing is invisible, not wrong.
+     *
+     * `ink`, `cream`, `error`, `success` and `warning` were all defined
+     * with a `DEFAULT`, so `text-ink` and `bg-cream` worked everywhere and
+     * everybody wrote them. `wine` and `gold` were not, so `bg-wine`,
+     * `text-wine`, `border-s-wine` and `border-s-gold` produced **no rule
+     * at all** — and the failure is silent in the worst way: the element
+     * renders, the markup is right, every assertion passes, and
+     * `bg-wine px-3 py-1 text-white` is white text on no background.
+     *
+     * That was live on two screens. The tour leader's head count said
+     * "3 missing" in white on cream, and the family portal's attendance
+     * badge said "Not yet counted" the same way — on a telephone, at a
+     * hotel desk in Makkah, to the two audiences least able to work out
+     * what they were missing.
+     *
+     * So: any palette a view names without a shade has to have a DEFAULT.
+     */
+    public function test_no_view_names_a_colour_that_compiles_to_nothing(): void
+    {
+        $config = File::get(base_path('tailwind.config.js'));
+
+        // Palette names declared as objects in the config, e.g. `wine: {`.
+        preg_match_all('/^\s{6,10}([a-z][a-zA-Z0-9]*):\s*\{/m', $config, $found);
+
+        $withDefault = [];
+
+        foreach ($found[1] as $palette) {
+            if (preg_match('/\b'.$palette.':\s*\{(.*?)\n\s*\},/s', $config, $body) !== 1) {
+                continue;
+            }
+
+            $withDefault[$palette] = str_contains($body[1], 'DEFAULT:');
+        }
+
+        $this->assertNotEmpty($withDefault, 'No palettes were read out of tailwind.config.js.');
+
+        // Every utility prefix that takes a colour and is used here.
+        $prefixes = 'bg|text|border|border-s|border-e|border-t|border-b|ring|divide|fill|stroke|from|via|to|outline|shadow|accent|caret|decoration|placeholder';
+
+        $offenders = [];
+
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            $contents = File::get($file->getPathname());
+
+            foreach ($withDefault as $palette => $hasDefault) {
+                if ($hasDefault) {
+                    continue;
+                }
+
+                // The class named bare — no shade, and not part of a longer
+                // word such as `bg-wine-500` or `text-inkling`.
+                $pattern = '/\b(?:'.$prefixes.')-'.$palette.'(?![\w-])/';
+
+                if (preg_match($pattern, $contents) === 1) {
+                    preg_match($pattern, $contents, $hit);
+                    $offenders[] = $file->getRelativePathname().': '.$hit[0];
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, implode("\n", array_merge(
+            ['These classes produce no CSS, so the element renders with no colour at all.',
+                'Either give the palette a DEFAULT in tailwind.config.js or name a shade:'],
+            $offenders,
+        )));
+    }
+
+    /**
      * The constants exist so a palette change cannot leave a component
      * behind again; they are only useful while they match the source.
      */

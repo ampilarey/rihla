@@ -54,5 +54,9 @@
                 <a href="{{ route('mfa.enrol') }}" class="btn-primary">{{ __('messages.Set up a second step') }}</a>
             </div>
         @endif
+
+        <p class="mt-8 text-sm text-brand-body">
+            <a href="{{ route('devices.index') }}" class="underline">{{ __('messages.Where you are signed in') }}</a>
+        </p>
     </div>
 @endsection

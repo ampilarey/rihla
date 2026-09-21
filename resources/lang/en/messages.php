@@ -682,4 +682,22 @@ return [
     'That code did not match. Use the next one your app shows, or one of your recovery codes.' => 'That code did not match. Use the next one your app shows, or one of your recovery codes.',
     'Too many attempts. Wait a minute and try again.' => 'Too many attempts. Wait a minute and try again.',
     ':count recovery code left|:count recovery codes left' => ':count recovery code left|:count recovery codes left',
+
+    // Device management — §10.4.
+    'Where you are signed in' => 'Where you are signed in',
+    'A device that did not say what it is' => 'A device that did not say what it is',
+    'Something on :platform' => 'Something on :platform',
+    ':browser on :platform' => ':browser on :platform',
+    'That is this device. Use Sign out to leave here.' => 'That is this device. Use Sign out to leave here.',
+    'That device has been signed out.' => 'That device has been signed out.',
+    'That device was already signed out.' => 'That device was already signed out.',
+    'There was nowhere else signed in.' => 'There was nowhere else signed in.',
+    'Signed out of one other device.|Signed out of :count other devices.' => 'Signed out of one other device.|Signed out of :count other devices.',
+    'This cannot be shown on this server.' => 'This cannot be shown on this server.',
+    'Sessions are not being stored somewhere this page can read, so it cannot tell you where you are signed in. This is not the same as being signed in nowhere else.' => 'Sessions are not being stored somewhere this page can read, so it cannot tell you where you are signed in. This is not the same as being signed in nowhere else.',
+    'One row for every browser your account is currently signed in on. If you do not recognise one, sign it out and change your password.' => 'One row for every browser your account is currently signed in on. If you do not recognise one, sign it out and change your password.',
+    'This is the device you are using now.' => 'This is the device you are using now.',
+    'Last used :when' => 'Last used :when',
+    'Sign out everywhere except here. You will stay signed in on this device.' => 'Sign out everywhere except here. You will stay signed in on this device.',
+    'Sign out everywhere else' => 'Sign out everywhere else',
 ];
