@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\WhyFeatureController;
 use App\Http\Controllers\Admin\WhySectionController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DevicesController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\FamilyController;
@@ -339,6 +340,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/two-factor/challenge', [SecondFactorController::class, 'challenge'])->name('mfa.challenge');
     Route::post('/two-factor/challenge', [SecondFactorController::class, 'verify'])->name('mfa.verify');
     Route::post('/two-factor/off', [SecondFactorController::class, 'disable'])->name('mfa.disable');
+
+    // Where this account is signed in. Beside the second factor because
+    // it answers the same question from the other side: one says how hard
+    // it is to get in, the other says who already is.
+    Route::get('/devices', [DevicesController::class, 'index'])->name('devices.index');
+    Route::delete('/devices/others', [DevicesController::class, 'destroyOthers'])->name('devices.destroyOthers');
+    Route::delete('/devices/{device}', [DevicesController::class, 'destroy'])->name('devices.destroy');
 });
 
 require __DIR__.'/auth.php';

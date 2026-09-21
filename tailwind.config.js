@@ -39,6 +39,14 @@ export default {
         // states, hero accents. Hover/active go darker within the ramp rather
         // than reaching for an unrelated colour.
         wine: {
+          // Bare `bg-wine` / `border-s-wine` resolve to this, as bare
+          // `text-ink` and `bg-cream` already did. Without it those classes
+          // compile to nothing at all: `bg-wine px-3 py-1 text-white` was
+          // rendering white text on no background — an invisible badge on
+          // the tour leader's head count and the family portal, which no
+          // test can see because the markup is there and only the colour
+          // is missing.
+          DEFAULT: '#8E2653',
           50: '#FCF5F8',
           100: '#F9E7EF',
           200: '#F1CBDB',
@@ -54,6 +62,9 @@ export default {
         // Accent only, never a second primary. As a filled background it takes
         // ink text, never white: gold-500 on white is 2.4:1 and fails.
         gold: {
+          // As for wine: `border-s-gold` was doing nothing on the notices
+          // banner and the leader's offline banner.
+          DEFAULT: '#D2A03C',
           400: '#E8C270',
           500: '#D2A03C',
           600: '#A87F2C',
