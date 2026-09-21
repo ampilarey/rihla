@@ -57,7 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `departure_costs` hangs off `departures` (§8.4).
+        // First of all: `assistant_exchanges` holds a foreign key into
+        // `travellers` (§9.6 — the log of what the pilgrim assistant was
+        // asked, kept against the person who asked).
+        __DIR__.'/../../database/migrations/2026_09_20_380000_create_the_assistant_log.php',
+        // Then: `departure_costs` hangs off `departures` (§8.4).
         __DIR__.'/../../database/migrations/2026_09_20_360000_create_journey_costs.php',
         // Then: `quotations` points at `bookings`, `departures` and
         // `packages`, and `crm_tasks` and `customers.referred_by_customer_id`

@@ -15,6 +15,7 @@ use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\LeaderController;
 use App\Http\Controllers\LearningController;
 use App\Http\Controllers\MediaController;
@@ -119,6 +120,9 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
         // the same one the packages and ziyarah routes carry a note about.
         Route::get('/portal/questions', [LearningController::class, 'questions'])->name('learning.questions');
         Route::post('/portal/questions', [LearningController::class, 'askQuestion'])->name('learning.questions.store');
+        // §9.6's assistant, in front of the scholar's queue rather than
+        // beside it. It answers only from approved content or hands over.
+        Route::post('/portal/questions/guide', [LearningController::class, 'askTheGuide'])->name('learning.questions.guide');
 
         Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
         Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
@@ -177,6 +181,12 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     // The Ziyarah Guide (§7.2). The manifest is declared before {slug} or
     // "offline" is read as a location slug — the same ordering trap the
     // package comparison route carries a comment about.
+    // The Knowledge Centre a pilgrim can actually read (§7.1). Built with
+    // §9.6's assistant, which must cite it — and a citation nobody can open
+    // and check is not a citation.
+    Route::get('/knowledge', [KnowledgeController::class, 'index'])->name('knowledge.index');
+    Route::get('/knowledge/{slug}', [KnowledgeController::class, 'show'])->name('knowledge.show');
+
     Route::get('/ziyarah', [ZiyarahController::class, 'index'])->name('ziyarah.index');
     Route::get('/ziyarah/offline', [ZiyarahController::class, 'offlineManifest'])->name('ziyarah.manifest');
     Route::get('/ziyarah/{slug}', [ZiyarahController::class, 'show'])->name('ziyarah.show');
