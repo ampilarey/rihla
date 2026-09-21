@@ -4,6 +4,7 @@ namespace App\Services\Payments;
 
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
+use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -48,11 +49,13 @@ final class SlipVault
             $replaced = $payment->slip_path;
             $replacedChecksum = $payment->slip_checksum;
 
-            $path = $file->storeAs(
-                'payment-slips/'.$payment->getKey(),
-                Str::random(40).'.'.($file->getClientOriginalExtension() ?: 'bin'),
-                ['disk' => $this->disk()],
-            );
+            // Ciphertext on disk — §10.4. A transfer slip carries a bank
+            // account and a name, which is the same class of thing as a
+            // passport scan.
+            $path = 'payment-slips/'.$payment->getKey()
+                .'/'.Str::random(40).'.'.($file->getClientOriginalExtension() ?: 'bin');
+
+            EncryptedFile::put($this->disk(), $path, (string) file_get_contents($file->getRealPath()));
 
             $payment->forceFill([
                 'slip_disk' => $this->disk(),

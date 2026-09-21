@@ -5,6 +5,7 @@ namespace App\Services\Documents;
 use App\Models\Document;
 use App\Models\DocumentVersion;
 use App\Models\Traveller;
+use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -72,10 +73,19 @@ final class DocumentWallet
                 return $latest;
             }
 
-            $path = $file->storeAs(
-                $this->directoryFor($document),
-                Str::random(40).'.'.($file->getClientOriginalExtension() ?: 'bin'),
-                ['disk' => $this->disk()],
+            // Written through EncryptedFile rather than storeAs, so a
+            // passport scan is ciphertext on disk — §10.4. The size and
+            // checksum recorded below are of the *plaintext*: they answer
+            // "is this the same document" and "how big is the scan", and
+            // both would stop meaning that if they described the
+            // ciphertext.
+            $path = $this->directoryFor($document)
+                .'/'.Str::random(40).'.'.($file->getClientOriginalExtension() ?: 'bin');
+
+            EncryptedFile::put(
+                $this->disk(),
+                $path,
+                (string) file_get_contents($file->getRealPath()),
             );
 
             $version = $document->versions()->create([

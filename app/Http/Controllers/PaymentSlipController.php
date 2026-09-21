@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Payment;
 use App\Services\Payments\SlipVault;
+use App\Support\EncryptedFile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -33,9 +33,16 @@ class PaymentSlipController extends Controller
 
         $this->recordDownload($payment, $request);
 
-        return Storage::disk((string) $payment->slip_disk)->download(
-            (string) $payment->slip_path,
+        // Decrypted on the way out — §10.4. See the document controller
+        // for why this is a read rather than a stream.
+        $contents = EncryptedFile::contents((string) $payment->slip_disk, (string) $payment->slip_path);
+
+        abort_if($contents === null, 404);
+
+        return response()->streamDownload(
+            fn () => print $contents,
             $payment->slip_original_filename ?? 'slip',
+            ['Content-Type' => $payment->slip_mime_type ?: 'application/octet-stream'],
         );
     }
 
