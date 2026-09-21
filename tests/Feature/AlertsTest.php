@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Support\Access;
 use App\Support\Alert;
 use App\Support\Alerts;
+use App\Support\Referrals;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -441,5 +442,54 @@ class AlertsTest extends TestCase
         ]);
 
         $this->assertSame('payment.unreviewed', Alerts::all()->first()?->key);
+    }
+
+    /**
+     * Within a severity, the bigger alert comes first.
+     *
+     * This pins the intended order. It does **not** prove the sort is
+     * implemented correctly, and it is worth being plain about that: the
+     * ordering was originally written `sortBy([fn, fn])`, where Laravel
+     * calls each callable as a two-argument *comparator*. A one-argument
+     * accessor then returns 0 or 1 and never -1, which is not a consistent
+     * comparator, and `uasort` on one of those is undefined behaviour.
+     *
+     * On this data the undefined behaviour happens to land on the right
+     * answer, so no arrangement of alerts available here tells the two
+     * implementations apart. On {@see Referrals} it lands on
+     * the wrong one, and `ReferralsTest` catches it there. Both were changed
+     * to two stable passes for the same reason; only one can be held down
+     * by a test.
+     */
+    public function test_within_a_severity_the_larger_alert_comes_first(): void
+    {
+        // Three "this week" alerts: 3 lapsing quotations, 2 stale reviews,
+        // 1 departure off its pace.
+        Quotation::factory()->count(3)->create([
+            'enquiry_id' => Enquiry::factory()->create()->getKey(),
+            'status' => Quotation::SENT,
+            'booking_id' => null,
+            'valid_until' => now()->addDays(2)->toDateString(),
+        ]);
+
+        KnowledgeArticle::factory()->count(2)->create([
+            'status' => KnowledgeArticle::IN_REVIEW,
+            'updated_at' => now()->subDays(40),
+        ]);
+
+        $package = Package::factory()->create();
+        $this->history($package);
+
+        $selling = Departure::factory()->withSeats(60)->create([
+            'package_id' => $package->getKey(),
+            'date_start' => now()->addDays(60)->startOfDay(),
+            'date_end' => now()->addDays(70)->startOfDay(),
+        ]);
+        $this->sell($selling, 10);
+
+        $this->assertSame(
+            ['quotation.expiring', 'review.stale', 'forecast.short'],
+            Alerts::all()->pluck('key')->all(),
+        );
     }
 }

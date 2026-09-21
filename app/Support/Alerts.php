@@ -78,10 +78,22 @@ final class Alerts
             self::quotationsAboutToExpire(),
             self::departuresFlyingWithBlockers(),
             self::contentWaitingOnAScholar(),
-        ))->sortBy([
-            fn (Alert $alert): int => $alert->isUrgent() ? 0 : 1,
-            fn (Alert $alert): int => -$alert->count,
-        ])->values();
+        ))
+            // Two passes, not `sortBy([fn, fn])`. In that multi-sort form
+            // Laravel calls each callable as a two-argument *comparator*, so
+            // a one-argument accessor returns 0 or 1 and never -1 — not a
+            // consistent comparator, and `uasort` on one of those is
+            // undefined behaviour.
+            //
+            // On this screen's data it happened to come out right, which is
+            // why it shipped and why no test here can tell the two apart.
+            // On {@see Referrals} the same form put a nought-seat referrer
+            // above an eight-seat one, and that one is pinned by a test.
+            // Both were changed together rather than leaving a form that
+            // works by luck next to one that does not.
+            ->sortByDesc(fn (Alert $alert): int => $alert->count)
+            ->sortBy(fn (Alert $alert): int => $alert->isUrgent() ? 0 : 1)
+            ->values();
     }
 
     /**

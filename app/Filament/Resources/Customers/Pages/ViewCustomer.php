@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Customers\Pages;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\Customer;
 use App\Support\CustomerDossier;
+use App\Support\ReferralCredit;
+use App\Support\Referrals;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -35,5 +37,23 @@ class ViewCustomer extends ViewRecord
     public function getDossier(): CustomerDossier
     {
         return CustomerDossier::build(Customer::findOrFail($this->getRecord()->getKey()));
+    }
+
+    /**
+     * What this person has sent Rihla, if anything — §8.1's referral
+     * tracking, on the page where somebody looking at them wants it.
+     *
+     * Null when they have referred nobody, so the section disappears
+     * rather than printing a zero at everybody who has not.
+     */
+    public function getReferralCredit(): ?ReferralCredit
+    {
+        return Referrals::forCustomer(Customer::findOrFail($this->getRecord()->getKey()));
+    }
+
+    /** Who sent them, when somebody did. */
+    public function getReferrer(): ?Customer
+    {
+        return Customer::findOrFail($this->getRecord()->getKey())->referrer;
     }
 }
