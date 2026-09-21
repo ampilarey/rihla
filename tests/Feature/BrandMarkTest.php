@@ -73,6 +73,49 @@ class BrandMarkTest extends TestCase
         }
     }
 
+    /**
+     * The share card is the logo most people see, and nothing was watching it.
+     *
+     * `public/images/rihla-social.png` is what WhatsApp and Facebook render
+     * when somebody pastes a link — for a business that sells through
+     * WhatsApp, it is seen far more often than the header. It is a raster, so
+     * the palette swap could not reach it, and no test sampled it: it went on
+     * showing a wine-and-gold dhoni on the retired cream long after every
+     * other surface had moved. `BrandColourTest` scans text; a PNG needs its
+     * pixels read.
+     */
+    public function test_the_share_card_carries_the_current_brand(): void
+    {
+        $path = public_path('images/rihla-social.png');
+
+        $this->assertFileExists($path, 'There is no social preview image.');
+
+        $image = imagecreatefrompng($path);
+
+        $this->assertSame(1200, imagesx($image),
+            'Open Graph wants 1200x630; anything else is recropped by the platform.');
+        $this->assertSame(630, imagesy($image));
+
+        $retired = ['#8E2653', '#D2A03C', '#2E2621', '#FBF6EC', '#F4EDDF'];
+        $found = [];
+
+        for ($y = 0; $y < 630; $y += 2) {
+            for ($x = 0; $x < 1200; $x += 2) {
+                $rgb = imagecolorat($image, $x, $y);
+                $hex = sprintf('#%02X%02X%02X', ($rgb >> 16) & 0xFF, ($rgb >> 8) & 0xFF, $rgb & 0xFF);
+
+                if (in_array($hex, $retired, true)) {
+                    $found[$hex] = true;
+                }
+            }
+        }
+
+        imagedestroy($image);
+
+        $this->assertSame([], array_keys($found),
+            'The share card still paints retired brand colours: '.implode(', ', array_keys($found)));
+    }
+
     /** Every icon the layout or the manifest names must actually exist. */
     public function test_every_declared_icon_exists_and_is_the_size_it_claims(): void
     {
