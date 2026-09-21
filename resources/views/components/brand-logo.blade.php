@@ -18,9 +18,20 @@
     header, w-16 in the footer.
 
     `on="dark"` swaps the hull to cream and the name to cream. The hull is ink
-    #2E2621 and the footer is `bg-ink`, the same #2E2621 — so on the footer the
+    #2E2245 and the footer is `bg-ink`, the same #2E2245 — so on the footer the
     hull disappeared entirely and the logo rendered as two sails floating above
-    nothing. The sails are unaffected: wine and gold both hold against ink.
+    nothing.
+
+    The sails are NOT unaffected, which this comment used to claim. Measured,
+    the old wine sail was 1.8:1 against ink — all but invisible on the footer
+    for as long as the inverse mark has existed — and the old gold sail was
+    2.38:1 on white. Both are below the 3:1 a graphic element needs, and no
+    test could see it because the SVG was present and only the colour was
+    wrong. The two marks now carry different sail colours on purpose: the
+    light mark uses the darker gold (#A88C1F, 3.26:1 on white) and the mid
+    violet; the inverse uses the bright chiffon (9.85:1 on ink) and a lighter
+    violet (#9481BA, 4.27:1). Recolouring one and copying it to the other
+    reintroduces exactly this bug.
 
     The two lines carry different tracking because they are different lengths:
     five letters and seven letters, each spread to the same span.

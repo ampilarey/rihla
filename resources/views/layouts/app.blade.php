@@ -60,7 +60,7 @@
          site could not be installed at all, and it declared a scope of /guide
          which would have covered one page of it. --}}
     <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#2E2621">
+    <meta name="theme-color" content="#2E2245">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Rihla">

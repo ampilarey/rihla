@@ -286,6 +286,15 @@ class BrandColourTest extends TestCase
      * and the logo rendered as two sails floating above nothing — visible
      * immediately on a phone, and invisible to every test that only asked
      * whether the logo was present.
+     *
+     * This test used to assert that the two marks differed ONLY in the hull,
+     * on the belief that the sails held against either ground. They did not:
+     * measured, the old wine sail was 1.8:1 against ink and the old gold sail
+     * 2.38:1 on white, both well under the 3:1 a graphic element needs — and
+     * the sameness assertion could never have caught it, because it compared
+     * the two files to each other rather than either one to its background.
+     * It now checks what actually matters: identical geometry, and every fill
+     * legible against the surface that variant is for.
      */
     public function test_the_logo_hull_is_visible_on_a_dark_surface(): void
     {
@@ -297,14 +306,36 @@ class BrandColourTest extends TestCase
         $this->assertStringContainsString(Brand::CREAM, $inverse,
             'The dark-surface logo should carry a cream hull.');
 
-        // Same geometry, different hull: only the fill may differ.
         $light = File::get(public_path('images/rihla-mark.svg'));
 
-        $this->assertSame(
-            str_replace(Brand::INK, 'HULL', $light),
-            str_replace(Brand::CREAM, 'HULL', $inverse),
-            'The two logo variants have drifted apart; only the hull colour should differ.',
-        );
+        // Geometry is shared; only the fills may differ between the variants.
+        $geometry = static fn (string $svg): array => (function () use ($svg): array {
+            preg_match_all('/ d="([^"]+)"/', $svg, $m);
+
+            return $m[1];
+        })();
+
+        $this->assertSame($geometry($light), $geometry($inverse),
+            'The two logo variants have drifted apart; the artwork must be identical.');
+
+        // Each variant's fills must clear 3:1 against the surface it is for.
+        $fills = static function (string $svg): array {
+            preg_match_all('/fill="(#[0-9A-Fa-f]{6})"/', $svg, $m);
+
+            return $m[1];
+        };
+
+        foreach ([[$light, Brand::WHITE, 'light'], [$inverse, Brand::INK, 'dark']] as [$svg, $ground, $which]) {
+            foreach ($fills($svg) as $fill) {
+                if (strcasecmp($fill, $ground) === 0) {
+                    continue;   // the hull of the light mark IS the ink; it is the shape, not a shape on it
+                }
+
+                $this->assertGreaterThanOrEqual(3.0, $this->contrast($fill, $ground),
+                    "The {$which}-surface mark paints {$fill} on {$ground}, which is "
+                    .round($this->contrast($fill, $ground), 2).':1 — under the 3:1 a shape needs to be seen.');
+            }
+        }
 
         $this->assertStringContainsString('on="dark"', $this->footerMarkup(),
             'The footer does not ask for the dark-surface logo.');

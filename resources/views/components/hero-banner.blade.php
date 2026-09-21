@@ -252,7 +252,7 @@
 .hero-gradient-bg {
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom right, #731F43, #8E2653);
+    background: linear-gradient(to bottom right, #3C2E59, #5F498A);
 }
 
 /* Dark Overlay for Text Readability */

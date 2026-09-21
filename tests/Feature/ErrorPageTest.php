@@ -48,8 +48,8 @@ class ErrorPageTest extends TestCase
 
         // The exact strings whose absence made the old page unrecognisable.
         $response->assertSee(config('app.name'), false);
-        $response->assertSee('#8E2653', false);     // wine
-        $response->assertSee('#D2A03C', false);     // gold
+        $response->assertSee('#5F498A', false);     // primary
+        $response->assertSee('#EFD34D', false);     // accent
         $response->assertSee(__('messages.error_404_title'), false);
     }
 

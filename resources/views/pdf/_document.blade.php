@@ -43,10 +43,10 @@
             body { font-family: 'DejaVu Sans', sans-serif; }
         @endif
 
-        body { margin: 0; padding: 28px; font-size: 11px; line-height: 1.5; color: #2E2621; }
+        body { margin: 0; padding: 28px; font-size: 11px; line-height: 1.5; color: #2E2245; }
 
-        .head { border-bottom: 2px solid #D2A03C; padding-bottom: 14px; margin-bottom: 18px; }
-        .issuer { font-size: 16px; font-weight: bold; color: #8E2653; }
+        .head { border-bottom: 2px solid #A88C1F; padding-bottom: 14px; margin-bottom: 18px; }
+        .issuer { font-size: 16px; font-weight: bold; color: #5F498A; }
         .muted { color: #6B6259; }
         .doc-title { font-size: 20px; font-weight: bold; margin: 0 0 2px; }
 
@@ -58,7 +58,7 @@
 
         .totals { margin-top: 14px; width: 55%; }
         .totals td { padding: 4px; }
-        .totals .grand td { border-top: 2px solid #2E2621; font-weight: bold; font-size: 13px; }
+        .totals .grand td { border-top: 2px solid #2E2245; font-weight: bold; font-size: 13px; }
 
         .note { margin-top: 22px; padding: 10px; background: #FAF6F0; font-size: 10px; }
         .foot { margin-top: 26px; border-top: 1px solid #E5DED4; padding-top: 10px; font-size: 10px; color: #6B6259; }

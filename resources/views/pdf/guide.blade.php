@@ -41,27 +41,27 @@
             padding: 20px;
             font-size: 12px;
             line-height: 1.4;
-            color: #2E2621;
+            color: #2E2245;
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #D2A03C;
+            border-bottom: 2px solid #A88C1F;
         }
         
         .logo {
             font-size: 24px;
             font-weight: bold;
-            color: #8E2653;
+            color: #5F498A;
             margin-bottom: 10px;
         }
         
         .title {
             font-size: 20px;
             font-weight: bold;
-            color: #2E2621;
+            color: #2E2245;
             margin-bottom: 10px;
         }
         
@@ -78,7 +78,7 @@
         .toc-title {
             font-size: 16px;
             font-weight: bold;
-            color: #8E2653;
+            color: #5F498A;
             margin-bottom: 15px;
             border-bottom: 1px solid #ddd;
             padding-bottom: 5px;
@@ -90,7 +90,7 @@
         }
         
         .toc-number {
-            color: #D2A03C;
+            color: #A88C1F;
             font-weight: bold;
         }
         
@@ -106,7 +106,7 @@
         }
         
         .step-number {
-            background: #D2A03C;
+            background: #EFD34D;
             color: white;
             width: 30px;
             height: 30px;
@@ -122,7 +122,7 @@
         .step-title {
             font-size: 16px;
             font-weight: bold;
-            color: #2E2621;
+            color: #2E2245;
         }
         
         .step-content {
@@ -138,7 +138,7 @@
             margin-bottom: 10px;
             padding: 10px;
             background: #f8f9fa;
-            border-left: 3px solid #8E2653;
+            border-left: 3px solid #5F498A;
         }
         
         .step-reference {
@@ -146,14 +146,14 @@
             padding: 10px;
             font-style: italic;
             color: #5B524D;
-            border-left: 3px solid #D2A03C;
+            border-left: 3px solid #A88C1F;
         }
 
         .step-dua {
             margin-bottom: 10px;
             padding: 10px;
-            background: #FBF6EC;
-            border-left: 3px solid #D2A03C;
+            background: #FFFDF0;
+            border-left: 3px solid #A88C1F;
         }
         
         .step-fiqh {
@@ -174,7 +174,7 @@
         
         .checklist-item:before {
             content: "☐ ";
-            color: #D2A03C;
+            color: #A88C1F;
             font-weight: bold;
         }
         

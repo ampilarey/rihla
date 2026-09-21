@@ -38,11 +38,11 @@
             unicode-range: U+0780-07BF, U+FDF2;
         }
         :root {
-            --wine: #8E2653;
-            --gold: #D2A03C;
-            --ink: #2E2621;
-            --ink-muted: #6B6159;
-            --cream: #FBF6EC;
+            --wine: #5F498A;
+            --gold: #EFD34D;
+            --ink: #2E2245;
+            --ink-muted: #6B6080;
+            --cream: #FFFDF0;
         }
         * { box-sizing: border-box; }
         body {
