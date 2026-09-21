@@ -202,6 +202,10 @@ class Anonymise extends Command
             'phone' => '3'.str_pad((string) ($id % 1000000), 6, '0', STR_PAD_LEFT),
             'text' => 'Placeholder text, scrubbed for the test server.',
             'token' => bin2hex(random_bytes(32)),
+            // For a column that points at a file and cannot be null. The
+            // pointer is dead either way; this says so instead of failing
+            // the whole run on a NOT NULL constraint.
+            'gone' => '(file deleted)',
             default => null,
         };
     }

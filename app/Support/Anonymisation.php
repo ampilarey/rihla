@@ -41,7 +41,8 @@ final class Anonymisation
      * - `phone`   — a 7-digit number in a range the Maldives does not issue
      * - `text`    — "Placeholder text, scrubbed for the test server."
      * - `token`   — 64 random hex characters, so old links stop working
-     * - `null`    — emptied outright
+     * - `gone`    — "(file deleted)", for a file pointer that cannot be null
+     * - `null`    — emptied outright, which the column must allow
      *
      * @var array<string, array<string, string>>
      */
@@ -73,7 +74,11 @@ final class Anonymisation
             'slip_path' => 'null', 'slip_original_filename' => 'null', 'slip_checksum' => 'null',
         ],
         'documents' => ['notes' => 'text', 'rejection_reason' => 'text'],
-        'document_versions' => ['path' => 'null', 'original_filename' => 'null', 'checksum' => 'null'],
+        // `path` and `original_filename` are NOT NULL, so they take the
+        // `gone` stand-in rather than `null` — setting them to null failed
+        // the whole run on the first database that had a single document
+        // in it, which is every real one.
+        'document_versions' => ['path' => 'gone', 'original_filename' => 'gone', 'checksum' => 'null'],
         'incidents' => ['summary' => 'text', 'detail' => 'text', 'location' => 'text', 'resolution' => 'text'],
         'incident_notes' => ['body' => 'text'],
         'scholar_questions' => ['body' => 'text', 'answer' => 'text', 'declined_reason' => 'text'],
