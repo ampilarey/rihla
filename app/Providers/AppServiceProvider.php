@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
 use App\Models\Media;
+use App\Models\Package;
 use App\Models\Setting;
 use App\Models\Traveller;
 use App\Models\Trip;
@@ -14,6 +16,7 @@ use App\Models\User;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Observers\AuditObserver;
+use App\Observers\CoverImageObserver;
 use App\Support\InitialsAvatar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -70,6 +73,23 @@ class AppServiceProvider extends ServiceProvider
     ];
 
     /**
+     * Models whose saves may bring a new image with them — §10.1.
+     *
+     * Hero banners generate their own variants in the upload controller;
+     * they are here too so the one that arrives through any other path is
+     * covered as well, and {@see CoverImageObserver} no-ops when the
+     * variants already exist.
+     *
+     * @var list<class-string<Model>>
+     */
+    private const CARRY_A_COVER = [
+        Trip::class,
+        Package::class,
+        Article::class,
+        HeroBanner::class,
+    ];
+
+    /**
      * Bootstrap any application services.
      */
     public function boot(): void
@@ -83,6 +103,14 @@ class AppServiceProvider extends ServiceProvider
 
         foreach (self::AUDITED as $model) {
             $model::observe(AuditObserver::class);
+        }
+
+        // Responsive variants at upload time — §10.1. Without this, every
+        // cover uploaded after `images:responsive` was last run is
+        // full-size again until somebody remembers to run it, which is
+        // exactly the state that command existed to leave.
+        foreach (self::CARRY_A_COVER as $model) {
+            $model::observe(CoverImageObserver::class);
         }
 
         // A translated field falls back to English, and then — rather than

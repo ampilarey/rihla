@@ -471,8 +471,8 @@ reach: inline styles and database defaults. `BrandColourTest` asserts that no vi
 retired colour, that the constants match `tailwind.config.js`, that a new banner defaults to the
 brand, and that white-on-wine and ink-on-gold clear 4.5:1 while white-on-gold does not.
 
-**Still open:** the logo is deliberately untouched and its asset gaps are unresolved
-(`BRAND.md` §4).
+**Settled by the owner:** the dhoni mark is final. The asset gaps listed in `BRAND.md` §4 stand
+as a wish-list rather than as work waiting to be done.
 
 ### 4.6 Typography — **implemented** ✅
 
@@ -1076,7 +1076,7 @@ Two things found while doing it. The base `Controller` had no `AuthorizesRequest
 
 `is_admin` is **not dropped**. Until the backfill has run against production it is the only way back. Nothing reads it — a test asserts the flag alone grants nothing, so it cannot become a second source of truth that keeps access alive after a role is removed. Dropping it is a follow-up once production is confirmed migrated.
 
-**Still open:** the customer side. It needs bookings to exist first, so it belongs with Phase 3.
+**Resolved by the portal's design, not by more roles.** This said "still open: the customer side", waiting on Phase 3. Phase 3 shipped, and a pilgrim reaches their booking through a signed link and `PortalSession`, not through an account holding a role — so there is no customer side of `App\Support\Access` to build. Roles stay what they are: a description of a job in the office.
 
 ### 9.4 Internationalisation — redesign now, cheaply
 
@@ -1183,6 +1183,8 @@ Nothing the drafter produces is sent, saved, published or quoted: `draft.use` is
 
   `php artisan images:responsive` fills in what is missing, for hero banners and for the trip, package and article covers that never had any — those go through a plain upload or a Filament `FileUpload`, both of which store whatever they are handed. It uses GD, which is on cPanel; there is no queue worker (ADR 0002), so it is a command somebody runs rather than a job something dispatches. **It never upscales**: a 900-pixel original gives a 768 and nothing else, because inventing a 1920-wide file from it makes a larger download that looks worse. A 2400×1200 test photograph at 104 KB produced variants of 3 KB, 6 KB and 9 KB.
 
+  **Variants are made at upload time too**, by `CoverImageObserver` on trips, packages, articles and hero banners — otherwise every cover uploaded *after* the backfill is full-size again until somebody remembers the command, which is the state the backfill existed to leave. Encoding is synchronous because there is no queue worker (ADR 0002): three WebP encodes cost a few hundred milliseconds on an admin save, which is the right place to spend them rather than on every visitor's connection on every page view. A cover GD cannot read leaves the record saved and the original served — failing the save would lose an editor's work over how large a download is.
+
   **One defect found by looking at the page**, as usual, and not by any assertion. Giving the hero the shared component also gave it the component's branded stand-in for a missing file — the dhoni mark on cream. The hero's headline is white and sits *over* the image, so a missing file left white text on near-white and the headline simply vanished. The hero already had a gradient fallback for a banner with no image at all, and a banner whose file has gone is the same situation, so it takes that instead. There is no CDN and there will not be one on this host (ADR 0002); the win here is bytes, not distance.
 
 **Lighthouse runs in CI — done, and its first run found two defects.** `npm run lighthouse` had existed in `package.json` since the beginning and nothing ever ran it, so nothing stopped an accessibility or SEO regression reaching the site. The job audits the homepage, the packages list and the Umrah guide against `lighthouse-budget.json`, and the numbers in that file were **measured against the real pages before they were written down** — a threshold set by guesswork is either meaningless or flaky, and a flaky gate is worse than none because people learn to re-run it until it passes.
@@ -1220,7 +1222,7 @@ Roles/permissions (§9.3) **— done**; audit log **— foundation done (`2e81a3
 
   **It ships with enforcement off**, and that is deliberate rather than timid. Enforcing on release would mean the owner signs in after the next deploy, is sent to enrolment, and needs an authenticator app on the telephone in their hand before they can reach a booking — at whatever moment the deploy happened to land. Changing how somebody signs in to a live system is their decision, on a morning they choose, not a side effect of a release. Off does not mean absent: anybody can enrol at `/two-factor` today and everybody who has is still asked for a code. **Set `MFA_ENFORCE=true` when you have enrolled**, and the roles above are then compelled. The same switch is the emergency stop.
 
-  Still open here: signed, expiring URLs for document access (never public storage paths); rate limiting on auth **— done (D35): registration, password reset (capped per caller *and* per address), reset submission, password confirmation and password update; login was already covered by `LoginRequest`**, booking and payment endpoints; CSRF on all forms (Laravel default — verify on the new AJAX paths); **security response headers — done (D36): `nosniff`, `SAMEORIGIN`, `strict-origin-when-cross-origin`, a `Permissions-Policy` denying the features the site does not use, HSTS over HTTPS only, and `X-Powered-By` removed.**
+  **Signed, expiring URLs for document access — done, and were before this was written.** `DocumentWallet::downloadUrl()` and `SlipVault` issue `URL::temporarySignedRoute` links that expire in `documents.download_link_minutes` (5), the disks are private and not servable, and the route records who walked through it. This line said "still open" for several phases after it stopped being true, which is exactly how a real gap gets waved through — the eye skips a list it has read before. Still open here: rate limiting on auth **— done (D35): registration, password reset (capped per caller *and* per address), reset submission, password confirmation and password update; login was already covered by `LoginRequest`**, booking and payment endpoints; CSRF on all forms (Laravel default — verify on the new AJAX paths); **security response headers — done (D36): `nosniff`, `SAMEORIGIN`, `strict-origin-when-cross-origin`, a `Permissions-Policy` denying the features the site does not use, HSTS over HTTPS only, and `X-Powered-By` removed.**
 
 **Session security and device management — done.** `/devices` lists every browser an account is currently signed in on, names it, says when it was last used and from what address, marks the one being used now, and signs out one or all of the others. It reads the `sessions` table directly and `App\Support\SignedInDevices` explains why: the session *is* the record of being signed in, and a separate devices table would be a second copy of the same fact that parts company with it the first time a session expires quietly — leaving a screen that offers to sign out a telephone somebody sold last year, does nothing, and says it worked.
 

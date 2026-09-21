@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\HeroBanner;
+use App\Models\Package;
 use App\Support\ResponsiveImage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -54,6 +55,21 @@ class ResponsiveImagesTest extends TestCase
         imagedestroy($image);
 
         Storage::disk('public')->put($path, $bytes);
+    }
+
+    /**
+     * Remove the variants the upload observer just made.
+     *
+     * Creating a record now generates them, which is the point — but it
+     * means a test of `images:responsive` would pass without the command
+     * doing anything at all. Clearing them first is what makes each of
+     * those tests test the thing it names.
+     */
+    private function forgetVariants(string $path): void
+    {
+        foreach (ResponsiveImage::WIDTHS as $width) {
+            Storage::disk('public')->delete(ResponsiveImage::variantPath($path, $width));
+        }
     }
 
     // ── Naming ───────────────────────────────────────────────────────────
@@ -205,6 +221,76 @@ class ResponsiveImagesTest extends TestCase
         $this->assertStringContainsString('hero/banner.jpg', $html);
     }
 
+    // ── At upload time ───────────────────────────────────────────────────
+
+    /**
+     * The half that makes the backfill stay true.
+     *
+     * Without this, every cover uploaded *after* `images:responsive` was
+     * last run is full-size again until somebody remembers to run it —
+     * which is exactly the state that command existed to leave.
+     */
+    public function test_saving_a_new_cover_generates_its_variants(): void
+    {
+        $this->jpeg('packages/cover.jpg', 2400, 1200);
+
+        $package = Package::factory()->create(['cover_image' => 'packages/cover.jpg']);
+
+        foreach (ResponsiveImage::WIDTHS as $width) {
+            Storage::disk('public')->assertExists(ResponsiveImage::variantPath('packages/cover.jpg', $width));
+        }
+
+        $this->assertSame('packages/cover.jpg', $package->cover_image);
+    }
+
+    public function test_replacing_a_cover_generates_the_new_ones(): void
+    {
+        $this->jpeg('packages/first.jpg');
+        $this->jpeg('packages/second.jpg');
+
+        $package = Package::factory()->create(['cover_image' => 'packages/first.jpg']);
+
+        $package->update(['cover_image' => 'packages/second.jpg']);
+
+        Storage::disk('public')->assertExists(ResponsiveImage::variantPath('packages/second.jpg', 768));
+    }
+
+    /**
+     * Editing a price should not re-encode three photographs.
+     *
+     * Only the save that changed the column does any work.
+     */
+    public function test_saving_an_unrelated_field_re_encodes_nothing(): void
+    {
+        $this->jpeg('packages/cover.jpg');
+
+        $package = Package::factory()->create(['cover_image' => 'packages/cover.jpg']);
+
+        $variant = ResponsiveImage::variantPath('packages/cover.jpg', 768);
+        Storage::disk('public')->delete($variant);
+
+        $package->touch();
+
+        Storage::disk('public')->assertMissing($variant);
+    }
+
+    /**
+     * A file GD cannot read must not cost an editor their work.
+     *
+     * The record saves and the original is served; only the size of the
+     * download suffers, and failing the save would lose the whole edit
+     * over that.
+     */
+    public function test_a_cover_that_will_not_encode_still_saves(): void
+    {
+        Storage::disk('public')->put('packages/not-really.jpg', 'this is not an image');
+
+        $package = Package::factory()->create(['cover_image' => 'packages/not-really.jpg']);
+
+        $this->assertSame('packages/not-really.jpg', $package->fresh()->cover_image);
+        Storage::disk('public')->assertMissing(ResponsiveImage::variantPath('packages/not-really.jpg', 768));
+    }
+
     // ── Generating them ──────────────────────────────────────────────────
 
     public function test_the_generator_makes_every_width_that_fits(): void
@@ -217,6 +303,8 @@ class ResponsiveImagesTest extends TestCase
             'is_active' => true,
             'overlay_opacity' => 40,
         ]);
+
+        $this->forgetVariants('hero/banner.jpg');
 
         $this->artisan('images:responsive')->assertSuccessful();
 
@@ -242,6 +330,8 @@ class ResponsiveImagesTest extends TestCase
             'overlay_opacity' => 40,
         ]);
 
+        $this->forgetVariants('hero/small.jpg');
+
         $this->artisan('images:responsive')->assertSuccessful();
 
         Storage::disk('public')->assertExists(ResponsiveImage::variantPath('hero/small.jpg', 768));
@@ -260,6 +350,8 @@ class ResponsiveImagesTest extends TestCase
             'is_active' => true,
             'overlay_opacity' => 40,
         ]);
+
+        $this->forgetVariants('hero/banner.jpg');
 
         $this->artisan('images:responsive')->assertSuccessful();
 
@@ -280,6 +372,8 @@ class ResponsiveImagesTest extends TestCase
             'overlay_opacity' => 40,
         ]);
 
+        $this->forgetVariants('hero/banner.jpg');
+
         $this->artisan('images:responsive')->assertSuccessful();
 
         $this->artisan('images:responsive')
@@ -297,6 +391,8 @@ class ResponsiveImagesTest extends TestCase
             'is_active' => true,
             'overlay_opacity' => 40,
         ]);
+
+        $this->forgetVariants('hero/banner.jpg');
 
         $this->artisan('images:responsive', ['--dry-run' => true])->assertSuccessful();
 
