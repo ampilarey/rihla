@@ -53,18 +53,38 @@ class FloatingButtonClearanceTest extends TestCase
         preg_match('/class="fixed [^"]*?bottom-(\d+)/', $fab, $offset);
         $this->assertNotEmpty($offset, 'The floating stack has no bottom-N offset to read.');
 
-        preg_match('/space-y-(\d+)/', $fab, $gap);
-        $this->assertNotEmpty($gap, 'The floating stack has no space-y-N gap to read.');
-
         preg_match_all('/\bw-(\d+) h-(\d+) rounded-full/', $fab, $buttons, PREG_SET_ORDER);
         $this->assertGreaterThanOrEqual(1, count($buttons),
             'No floating buttons found; the clearance below cannot be derived.');
 
         $heights = array_map(static fn ($b) => (int) $b[2] * self::PX_PER_UNIT, $buttons);
 
+        // Direction decides whether the buttons add up or sit beside each
+        // other, and only the phone layout matters here — a `md:` prefix is
+        // a desktop rule and must not be read as the mobile one.
+        preg_match('/class="fixed ([^"]*)"/', $fab, $classes);
+        $this->assertNotEmpty($classes, 'The floating stack has no class list to read.');
+
+        $mobile = implode(' ', array_filter(
+            preg_split('/\s+/', trim($classes[1])),
+            static fn (string $c): bool => ! str_contains($c, ':'),
+        ));
+
+        $stacked = str_contains($mobile, 'flex-col');
+
+        if (! $stacked) {
+            // A row is as tall as its tallest button; the gap is horizontal.
+            return (int) $offset[1] * self::PX_PER_UNIT + max($heights);
+        }
+
+        preg_match('/space-y-(\d+)|gap-(\d+)/', $mobile.' '.$fab, $gap);
+        $this->assertNotEmpty($gap, 'The stacked floating buttons have no gap to read.');
+
+        $gapPx = (int) ($gap[1] !== '' ? $gap[1] : $gap[2]) * self::PX_PER_UNIT;
+
         return (int) $offset[1] * self::PX_PER_UNIT
             + array_sum($heights)
-            + (count($buttons) - 1) * (int) $gap[1] * self::PX_PER_UNIT;
+            + (count($buttons) - 1) * $gapPx;
     }
 
     private function footerMobileBottomPadding(): int

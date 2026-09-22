@@ -437,15 +437,17 @@
         </main>
 
         <!-- Footer -->
-        {{-- pb-40 on mobile is the floating buttons' clearance, not a guess:
-             the stack is two w-14 buttons with space-y-3 between them, sat
-             bottom-4 off the viewport, so it occupies the bottom 140px and the
-             copyright line would sit under it without this. 160px leaves 20px
-             of air. It was pb-52 — 208px — which put 68px of dead space below
-             the last line on every phone. FloatingButtonClearanceTest derives
-             the number from the component's own classes, so adding a third
-             button fails the test instead of hiding a line. --}}
-        <footer class="bg-ink text-white py-12 pb-40 md:pb-12 overflow-x-hidden">
+        {{-- pb-24 on mobile is the floating buttons' clearance, not a guess:
+             side by side the two w-14 buttons are one 56px row, sat bottom-4
+             off the viewport, so they occupy the bottom 72px and the copyright
+             would sit under them without this. 96px leaves 24px of air.
+             It was pb-52 (208px) against a vertical stack, then pb-40 (160px)
+             — and both read as the page ending into a slab of nothing,
+             because the buttons only ever filled the right edge of it.
+             FloatingButtonClearanceTest derives the number from the
+             component's own classes, direction included, so restacking them
+             or adding a third fails the test instead of hiding a line. --}}
+        <footer class="bg-ink text-white py-12 pb-24 md:pb-12 overflow-x-hidden">
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <!-- Company Info -->
