@@ -11,7 +11,7 @@
  * it did manage to store would be served stale forever.
  */
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const SHELL_CACHE = `rihla-shell-${VERSION}`;
 const RUNTIME_CACHE = `rihla-runtime-${VERSION}`;
 
@@ -66,14 +66,27 @@ self.addEventListener('activate', (event) => {
     })());
 });
 
-/** Hashed build assets are immutable, so they are safe to serve from cache. */
+/**
+ * Hashed build assets are immutable, so they are safe to serve from cache.
+ *
+ * Vite renames the file whenever its contents change, so a cache hit here can
+ * only ever be the right bytes. Nothing else on this origin has that property.
+ */
 function isImmutableAsset(url) {
     return url.pathname.startsWith('/build/assets/');
 }
 
-function isStaticAsset(url) {
-    return isImmutableAsset(url)
-        || url.pathname.startsWith('/images/')
+/**
+ * Everything else worth caching keeps its URL across deploys.
+ *
+ * `/images/rihla-mark-inverse.svg` is the same path before and after a
+ * rebrand, so a cache-first entry for it is a promise to serve last year's
+ * logo forever. That is not hypothetical: it is what put the pre-violet dhoni
+ * in the footer of every phone that had visited the site once, while the CSS
+ * beside it updated normally because Vite had given it a new name.
+ */
+function isMutableAsset(url) {
+    return url.pathname.startsWith('/images/')
         || url.pathname.startsWith('/fonts/')
         || url.pathname.startsWith('/js/');
 }
@@ -119,8 +132,8 @@ async function handleNavigation(request) {
     }
 }
 
-/** Cache-first: these are content-hashed or rarely change. */
-async function handleAsset(request) {
+/** Cache-first. Safe only because the URL changes whenever the bytes do. */
+async function handleImmutableAsset(request) {
     const cached = await caches.match(request);
 
     if (cached) {
@@ -137,6 +150,47 @@ async function handleAsset(request) {
     }
 
     return response;
+}
+
+/**
+ * Stale-while-revalidate, for assets whose URL outlives their contents.
+ *
+ * The page is answered from cache straight away, so this stays as fast as
+ * cache-first and still works with no signal. The difference is that the
+ * network request goes out every time regardless of the hit, and the cache is
+ * replaced with what comes back — so a changed file is wrong for exactly one
+ * page load instead of until somebody remembers to bump VERSION.
+ *
+ * `event.waitUntil` is what makes that true. Returning the cached response
+ * settles the fetch event, and without it the browser is free to kill the
+ * worker before the revalidation has finished writing.
+ */
+async function handleMutableAsset(event) {
+    const { request } = event;
+    const cache = await caches.open(RUNTIME_CACHE);
+
+    // Fall back to the wider lookup for the handful of images the install step
+    // put in the shell cache; without it those would miss here and fail when
+    // there is no network.
+    const cached = (await cache.match(request)) ?? (await caches.match(request));
+
+    const revalidate = fetch(request)
+        .then((response) => {
+            if (response.ok && response.type === 'basic') {
+                cache.put(request, response.clone());
+            }
+
+            return response;
+        })
+        .catch(() => null);
+
+    if (cached) {
+        event.waitUntil(revalidate);
+
+        return cached;
+    }
+
+    return (await revalidate) ?? Response.error();
 }
 
 /**
@@ -215,7 +269,13 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    if (isStaticAsset(url)) {
-        event.respondWith(handleAsset(request));
+    if (isImmutableAsset(url)) {
+        event.respondWith(handleImmutableAsset(request));
+
+        return;
+    }
+
+    if (isMutableAsset(url)) {
+        event.respondWith(handleMutableAsset(event));
     }
 });
