@@ -27,7 +27,16 @@
      Icons are 28px in a 56px circle; 24px left them looking lost, and the
      outline weight is 1.75 so they sit beside the solid WhatsApp mark without
      looking thinner than it. --}}
-<div class="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50 flex flex-col space-y-3">
+{{-- Side by side on a phone, stacked on desktop. As a column the two
+     buttons occupy the bottom 140px of a phone viewport, and the footer
+     has to reserve every pixel of that so the copyright is not sat on —
+     which read as the page ending into a slab of nothing, because only
+     the right edge of that slab had anything in it. In a row the stack
+     is 72px and the reserved space is mostly the buttons themselves.
+     flex-row-reverse keeps WhatsApp in the corner the thumb reaches.
+     FloatingButtonClearanceTest reads this line to derive the footer's
+     padding, direction included. --}}
+<div class="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50 flex flex-row-reverse gap-3 md:flex-col">
     <!-- WhatsApp Button -->
     <a href="{{ \App\Support\Contact::whatsappUrl() }}"
        target="_blank" 
