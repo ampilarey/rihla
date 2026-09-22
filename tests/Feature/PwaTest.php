@@ -131,6 +131,84 @@ class PwaTest extends TestCase
         }
     }
 
+    /**
+     * A cached asset whose URL outlives its contents is a stale asset forever.
+     *
+     * This is the bug behind "in mobile footer i see old footer". The worker
+     * served everything under `/images/` cache-first with no revalidation, so
+     * `/images/rihla-mark-inverse.svg` — the same path before and after the
+     * rebrand — stayed at whatever bytes a phone happened to see first. The
+     * stylesheet beside it updated normally, because Vite renames a build
+     * asset whenever its contents change and a new name is a new cache entry.
+     * The result was the new palette wrapped around the previous logo, on
+     * every returning phone, invisible to anyone testing in a fresh browser.
+     *
+     * Only the hashed build output may be served cache-first. Everything else
+     * has to go out to the network on every request, even when it answers from
+     * cache first.
+     *
+     * Proved in a real browser rather than here: load the page, let the worker
+     * install, change a file under `public/images/`, reload, and check what
+     * the page receives. Before the fix it was the old bytes on every reload;
+     * after it, the new ones. What this test can see is only the routing.
+     */
+    public function test_only_hashed_build_assets_are_served_cache_first(): void
+    {
+        $worker = file_get_contents(public_path('sw.js'));
+
+        preg_match('/function isImmutableAsset\(url\) \{(.*?)\n\}/s', $worker, $immutable);
+
+        $this->assertNotEmpty($immutable, 'sw.js has no isImmutableAsset predicate.');
+
+        foreach (['/images/', '/fonts/', '/js/'] as $path) {
+            $this->assertStringNotContainsString($path, $immutable[1],
+                "sw.js treats {$path} as immutable, so a file that changes without changing "
+                .'its name will be served from cache until VERSION is bumped by hand.');
+        }
+
+        $this->assertStringContainsString('/build/assets/', $immutable[1],
+            'Nothing is served cache-first, so the hashed build output is refetched every time.');
+    }
+
+    /**
+     * The revalidation has to happen whether or not the cache hit.
+     *
+     * Serving the cached copy is what keeps the site fast and usable with no
+     * signal; going to the network anyway is what stops that copy being the
+     * last word. `event.waitUntil` is load-bearing — returning the cached
+     * response settles the fetch event, and the browser may kill the worker
+     * before the write finishes without it.
+     */
+    public function test_mutable_assets_are_revalidated_on_every_request(): void
+    {
+        $worker = file_get_contents(public_path('sw.js'));
+
+        preg_match('/async function handleMutableAsset\(event\) \{(.*?)\n\}/s', $worker, $handler);
+
+        $this->assertNotEmpty($handler, 'sw.js has no handler for assets that can change in place.');
+
+        $body = $handler[1];
+
+        $this->assertStringContainsString('fetch(request)', $body,
+            'The mutable-asset handler never goes to the network.');
+
+        $this->assertStringContainsString('event.waitUntil', $body,
+            'The revalidation is not kept alive past the response, so the worker may be '
+            .'killed before it writes the fresh copy.');
+
+        $this->assertMatchesRegularExpression('/cache\.put\(request, response\.clone\(\)\)/', $body,
+            'The mutable-asset handler fetches but never replaces what it had cached.');
+
+        // The routing has to actually use it.
+        $this->assertStringContainsString('handleMutableAsset(event)', $worker,
+            'handleMutableAsset is defined but nothing routes to it.');
+
+        foreach (['/images/', '/fonts/', '/js/'] as $path) {
+            $this->assertStringContainsString($path, $worker,
+                "sw.js no longer mentions {$path} at all, so it is not being cached by any path.");
+        }
+    }
+
     public function test_the_service_worker_is_registered_site_wide(): void
     {
         $this->get('/en')

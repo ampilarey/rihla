@@ -95,6 +95,22 @@ its meaning moves afterwards. **Literals on both sides, always.** Note the test 
 assertion never sees the state a deployed database is actually in. Testing a data migration means
 seeding the old state and calling `up()` on it.
 
+- **A service worker caching a path that outlives its contents serves last year's artwork forever.**
+`public/sw.js` routed everything under `/images/`, `/fonts/` and `/js/` through a cache-first
+handler with no revalidation. Those paths do not change when their bytes do — `rihla-mark-inverse.svg`
+is the same URL before and after a rebrand — so every phone that had ever loaded the site kept
+whatever logo it saw first, and the only thing that could clear it was bumping `VERSION` by hand,
+which nobody did through an entire palette change. The stylesheet beside it updated normally,
+because Vite renames a build asset whenever its contents change. **The visible symptom is the new
+palette wrapped around the old logo, on returning devices only** — a fresh browser, CI, and every
+screenshot taken here all look correct, which is why it reached the owner's phone rather than a
+test. Cache-first is only ever safe for content-hashed URLs; anything else needs
+stale-while-revalidate, with `event.waitUntil` on the revalidation or the worker may be killed
+before it writes. **No PHP test can see this** — the guards in `PwaTest` check the routing, not the
+behaviour. The honest check is the experiment: load the page in a real browser, let the worker
+install, change a file under `public/images/`, reload, and look at what the page receives. Before
+the fix it was the old bytes on every reload.
+
 - **`filesize() > 0` is not a guard, and a raster is the one thing a palette change cannot reach.**
 `favicon.ico` was the only icon still carrying the retired maroon brand — `#8E2653` sail,
 `#D2A03C` sail, `#2E2621` hull, measured by decoding it, not guessed — through an entire
