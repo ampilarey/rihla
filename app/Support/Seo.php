@@ -24,6 +24,37 @@ class Seo
     /** Maldives Ministry of Economic Development registration, shown in the header and footer. */
     public const REGISTRATION_NUMBER = 'C11452023';
 
+    /**
+     * The year the company was registered, which the footer counts from.
+     *
+     * A copyright line reading only the current year claims nothing about how
+     * long the work has existed, and for a business whose registration number
+     * ends in its founding year it reads as though the site appeared this
+     * January. The footer renders a range from here to `date('Y')`, so the end
+     * moves on its own and this end never does.
+     *
+     * A literal, deliberately, and the same one the registration number
+     * carries. It records something that happened; it is not derived from
+     * anything and must not start being.
+     */
+    public const FOUNDED = 2023;
+
+    /**
+     * The year span for the footer's copyright line.
+     *
+     * `now()` rather than `date()` so the boundary is reachable from a test:
+     * PHP's own clock ignores Carbon's test time, which would have left the
+     * collapse below asserted by nobody until the year it mattered.
+     */
+    public static function copyrightYears(): string
+    {
+        $current = now()->year;
+
+        return $current > self::FOUNDED
+            ? self::FOUNDED.'–'.$current
+            : (string) self::FOUNDED;
+    }
+
     public const CONTACT_EMAIL = 'info@rihlatravels.mv';
 
     /**
