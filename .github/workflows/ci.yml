@@ -115,6 +115,24 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      # A deadlocked booking test otherwise waits essentially forever: MySQL's
+      # `innodb_lock_wait_timeout` defaults to 50s per statement and
+      # `lock_wait_timeout` — the metadata lock a migration takes — to a year.
+      # The job timeout above stops that at fifteen minutes, but it stops it
+      # by killing the runner, so the log ends mid-suite and names no test.
+      # Bounded here instead, a lock that will not come fails in half a minute
+      # with the test that was waiting for it printed beside it.
+      #
+      # 30s is far longer than anything legitimate: the whole suite against a
+      # real MySQL takes about three and a half minutes and no single lock in
+      # it is held for more than milliseconds.
+      - name: Bound the lock waits so a deadlock fails fast and says which test
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -uroot -proot -e "
+            SET GLOBAL innodb_lock_wait_timeout = 30;
+            SET GLOBAL lock_wait_timeout = 60;
+          "
+
       - name: Run tests against MySQL
         env:
           DB_CONNECTION: mysql
