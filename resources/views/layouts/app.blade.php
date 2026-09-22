@@ -437,17 +437,16 @@
         </main>
 
         <!-- Footer -->
-        {{-- pb-24 on mobile is the floating buttons' clearance, not a guess:
-             side by side the two w-14 buttons are one 56px row, sat bottom-4
-             off the viewport, so they occupy the bottom 72px and the copyright
-             would sit under them without this. 96px leaves 24px of air.
-             It was pb-52 (208px) against a vertical stack, then pb-40 (160px)
-             — and both read as the page ending into a slab of nothing,
-             because the buttons only ever filled the right edge of it.
-             FloatingButtonClearanceTest derives the number from the
-             component's own classes, direction included, so restacking them
-             or adding a third fails the test instead of hiding a line. --}}
-        <footer class="bg-ink text-white py-12 pb-24 md:pb-12 overflow-x-hidden">
+        {{-- No bottom padding for the floating buttons any more. Three goes at
+             sizing a band below the last line — pb-52, pb-40, pb-24 — each
+             removed some dead space and left the rest, because the band itself
+             was the problem. The buttons now get a gutter beside the copyright
+             instead (see pe-24 below), which costs no height, so the footer
+             ends on the ordinary py-12 like every other section.
+             FloatingButtonClearanceTest checks the gutter against the
+             component's own classes, so resizing the buttons or adding a third
+             fails the test instead of sliding one under them. --}}
+        <footer class="bg-ink text-white py-12 overflow-x-hidden">
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <!-- Company Info -->
@@ -571,6 +570,22 @@
                     </div>
                 </div>
 
+                {{-- pe-24 on a phone is the floating buttons' gutter.
+
+                     The buttons are position: fixed in the bottom-right corner,
+                     so the only thing that has to happen is that this text
+                     never runs underneath them. Reserving a band BELOW the last
+                     line does that too, and is what was here before — but a
+                     band whose only occupant is two buttons at its right edge
+                     reads as the page ending into nothing, which is exactly how
+                     it was reported, twice. A gutter to the SIDE costs no
+                     vertical space at all: the buttons sit beside the last
+                     lines rather than under them.
+
+                     96px = 56px button + 16px of right offset + 24px of air.
+                     Logical (pe-, not pr-) so it follows the writing direction
+                     on the Dhivehi pages, where the stack is still on the
+                     right but the text runs the other way. --}}
                 <div class="border-t border-gray-500 mt-8 pt-8 text-center">
                     {{-- Was text-gray-600, which is 1.96:1 against bg-ink — not
                          dim, unreadable. gray-400 is 5.84:1. --}}
@@ -586,7 +601,17 @@
                          site that appeared this January. Collapses to one year
                          if the two ever match, so it is correct in the founding
                          year too rather than saying "© 2023–2023". --}}
-                    <p dir="ltr" class="text-gray-400">
+                    {{-- pe-32 is the floating buttons' gutter, and it is on this
+                         line alone because this is the only one level with them.
+                         The tagline above keeps the full width.
+
+                         Sized against the box, not the glyphs: centred text
+                         happens to stop short of the buttons today, but a longer
+                         company name or the Dhivehi wording would not, and a
+                         bounding box that overlaps is a collision waiting for a
+                         translation. 128px clears the 116px the stack occupies
+                         from the container's right edge. --}}
+                    <p dir="ltr" class="text-gray-400 pe-32 md:pe-0">
                         &copy; {{ \App\Support\Seo::copyrightYears() }} {{ config('app.name', 'Rihla Travels') }}. {{ __('All rights reserved.') }}
                     </p>
                 </div>
