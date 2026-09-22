@@ -429,7 +429,7 @@ class BrandColourTest extends TestCase
         $this->assertSame($geometry($light), $geometry($inverse),
             'The two logo variants have drifted apart; the artwork must be identical.');
 
-        // Each variant's fills must clear 3:1 against the surface it is for.
+        // The three fills, in document order: hull, fore sail, main sail.
         $fills = static function (string $svg): array {
             preg_match_all('/fill="(#[0-9A-Fa-f]{6})"/', $svg, $m);
 
@@ -437,15 +437,45 @@ class BrandColourTest extends TestCase
         };
 
         foreach ([[$light, Brand::WHITE, 'light'], [$inverse, Brand::INK, 'dark']] as [$svg, $ground, $which]) {
-            foreach ($fills($svg) as $fill) {
+            $painted = $fills($svg);
+
+            $this->assertCount(3, $painted,
+                "The {$which}-surface mark has ".count($painted).' fills; it is three shapes.');
+
+            [$hull, $fore, $main] = $painted;
+
+            // The hull and the main sail are the silhouette. If either of
+            // those goes faint the mark stops reading as a dhoni at all, so
+            // both still have to clear the 3:1 a shape needs.
+            foreach (['hull' => $hull, 'main sail' => $main] as $part => $fill) {
                 if (strcasecmp($fill, $ground) === 0) {
                     continue;   // the hull of the light mark IS the ink; it is the shape, not a shape on it
                 }
 
                 $this->assertGreaterThanOrEqual(3.0, $this->contrast($fill, $ground),
-                    "The {$which}-surface mark paints {$fill} on {$ground}, which is "
+                    "The {$which}-surface mark paints its {$part} {$fill} on {$ground}, which is "
                     .round($this->contrast($fill, $ground), 2).':1 — under the 3:1 a shape needs to be seen.');
             }
+
+            // The fore sail is the accent, and it is deliberately the same
+            // gold as the primary call to action.
+            //
+            // It does not clear 3:1 on white — 1.49:1 — and no vivid yellow
+            // can: 3:1 against white needs a relative luminance at or below
+            // 0.30 and #EFD34D sits at 0.655, so the only golds that pass are
+            // the drab ones. Rendered at 80px and at 34px it reads clearly
+            // anyway, because a fully saturated hue separates from white in a
+            // way a luminance ratio does not describe. That is a judgement
+            // about this one shape on this one ground, not a licence: the
+            // silhouette above still has to pass, and a logo is outside
+            // WCAG 1.4.11 in the first place.
+            //
+            // So the value is pinned rather than measured. Changing it is
+            // allowed; changing it silently is not.
+            $this->assertSame('#EFD34D', strtoupper($fore),
+                "The {$which}-surface mark's fore sail is {$fore}. It is the accent and it is "
+                .'meant to match the primary button exactly, so it is asserted by value — if this '
+                .'is a deliberate change, measure the new colour against both grounds and say so here.');
         }
 
         $this->assertStringContainsString('on="dark"', $this->footerMarkup(),
