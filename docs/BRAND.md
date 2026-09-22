@@ -53,7 +53,7 @@ contrast is there. It just comes from the yellow.
 | Token | Hex | Use |
 |---|---|---|
 | `gold-400` | `#F8E57A` | |
-| **`gold-500`** | **`#EFD34D`** | **Highlight — dark grounds only. 9.85:1 on ink, 1.46:1 on cream** |
+| **`gold-500`** | **`#EFD34D`** | **Highlight, and the logo's fore sail. 9.85:1 on ink, 1.46:1 on cream — so it fills a button only on a dark ground** |
 | `gold-600` | `#A88C1F` | The same gold where the ground is light. 3.26:1 on white |
 | `gold-700` | `#7A6413` | Gold as text on cream — 5.62:1 |
 
@@ -224,13 +224,22 @@ and seven, each spread to the same span. The two lines are `aria-hidden`; one `s
 supplies "Rihla Travels" so a screen reader says the name rather than spelling out two
 letter-spaced fragments.
 
-`public/images/rihla-mark.svg` — three paths: hull `#2E2245`, fore sail `#A88C1F`, main sail
-`#5F498A`. `rihla-mark-inverse.svg` carries hull `#FFFDF0`, fore sail `#FEF9CD`, main sail
+`public/images/rihla-mark.svg` — three paths: hull `#2E2245`, fore sail `#EFD34D`, main sail
+`#5F498A`. `rihla-mark-inverse.svg` carries hull `#FFFDF0`, fore sail `#EFD34D`, main sail
 `#9481BA`.
 
+**Both variants share the fore sail**, and it is `gold-500` — the same fill as the primary
+button, so the mark and the page's main action are the same yellow. On ink that measures
+9.85:1. On white it is 1.49:1, and no vivid yellow can beat that: 3:1 against white requires a
+relative luminance at or below 0.30 and `#EFD34D` sits at 0.655, so the only golds that pass
+are the drab ones. At 80px and at 34px it reads clearly anyway — a fully saturated hue
+separates from white in a way a luminance ratio does not capture — and a logo is outside
+WCAG 1.4.11 regardless. The hull and main sail, which carry the silhouette, still clear 3:1 on
+their own ground and are still asserted that way.
+
 **The two variants are not one artwork recoloured, and this matters.** Each carries the gold and
-the violet that *its own background* can show. Measured: the light mark's fore sail is 3.26:1 on
-white; the dark mark's is 13.73:1 on ink. Recolour one and copy it over the other and the sails
+the violet that *its own background* can show. Measured: the light mark's main sail is 7.48:1 on
+white; the dark mark's is 4.27:1 on ink. Recolour one and copy it over the other and the sails
 drop to 1.8:1 — which is exactly what the previous marks did, invisibly, for as long as the
 inverse mark existed. `BrandColourTest` now measures every fill against the surface its variant
 is for.
@@ -258,8 +267,8 @@ in §1.
 
 The inline mark sits directly on the page, so its two sails have to survive whatever ground the
 page gives them — which is why each variant carries the gold *its own* background can show. That
-works, but it means neither variant is the guide's pair: the light mark's fore sail is `#A88C1F`,
-not chiffon.
+works, but it means neither variant is the guide's pair: both fore sails are `#EFD34D`, the
+button gold, not the guide's chiffon.
 
 An icon has a field of its own. So the icon set uses the two guide colours as **field and figure**
 — a chiffon `#FEF9CD` disc on an ultra violet `#5F498A` ground, carrying the violet ship. Violet on

@@ -27,14 +27,23 @@
     for as long as the inverse mark has existed — and the old gold sail was
     2.38:1 on white. Both are below the 3:1 a graphic element needs, and no
     test could see it because the SVG was present and only the colour was
-    wrong. The two marks now carry different sail colours on purpose: the
-    light mark uses the darker gold (#A88C1F, 3.26:1 on white) and the guide's
-    violet #5F498A exactly; the inverse uses the guide's lemon chiffon #FEF9CD
-    exactly (13.73:1 on ink) and a lighter violet (#9481BA, 4.27:1). Each
-    variant therefore carries one of the two brand hexes untouched — the one
-    its own background can actually show. Neither can carry both: the pair is
-    7.0:1 apart and clearing 3:1 off a shared ground would take 9:1. Recolouring one and copying it to the other
+    wrong. What carries the silhouette — the hull and the main sail — is still
+    chosen per ground and still measured: the light mark's hull is ink at
+    14.68:1 on white with the guide's violet #5F498A at 7.48:1 beside it; the
+    inverse carries a cream hull at 14.37:1 on ink and a lighter violet
+    #9481BA at 4.27:1. Recolouring one of those and copying it to the other
     reintroduces exactly this bug.
+
+    The fore sail is the exception, deliberately. Both variants paint it
+    #EFD34D — the same gold as the primary call to action, which is what the
+    owner asked for and what makes the mark and the page agree. On ink that is
+    9.85:1. On white it is 1.49:1, and no vivid yellow can do better: 3:1
+    against white needs a relative luminance at or below 0.30 and this sits at
+    0.655, so every gold that passes is a drab one. Rendered at 80px and at
+    34px it reads clearly regardless, because a fully saturated hue separates
+    from white in a way a luminance ratio does not describe — and a logo is
+    outside WCAG 1.4.11 anyway. BrandColourTest measures the other two and
+    pins this one by value, so it can be changed but not drifted.
 
     The two lines carry different tracking because they are different lengths:
     five letters and seven letters, each spread to the same span. The numbers

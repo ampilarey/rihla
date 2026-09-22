@@ -131,6 +131,45 @@ class BrandMarkTest extends TestCase
 
         $this->assertSame([], array_keys($found),
             'The share card still paints retired brand colours: '.implode(', ', array_keys($found)));
+
+        // The retired list is not enough, and this is how it was found out.
+        //
+        // When the mark's fore sail moved from #A88C1F to #EFD34D, the card
+        // kept 4,768 pixels of the old gold and this test stayed green: the
+        // outgoing colour was not retired from the palette, it had simply
+        // stopped being in the logo. A card can therefore disagree with the
+        // mark it is a picture of while every assertion passes.
+        //
+        // So the card is now checked against the mark rather than against a
+        // list of the dead. Every colour covering a tenth of a percent of it
+        // has to be one the SVG declares, or the field it sits on. The
+        // threshold is what keeps antialiasing along the sail edges out of
+        // it — those blends are a couple of hundred pixels each.
+        preg_match_all('/fill="(#[0-9A-Fa-f]{6})"/', File::get(public_path('images/rihla-mark.svg')), $m);
+
+        $allowed = array_map('strtoupper', array_merge($m[1], ['#FFFDF0', '#2E2245']));
+        $counts = [];
+
+        for ($y = 0; $y < 630; $y++) {
+            for ($x = 0; $x < 1200; $x++) {
+                $rgb = imagecolorat($image, $x, $y);
+                $hex = sprintf('#%02X%02X%02X', ($rgb >> 16) & 0xFF, ($rgb >> 8) & 0xFF, $rgb & 0xFF);
+                $counts[$hex] = ($counts[$hex] ?? 0) + 1;
+            }
+        }
+
+        $floor = (int) (1200 * 630 * 0.001);
+        $strangers = [];
+
+        foreach ($counts as $hex => $pixels) {
+            if ($pixels >= $floor && ! in_array($hex, $allowed, true)) {
+                $strangers[] = "{$hex} ({$pixels}px)";
+            }
+        }
+
+        $this->assertSame([], $strangers,
+            'The share card paints colours the mark does not: '.implode(', ', $strangers)
+            .'. It is a picture of the logo, so every colour in it should come from the logo.');
     }
 
     /** Every icon the layout or the manifest names must actually exist. */
