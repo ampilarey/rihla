@@ -437,7 +437,15 @@
         </main>
 
         <!-- Footer -->
-        <footer class="bg-ink text-white py-12 pb-52 md:pb-12 overflow-x-hidden">
+        {{-- pb-40 on mobile is the floating buttons' clearance, not a guess:
+             the stack is two w-14 buttons with space-y-3 between them, sat
+             bottom-4 off the viewport, so it occupies the bottom 140px and the
+             copyright line would sit under it without this. 160px leaves 20px
+             of air. It was pb-52 — 208px — which put 68px of dead space below
+             the last line on every phone. FloatingButtonClearanceTest derives
+             the number from the component's own classes, so adding a third
+             button fails the test instead of hiding a line. --}}
+        <footer class="bg-ink text-white py-12 pb-40 md:pb-12 overflow-x-hidden">
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <!-- Company Info -->
@@ -571,8 +579,13 @@
                          The year and the company name are Latin, so the line
                          is English whatever the page language, and dir="ltr"
                          says so outright. --}}
+                    {{-- A range, not this year alone: the company has been
+                         registered since 2023 and a bare "© 2026" reads as a
+                         site that appeared this January. Collapses to one year
+                         if the two ever match, so it is correct in the founding
+                         year too rather than saying "© 2023–2023". --}}
                     <p dir="ltr" class="text-gray-400">
-                        &copy; {{ date('Y') }} {{ config('app.name', 'Rihla Travels') }}. {{ __('All rights reserved.') }}
+                        &copy; {{ \App\Support\Seo::copyrightYears() }} {{ config('app.name', 'Rihla Travels') }}. {{ __('All rights reserved.') }}
                     </p>
                 </div>
             </div>
