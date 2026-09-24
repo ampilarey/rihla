@@ -8,7 +8,9 @@ use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Enquiry;
 use App\Models\Package;
+use App\Models\Partner;
 use App\Models\PortalAccess;
+use App\Models\Property;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Documents\DocumentWallet;
@@ -355,6 +357,45 @@ class AnonymiseTest extends TestCase
 
         $this->assertNotNull($version);
         $this->assertNotSame('passport.pdf', $version->original_filename);
+    }
+
+    /**
+     * And a guesthouse partner, whose record is the newest place in this
+     * schema holding somebody's real phone number — §15.4 (Phase 9.1).
+     *
+     * A fixture that never stores one is not a passing test: the whole
+     * scrub list could name the wrong column and every assertion above
+     * would still be green, because no partner ever existed in any of them.
+     */
+    public function test_a_guesthouse_partner_keeps_nothing_that_identifies_them(): void
+    {
+        $partner = Partner::factory()->create([
+            'name' => 'Maafushi View Guest House',
+            'contact_name' => 'Ibrahim Waheed',
+            'phone' => '+9607771234',
+            'whatsapp' => '+9607771234',
+            'email' => 'ibrahim@maafushiview.mv',
+            'contract_notes' => 'Signed 12 March. Twelve rooms on allotment until October.',
+        ]);
+
+        // The building itself is product content and stays legible, so the
+        // test server is still worth looking at.
+        $property = Property::factory()->create([
+            'partner_id' => $partner->getKey(),
+            'name' => ['en' => 'Maafushi View'],
+        ]);
+
+        $this->artisan('data:anonymise', ['--force' => true])->assertSuccessful();
+
+        $scrubbed = $partner->fresh();
+
+        $this->assertNotSame('Ibrahim Waheed', $scrubbed->contact_name);
+        $this->assertNotSame('+9607771234', $scrubbed->phone);
+        $this->assertNotSame('+9607771234', $scrubbed->whatsapp);
+        $this->assertNotSame('ibrahim@maafushiview.mv', $scrubbed->email);
+        $this->assertStringNotContainsString('Signed 12 March', (string) $scrubbed->contract_notes);
+
+        $this->assertSame('Maafushi View', $property->fresh()->getTranslation('name', 'en'));
     }
 
     private function isNullable(string $table, string $column): bool

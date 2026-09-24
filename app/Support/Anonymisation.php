@@ -57,6 +57,17 @@ final class Anonymisation
             'emergency_contact_phone' => 'phone',
         ],
         'people' => ['name' => 'name', 'email' => 'email', 'phone' => 'phone', 'bio' => 'text'],
+        // A partner is a real guesthouse owner, and their record holds the
+        // phone number Rihla actually rings, their WhatsApp, and what was
+        // agreed with them commercially — §15.4. None of it belongs on a
+        // public test server. The rate and the percentage stay: they are
+        // what makes the test data behave like the real thing, and neither
+        // identifies anybody on its own.
+        'partners' => [
+            'name' => 'name', 'contact_name' => 'name', 'email' => 'email',
+            'phone' => 'phone', 'whatsapp' => 'phone',
+            'allotment_notes' => 'text', 'contract_notes' => 'text',
+        ],
         // Every account, the administrators included. The password hash is
         // left alone rather than set to something known: nobody should be
         // able to sign in to the test server with a credential this command
@@ -170,6 +181,12 @@ final class Anonymisation
         'payment_transactions',
         'permissions',
         'price_tiers',
+        // Product content, not people. A property's name, description and
+        // house rules are what the public page already shows, and its room
+        // types are what a night in it buys. The partner *behind* it is
+        // scrubbed above; the building is not a person.
+        'properties',
+        'room_types',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',
