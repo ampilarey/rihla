@@ -28,27 +28,40 @@ class WhySectionSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Create English features
+        // §15.3 (Phase 8.3): Rihla is no longer only an Umrah operator, so
+        // every claim here has to be as true of a guesthouse customer as of
+        // a pilgrim. Generic marketing lines ("Trusted Guides", "Comfort
+        // Stays") do not survive that test; four concrete, checkable facts
+        // do — and each one is already established elsewhere in this
+        // codebase (Seo::REGISTRATION_NUMBER, Seo::FOUNDED, the WhatsApp
+        // button every page carries), not invented for this section.
         $featuresEn = [
             [
-                'title' => 'Trusted Guides',
-                'text' => 'Our experienced local guides know every hidden gem and secret spot, ensuring you get the most authentic experience.',
-                'icon' => '🧭',
+                'title' => 'Licensed and registered',
+                'text' => 'Registered with the Maldives Ministry of Economic Development under REG NO: C11452023 — a real, licensed travel operator, not a marketing page.',
+                'icon' => '📋',
                 'sort_order' => 0,
                 'is_active' => true,
             ],
             [
-                'title' => 'Comfort Stays',
-                'text' => 'Carefully selected accommodations that blend comfort with local charm, making every night a restful experience.',
-                'icon' => '🏨',
+                'title' => 'A Maldivian company',
+                'text' => 'Based in Malé and run by Maldivians, for anyone travelling to or through the Maldives.',
+                'icon' => '🇲🇻',
                 'sort_order' => 1,
                 'is_active' => true,
             ],
             [
-                'title' => 'Clear Pricing',
-                'text' => 'Transparent pricing with no hidden fees. What you see is what you pay, making budgeting simple and stress-free.',
-                'icon' => '💰',
+                'title' => 'Real people on WhatsApp',
+                'text' => 'Message us any time and an actual person on our team replies, not a chatbot.',
+                'icon' => '💬',
                 'sort_order' => 2,
+                'is_active' => true,
+            ],
+            [
+                'title' => 'Since 2023',
+                'text' => 'Registered in 2023, and every journey since has been run by the same small team.',
+                'icon' => '🕊️',
+                'sort_order' => 3,
                 'is_active' => true,
             ],
         ];

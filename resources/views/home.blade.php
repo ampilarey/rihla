@@ -7,6 +7,35 @@
 <x-welcome-back :personal="$personal" />
 
 {{--
+    "What we do" — §15.1/§15.3 (Phase 8.3). Rihla is now two lines of
+    business, and this is where a visitor first sees that rather than
+    assuming Umrah is the only thing here. Stays only appears once a Stays
+    service is not off — the same registry gate the nav uses (§15.3, Phase
+    8.1/8.2) — so this never links to a page nobody can reach yet.
+--}}
+@php($staysHomeItem = collect(\App\Support\Services::catalogue())->reject(fn ($meta, $key) => \App\Support\Services::isOff($key))->map(fn ($meta) => ['route' => $meta['route'], 'label' => $meta['label']])->first())
+@php($whatWeDoGrid = $staysHomeItem ? 'max-w-3xl sm:grid-cols-2' : 'max-w-sm')
+<section class="section-y bg-white">
+    <div class="container mx-auto px-4">
+        <h2 class="section-title text-center">{{ __('messages.What we do') }}</h2>
+        <div class="mx-auto mt-8 grid gap-6 {{ $whatWeDoGrid }}">
+            <a href="{{ route('packages.index') }}" class="card block text-center transition-shadow hover:shadow-lg">
+                <div class="mb-4 text-4xl" aria-hidden="true">🕋</div>
+                <h3 class="text-xl font-bold text-ink" dir="auto">{{ __('Umrah') }}</h3>
+                <p class="mt-2 text-brand-body" dir="auto">{{ __('messages.Umrah packages, guides and support from Malé to Makkah and Madinah.') }}</p>
+            </a>
+            @if ($staysHomeItem)
+                <a href="{{ route($staysHomeItem['route']) }}" class="card block text-center transition-shadow hover:shadow-lg">
+                    <div class="mb-4 text-4xl" aria-hidden="true">🏝️</div>
+                    <h3 class="text-xl font-bold text-ink" dir="auto">{{ __('Stays') }}</h3>
+                    <p class="mt-2 text-brand-body" dir="auto">{{ __('messages.Guesthouses, island holidays and rooms in Malé.') }}</p>
+                </a>
+            @endif
+        </div>
+    </div>
+</section>
+
+{{--
     Three routes in, immediately under the hero: browse what is for sale,
     read about the rite, or talk to a person. The plan asks for exactly these
     three, and all three destinations exist.
