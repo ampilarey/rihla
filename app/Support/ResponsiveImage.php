@@ -118,6 +118,47 @@ final class ResponsiveImage
     }
 
     /**
+     * Remove a path's variants, and say how many went.
+     *
+     * The counterpart {@see generate()} never had. Variants were written
+     * on every save of four models and deleted by exactly one place in
+     * the codebase — `HeroBannerController::deleteImage()` — so a trip,
+     * package or article cover replaced or deleted left its three WebP
+     * files behind, and has since Phase 2. On cPanel the disk is a fixed
+     * per-account allowance rather than a disk, and the failure when it
+     * runs out is writes failing across the whole application.
+     *
+     * **It deletes only the derived files, never the original.** Whether
+     * the original should go is the caller's decision and a different
+     * one: a record can be deleted while the file it pointed at is still
+     * wanted, and this has no way to know.
+     *
+     * Safe to call for a path that has none, which is the ordinary case
+     * for a record saved without an image.
+     *
+     * @return int how many files were removed
+     */
+    public static function forget(string $path, string $disk = 'public'): int
+    {
+        if ($path === '') {
+            return 0;
+        }
+
+        $removed = 0;
+
+        foreach (self::WIDTHS as $width) {
+            $variant = self::variantPath($path, $width);
+
+            if (Storage::disk($disk)->exists($variant)) {
+                Storage::disk($disk)->delete($variant);
+                $removed++;
+            }
+        }
+
+        return $removed;
+    }
+
+    /**
      * Make the variants a path is missing, and say how many were written.
      *
      * Lives here rather than in the command because two things need it:
