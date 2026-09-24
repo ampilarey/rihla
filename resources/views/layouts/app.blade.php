@@ -133,6 +133,16 @@
     @php($navDesktop = Auth::check() ? 'hidden xl:flex' : 'hidden lg:flex')
     @php($navToggle = Auth::check() ? 'xl:hidden' : 'lg:hidden')
 
+    {{-- The grouped Umrah/Stays menu — §15.1/§15.3 (Phase 8.2). Computed
+         once and shared by the desktop and mobile blocks below so the two
+         cannot read the registry differently. A Stays item only appears
+         once its service is not off, so with every Stays service still at
+         its default the group renders nothing — proved in
+         StaysNavigationTest by planting a state and watching it appear. --}}
+    @php($staysNavItems = collect(\App\Support\Services::catalogue())->reject(fn ($meta, $key) => \App\Support\Services::isOff($key))->map(fn ($meta) => ['route' => $meta['route'], 'label' => $meta['label']])->values())
+    @php($umrahNavActive = request()->routeIs('packages.*') || request()->routeIs('guide'))
+    @php($staysNavActive = request()->routeIs('stays.*'))
+
     {{-- The customer call-to-actions and the floating WhatsApp buttons are for
          visitors. On the admin panel they are noise, and the floating stack
          sits on top of the dashboard's own cards.
@@ -261,14 +271,25 @@
                             </div>
                         @else
                             <!-- User is not logged in - show regular website navigation -->
-                            <x-site-nav-link href="{{ route('packages.index') }}" :active="request()->routeIs('packages.*')">
-                                {{ __('Packages') }}
-                            </x-site-nav-link>
+                            <x-site-nav-dropdown :label="__('Umrah')" :active="$umrahNavActive">
+                                <x-dropdown-link href="{{ route('packages.index') }}" role="menuitem" :aria-current="request()->routeIs('packages.*') ? 'page' : null">
+                                    {{ __('Packages') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link href="{{ route('guide') }}" role="menuitem" :aria-current="request()->routeIs('guide') ? 'page' : null">
+                                    {{ __('Umrah Guide') }}
+                                </x-dropdown-link>
+                            </x-site-nav-dropdown>
+                            @if ($staysNavItems->isNotEmpty())
+                                <x-site-nav-dropdown :label="__('Stays')" :active="$staysNavActive">
+                                    @foreach ($staysNavItems as $item)
+                                        <x-dropdown-link href="{{ route($item['route']) }}" role="menuitem" :aria-current="request()->routeIs($item['route']) ? 'page' : null">
+                                            {{ __($item['label']) }}
+                                        </x-dropdown-link>
+                                    @endforeach
+                                </x-site-nav-dropdown>
+                            @endif
                             <x-site-nav-link href="{{ route('trips.index') }}" :active="request()->routeIs('trips.*')">
                                 {{ __('Trips') }}
-                            </x-site-nav-link>
-                            <x-site-nav-link href="{{ route('guide') }}" :active="request()->routeIs('guide')">
-                                {{ __('Umrah Guide') }}
                             </x-site-nav-link>
                             <x-site-nav-link href="{{ route('gallery') }}" :active="request()->routeIs('gallery')">
                                 {{ __('Gallery') }}
@@ -279,7 +300,7 @@
                             <x-site-nav-link href="{{ route('contact') }}" :active="request()->routeIs('contact')">
                                 {{ __('Contact') }}
                             </x-site-nav-link>
-                            <a href="{{ route('login') }}" 
+                            <a href="{{ route('login') }}"
                                class="text-ink hover:text-wine-500 transition-colors font-medium cursor-pointer border border-transparent hover:border-wine-500 px-3 py-1 rounded focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2">
                                 {{ __('Login') }}
                             </a>
@@ -345,19 +366,31 @@
                             </form>
                         @else
                             <!-- User is not logged in - show regular website navigation -->
-                            <a href="{{ route('packages.index') }}"
-                               class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
-                                {{ __('Packages') }}
-                            </a>
-                            <a href="{{ route('trips.index') }}" 
+                            <x-site-nav-accordion :label="__('Umrah')" :active="$umrahNavActive">
+                                <a href="{{ route('packages.index') }}" role="menuitem"
+                                   class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                    {{ __('Packages') }}
+                                </a>
+                                <a href="{{ route('guide') }}" role="menuitem"
+                                   class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                    {{ __('Umrah Guide') }}
+                                </a>
+                            </x-site-nav-accordion>
+                            @if ($staysNavItems->isNotEmpty())
+                                <x-site-nav-accordion :label="__('Stays')" :active="$staysNavActive">
+                                    @foreach ($staysNavItems as $item)
+                                        <a href="{{ route($item['route']) }}" role="menuitem"
+                                           class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                            {{ __($item['label']) }}
+                                        </a>
+                                    @endforeach
+                                </x-site-nav-accordion>
+                            @endif
+                            <a href="{{ route('trips.index') }}"
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Trips') }}
                             </a>
-                            <a href="{{ route('guide') }}" 
-                               class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
-                                {{ __('Umrah Guide') }}
-                            </a>
-                            <a href="{{ route('gallery') }}" 
+                            <a href="{{ route('gallery') }}"
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Gallery') }}
                             </a>

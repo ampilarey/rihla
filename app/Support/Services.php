@@ -53,14 +53,19 @@ final class Services
      * new entry, it is a state change — is one line here plus whatever
      * route actually starts checking it.
      *
-     * @return array<string, array{label: string, default: string}>
+     * `route` is the named route the public nav links to once a service is
+     * not off — §15.3 (Phase 8.2). Reusing the catalogue for this rather
+     * than a second lookup table keeps the two from drifting: the nav can
+     * only ever offer a service the registry itself knows about.
+     *
+     * @return array<string, array{label: string, default: string, route: string}>
      */
     public static function catalogue(): array
     {
         return [
-            'stays_guesthouses' => ['label' => 'Guesthouses', 'default' => self::OFF],
-            'stays_island_holidays' => ['label' => 'Island holidays', 'default' => self::OFF],
-            'stays_rooms' => ['label' => 'Rooms in Malé', 'default' => self::OFF],
+            'stays_guesthouses' => ['label' => 'Guesthouses', 'default' => self::OFF, 'route' => 'stays.guesthouses'],
+            'stays_island_holidays' => ['label' => 'Island holidays', 'default' => self::OFF, 'route' => 'stays.island-holidays'],
+            'stays_rooms' => ['label' => 'Rooms in Malé', 'default' => self::OFF, 'route' => 'stays.rooms'],
         ];
     }
 
@@ -136,14 +141,21 @@ final class Services
         app()->forgetInstance(self::CACHE);
     }
 
-    /** @return array<string, string> */
+    /**
+     * Read via {@see Setting::allCached()} rather than a query of its own:
+     * the nav reads this on every page, and a second `where('key', ...)`
+     * against `settings` would be a second query per request — exactly what
+     * `ContactNumberTest` holds `Setting::getSocialSettings()` to one of.
+     *
+     * @return array<string, string>
+     */
     private static function stored(): array
     {
         if (app()->bound(self::CACHE)) {
             return app()->make(self::CACHE);
         }
 
-        $value = Setting::where('key', self::SETTINGS_KEY)->first()?->value;
+        $value = Setting::allCached()->get(self::SETTINGS_KEY)?->value;
         $value = is_array($value) ? $value : [];
 
         app()->instance(self::CACHE, $value);

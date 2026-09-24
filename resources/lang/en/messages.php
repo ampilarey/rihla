@@ -533,6 +533,14 @@ return [
     'Leave us a phone number or an email so we can reply.' => 'Leave us a phone number or an email so we can reply.',
     'Thank you — we have your message and will come back to you.' => 'Thank you — we have your message and will come back to you.',
 
+    // The Stays placeholder pages (§15.3, Phase 8.2).
+    'The fastest way to reach us is WhatsApp.' => 'The fastest way to reach us is WhatsApp.',
+    'Or leave your details' => 'Or leave your details',
+    'Interested in: :service' => 'Interested in: :service',
+    'Rihla markets a hand-picked set of guesthouses across the Maldives on behalf of the people who run them. Tell us where and when you are thinking of, and we will send you what is available.' => 'Rihla markets a hand-picked set of guesthouses across the Maldives on behalf of the people who run them. Tell us where and when you are thinking of, and we will send you what is available.',
+    'Short island holidays for Maldivian families — a weekend away, arranged the way our Umrah groups already are. Tell us which island and when, and we will put together a plan.' => 'Short island holidays for Maldivian families — a weekend away, arranged the way our Umrah groups already are. Tell us which island and when, and we will put together a plan.',
+    'Nightly rooms in Malé, booked and paid for online. Tell us your dates and we will let you know as soon as booking opens.' => 'Nightly rooms in Malé, booked and paid for online. Tell us your dates and we will let you know as soon as booking opens.',
+
     // Invoices and receipts (§5.3). English only for now, like the rest of
     // the portal: the Dhivehi files are being cleaned of machine-generated
     // entries rather than added to.
