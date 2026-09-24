@@ -3,7 +3,6 @@
 namespace App\Services\Payments\Drivers;
 
 use App\Exceptions\GatewayNotConfigured;
-use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\Payments\HandlesCallbacks;
 use App\Services\Payments\PaymentGateway;
@@ -62,7 +61,7 @@ final class BmlConnect implements HandlesCallbacks, PaymentGateway
      *
      * @throws GatewayNotConfigured
      */
-    public function start(Booking $booking, Money $amount, array $details = []): Payment
+    public function start($payable, Money $amount, array $details = []): Payment
     {
         throw GatewayNotConfigured::bml();
     }

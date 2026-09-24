@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\IllegalBookingTransition;
 use App\Services\Payments\Ledger;
+use App\Services\Payments\TakesPayments;
 use App\Support\Money;
 use App\Support\PackageSnapshot;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,7 +29,7 @@ use Illuminate\Support\Facades\Auth;
  * model method that quietly incremented a counter would be exactly the code
  * path the plan's DB-level constraint exists to catch.
  */
-class Booking extends Model
+class Booking extends Model implements TakesPayments
 {
     use HasFactory;
 
@@ -246,6 +247,18 @@ class Booking extends Model
     public function paid(): Money
     {
         return Money::ofMinor($this->paid_minor, $this->currency);
+    }
+
+    // ── App\Services\Payments\TakesPayments ───────────────────────────────
+
+    public function paymentCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function storePaidTotal(int $minor): void
+    {
+        $this->forceFill(['paid_minor' => $minor])->save();
     }
 
     public function balance(): Money

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\IllegalStayTransition;
+use App\Services\Payments\TakesPayments;
 use App\Support\Money;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * hold dates and is not put in that list produces an overbooking with no
  * failing test anywhere, so the list is stated once and read everywhere.
  */
-class Stay extends Model
+class Stay extends Model implements TakesPayments
 {
     use HasFactory;
 
@@ -228,6 +229,30 @@ class Stay extends Model
     public function paid(): Money
     {
         return Money::ofMinor($this->paid_minor, $this->currency);
+    }
+
+    /** What is still owed, floored at zero — an overpayment is not a debt. */
+    public function outstanding(): Money
+    {
+        return Money::ofMinor(max(0, $this->total_minor - $this->paid_minor), $this->currency);
+    }
+
+    /** Has the deposit this stay was held for actually landed? */
+    public function depositIsPaid(): bool
+    {
+        return $this->deposit_minor > 0 && $this->paid_minor >= $this->deposit_minor;
+    }
+
+    // ── App\Services\Payments\TakesPayments ───────────────────────────────
+
+    public function paymentCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function storePaidTotal(int $minor): void
+    {
+        $this->forceFill(['paid_minor' => $minor])->save();
     }
 
     // ── Moving between statuses ──────────────────────────────────────────

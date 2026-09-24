@@ -133,7 +133,7 @@ class PaymentTest extends TestCase
             ->orderByDesc('id')->first()
             ->forceFill(['amount_minor' => 1_000_000])->save();
 
-        $this->ledger()->recompute($booking->getKey());
+        $this->ledger()->recompute($booking);
 
         $this->assertSame(2_500_000, $booking->fresh()->paid_minor);
     }
