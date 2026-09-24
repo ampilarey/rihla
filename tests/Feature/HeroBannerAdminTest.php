@@ -214,6 +214,48 @@ class HeroBannerAdminTest extends TestCase
     }
 
     /**
+     * The hole the first version of this form shipped with.
+     *
+     * Gold background, words left on their default — which is white. The
+     * rule measured only what was typed, read an empty colour as "cannot
+     * be measured", and saved `bg=#EFD34D text=#ffffff`: the 1.49:1 pair
+     * the test above refuses, reached by *not* choosing the white. And a
+     * rule on the words field could not have caught it anyway, because
+     * Laravel does not run a closure rule on an empty field.
+     */
+    public function test_gold_with_the_default_words_is_refused(): void
+    {
+        Livewire::actingAs($this->contentManager())
+            ->test(CreateHeroBanner::class)
+            ->fillForm([
+                'title' => ['en' => 'Ramadan'],
+                'overlay_opacity' => 40,
+                'primary_cta_bg_color' => Brand::GOLD,
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['primary_cta_bg_color']);
+
+        $this->assertSame(0, HeroBanner::count(), 'Gold with the default white words was saved.');
+    }
+
+    /** The mirror: words chosen, background left on its default. */
+    public function test_faint_words_on_the_default_background_are_refused(): void
+    {
+        // Muted ink on the default violet is well under 4.5:1.
+        $this->assertLessThan(Contrast::AA, Contrast::ratio(Brand::INK_MUTED, Brand::WINE));
+
+        Livewire::actingAs($this->contentManager())
+            ->test(CreateHeroBanner::class)
+            ->fillForm([
+                'title' => ['en' => 'Ramadan'],
+                'overlay_opacity' => 40,
+                'primary_cta_text_color' => Brand::INK_MUTED,
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['primary_cta_text_color']);
+    }
+
+    /**
      * A palette is not a guarantee. White and cream are both palette
      * values and 1.05:1 against each other — which is why the rule is a
      * measured ratio and not a list of banned pairs.

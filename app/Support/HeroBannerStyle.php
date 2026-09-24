@@ -97,66 +97,31 @@ final class HeroBannerStyle
     }
 
     /**
-     * The palette, as choices a person can read.
+     * The palette, plus the second button's own translucent default.
      *
-     * Read from {@see Brand} rather than repeated, for the reason the PDF
-     * templates now do: a palette with more than one source of truth goes
-     * stale in whichever copy nobody is looking at.
+     * The shared list lives in {@see PaletteChoices}; this adds the one
+     * value only a hero banner uses — white at 20%, for a button sitting
+     * over the photograph. It has no single contrast ratio (it depends on
+     * the picture), so {@see Contrast::ratio()} declines to measure it
+     * rather than guessing.
      *
      * @return array<string, string> hex => label
      */
     public static function colours(): array
     {
-        return [
-            Brand::WHITE => 'White',
-            Brand::CREAM => 'Cream',
-            Brand::GOLD => 'Gold (for dark grounds only)',
-            Brand::GOLD_ON_LIGHT => 'Dark gold',
-            Brand::WINE => 'Violet (primary)',
-            Brand::INK => 'Ink',
-            Brand::INK_MUTED => 'Muted ink',
-            // The second button's own default: white at 20%, for a button
-            // that sits over the photograph rather than on a solid colour.
-            // Listed so every existing banner does not show its default as
-            // "not in the palette". It has no single contrast ratio — it
-            // depends on the photograph — so {@see Contrast::ratio()}
-            // declines to measure it rather than guessing.
+        return PaletteChoices::colours() + [
             self::TRANSLUCENT_WHITE => 'Translucent white (over the photograph)',
         ];
     }
 
-    /**
-     * The palette plus whatever a record already holds.
-     *
-     * A banner saved before this form existed may carry a colour the
-     * palette does not — an old brand value, or anything the free picker
-     * allowed. Offering only the palette would make the form show a blank
-     * select and **silently overwrite the stored value on the next save**,
-     * repainting a live homepage because somebody fixed a typo in the
-     * title. So the current value is kept, labelled for what it is, and
-     * changing it is a decision somebody makes on purpose.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     public static function coloursIncluding(?string $current): array
     {
-        $choices = self::colours();
-
-        if ($current !== null && $current !== '' && ! self::isPaletteColour($current)) {
-            $choices = [$current => $current.' — not in the palette'] + $choices;
-        }
-
-        return $choices;
+        return PaletteChoices::including($current, self::colours());
     }
 
     public static function isPaletteColour(string $hex): bool
     {
-        foreach (array_keys(self::colours()) as $palette) {
-            if (strcasecmp($palette, $hex) === 0) {
-                return true;
-            }
-        }
-
-        return false;
+        return PaletteChoices::contains(self::colours(), $hex);
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\HeroBanners\Schemas;
 
+use App\Filament\Support\ReadableColour;
 use App\Models\HeroBanner;
-use App\Support\Contrast;
+use App\Support\Brand;
 use App\Support\HeroBannerStyle;
 use Closure;
 use Filament\Forms\Components\DateTimePicker;
@@ -96,17 +97,19 @@ class HeroBannerForm
             ]),
 
             Section::make('Main button')->columns(4)->schema([
-                self::colour('primary_cta_bg_color', 'Background'),
+                self::colour('primary_cta_bg_color', 'Background')
+                    ->rule(self::primaryReadable()),
                 self::colour('primary_cta_text_color', 'Words')
-                    ->rule(self::readableAgainst('primary_cta_bg_color')),
+                    ->rule(self::primaryReadable()),
                 self::keepsDefaultWhenEmpty(Select::make('primary_cta_size')->label('Size')->options(HeroBannerStyle::BUTTON_SIZES)),
                 self::keepsDefaultWhenEmpty(Select::make('primary_cta_radius')->label('Corners')->options(HeroBannerStyle::RADII)),
             ]),
 
             Section::make('Second button')->columns(4)->schema([
-                self::colour('secondary_cta_bg_color', 'Background'),
+                self::colour('secondary_cta_bg_color', 'Background')
+                    ->rule(self::secondaryReadable()),
                 self::colour('secondary_cta_text_color', 'Words')
-                    ->rule(self::readableAgainst('secondary_cta_bg_color')),
+                    ->rule(self::secondaryReadable()),
                 self::keepsDefaultWhenEmpty(Select::make('secondary_cta_size')->label('Size')->options(HeroBannerStyle::BUTTON_SIZES)),
                 self::keepsDefaultWhenEmpty(Select::make('secondary_cta_radius')->label('Corners')->options(HeroBannerStyle::RADII)),
             ]),
@@ -160,30 +163,19 @@ class HeroBannerForm
     }
 
     /**
-     * The button's words must be readable on the button.
-     *
-     * Only when both are solid colours: an unset value means "the site
-     * default", which is itself held to contrast by `BrandColourTest`, and
-     * a translucent background has no single ratio — it depends on the
-     * photograph behind it. "Cannot be measured" is not "measured and
-     * fine", but refusing a save over it would refuse the defaults.
+     * The main button, measured on what renders. The defaults are the
+     * column defaults, verbatim — an empty choice is left out of the save
+     * and the database supplies these, so they are what a visitor sees.
+     * See {@see ReadableColour} for the hole the first version had.
      */
-    private static function readableAgainst(string $backgroundField): Closure
+    private static function primaryReadable(): Closure
     {
-        return fn ($get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $backgroundField): void {
-            $ratio = Contrast::ratio(
-                is_string($value) ? $value : null,
-                is_string($get($backgroundField)) ? $get($backgroundField) : null,
-            );
+        return ReadableColour::pair('primary_cta_text_color', 'primary_cta_bg_color', '#ffffff', Brand::WINE);
+    }
 
-            if ($ratio !== null && $ratio < Contrast::AA) {
-                $fail(sprintf(
-                    'These words would be %.2f:1 against the button — too faint to read. Buttons need at least %.1f:1. Gold takes ink, never white.',
-                    $ratio,
-                    Contrast::AA,
-                ));
-            }
-        };
+    private static function secondaryReadable(): Closure
+    {
+        return ReadableColour::pair('secondary_cta_text_color', 'secondary_cta_bg_color', '#ffffff', HeroBannerStyle::TRANSLUCENT_WHITE);
     }
 
     private static function localeTab(string $locale, string $label, bool $required): Tab

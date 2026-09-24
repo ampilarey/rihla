@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use App\Models\Media;
 use App\Models\Trip;
 use App\Models\User;
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -170,54 +168,9 @@ class AdminWritePathTest extends TestCase
         $this->assertDatabaseMissing('media', ['id' => $medium->id]);
     }
 
-    // Hero banners moved to the staff panel (§9.2). Their create, update
-    // and delete are now driven through the Filament form in
-    // HeroBannerAdminTest::test_a_banner_can_be_created_updated_and_deleted.
-
-    public function test_a_why_section_can_be_updated(): void
-    {
-        $section = WhySection::create(['title' => 'Why Rihla']);
-
-        $this->actingAs($this->admin())
-            ->put(route('admin.why-sections.update', $section), [
-                'title' => 'Why travel with Rihla',
-                'primary_cta_bg_color' => '#5F498A',
-            ])
-            ->assertSessionHasNoErrors()
-            ->assertRedirect();
-
-        $this->assertSame('Why travel with Rihla', $section->fresh()->title);
-    }
-
-    public function test_a_why_feature_can_be_created_updated_and_deleted(): void
-    {
-        $admin = $this->admin();
-        $section = WhySection::create(['title' => 'Why Rihla']);
-
-        $this->actingAs($admin)->post(route('admin.why-sections.features.store', $section), [
-            'why_section_id' => $section->id,
-            'title' => 'Licensed by the Ministry',
-            'text' => 'Registration C11452023.',
-            'sort_order' => 0,
-        ])->assertSessionHasNoErrors()->assertRedirect();
-
-        $feature = WhyFeature::sole();
-        $this->assertSame('Licensed by the Ministry', $feature->title);
-
-        $this->actingAs($admin)->put(route('admin.features.update', $feature), [
-            'why_section_id' => $section->id,
-            'title' => 'Ministry licensed',
-            'sort_order' => 1,
-        ])->assertSessionHasNoErrors()->assertRedirect();
-
-        $this->assertSame('Ministry licensed', $feature->fresh()->title);
-
-        $this->actingAs($admin)
-            ->delete(route('admin.features.destroy', $feature))
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('why_features', ['id' => $feature->id]);
-    }
+    // Hero banners and the "why Rihla" section moved to the staff panel
+    // (§9.2). Their write paths are now driven through the Filament forms in
+    // HeroBannerAdminTest and WhySectionAdminTest.
 
     /**
      * Roles are only worth having if they hold on the writes too. Reads are
