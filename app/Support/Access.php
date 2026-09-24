@@ -412,6 +412,43 @@ final class Access
         'whyFeature.update',
         'whyFeature.delete',
 
+        // Stays — §15.4 (Phase 9.1). The guesthouse owners Rihla markets
+        // for, the buildings themselves, and the rooms inside them.
+        //
+        // Deliberately *not* in $content below. A property carries a
+        // partner's contact details, what Rihla agreed to pay them and what
+        // Rihla sells it for; editing the website's words is not a reason
+        // to see a commercial arrangement with a third party. The same
+        // reasoning that keeps bookings and customers out of $content.
+        //
+        // No `partner.delete`: a partner with properties cannot be removed
+        // — the database refuses it — and a partner Rihla no longer works
+        // with is marked inactive, which keeps the history of what was sold
+        // under their name.
+        //
+        // `roomType.viewAny` reads as redundant, since a room type is only
+        // ever reached through the property that owns it. It is not:
+        // Filament's RelationManager::canViewForRecord() authorises
+        // `viewAny` against the *related* model, so leaving it out hides
+        // the rooms table inside a property the user can already edit, with
+        // no error and nothing on screen to say why.
+        'partner.viewAny',
+        'partner.view',
+        'partner.create',
+        'partner.update',
+
+        'property.viewAny',
+        'property.view',
+        'property.create',
+        'property.update',
+        'property.delete',
+
+        'roomType.viewAny',
+        'roomType.view',
+        'roomType.create',
+        'roomType.update',
+        'roomType.delete',
+
         'setting.view',
         'setting.update',
 
@@ -494,6 +531,15 @@ final class Access
         $documents = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'document',
+        ));
+
+        // The Stays line — §15.4. A separate set from $content for the
+        // reason its permissions record: a property carries what Rihla
+        // agreed to pay a partner and what it sells the room for, and
+        // editing the website is not a reason to see either.
+        $stays = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => in_array(strtok($permission, '.'), ['partner', 'property', 'roomType'], true),
         ));
 
         $visas = array_values(array_filter(
@@ -716,6 +762,7 @@ final class Access
                 array_diff($learning, ['learning.review']),
                 array_diff($questions, ['question.answer']),
                 ['departure.nusuk', 'departure.board'],
+                $stays,
                 $content,
             ),
 

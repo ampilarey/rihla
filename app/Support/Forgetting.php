@@ -102,6 +102,7 @@ final class Forgetting
      */
     public const NOT_ONE_PERSONS = [
         'people' => 'Staff, guides and scholars the company publishes — not customers.',
+        'partners' => 'A guesthouse owner Rihla has a commercial arrangement with — a supplier, not a customer. Erasing one because a guest asked to be forgotten would delete the contact details for a building other guests are still booked into.',
         'users' => 'Staff accounts. A member of staff leaving is a different procedure.',
         'settings' => 'Company settings. Nothing in here is about a person.',
         'operations_log_entries' => 'Written about a departure and read by the whole group; scrubbing one for one person destroys the record for the rest.',
