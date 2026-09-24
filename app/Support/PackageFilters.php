@@ -27,6 +27,7 @@ final class PackageFilters implements Arrayable
         public readonly ?string $month,
         public readonly ?int $maxBudgetMinor,
         public readonly ?int $maxNights,
+        public readonly ?string $type,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -45,6 +46,10 @@ final class PackageFilters implements Arrayable
                 ? Money::ofMajor($budget)->minor
                 : null,
             maxNights: self::positiveInt($request->query('nights')),
+            // An unknown type is ignored rather than erroring, the same way
+            // a hand-edited month is: a mistyped URL should show packages,
+            // not a validation page.
+            type: in_array($type = $request->query('type'), Package::TYPES, true) ? $type : null,
         );
     }
 
@@ -83,12 +88,19 @@ final class PackageFilters implements Arrayable
             });
         }
 
+        if ($this->type !== null) {
+            $query->where('type', $this->type);
+        }
+
         return $query;
     }
 
     public function isEmpty(): bool
     {
-        return $this->month === null && $this->maxBudgetMinor === null && $this->maxNights === null;
+        return $this->month === null
+            && $this->maxBudgetMinor === null
+            && $this->maxNights === null
+            && $this->type === null;
     }
 
     /** @return array<string, mixed> */
@@ -98,6 +110,7 @@ final class PackageFilters implements Arrayable
             'month' => $this->month,
             'budget' => $this->maxBudgetMinor,
             'nights' => $this->maxNights,
+            'type' => $this->type,
         ];
     }
 }

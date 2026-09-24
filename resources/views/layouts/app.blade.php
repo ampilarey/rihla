@@ -140,6 +140,11 @@
          its default the group renders nothing — proved in
          StaysNavigationTest by planting a state and watching it appear. --}}
     @php($staysNavItems = collect(\App\Support\Services::catalogue())->reject(fn ($meta, $key) => \App\Support\Services::isOff($key))->map(fn ($meta) => ['route' => $meta['route'], 'label' => $meta['label']])->values())
+    {{-- Umrah Plus appears under the Umrah menu only once one is published
+         — §15.3 (Phase 8.7). Under Umrah and not a tab of its own: an Umrah
+         with a Turkey extension is an Umrah product, which is the owner's
+         correction recorded in §15.1. --}}
+    @php($hasUmrahPlus = \App\Models\Package::published()->where('type', \App\Models\Package::UMRAH_PLUS)->exists())
     @php($umrahNavActive = request()->routeIs('packages.*') || request()->routeIs('guide'))
     @php($staysNavActive = request()->routeIs('stays.*'))
 
@@ -275,6 +280,11 @@
                                 <x-dropdown-link href="{{ route('packages.index') }}" role="menuitem" :aria-current="request()->routeIs('packages.*') ? 'page' : null">
                                     {{ __('Packages') }}
                                 </x-dropdown-link>
+                                @if ($hasUmrahPlus)
+                                    <x-dropdown-link href="{{ route('packages.index', ['type' => \App\Models\Package::UMRAH_PLUS]) }}" role="menuitem">
+                                        {{ __('messages.Umrah Plus') }}
+                                    </x-dropdown-link>
+                                @endif
                                 <x-dropdown-link href="{{ route('guide') }}" role="menuitem" :aria-current="request()->routeIs('guide') ? 'page' : null">
                                     {{ __('Umrah Guide') }}
                                 </x-dropdown-link>
@@ -371,6 +381,12 @@
                                    class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                     {{ __('Packages') }}
                                 </a>
+                                @if ($hasUmrahPlus)
+                                    <a href="{{ route('packages.index', ['type' => \App\Models\Package::UMRAH_PLUS]) }}" role="menuitem"
+                                       class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                        {{ __('messages.Umrah Plus') }}
+                                    </a>
+                                @endif
                                 <a href="{{ route('guide') }}" role="menuitem"
                                    class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                     {{ __('Umrah Guide') }}

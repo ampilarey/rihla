@@ -36,6 +36,38 @@
                     </section>
                 @endif
 
+                {{-- The extension segment — §15.3 (Phase 8.7). Only an
+                     Umrah Plus has one, and only once somebody has said
+                     where it goes: `hasExtension()` checks both, because a
+                     heading over an empty box reads as a broken page
+                     rather than an unfinished one.
+
+                     Its own block rather than a line in the details prose,
+                     because the extension is the whole reason somebody
+                     chooses this package over the Umrah beside it. --}}
+                @if($package->hasExtension())
+                    <section class="card border-s-4 border-s-gold-500 p-5">
+                        <h2 class="mb-1 text-xl font-bold text-ink" dir="auto">
+                            {{ __('messages.The extension') }}
+                        </h2>
+                        <p class="mb-3 font-medium text-wine-500" dir="auto">
+                            @if($package->extension_nights)
+                                {{ trans_choice('messages.:count night in :place|:count nights in :place', $package->extension_nights, [
+                                    'count' => $package->extension_nights,
+                                    'place' => $package->extension_destination,
+                                ]) }}
+                            @else
+                                {{ $package->extension_destination }}
+                            @endif
+                        </p>
+                        @if($package->extension_details)
+                            <div class="prose max-w-none text-brand-body" dir="auto">
+                                {!! nl2br(e($package->extension_details)) !!}
+                            </div>
+                        @endif
+                    </section>
+                @endif
+
                 {{-- Lists, not prose. "What's included" is the most asked
                      question and burying it in a paragraph means nobody
                      reads it. --}}
