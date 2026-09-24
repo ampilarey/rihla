@@ -449,6 +449,35 @@ final class Access
         'roomType.update',
         'roomType.delete',
 
+        // Seasonal rates and the calendar — §15.4 (Phase 9.2). Both are
+        // reached only through the room they belong to, and both carry
+        // `viewAny` for the reason `roomType.viewAny` does: Filament
+        // authorises a relation manager against the related model, so
+        // leaving it out hides the table with nothing on screen to say why.
+        'rate.viewAny',
+        'rate.view',
+        'rate.create',
+        'rate.update',
+        'rate.delete',
+
+        'blockedDate.viewAny',
+        'blockedDate.view',
+        'blockedDate.create',
+        'blockedDate.update',
+        'blockedDate.delete',
+
+        // A stay is somebody's holiday and somebody's money. No create and
+        // no delete, for the reason bookings have neither: a stay is made
+        // by the booking flow, and it is cancelled — a status, with a row
+        // saying who and why — never removed. `stay.confirm` is the
+        // partner-said-yes button, separate from `update` because issuing a
+        // deposit link and taking dates off a calendar is not the same act
+        // as fixing a typo in a special request.
+        'stay.viewAny',
+        'stay.view',
+        'stay.update',
+        'stay.confirm',
+
         'setting.view',
         'setting.update',
 
@@ -539,7 +568,11 @@ final class Access
         // editing the website is not a reason to see either.
         $stays = array_values(array_filter(
             self::PERMISSIONS,
-            fn (string $permission) => in_array(strtok($permission, '.'), ['partner', 'property', 'roomType'], true),
+            fn (string $permission) => in_array(
+                strtok($permission, '.'),
+                ['partner', 'property', 'roomType', 'rate', 'blockedDate', 'stay'],
+                true,
+            ),
         ));
 
         $visas = array_values(array_filter(

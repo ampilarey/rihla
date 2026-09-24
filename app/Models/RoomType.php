@@ -6,6 +6,7 @@ use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
 
 /**
@@ -50,6 +51,24 @@ class RoomType extends Model
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
+    }
+
+    /** @return HasMany<Rate, $this> */
+    public function rates(): HasMany
+    {
+        return $this->hasMany(Rate::class)->orderBy('starts_on');
+    }
+
+    /** @return HasMany<BlockedDate, $this> */
+    public function blockedDates(): HasMany
+    {
+        return $this->hasMany(BlockedDate::class)->orderBy('date');
+    }
+
+    /** @return HasMany<Stay, $this> */
+    public function stays(): HasMany
+    {
+        return $this->hasMany(Stay::class);
     }
 
     /** @return list<string> */

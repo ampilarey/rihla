@@ -5,14 +5,20 @@ namespace Tests\Feature;
 use App\Filament\Resources\Properties\Pages\CreateProperty;
 use App\Filament\Resources\Properties\Pages\EditProperty;
 use App\Filament\Resources\Properties\PropertyResource;
+use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
+use App\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RoomTypesRelationManager;
 use App\Filament\Resources\Properties\Schemas\PropertyForm;
 use App\Http\Middleware\SetLocale;
+use App\Models\BlockedDate;
 use App\Models\Partner;
 use App\Models\Property;
+use App\Models\Rate;
 use App\Models\RoomType;
 use App\Models\User;
+use App\Services\Stays\Availability;
 use App\Support\Access;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -244,6 +250,115 @@ class StaysAdminTest extends TestCase
             ])
             ->assertCanSeeTableRecords([$mine])
             ->assertCanNotSeeTableRecords([$someone_elses]);
+    }
+
+    // ── Seasons and the calendar ─────────────────────────────────────────
+
+    /**
+     * Rates hang off the property, not off each room.
+     *
+     * A guesthouse owner thinks in seasons across the whole building, and
+     * making them retype the same dates once per room is how one of them
+     * ends up a month out. The relation is `hasManyThrough`, so this also
+     * checks it does not reach into a neighbour's building.
+     */
+    public function test_the_rates_table_lists_every_season_in_the_property(): void
+    {
+        $property = Property::factory()->create();
+        $room = RoomType::factory()->create(['property_id' => $property->id]);
+        $mine = Rate::factory()->create(['room_type_id' => $room->id]);
+        $someoneElses = Rate::factory()->create();
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(RatesRelationManager::class, [
+                'ownerRecord' => $property,
+                'pageClass' => EditProperty::class,
+            ])
+            ->assertCanSeeTableRecords([$mine])
+            ->assertCanNotSeeTableRecords([$someoneElses]);
+    }
+
+    /** A season's rate goes through the same whole-units conversion. */
+    public function test_a_season_rate_typed_in_whole_units_is_stored_in_minor_units(): void
+    {
+        $property = Property::factory()->create(['currency' => 'USD']);
+        $room = RoomType::factory()->create(['property_id' => $property->id]);
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(RatesRelationManager::class, [
+                'ownerRecord' => $property,
+                'pageClass' => EditProperty::class,
+            ])
+            ->callTableAction('create', data: [
+                'room_type_id' => $room->id,
+                'starts_on' => '2027-12-01',
+                'ends_on' => '2027-12-31',
+                'rate_minor' => 250,
+                'min_nights' => 5,
+            ])
+            ->assertHasNoTableActionErrors();
+
+        $rate = Rate::where('room_type_id', $room->id)->firstOrFail();
+
+        $this->assertSame(25000, $rate->rate_minor);
+        $this->assertSame(5, $rate->min_nights);
+        $this->assertSame('2027-12-31', $rate->ends_on->toDateString());
+    }
+
+    public function test_the_calendar_lists_blocked_nights_for_the_property(): void
+    {
+        $property = Property::factory()->create();
+        $room = RoomType::factory()->create(['property_id' => $property->id]);
+        $mine = BlockedDate::factory()->create(['room_type_id' => $room->id, 'date' => '2027-12-24']);
+        $someoneElses = BlockedDate::factory()->create(['date' => '2027-12-24']);
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(BlockedDatesRelationManager::class, [
+                'ownerRecord' => $property,
+                'pageClass' => EditProperty::class,
+            ])
+            ->assertCanSeeTableRecords([$mine])
+            ->assertCanNotSeeTableRecords([$someoneElses]);
+    }
+
+    /**
+     * Blocking a night through the admin genuinely takes it off sale.
+     *
+     * The row existing is not the assertion — availability refusing the
+     * night is. A screen that writes a row the engine does not read is the
+     * most expensive kind of working feature.
+     */
+    public function test_blocking_a_night_in_the_admin_takes_it_off_sale(): void
+    {
+        $property = Property::factory()->create(['min_nights' => 1]);
+        $room = RoomType::factory()->create(['property_id' => $property->id, 'quantity' => 1]);
+
+        $availability = app(Availability::class);
+
+        $this->assertTrue($availability->isAvailable(
+            $room,
+            CarbonImmutable::parse('2027-12-24'),
+            CarbonImmutable::parse('2027-12-25'),
+        ));
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(BlockedDatesRelationManager::class, [
+                'ownerRecord' => $property,
+                'pageClass' => EditProperty::class,
+            ])
+            ->callTableAction('create', data: [
+                'room_type_id' => $room->id,
+                'date' => '2027-12-24',
+                'source' => BlockedDate::PARTNER,
+                'note' => 'The owner is using it over Christmas.',
+            ])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertFalse($availability->isAvailable(
+            $room->fresh(),
+            CarbonImmutable::parse('2027-12-24'),
+            CarbonImmutable::parse('2027-12-25'),
+        ));
     }
 
     /**
