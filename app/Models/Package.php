@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -22,8 +23,9 @@ class Package extends Model
     use HasFactory, HasTranslations;
 
     protected $fillable = [
-        'slug', 'type', 'title', 'summary', 'details', 'inclusions', 'exclusions',
-        'nights', 'extension_destination', 'extension_nights', 'extension_details',
+        'slug', 'type', 'property_id', 'title', 'summary', 'details', 'inclusions', 'exclusions',
+        'nights', 'flexible_dates', 'min_nights',
+        'extension_destination', 'extension_nights', 'extension_details',
         'accessibility_rating', 'accessibility_notes',
         'cover_image', 'is_published', 'sort_order',
     ];
@@ -53,6 +55,14 @@ class Package extends Model
 
     /** The two that belong under the Umrah menu, as opposed to Stays. */
     public const UMRAH_TYPES = [self::UMRAH, self::UMRAH_PLUS];
+
+    // ── Who it is sold to — §15.5 (Phase 10) ─────────────────────────────
+
+    /** Anybody performing Umrah, of any nationality. */
+    public const PILGRIMS = 'pilgrims';
+
+    /** Maldivian families, going to a local island. */
+    public const LOCALS = 'locals';
 
     /**
      * Per docs/adr/0001-how-content-is-translated.md. `inclusions`,
@@ -86,6 +96,8 @@ class Package extends Model
      */
     protected $casts = [
         'nights' => 'integer',
+        'flexible_dates' => 'boolean',
+        'min_nights' => 'integer',
         'extension_nights' => 'integer',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
@@ -191,6 +203,66 @@ class Package extends Model
     public function scopeOfType($query, array $types)
     {
         return $query->whereIn('type', $types);
+    }
+
+    /**
+     * Who this is sold to — **derived, never stored**.
+     *
+     * The plan lists an `audience` column. It is not in the schema,
+     * because `type` already answers the question: an Umrah is sold to
+     * pilgrims and an island holiday to Maldivian families, and nothing at
+     * Rihla is both. A second column stating what the first one states is
+     * a second copy to go stale, which `AGENTS.md` records at length for a
+     * palette with more than one source of truth.
+     *
+     * If a product ever genuinely needs an audience the type cannot imply,
+     * that is the day this becomes a column — and it will be one place to
+     * change rather than every read.
+     */
+    public function audience(): string
+    {
+        return $this->type === self::ISLAND_HOLIDAY ? self::LOCALS : self::PILGRIMS;
+    }
+
+    /**
+     * An island holiday asks nothing of a government — §15.5 (Phase 10).
+     *
+     * A Maldivian family catching the Thursday ferry to Ukulhas needs no
+     * passport, no visa and no Umrah permit, and asking for any of them is
+     * not a harmless extra field: it is a form somebody abandons, and a
+     * readiness board that reads "not ready" for a family who are entirely
+     * ready to go.
+     *
+     * Expressed as a property of the *package* rather than checked at each
+     * of the four places that care, so a fifth cannot be added without
+     * meeting it.
+     */
+    public function needsTravelDocuments(): bool
+    {
+        return $this->type !== self::ISLAND_HOLIDAY;
+    }
+
+    /** @return BelongsTo<Property, $this> */
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    /**
+     * Sold for dates of the customer's choosing rather than a fixed
+     * departure.
+     *
+     * Both halves matter: a package marked flexible with no minimum would
+     * accept a one-night booking on a boat that only runs on Thursdays.
+     */
+    public function isFlexible(): bool
+    {
+        return $this->flexible_dates;
+    }
+
+    public function minimumNights(): int
+    {
+        return max(1, (int) $this->min_nights);
     }
 
     /**

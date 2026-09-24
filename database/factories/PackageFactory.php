@@ -37,4 +37,14 @@ class PackageFactory extends Factory
     {
         return $this->state(fn (): array => ['is_published' => false]);
     }
+
+    /** A weekend on a local island — §15.5 (Phase 10). Asks for no passport. */
+    public function islandHoliday(): static
+    {
+        return $this->state(fn (): array => [
+            'type' => Package::ISLAND_HOLIDAY,
+            'title' => ['en' => 'Fulidhoo Weekend'],
+            'nights' => 2,
+        ]);
+    }
 }

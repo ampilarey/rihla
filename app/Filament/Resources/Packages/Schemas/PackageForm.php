@@ -78,6 +78,35 @@ class PackageForm
                     ->helperText('Umrah and Umrah Plus sit under the Umrah menu. An island holiday is a guesthouse product and sits under Stays.'),
             ]),
 
+            // Only an island holiday has these, and saying so on screen is
+            // the point: a member of staff who has only ever entered Umrah
+            // packages needs to see that this one asks for no passport.
+            Section::make('The island')
+                ->description('A weekend on a local island, sold to Maldivian families. No passport, visa or permit is asked for — the travel-document workflow is gated on the package type, not on a checkbox.')
+                ->columns(2)
+                ->visible(fn ($get): bool => $get('type') === Package::ISLAND_HOLIDAY)
+                ->schema([
+                    Select::make('property_id')
+                        ->label('Built on which guesthouse?')
+                        ->relationship('property', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->helperText('Optional. Linking it means the island and the guesthouse\'s own details show on the page.'),
+
+                    Toggle::make('flexible_dates')
+                        ->label('Any dates the family chooses')
+                        ->live()
+                        ->helperText('Off means fixed departures, like an Umrah — a group on a boat on a Thursday.'),
+
+                    TextInput::make('min_nights')
+                        ->label('Minimum nights')
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(30)
+                        ->visible(fn ($get): bool => (bool) $get('flexible_dates'))
+                        ->helperText('A flexible package with no minimum would take a one-night booking on a boat that runs on Thursdays.'),
+                ]),
+
             // Only an Umrah Plus has one, so the block is not there to be
             // half-filled on the other two.
             Section::make('The extension')

@@ -2,6 +2,7 @@
 
 namespace App\Services\Nusuk;
 
+use App\Exceptions\NotAnUmrahBooking;
 use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\NusukPermit;
@@ -27,6 +28,20 @@ final class PermitDesk
      */
     public function open(Booking $booking, Traveller $traveller, string $kind = NusukPermit::UMRAH): NusukPermit
     {
+        // §15.5 (Phase 10): an island holiday asks nothing of a
+        // government. Loud rather than a quiet null — a desk that
+        // silently declines looks exactly like one that opened it.
+        // Only refuse when the package positively says it needs no
+        // travel documents. A booking whose departure or package has
+        // gone is a broken row, and the safe reading of a broken row
+        // is the permissive one here: opening a visa nobody needed
+        // is recoverable, and refusing one a pilgrim did need is not.
+        $package = $booking->departure?->package;
+
+        if ($package !== null && ! $package->needsTravelDocuments()) {
+            throw NotAnUmrahBooking::forPermit($booking);
+        }
+
         $existing = NusukPermit::where('booking_id', $booking->getKey())
             ->where('traveller_id', $traveller->getKey())
             ->ofKind($kind)
