@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Media\Pages\CreateMedia;
+use App\Filament\Resources\Media\Pages\ListMedia;
 use App\Models\Media;
 use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -151,19 +154,24 @@ class AdminWritePathTest extends TestCase
     {
         $admin = $this->admin();
 
-        $this->actingAs($admin)->post(route('admin.media.store'), [
-            'type' => 'video',
-            'title' => 'Madinah at dawn',
-            'video_url' => 'https://www.youtube.com/watch?v=abc123',
-            'is_published' => '1',
-        ])->assertSessionHasNoErrors()->assertRedirect();
+        // Through the staff panel's form, which replaced the Blade one (§9.2).
+        Livewire::actingAs($admin)
+            ->test(CreateMedia::class)
+            ->fillForm([
+                'type' => 'video',
+                'title' => ['en' => 'Madinah at dawn'],
+                'video_url' => 'https://www.youtube.com/watch?v=abc123',
+                'is_published' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $medium = Media::sole();
         $this->assertSame('Madinah at dawn', $medium->title);
 
-        $this->actingAs($admin)
-            ->delete(route('admin.media.destroy', $medium))
-            ->assertRedirect();
+        Livewire::actingAs($admin)
+            ->test(ListMedia::class)
+            ->callTableAction('delete', $medium);
 
         $this->assertDatabaseMissing('media', ['id' => $medium->id]);
     }

@@ -122,7 +122,7 @@
                                         </div>
                                     @endif
                                     <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                        <a href="{{ route('admin.media.edit', $media) }}" class="text-white text-sm font-medium">
+                                        <a href="{{ \App\Filament\Resources\Media\MediaResource::getUrl('edit', ['record' => $media]) }}" class="text-white text-sm font-medium">
                                             {{ __('Edit') }}
                                         </a>
                                     </div>
@@ -167,7 +167,7 @@
                     <a href="{{ route('admin.trips.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         {{ __('Back to Trips') }}
                     </a>
-                    <a href="{{ route('admin.media.create', ['trip_id' => $trip->id]) }}" class="px-6 py-2 bg-wine-500 text-white rounded-lg hover:bg-wine-700 transition-colors">
+                    <a href="{{ \App\Filament\Resources\Media\MediaResource::getUrl('create', ['trip_id' => $trip->id]) }}" class="px-6 py-2 bg-wine-500 text-white rounded-lg hover:bg-wine-700 transition-colors">
                         {{ __('Add Media') }}
                     </a>
                 </div>

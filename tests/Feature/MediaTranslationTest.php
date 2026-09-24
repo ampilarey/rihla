@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Media\Pages\CreateMedia;
 use App\Models\Media;
 use App\Models\Trip;
 use App\Models\User;
@@ -9,6 +10,7 @@ use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -91,12 +93,16 @@ class MediaTranslationTest extends TestCase
 
     public function test_the_admin_saves_both_languages(): void
     {
-        $this->actingAs($this->admin())->post(route('admin.media.store'), [
-            'type' => 'video',
-            'title' => ['en' => 'Umrah 2026 highlights', 'dv' => 'ޢުމްރާ ٢٠٢٦'],
-            'caption' => ['en' => 'Ten nights, in five minutes.', 'dv' => ''],
-            'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        ])->assertSessionHasNoErrors()->assertRedirect();
+        Livewire::actingAs($this->admin())
+            ->test(CreateMedia::class)
+            ->fillForm([
+                'type' => 'video',
+                'title' => ['en' => 'Umrah 2026 highlights', 'dv' => 'ޢުމްރާ ٢٠٢٦'],
+                'caption' => ['en' => 'Ten nights, in five minutes.', 'dv' => ''],
+                'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $medium = Media::sole();
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediaImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,6 +60,24 @@ class Media extends Model
         self::TYPE_VIDEO,
     ];
 
+    /**
+     * A replaced or deleted photograph leaves the disk with its thumbnail
+     * and original — from the model, so whichever screen saves it.
+     */
+    protected static function booted(): void
+    {
+        static::updated(static function (Media $medium): void {
+            if ($medium->wasChanged('file_path')) {
+                MediaImage::forget($medium->getOriginal('file_path'), $medium->getOriginal('thumb_path'));
+            }
+        });
+
+        static::deleted(static function (Media $medium): void {
+            MediaImage::forget($medium->file_path, $medium->thumb_path);
+        });
+    }
+
+    /** @return BelongsTo<Trip, $this> */
     public function trip(): BelongsTo
     {
         return $this->belongsTo(Trip::class);

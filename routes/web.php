@@ -2,9 +2,9 @@
 
 use App\Filament\Resources\GuideSteps\GuideStepResource;
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
+use App\Filament\Resources\Media\MediaResource;
 use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\ArticleController;
@@ -315,7 +315,11 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
     })->name('dashboard');
 
     Route::resource('trips', AdminTripController::class);
-    Route::resource('media', AdminMediaController::class);
+    // The gallery moved to the staff panel — §9.2. Forwarded for the
+    // reason the hero banner redirect below gives.
+    Route::get('media/{any?}', fn () => redirect()->to(MediaResource::getUrl('index')))
+        ->where('any', '.*')
+        ->name('media.moved');
 
     // The Umrah guide's steps moved to the staff panel — §9.2. Forwarded
     // for the reason the hero banner redirect below gives. The old reorder,
