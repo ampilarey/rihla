@@ -172,8 +172,25 @@
                 <li>{{ __('messages.:percent% deposit when the guesthouse confirms.', ['percent' => $property->deposit_pct]) }}</li>
                 <li>{{ __('messages.The rest is due :days days before you arrive.', ['days' => $property->balance_days_before]) }}</li>
                 <li>{{ __('messages.Cancel more than :days days before and the deposit comes back.', ['days' => $property->free_cancel_days]) }}</li>
-                @if($property->partner?->green_tax_mode === \App\Models\Partner::GREEN_TAX_AT_PROPERTY)
-                    <li>{{ __('messages.Green tax is paid at the guesthouse, not here.') }}</li>
+                {{-- §15.2 decision 5. Both halves matter: *whether* Rihla
+                     collects it, and *how much it is*. Saying only the
+                     first is how a family of four meet twenty guest-nights
+                     of tax at the check-out desk, in a currency they do
+                     not hold, having read a page that mentioned it. --}}
+                @if($greenTaxAtProperty)
+                    <li>
+                        {{ __('messages.Green tax is paid at the guesthouse, not here.') }}
+                        @if($greenTaxRate)
+                            <span class="text-ink-muted">{{ __('messages.:amount per guest per night.', ['amount' => $greenTaxRate->format()]) }}</span>
+                            @if($greenTaxEstimate)
+                                <strong>{{ __('messages.For your dates and party: :amount.', ['amount' => $greenTaxEstimate->format()]) }}</strong>
+                            @endif
+                        @endif
+                    </li>
+                @else
+                    {{-- `included` was stored and acted on nowhere, so both
+                         modes printed the same page. It says so now. --}}
+                    <li>{{ __('messages.Green tax is already included in this price.') }}</li>
                 @endif
             </ul>
         </section>
