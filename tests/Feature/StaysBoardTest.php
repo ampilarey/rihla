@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Property;
 use App\Models\RoomType;
 use App\Models\Stay;
+use App\Models\StayGuest;
 use App\Models\User;
 use App\Services\Stays\StayBooking;
 use App\Support\Access;
@@ -215,6 +216,47 @@ class StaysBoardTest extends TestCase
             ->assertSee('30% on confirmation')
             ->assertSee('until 14 days before')
             ->assertDontSee('80% on confirmation');
+    }
+
+    /**
+     * The register is on the screen, whole — §15.6 (Phase 11).
+     *
+     * Maldivian law requires it and somebody will ask for it, so it lives
+     * where a member of staff already is rather than in a report nobody
+     * runs. Unmasked on purpose: the protection is the encrypted column
+     * and the permission on this page, not asterisks in front of staff who
+     * already have both.
+     */
+    public function test_the_stay_page_shows_the_guest_register(): void
+    {
+        $stay = $this->request();
+
+        StayGuest::factory()->lead()->create([
+            'stay_id' => $stay->getKey(),
+            'full_name' => 'Ibrahim Waheed',
+            'nationality' => 'Maldivian',
+            'id_type' => StayGuest::NATIONAL_ID,
+            'id_number' => 'A123456',
+        ]);
+
+        $this->actingAs($this->superAdmin())
+            ->get(StayResource::getUrl('view', ['record' => $stay]))
+            ->assertOk()
+            ->assertSee('Who stayed')
+            ->assertSee('Ibrahim Waheed')
+            ->assertSee('A123456')
+            ->assertSee('Lead guest');
+    }
+
+    /** No guests recorded: no empty section pretending there is a register. */
+    public function test_a_stay_with_no_register_shows_no_register_section(): void
+    {
+        $stay = $this->request();
+
+        $this->actingAs($this->superAdmin())
+            ->get(StayResource::getUrl('view', ['record' => $stay]))
+            ->assertOk()
+            ->assertDontSee('Who stayed');
     }
 
     public function test_the_navigation_badge_counts_only_what_is_waiting(): void

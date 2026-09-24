@@ -85,6 +85,10 @@ final class Forgetting
         // the same way a booking is — §15.4.
         'stays' => 'customer',
 
+        // The people on a stay's register. Reached through the stay, the
+        // way a traveller's records are reached through the traveller.
+        'stay_guests' => 'stay',
+
         'enquiry_notes' => 'enquiry',
         'document_versions' => 'document',
         'incident_notes' => 'incident',

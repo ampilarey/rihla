@@ -57,7 +57,14 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `stays` holds a foreign key into `customers`
+        // First of all: `stay_guests` holds a foreign key into `stays`
+        // (§15.6 — the register Maldivian law requires). It is newer than
+        // the stays tables and has to go before them, or MySQL refuses to
+        // drop `stays` while a register entry still points at it. SQLite
+        // never notices, and the failure surfaces on the booking-domain
+        // migration rather than on anything about guests.
+        __DIR__.'/../../database/migrations/2026_09_24_170000_create_the_guest_register.php',
+        // Then: `stays` holds a foreign key into `customers`
         // (§15.4 — a guesthouse stay belongs to the same person a booking
         // does, one account and one history). SQLite rolls the booking
         // domain back without noticing; MySQL refuses to drop `customers`

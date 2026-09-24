@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\Payment;
+use App\Models\Stay;
 use App\Support\Anonymisation;
 use App\Support\Forgetting;
 use Illuminate\Console\Command;
@@ -95,6 +96,7 @@ class ForgetCustomer extends Command
         $travellerIds = $customer->travellers()->pluck('id')->all();
         $bookingIds = $customer->bookings()->pluck('id')->all();
         $enquiryIds = DB::table('enquiries')->where('customer_id', $customer->getKey())->pluck('id')->all();
+        $stayIds = DB::table('stays')->where('customer_id', $customer->getKey())->pluck('id')->all();
         $documentIds = $travellerIds === [] ? [] : DB::table('documents')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
         $incidentIds = $travellerIds === [] ? [] : DB::table('incidents')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
         $visaIds = $travellerIds === [] ? [] : DB::table('visa_applications')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
@@ -106,6 +108,7 @@ class ForgetCustomer extends Command
             'traveller' => $travellerIds,
             'booking' => $bookingIds,
             'enquiry' => $enquiryIds,
+            'stay' => $stayIds,
             'document' => $documentIds,
             'incident' => $incidentIds,
             'visa' => $visaIds,
@@ -116,6 +119,7 @@ class ForgetCustomer extends Command
             'self' => 'id', 'customer' => 'customer_id', 'traveller' => 'traveller_id',
             'booking' => 'booking_id', 'enquiry' => 'enquiry_id', 'document' => 'document_id',
             'incident' => 'incident_id', 'visa' => 'visa_application_id', 'permit' => 'nusuk_permit_id',
+            'stay' => 'stay_id',
         ];
 
         $this->line($dry ? 'Would erase:' : 'Erasing:');
@@ -241,13 +245,24 @@ class ForgetCustomer extends Command
         }
 
         // Payments hang off a polymorphic payable since §15.3 (Phase 8.6),
-        // so there is no `booking_id` column to match on. Only a booking's
-        // money belongs to this customer; a stay's will be reached the same
-        // way when Phase 9 gives it a customer of its own.
+        // so there is no `booking_id` column to match on.
+        //
+        // **Both payables, not just bookings.** This read `Booking::class`
+        // alone with a note saying a stay's money would be reached "when
+        // Phase 9 gives it a customer of its own". Phase 9 did, in §15.4,
+        // and nothing came back to this line — so between then and now a
+        // guesthouse deposit would have survived a deletion request that
+        // reported itself honoured. Phase 11 (§15.6) closes it.
         if ($table === 'payments') {
-            return DB::table('payments')
-                ->where('payable_type', Booking::class)
-                ->whereIn('payable_id', $keys['booking'] ?: [0]);
+            return DB::table('payments')->where(function (Builder $query) use ($keys): void {
+                $query->where(function (Builder $q) use ($keys): void {
+                    $q->where('payable_type', Booking::class)
+                        ->whereIn('payable_id', $keys['booking'] ?: [0]);
+                })->orWhere(function (Builder $q) use ($keys): void {
+                    $q->where('payable_type', Stay::class)
+                        ->whereIn('payable_id', $keys['stay'] ?: [0]);
+                });
+            });
         }
 
         if ($table === 'quotations') {

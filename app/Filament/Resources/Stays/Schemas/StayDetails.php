@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Stays\Schemas;
 
 use App\Models\Stay;
+use App\Models\StayGuest;
 use App\Services\Stays\StayBooking;
 use App\Support\Money;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -103,6 +105,35 @@ class StayDetails
                     TextEntry::make('rate_snapshot.policy.free_cancel_days')
                         ->label('Free cancellation')
                         ->formatStateUsing(fn ($state): string => $state === null ? '—' : 'until '.$state.' days before'),
+                ]),
+
+            // §15.6 (Phase 11). Maldivian law requires this and somebody
+            // will ask for it, so it is on the screen rather than in a
+            // report nobody runs. Shown whole, not masked: the protection
+            // is the encryption in the column and the permission on this
+            // page, not asterisks in front of staff who already have both.
+            Section::make('Who stayed')
+                ->description('The guest register. Required by law, and kept encrypted.')
+                ->visible(fn (Stay $record): bool => $record->guests()->exists())
+                ->schema([
+                    RepeatableEntry::make('guests')
+                        ->hiddenLabel()
+                        ->columns(4)
+                        ->schema([
+                            TextEntry::make('full_name')
+                                ->label('Name')
+                                ->formatStateUsing(fn (?string $state, StayGuest $record): string => $record->is_lead
+                                    ? (string) $state.' · '.__('messages.Lead guest')
+                                    : (string) $state),
+
+                            TextEntry::make('nationality')->placeholder('—'),
+
+                            TextEntry::make('date_of_birth')->label('Born')->date('j M Y')->placeholder('—'),
+
+                            TextEntry::make('id_number')
+                                ->label(fn (StayGuest $record): string => $record->identifierLabel())
+                                ->placeholder('—'),
+                        ]),
                 ]),
 
             Section::make('Why it ended')

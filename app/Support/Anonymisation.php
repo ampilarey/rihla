@@ -85,6 +85,16 @@ final class Anonymisation
         // test server with no stays on it cannot be used to reproduce
         // anything about stays.
         'stays' => ['special_requests' => 'text', 'cancellation_reason' => 'text'],
+        // The guest register — §15.6. Names and government identifiers for
+        // people who are not even Rihla's customers: one person books a
+        // room for four, and the other three never agreed to anything.
+        // `id_number` is encrypted in its column, and the stand-in written
+        // here is plaintext — which reads back correctly because
+        // App\Casts\EncryptedIdentifier tolerates both. A strict cast
+        // would throw on every read after this command ran.
+        'stay_guests' => [
+            'full_name' => 'name', 'id_number' => 'name', 'nationality' => 'name',
+        ],
         'payments' => [
             'payer_name' => 'name', 'payer_bank' => 'text', 'payer_reference' => 'text',
             'notes' => 'text', 'rejection_reason' => 'text',

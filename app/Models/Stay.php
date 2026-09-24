@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Somebody's nights in a guesthouse — §15.4 (Phase 9.2).
@@ -177,6 +178,19 @@ class Stay extends Model implements TakesPayments
     public function roomType(): BelongsTo
     {
         return $this->belongsTo(RoomType::class);
+    }
+
+    /**
+     * Who actually slept there — §15.6 (Phase 11).
+     *
+     * Not the same list as "the customer": one person books a room for
+     * four, and Maldivian law wants all four.
+     *
+     * @return HasMany<StayGuest, $this>
+     */
+    public function guests(): HasMany
+    {
+        return $this->hasMany(StayGuest::class)->orderByDesc('is_lead')->orderBy('id');
     }
 
     // ── Scopes ───────────────────────────────────────────────────────────
