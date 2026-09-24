@@ -983,7 +983,9 @@ The Tour Leader takes the counts and writes the day up, because they are the one
 
 **Shipped (4.10): pre-departure checklists.** At *Travel → Checklists*, one line per thing that has to happen before a departure leaves, with a due date and who ticked it. **Nothing is pre-filled** — the list is the office's, and a checklist of plausible steps nobody wrote is the invented-content mistake again — but a departure's list can be copied from another, with due dates keeping their distance from the start date and nothing arriving ticked. The office marks which lines *stop the departure*: an overdue one of those is blocking on the departure board, any other overdue line is attention, and a line with no date is never overdue. Ticking is a separate permission from editing (`checklist.tick`): the tour leader, booking staff and visa staff tick their own lines, only operations decides what is on the list, and who ticked a line is recorded by the server rather than by anything the form sent. The navigation badge counts overdue lines, not open ones.
 
-Still to come in this section: the Nusuk compliance gate's own screen.
+**Shipped (4.11): the Nusuk gate's own screen.** *Bookings → Nusuk gate* lists every upcoming departure with whether its accommodation and transport are recorded in Nusuk and how many of the people travelling already hold an Umrah permit, and records the two dates from there. **It closed a real gap, not a cosmetic one:** those dates were editable only inside a package's departure form, and Visa Staff — the role that deals with Nusuk and holds `departure.nusuk` — do not hold `package.*`, so the one person able to clear the gate could not reach it. `NusukGateTest` states the gap as its first test. The badge counts departures whose gate is still shut.
+
+Nothing is left in this section that code can supply; airport operations, flight *monitoring* and supplier coordination need feeds or contracts that do not exist yet.
 
 Defer the thread's real-time "Command Center" with live maps (`30-...`) to Phase 6+; it presumes staffing Rihla does not have.
 
