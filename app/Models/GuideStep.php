@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\GuideStepImage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +52,28 @@ class GuideStep extends Model
         'checklist' => 'array',
         'fiqh_notes' => 'array',
     ];
+
+    /**
+     * A replaced or deleted picture leaves the disk with it.
+     *
+     * The Blade controller did this by hand in update() and destroy(), so a
+     * step changed by any other route kept its old files for ever. On the
+     * model, the staff panel and anything after it get it for free.
+     * `updated` rather than `saved`: `wasChanged()` is false on an insert,
+     * and an insert has nothing to replace anyway.
+     */
+    protected static function booted(): void
+    {
+        static::updated(static function (GuideStep $step): void {
+            if ($step->wasChanged('image_path')) {
+                GuideStepImage::forget($step->getOriginal('image_path'));
+            }
+        });
+
+        static::deleted(static function (GuideStep $step): void {
+            GuideStepImage::forget($step->image_path);
+        });
+    }
 
     /**
      * Scope for published steps

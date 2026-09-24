@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\GuideSteps\GuideStepResource;
+use App\Filament\Resources\GuideSteps\Pages\CreateGuideStep;
+use App\Filament\Resources\GuideSteps\Pages\EditGuideStep;
 use App\Models\GuideStep;
 use App\Models\User;
 use App\Support\Access;
 use Database\Seeders\UmrahGuideSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -20,6 +24,9 @@ use Tests\TestCase;
  * step rendered its title followed by nothing.
  *
  * Nothing asserted either half, so both shipped.
+ *
+ * The admin half now drives the staff panel's form (§9.2); the Blade
+ * screen and its routes are gone, and `/admin/guide-steps` forwards.
  */
 class GuideStepAdminTest extends TestCase
 {
@@ -35,23 +42,24 @@ class GuideStepAdminTest extends TestCase
     {
         return array_merge([
             'step_number' => 1,
-            'title' => 'Ihram',
-            'summary' => 'Enter the state of Ihram at the miqat.',
-            'details' => 'Bathe, wear the two white sheets, and make your intention.',
+            'title' => ['en' => 'Ihram'],
+            'summary' => ['en' => 'Enter the state of Ihram at the miqat.'],
+            'details' => ['en' => 'Bathe, wear the two white sheets, and make your intention.'],
             'dua_text' => 'Labbayka Allahumma labbayk.',
-            'reference_text' => 'Quran 2:196 and authentic hadith.',
-            'fiqh_notes' => ['Obligatory in all four schools'],
-            'checklist' => ['Perform ghusl', 'Recite the Talbiyah'],
-            'is_published' => '1',
+            'reference_text' => ['en' => 'Quran 2:196 and authentic hadith.'],
+            'fiqh_notes' => ['en' => 'Obligatory in all four schools'],
+            'checklist' => ['en' => "Perform ghusl\nRecite the Talbiyah"],
+            'is_published' => true,
         ], $overrides);
     }
 
     public function test_an_admin_can_create_a_guide_step(): void
     {
-        $this->actingAs($this->admin())
-            ->post(route('admin.guide-steps.store'), $this->validStep())
-            ->assertSessionHasNoErrors()
-            ->assertRedirect();
+        Livewire::actingAs($this->admin())
+            ->test(CreateGuideStep::class)
+            ->fillForm($this->validStep())
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $step = GuideStep::sole();
 
@@ -70,13 +78,11 @@ class GuideStepAdminTest extends TestCase
     {
         $step = GuideStep::factory()->create(['title' => 'Old title']);
 
-        $this->actingAs($this->admin())
-            ->put(
-                route('admin.guide-steps.update', $step),
-                $this->validStep(['title' => 'New title', 'summary' => 'Rewritten.']),
-            )
-            ->assertSessionHasNoErrors()
-            ->assertRedirect();
+        Livewire::actingAs($this->admin())
+            ->test(EditGuideStep::class, ['record' => $step->getKey()])
+            ->fillForm($this->validStep(['title' => ['en' => 'New title'], 'summary' => ['en' => 'Rewritten.']]))
+            ->call('save')
+            ->assertHasNoFormErrors();
 
         $step->refresh();
 
@@ -136,12 +142,13 @@ class GuideStepAdminTest extends TestCase
      */
     public function test_fiqh_notes_round_trip_through_the_form(): void
     {
-        $this->actingAs($this->admin())
-            ->post(route('admin.guide-steps.store'), $this->validStep([
-                'fiqh_notes' => "Hanafi: before departure\nShafi'i: at the miqat\n\n",
+        Livewire::actingAs($this->admin())
+            ->test(CreateGuideStep::class)
+            ->fillForm($this->validStep([
+                'fiqh_notes' => ['en' => "Hanafi: before departure\nShafi'i: at the miqat\n\n"],
             ]))
-            ->assertSessionHasNoErrors()
-            ->assertRedirect();
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $step = GuideStep::sole();
 
@@ -151,9 +158,14 @@ class GuideStepAdminTest extends TestCase
             $step->fiqh_notes,
         );
 
-        // And the edit screen renders them back without throwing.
+        // And the edit screen renders them back, one per line, without
+        // throwing.
+        Livewire::actingAs($this->admin())
+            ->test(EditGuideStep::class, ['record' => $step->getKey()])
+            ->assertFormSet(['fiqh_notes.en' => "Hanafi: before departure\nShafi'i: at the miqat"]);
+
         $this->actingAs($this->admin())
-            ->get(route('admin.guide-steps.edit', $step))
+            ->get(GuideStepResource::getUrl('edit', ['record' => $step]))
             ->assertOk()
             ->assertSee('Hanafi: before departure');
     }
@@ -193,6 +205,30 @@ class GuideStepAdminTest extends TestCase
         ]);
 
         $this->get('/en/guide/pdf')->assertOk();
+    }
+
+    public function test_the_old_addresses_forward_to_the_new_one(): void
+    {
+        $step = GuideStep::factory()->create();
+
+        foreach (['/admin/guide-steps', '/admin/guide-steps/create', "/admin/guide-steps/{$step->id}/edit"] as $old) {
+            $this->actingAs($this->admin())->get($old)->assertRedirect(GuideStepResource::getUrl('index'));
+        }
+    }
+
+    /**
+     * Each line is its own item, so the limit the Blade request held per
+     * item (`checklist.*` max 255) is checked per line, not on the box.
+     */
+    public function test_a_checklist_line_too_long_is_refused(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(CreateGuideStep::class)
+            ->fillForm($this->validStep(['checklist' => ['en' => "Short\n".str_repeat('a', 256)]]))
+            ->call('create')
+            ->assertHasFormErrors(['checklist.en']);
+
+        $this->assertSame(0, GuideStep::count());
     }
 
     public function test_the_seeded_guide_has_readable_content(): void

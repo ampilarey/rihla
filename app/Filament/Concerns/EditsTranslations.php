@@ -19,6 +19,15 @@ namespace App\Filament\Concerns;
  * title or an empty inclusions list where it should show the English. An
  * empty box is not a translation — the same rule the media captions follow.
  *
+ * **Clearing.** A blank locale is written as `null`, not dropped. Dropping it
+ * looked equivalent and was not: assigning `{"en": …}` to a translatable
+ * attribute *merges* into what is stored, so a Dhivehi title an editor
+ * deleted came back on the next page load, and the only way to remove a
+ * translation from `/staff` was to type a different one over it. `null` is
+ * what spatie reads as "not translated" — hasTranslation() is false and the
+ * page falls back to English. A locale the form never sent is still left
+ * alone, which is what keeps a one-language edit from wiping the other.
+ *
  * Both helpers work on plain arrays and take the attribute list, rather than
  * taking a model and reaching for its trait methods. A model parameter would
  * have to be typed `Model`, which does not have getTranslations() — the first
@@ -44,7 +53,8 @@ trait EditsTranslations
     }
 
     /**
-     * Drop every locale whose value is blank, for each named attribute.
+     * Turn every blank locale into `null`, for each named attribute, so that
+     * saving clears it rather than leaving the stored value in place.
      *
      * @param  array<string, mixed>  $data
      * @param  iterable<int, string>  $attributes
@@ -57,9 +67,9 @@ trait EditsTranslations
                 continue;
             }
 
-            $data[$attribute] = array_filter(
+            $data[$attribute] = array_map(
+                static fn ($value) => filled($value) ? $value : null,
                 $data[$attribute],
-                static fn ($value): bool => filled($value),
             );
         }
 

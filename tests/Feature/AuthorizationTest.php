@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\GuideSteps\GuideStepResource;
+use App\Filament\Resources\GuideSteps\Pages\ListGuideSteps;
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Models\GuideStep;
@@ -9,6 +11,7 @@ use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -157,26 +160,38 @@ class AuthorizationTest extends TestCase
     }
 
     /**
-     * Reordering and publishing are changes to the records but reach the
-     * controller by routes the resource mapping does not cover, so they are
-     * the ones most likely to be left open.
+     * Reordering and publishing are changes to the records but are not the
+     * form's save, so the policy the resource checks does not cover them —
+     * they are the ones most likely to be left open. Reporting can read the
+     * guide and may change none of it.
+     *
+     * They were three JSON routes on the Blade screen; in the staff panel
+     * (§9.2) they are the table's row toggle, drag handle and bulk actions.
      */
     public function test_the_non_resource_admin_actions_are_guarded(): void
     {
-        $step = GuideStep::factory()->create();
-        $reporter = $this->staff(Access::REPORTING);
+        $first = GuideStep::factory()->create(['step_number' => 1, 'is_published' => true]);
+        $second = GuideStep::factory()->create(['step_number' => 2, 'is_published' => true]);
 
-        $this->actingAs($reporter)
-            ->post(route('admin.guide-steps.toggle-status', $step))
-            ->assertForbidden();
+        Livewire::actingAs($this->staff(Access::REPORTING))
+            ->test(ListGuideSteps::class)
+            ->call('updateTableColumnState', 'is_published', (string) $first->getKey(), false)
+            ->call('reorderTable', [(string) $second->getKey(), (string) $first->getKey()])
+            ->assertTableBulkActionHidden('unpublish');
 
-        $this->actingAs($reporter)
-            ->post(route('admin.guide-steps.update-order'), ['order' => []])
-            ->assertForbidden();
+        $this->assertTrue($first->fresh()->is_published, 'Reporting took a step off the guide.');
+        $this->assertSame(1, $first->fresh()->step_number, 'Reporting reordered the guide.');
 
-        $this->actingAs($reporter)
-            ->post(route('admin.guide-steps.bulk-update-status'), ['ids' => [$step->id]])
-            ->assertForbidden();
+        // The same calls do work for somebody allowed to make them, or the
+        // assertions above would pass on a table that does nothing at all.
+        Livewire::actingAs($this->staff(Access::CONTENT_MANAGER))
+            ->test(ListGuideSteps::class)
+            ->call('updateTableColumnState', 'is_published', (string) $first->getKey(), false)
+            ->call('reorderTable', [(string) $second->getKey(), (string) $first->getKey()])
+            ->assertTableBulkActionVisible('unpublish');
+
+        $this->assertFalse($first->fresh()->is_published);
+        $this->assertSame(2, $first->fresh()->step_number);
     }
 
     /**
@@ -208,8 +223,9 @@ class AuthorizationTest extends TestCase
             ['get', route('admin.trips.create')],
             ['get', route('admin.trips.edit', $trip)],
             ['get', route('admin.media.index')],
-            ['get', route('admin.guide-steps.index')],
-            ['get', route('admin.guide-steps.edit', $step)],
+            // Moved to the staff panel (§9.2).
+            ['get', GuideStepResource::getUrl('index')],
+            ['get', GuideStepResource::getUrl('edit', ['record' => $step])],
             // Moved to the staff panel (§9.2). The same people must still
             // be kept out — which is the property this line has always held.
             ['get', HeroBannerResource::getUrl('index')],
