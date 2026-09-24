@@ -103,7 +103,8 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->count(2)->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'currency' => 'MVR',
             'amount_minor' => 500_000,
@@ -125,7 +126,8 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDay(),
         ]);
@@ -142,7 +144,8 @@ class AlertsTest extends TestCase
 
         foreach ([['MVR', 300_000], ['USD', 20_000]] as [$currency, $minor]) {
             Payment::factory()->create([
-                'booking_id' => $booking->getKey(),
+                'payable_type' => Booking::class,
+                'payable_id' => $booking->getKey(),
                 'status' => Payment::AWAITING_REVIEW,
                 'currency' => $currency,
                 'amount_minor' => $minor,
@@ -297,7 +300,8 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'currency' => 'MVR',
             'amount_minor' => 8_400_000,
@@ -320,7 +324,8 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'currency' => 'MVR',
             'amount_minor' => 8_400_000,
@@ -347,7 +352,8 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDays(5),
         ]);
@@ -370,7 +376,8 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDays(5),
         ]);
@@ -429,7 +436,8 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDays(5),
         ]);

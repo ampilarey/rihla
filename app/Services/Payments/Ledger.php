@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Booking\SeatAllocator;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 
 /**
  * The only thing in this application that moves `bookings.paid_minor`.
@@ -55,11 +56,11 @@ final class Ledger
             // The lock before the read. Taking it after would make the
             // recomputation below a snapshot of a total somebody else is
             // already changing.
-            $this->lock($payment->booking_id);
+            $this->lock($this->bookingKeyFor($payment));
 
             $payment->transitionTo(Payment::SUCCEEDED, $note, $actor);
 
-            $this->recompute($payment->booking_id);
+            $this->recompute($this->bookingKeyFor($payment));
 
             return $payment->refresh();
         });
@@ -77,14 +78,14 @@ final class Ledger
     public function refuse(Payment $payment, string $reason, ?User $actor = null): Payment
     {
         return DB::transaction(function () use ($payment, $reason, $actor): Payment {
-            $this->lock($payment->booking_id);
+            $this->lock($this->bookingKeyFor($payment));
 
             $payment->transitionTo(Payment::FAILED, $reason, $actor);
 
             // A payment that never succeeded contributes nothing to the sum,
             // so this changes no total — unless it is being refused after a
             // hand-edit, in which case the re-derivation is the point.
-            $this->recompute($payment->booking_id);
+            $this->recompute($this->bookingKeyFor($payment));
 
             return $payment->refresh();
         });
@@ -102,7 +103,7 @@ final class Ledger
     public function refund(Payment $payment, ?Money $amount = null, ?string $reason = null, ?User $actor = null): Payment
     {
         return DB::transaction(function () use ($payment, $amount, $reason, $actor): Payment {
-            $this->lock($payment->booking_id);
+            $this->lock($this->bookingKeyFor($payment));
 
             // An explicit check rather than `$amount?->minor ?? …`: `??`
             // already swallows a null property access, so the nullsafe
@@ -112,7 +113,8 @@ final class Ledger
             $minor = $amount instanceof Money ? $amount->minor : $payment->amount_minor;
 
             $refund = Payment::create([
-                'booking_id' => $payment->booking_id,
+                'payable_type' => $payment->payable_type,
+                'payable_id' => $payment->payable_id,
                 'refund_of_id' => $payment->getKey(),
                 'method' => $payment->method,
                 'provider' => $payment->provider,
@@ -141,7 +143,7 @@ final class Ledger
             // *was* the review.
             $refund->transitionTo(Payment::SUCCEEDED, $reason, $actor);
 
-            $this->recompute($payment->booking_id);
+            $this->recompute($this->bookingKeyFor($payment));
 
             return $refund->refresh();
         });
@@ -159,7 +161,9 @@ final class Ledger
         return DB::transaction(function () use ($bookingId): Money {
             $booking = $this->lock($bookingId);
 
-            $paid = (int) Payment::where('booking_id', $bookingId)
+            $paid = (int) Payment::query()
+                ->where('payable_type', Booking::class)
+                ->where('payable_id', $bookingId)
                 ->succeeded()
                 ->sum('amount_minor');
 
@@ -176,6 +180,30 @@ final class Ledger
      * exists in CI: the guarantee this class rests on cannot be proved by
      * the default test database.
      */
+    /**
+     * The booking whose cached total this payment moves.
+     *
+     * Loud rather than lenient — §15.3 (Phase 8.6). A payment is
+     * polymorphic now, but `bookings.paid_minor` is the only cached total
+     * that exists, so money against anything else has nowhere to land.
+     * Skipping quietly would leave a stay's total silently wrong from the
+     * day Phase 9 ships; this makes that day fail on the first test instead.
+     */
+    private function bookingKeyFor(Payment $payment): int
+    {
+        $bookingId = $payment->bookingKey();
+
+        if ($bookingId === null) {
+            throw new LogicException(sprintf(
+                'Ledger maintains bookings.paid_minor, and this payment is against %s. '
+                .'Give that type its own cached total before sending its money through here.',
+                (string) $payment->payable_type,
+            ));
+        }
+
+        return $bookingId;
+    }
+
     private function lock(int $bookingId): Booking
     {
         /** @var Booking */

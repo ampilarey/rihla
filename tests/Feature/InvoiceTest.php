@@ -198,7 +198,8 @@ class InvoiceTest extends TestCase
     {
         $booking = $this->booking();
         $payment = Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'amount_minor' => 1_000_000,
             'payer_name' => 'Aminath Zahira',
         ]);
@@ -212,7 +213,7 @@ class InvoiceTest extends TestCase
     public function test_a_refund_note_renders(): void
     {
         $booking = $this->booking();
-        $payment = Payment::factory()->create(['booking_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
         app(Ledger::class)->reconcile($payment);
         $refund = app(Ledger::class)->refund($payment, null, 'Changed departure');
 
@@ -396,7 +397,7 @@ class InvoiceTest extends TestCase
         $mine = $this->booking();
         $theirs = $this->booking();
 
-        $strangers = Payment::factory()->create(['booking_id' => $theirs->getKey()]);
+        $strangers = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $theirs->getKey()]);
         app(Ledger::class)->reconcile($strangers);
 
         $this->enterPortal($mine);
@@ -407,7 +408,7 @@ class InvoiceTest extends TestCase
     public function test_no_receipt_for_money_nobody_has_checked(): void
     {
         $booking = $this->booking();
-        $claim = Payment::factory()->awaitingReview()->create(['booking_id' => $booking->getKey()]);
+        $claim = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey()]);
 
         $this->enterPortal($booking);
 
@@ -417,7 +418,7 @@ class InvoiceTest extends TestCase
     public function test_a_customer_can_download_a_receipt_for_money_that_arrived(): void
     {
         $booking = $this->booking();
-        $payment = Payment::factory()->create(['booking_id' => $booking->getKey()]);
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey()]);
         app(Ledger::class)->reconcile($payment);
 
         $this->enterPortal($booking);

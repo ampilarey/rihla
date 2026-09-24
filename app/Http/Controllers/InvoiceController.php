@@ -43,7 +43,7 @@ class InvoiceController extends Controller
 
         // The payment must be on *this* booking. Without this the id is
         // just a number in a URL and a customer could walk the range.
-        abort_unless($payment->booking_id === $booking->getKey(), 403);
+        abort_unless($payment->bookingKey() === $booking->getKey(), 403);
 
         // A receipt is for money that arrived. Issuing one for a claim
         // nobody has checked would hand a customer a document saying their

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -34,7 +35,7 @@ class Payment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'booking_id', 'refund_of_id', 'method', 'provider', 'currency',
+        'payable_type', 'payable_id', 'refund_of_id', 'method', 'provider', 'currency',
         'amount_minor', 'paid_at', 'payer_name', 'payer_bank', 'payer_reference',
         'notes',
     ];
@@ -122,10 +123,54 @@ class Payment extends Model
         );
     }
 
-    /** @return BelongsTo<Booking, $this> */
-    public function booking(): BelongsTo
+    /**
+     * What the money is against — §15.3 (Phase 8.6).
+     *
+     * A Booking today; a Stay from Phase 9. Everything above this line is
+     * the same either way, which is the point: a deposit is a deposit
+     * whether the thing being paid for has seats and a departure or a
+     * check-in date and a room.
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function payable(): MorphTo
     {
-        return $this->belongsTo(Booking::class);
+        return $this->morphTo();
+    }
+
+    /**
+     * The booking this is against, or null when the money is against
+     * something else.
+     *
+     * Deliberately a method and not a relation: `$payment->booking` would
+     * read as though every payment has one, and from Phase 9 that is not
+     * true. Eloquent throws on a method that does not return a relation, so
+     * the old property access fails loudly rather than resolving to null.
+     */
+    public function booking(): ?Booking
+    {
+        // The type is read before the relation is touched, so money against
+        // something else costs no query — and cannot fail trying to
+        // instantiate a class this side of the app does not know about.
+        if ($this->payable_type !== Booking::class) {
+            return null;
+        }
+
+        $payable = $this->payable;
+
+        return $payable instanceof Booking ? $payable : null;
+    }
+
+    /**
+     * The booking's key without loading it, or null when this is not a
+     * booking's money.
+     *
+     * {@see Ledger} asks this once per lock and once per recompute, on the
+     * path a person waits on while reconciling.
+     */
+    public function bookingKey(): ?int
+    {
+        return $this->payable_type === Booking::class ? (int) $this->payable_id : null;
     }
 
     /** @return BelongsTo<Payment, $this> */

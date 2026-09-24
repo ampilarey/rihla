@@ -205,7 +205,7 @@ class ForgetCustomer extends Command
         }
 
         if ($bookingIds !== []) {
-            foreach (Payment::query()->whereIn('booking_id', $bookingIds)->whereNotNull('slip_path')->get() as $payment) {
+            foreach (Payment::query()->where('payable_type', Booking::class)->whereIn('payable_id', $bookingIds)->whereNotNull('slip_path')->get() as $payment) {
                 $files[] = [(string) $payment->slip_disk, (string) $payment->slip_path];
             }
         }
@@ -238,6 +238,16 @@ class ForgetCustomer extends Command
                     $q->where('about_type', Enquiry::class)->whereIn('about_id', $keys['enquiry'] ?: [0]);
                 });
             });
+        }
+
+        // Payments hang off a polymorphic payable since §15.3 (Phase 8.6),
+        // so there is no `booking_id` column to match on. Only a booking's
+        // money belongs to this customer; a stay's will be reached the same
+        // way when Phase 9 gives it a customer of its own.
+        if ($table === 'payments') {
+            return DB::table('payments')
+                ->where('payable_type', Booking::class)
+                ->whereIn('payable_id', $keys['booking'] ?: [0]);
         }
 
         if ($table === 'quotations') {

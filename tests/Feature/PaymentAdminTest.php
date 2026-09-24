@@ -78,7 +78,8 @@ class PaymentAdminTest extends TestCase
     public function test_finance_can_list_payments(): void
     {
         Payment::factory()->awaitingReview()->create([
-            'booking_id' => $this->booking()->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $this->booking()->getKey(),
             'payer_name' => 'Ibrahim Waheed',
         ]);
 
@@ -107,7 +108,7 @@ class PaymentAdminTest extends TestCase
 
     public function test_booking_staff_are_not_offered_the_reconcile_action(): void
     {
-        $payment = Payment::factory()->awaitingReview()->create(['booking_id' => $this->booking()->getKey()]);
+        $payment = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $this->booking()->getKey()]);
 
         Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
             ->test(ListPayments::class)
@@ -120,7 +121,8 @@ class PaymentAdminTest extends TestCase
     {
         $booking = $this->booking();
         $payment = Payment::factory()->awaitingReview()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'amount_minor' => 1_000_000,
         ]);
         $finance = $this->staff(Access::FINANCE);
@@ -136,7 +138,7 @@ class PaymentAdminTest extends TestCase
 
     public function test_refusing_needs_a_reason(): void
     {
-        $payment = Payment::factory()->awaitingReview()->create(['booking_id' => $this->booking()->getKey()]);
+        $payment = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $this->booking()->getKey()]);
 
         Livewire::actingAs($this->staff(Access::FINANCE))
             ->test(ListPayments::class)
@@ -151,7 +153,7 @@ class PaymentAdminTest extends TestCase
     /** Seeing a payment exists is not the same as pulling the slip. */
     public function test_the_slip_link_is_hidden_without_the_permission(): void
     {
-        $payment = Payment::factory()->awaitingReview()->create(['booking_id' => $this->booking()->getKey()]);
+        $payment = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $this->booking()->getKey()]);
         app(SlipVault::class)->attach($payment, $this->slip());
 
         Livewire::actingAs($this->staff(Access::PILGRIM_SUPPORT))
@@ -165,7 +167,7 @@ class PaymentAdminTest extends TestCase
 
     public function test_a_slip_can_be_attached_from_the_screen(): void
     {
-        $payment = Payment::factory()->create(['booking_id' => $this->booking()->getKey()]);
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $this->booking()->getKey()]);
 
         Livewire::actingAs($this->staff(Access::FINANCE))
             ->test(ListPayments::class)
@@ -186,8 +188,8 @@ class PaymentAdminTest extends TestCase
     public function test_a_refund_is_offered_only_on_money_actually_received(): void
     {
         $booking = $this->booking();
-        $claimed = Payment::factory()->awaitingReview()->create(['booking_id' => $booking->getKey()]);
-        $received = Payment::factory()->succeeded()->create(['booking_id' => $booking->getKey()]);
+        $claimed = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey()]);
+        $received = Payment::factory()->succeeded()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey()]);
 
         Livewire::actingAs($this->staff(Access::FINANCE))
             ->test(ListPayments::class)
@@ -199,7 +201,7 @@ class PaymentAdminTest extends TestCase
     public function test_a_refund_from_the_screen_leaves_the_original_alone(): void
     {
         $booking = $this->booking();
-        $payment = Payment::factory()->create(['booking_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
         app(Ledger::class)->reconcile($payment);
 
         Livewire::actingAs($this->staff(Access::FINANCE))
@@ -291,7 +293,8 @@ class PaymentAdminTest extends TestCase
     {
         $booking = $this->booking();
         Payment::factory()->awaitingReview()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'amount_minor' => 1_000_000,
         ]);
 

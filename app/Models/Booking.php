@@ -147,11 +147,15 @@ class Booking extends Model
      * {@see Ledger}, which owns `paid_minor` under
      * a row lock for the same reason SeatAllocator owns the seat counters.
      *
-     * @return HasMany<Payment, $this>
+     * Polymorphic since §15.3 (Phase 8.6): a payment belongs to whatever it
+     * is against, and a booking is one of those things rather than the only
+     * one.
+     *
+     * @return MorphMany<Payment, $this>
      */
-    public function payments(): HasMany
+    public function payments(): MorphMany
     {
-        return $this->hasMany(Payment::class)->orderByDesc('id');
+        return $this->morphMany(Payment::class, 'payable')->orderByDesc('id');
     }
 
     /** @return HasMany<BookingTraveller, $this> */

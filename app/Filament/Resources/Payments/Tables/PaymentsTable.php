@@ -34,7 +34,7 @@ class PaymentsTable
                     ->label('Payment')
                     ->searchable()
                     ->copyable()
-                    ->description(fn (Payment $record): ?string => $record->booking->reference),
+                    ->description(fn (Payment $record): ?string => $record->booking()?->reference),
 
                 TextColumn::make('amount_minor')
                     ->label('Amount')

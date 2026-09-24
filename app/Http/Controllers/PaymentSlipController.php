@@ -65,7 +65,8 @@ class PaymentSlipController extends Controller
             'auditable_id' => $payment->getKey(),
             'old_values' => null,
             'new_values' => [
-                'booking_id' => $payment->booking_id,
+                'payable_type' => $payment->payable_type,
+                'payable_id' => $payment->payable_id,
                 'reference' => $payment->reference,
                 'original_filename' => $payment->slip_original_filename,
                 'checksum' => $payment->slip_checksum,

@@ -78,7 +78,8 @@ final class BankTransfer implements PaymentGateway
     public function start(Booking $booking, Money $amount, array $details = []): Payment
     {
         $payment = Payment::create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => $booking->getMorphClass(),
+            'payable_id' => $booking->getKey(),
             'method' => Payment::BANK_TRANSFER,
             'provider' => null,
             'currency' => $amount->currency,
