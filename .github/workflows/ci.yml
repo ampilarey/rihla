@@ -253,10 +253,18 @@ jobs:
 
       # The homepage queries the trips table and the guide needs its steps,
       # so an unseeded database audits an empty page and proves nothing.
+      #
+      # StaysShowcaseSeeder is run by name rather than from DatabaseSeeder:
+      # it switches the Guesthouses service on, and a seeder that quietly
+      # makes a line of business live is the exact failure the registry
+      # exists to prevent (§15.2 decision 6). Without it the Stays pages
+      # would 404 here and Lighthouse would score the error page 100 —
+      # a gate reporting green about something else.
       - name: Migrate and seed
         run: |
           touch database/database.sqlite
           php artisan migrate --force --seed
+          php artisan db:seed --class=StaysShowcaseSeeder --force
 
       # Served and audited in one step. A server backgrounded in one step
       # and used in the next depends on the runner not reaping the step
