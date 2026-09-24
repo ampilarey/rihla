@@ -119,6 +119,16 @@ class Departure extends Model
         return $this->hasMany(DepartureTransfer::class)->orderBy('starts_at');
     }
 
+    /**
+     * What has to be done before it leaves (§8.3), in the office's order.
+     *
+     * @return HasMany<DepartureChecklistItem, $this>
+     */
+    public function checklist(): HasMany
+    {
+        return $this->hasMany(DepartureChecklistItem::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     /** @return HasMany<ItineraryItem, $this> */
     public function itinerary(): HasMany
     {

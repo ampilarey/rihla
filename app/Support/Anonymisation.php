@@ -123,6 +123,7 @@ final class Anonymisation
         // transfer's contact number is usually a driver's own phone.
         'departure_flights' => ['notes' => 'text'],
         'departure_transfers' => ['contact_phone' => 'phone', 'notes' => 'text'],
+        'departure_checklist_items' => ['notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],
         'room_assignments' => ['note' => 'text'],
         'notices' => ['body' => 'text'],

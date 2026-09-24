@@ -124,6 +124,7 @@ final class Forgetting
         'operations_log_entries' => 'Written about a departure and read by the whole group; scrubbing one for one person destroys the record for the rest.',
         'announcements' => 'Sent to a whole departure.',
         'departure_flights' => 'The flights a whole departure takes. Nothing in a row is about one customer.',
+        'departure_checklist_items' => 'What the office has to do before a whole departure leaves.',
         'departure_transfers' => 'A coach or car a whole departure takes; the contact is the driver or the company, not a customer.',
         'emergency_broadcasts' => 'Sent to a whole departure, and a record of a safety event.',
     ];
