@@ -18,6 +18,22 @@ return [
     |
     */
 
+    /*
+    |---------------------------------------------------------------------------
+    | Self-registration
+    |---------------------------------------------------------------------------
+    |
+    | Off. Breeze's `/register` was left open (D16): anybody could make an
+    | account that holds no role, reaches nothing, and — because User must
+    | verify its email — mails whatever address was typed. Nothing on the
+    | site links to it. Staff are created with `php artisan admin:create`,
+    | and a pilgrim reaches their booking through a signed link, not an
+    | account. Set REGISTRATION_OPEN=true only if that ever changes.
+    |
+    */
+
+    'registration_open' => filter_var(env('REGISTRATION_OPEN', false), FILTER_VALIDATE_BOOL),
+
     'hsts_max_age' => (int) env('SECURITY_HSTS_MAX_AGE', 31536000),
 
     /*

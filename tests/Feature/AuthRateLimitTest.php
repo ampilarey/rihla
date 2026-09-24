@@ -23,6 +23,8 @@ class AuthRateLimitTest extends TestCase
 
     public function test_registration_is_limited(): void
     {
+        // Closed by default (D16); the limit matters for the day it opens.
+        config(['security.registration_open' => true]);
         Notification::fake();
 
         for ($i = 0; $i < 5; $i++) {

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -19,16 +20,20 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        self::abortUnlessOpen();
+
         return view('auth.register');
     }
 
     /**
      * Handle an incoming registration request.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
+        self::abortUnlessOpen();
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -46,5 +51,14 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
+    }
+
+    /**
+     * Closed unless configured open (D16) — a 404, as if the page did not
+     * exist, rather than a message inviting somebody to ask for it.
+     */
+    private static function abortUnlessOpen(): void
+    {
+        abort_unless(config('security.registration_open') === true, 404);
     }
 }
