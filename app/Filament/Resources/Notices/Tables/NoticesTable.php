@@ -18,10 +18,19 @@ class NoticesTable
     {
         return $table
             ->columns([
-                TextColumn::make('booking.customer.name')
+                // `who`, not `noticeable.customer.name`. A dotted name makes
+                // Filament walk the path as a relationship to work out what
+                // to sort and search on, and `noticeable()` is a MorphTo
+                // with no single related model — it calls `getRelated()` on
+                // null and the whole page throws inside the table view,
+                // which supplying `->state()` does not prevent. A name with
+                // no dot in it is never walked.
+                TextColumn::make('who')
                     ->label('Who')
-                    ->searchable()
-                    ->description(fn (Notice $record): string => (string) $record->booking->reference),
+                    // `->`, not `?->`: `??` already suppresses the null, and the
+                    // nullsafe would be dead syntax static analysis reports.
+                    ->state(fn (Notice $record): string => $record->customer()->name ?? 'Unknown')
+                    ->description(fn (Notice $record): string => (string) $record->subjectReference()),
 
                 TextColumn::make('headline')
                     ->label('What they need to know')
@@ -29,10 +38,14 @@ class NoticesTable
                     ->searchable()
                     ->description(fn (Notice $record): string => $record->kindLabel()),
 
-                TextColumn::make('booking.departure.date_start')
+                // One column for both, because a stay has no departure and
+                // a booking has no check-in, and two mostly-empty columns
+                // is how a queue stops being readable. It reads the date
+                // the person is actually waiting for.
+                TextColumn::make('when')
                     ->label('Travels')
-                    ->date('j M Y')
-                    ->sortable(),
+                    ->state(fn (Notice $record): ?string => $record->travelsOn()?->format('j M Y'))
+                    ->placeholder('—'),
 
                 TextColumn::make('seen_at')
                     ->label('Opened it?')
@@ -51,6 +64,9 @@ class NoticesTable
                     ->color(fn (Notice $record): string => $record->isHandled() ? 'success' : 'danger'),
             ])
             ->defaultSort('created_at', 'desc')
+            // Eager-loaded, or the Who column is a query per row on a
+            // screen whose whole point is a long list.
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('noticeable'))
             ->filters([
                 Filter::make('needs_chasing')
                     ->label('Owes us something, not yet chased')
@@ -70,7 +86,7 @@ class NoticesTable
                 ]),
             ])
             ->emptyStateHeading('Nobody is waiting on anything')
-            ->emptyStateDescription('This list is raised by `notices:sweep` from records that already exist — a missing passport, a departure coming up. Nothing here is typed by hand.');
+            ->emptyStateDescription('This list is raised by `notices:sweep` from records that already exist — a missing passport, a departure coming up, a guesthouse deposit nobody has paid. Nothing here is typed by hand.');
     }
 
     /**

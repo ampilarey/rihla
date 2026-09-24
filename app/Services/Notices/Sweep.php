@@ -4,6 +4,8 @@ namespace App\Services\Notices;
 
 use App\Models\Booking;
 use App\Models\Notice;
+use App\Models\Stay;
+use App\Services\Stays\StayBooking;
 use App\Support\TravelReadiness;
 
 /**
@@ -31,6 +33,14 @@ use App\Support\TravelReadiness;
  */
 final class Sweep
 {
+    /**
+     * The stays booking service, for the one question this class must not
+     * answer itself: when the balance falls due. It is read from the
+     * snapshot taken on the day, and there is exactly one implementation
+     * of that rule.
+     */
+    public function __construct(private readonly StayBooking $stays) {}
+
     /**
      * How many days before departure somebody should be reminded.
      *
@@ -65,7 +75,159 @@ final class Sweep
             }
         }
 
+        // The stays half — §15.7. Live means held or confirmed and not yet
+        // behind us: a stay that was declined, cancelled or lapsed has
+        // nothing outstanding, and a follow-up for the two Rihla caused is
+        // the CRM's job rather than this one.
+        $stays = Stay::query()
+            ->whereIn('status', [Stay::HELD, Stay::CONFIRMED])
+            ->where('check_out', '>=', now()->startOfDay())
+            ->with(['property', 'customer', 'roomType'])
+            ->get();
+
+        foreach ($stays as $stay) {
+            foreach ($this->noticesForStay($stay) as $kind => $notice) {
+                if (Notice::raise($stay, $kind, $notice['headline'], $notice['body']) !== null) {
+                    $raised[$kind]++;
+                }
+            }
+        }
+
         return $raised;
+    }
+
+    /**
+     * What is outstanding on one stay — §15.7.
+     *
+     * The same rule as the booking half: every one of these is read off a
+     * record that already exists — a status the partner set, a deposit
+     * that has not arrived, a date on the calendar. Nothing here invents
+     * news, and nothing here is sent anywhere: a notice is a row the
+     * customer sees and a line on the staff queue with the WhatsApp
+     * conversation already written, because there is no SMTP on this host
+     * and no WhatsApp API behind it.
+     *
+     * ## The two states are not what their names suggest
+     *
+     * `held` is *the partner has said yes and the deposit is outstanding*
+     * — `confirmWithPartner()` puts a stay there, with the hold clock
+     * running. `confirmed` is *the deposit arrived*. So the good news and
+     * the money owed are the same moment, and it gets one notice rather
+     * than two: a queue that says the same thing twice is one people stop
+     * reading.
+     *
+     * @return array<string, array{headline: string, body: ?string}>
+     */
+    public function noticesForStay(Stay $stay): array
+    {
+        $notices = [];
+        $house = $stay->property?->getTranslation('name', 'en') ?: 'the guesthouse';
+
+        // Held: the guesthouse agreed, and a clock is running. This is the
+        // one state on this list with a deadline behind it — a hold that
+        // lapses puts the room back on sale, and the customer finds out by
+        // opening a page that no longer offers it.
+        if ($stay->status === Stay::HELD && ! $stay->depositIsPaid()) {
+            $notices[Notice::DEPOSIT_DUE] = [
+                'headline' => $house.' has your rooms — the deposit holds them',
+                'body' => $this->holdSentence($stay),
+            ];
+        }
+
+        if ($stay->status === Stay::CONFIRMED) {
+            $notices[Notice::STAY_CONFIRMED] = [
+                'headline' => $house.' is booked',
+                'body' => sprintf(
+                    '%s to %s, %s. Reference %s.',
+                    $stay->check_in->format('j F Y'),
+                    $stay->check_out->format('j F Y'),
+                    $stay->roomType?->getTranslation('name', 'en') ?: 'your rooms',
+                    $stay->reference,
+                ),
+            ];
+
+            // The balance, once it is actually due. Not before: a bill
+            // three months early is a notice people learn to scroll past.
+            //
+            // The due date comes from {@see StayBooking::balanceDueAt()},
+            // which reads the **snapshot** taken when the customer booked
+            // rather than the property's current terms. A guesthouse that
+            // has since changed its policy has not changed what this
+            // customer agreed to, and chasing them to a date they never
+            // saw is the same defect as quoting a price they were never
+            // offered.
+            if ($stay->outstanding()->minor > 0) {
+                $dueOn = $this->stays->balanceDueAt($stay);
+
+                if (now()->greaterThanOrEqualTo($dueOn)) {
+                    $notices[Notice::BALANCE_DUE] = [
+                        'headline' => 'The balance for '.$house.' is due',
+                        'body' => sprintf(
+                            '%s remains on %s, due %s.',
+                            $stay->outstanding()->format(),
+                            $stay->reference,
+                            $dueOn->format('j F Y'),
+                        ),
+                    ];
+                }
+            }
+
+            $daysAway = (int) now()->startOfDay()->diffInDays($stay->check_in->startOfDay(), false);
+
+            if ($daysAway >= 0 && $daysAway <= $this->remindDaysBefore()) {
+                $notices[Notice::CHECK_IN_SOON] = [
+                    'headline' => $daysAway === 0
+                        ? 'You check in today'
+                        : ($daysAway === 1 ? 'You check in tomorrow' : "You check in in {$daysAway} days"),
+                    'body' => $this->arrivalSentence($stay),
+                ];
+            }
+        }
+
+        return $notices;
+    }
+
+    /**
+     * How the property says to get in, when it has said.
+     *
+     * The instructions are the useful half of a reminder about a
+     * guesthouse on an island somebody has never been to — which ferry,
+     * which jetty, who to ask for. Falls back to the dates alone rather
+     * than inventing directions.
+     */
+    private function arrivalSentence(Stay $stay): string
+    {
+        $when = 'Check-in is '.$stay->check_in->format('j F Y');
+        $time = $stay->property?->check_in_time;
+
+        $when .= $time ? ' from '.substr((string) $time, 0, 5).'.' : '.';
+
+        $directions = $stay->property?->getTranslation('check_in_instructions', app()->getLocale());
+
+        return filled($directions) ? $when.' '.$directions : $when;
+    }
+
+    /**
+     * What is owed and by when, in as many words.
+     *
+     * A hold with no expiry is not a countdown, so it is not described as
+     * one — the sentence says what is owed and stops, rather than naming a
+     * deadline that does not exist.
+     */
+    private function holdSentence(Stay $stay): string
+    {
+        $owed = sprintf(
+            '%s holds %s from %s.',
+            $stay->deposit()->format(),
+            $stay->roomType?->getTranslation('name', 'en') ?: 'your rooms',
+            $stay->check_in->format('j F Y'),
+        );
+
+        if ($stay->expires_at === null) {
+            return $owed;
+        }
+
+        return $owed.' The hold runs out on '.$stay->expires_at->format('j F Y \a\t H:i').'.';
     }
 
     /**

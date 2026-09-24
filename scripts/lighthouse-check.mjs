@@ -22,17 +22,30 @@ const base = (process.argv[2] ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
 const budget = JSON.parse(readFileSync('lighthouse-budget.json', 'utf8'))
 const out = mkdtempSync(join(tmpdir(), 'lh-'))
 
-const failures = []
-const warnings = []
-const rows = []
-
-for (const path of budget.urls) {
-  const url = base + path
-  const file = join(out, path.replace(/\W+/g, '_') + '.json')
-
-  process.stderr.write(`Auditing ${url}\n`)
-
-  execFileSync(
+/**
+ * Run one audit, retrying once if Chrome would not start.
+ *
+ * **This cannot hide a regression, and that is the whole reason it is
+ * safe.** A page that scores below its threshold exits *zero* and writes a
+ * report — the thresholds below are checked against that report, and a
+ * failure there never reaches this function. The only thing that throws
+ * here is the audit failing to happen at all: Chrome not launching, npx
+ * not fetching, the runner dying. So a retry re-attempts a measurement
+ * that was never taken; it never re-rolls one that came back bad.
+ *
+ * Added because that is exactly what happened: "Unable to connect to
+ * Chrome" on the first URL, with the site up and serving `/en` in 500 ms,
+ * and orphaned chrome and crashpad processes at cleanup. Headless Chrome
+ * not starting on a shared runner is a known, occasional thing, and one
+ * retry is the difference between a gate people trust and a gate people
+ * learn to re-run by hand — which AGENTS.md notes is worse than no gate,
+ * because a gate people ignore stops being read at all.
+ *
+ * One retry, not three: if Chrome cannot start twice, something is wrong
+ * that waiting will not fix, and the job should say so.
+ */
+function audit(url, file) {
+  const run = () => execFileSync(
     'npx',
     [
       '--yes', 'lighthouse@' + budget.lighthouseVersion, url,
@@ -48,6 +61,31 @@ for (const path of budget.urls) {
       env: process.env,
     },
   )
+
+  try {
+    run()
+  } catch (first) {
+    process.stderr.write(`  Lighthouse did not run for ${url}; retrying once.\n`)
+
+    // Synchronous on purpose: the whole script is, and a crashed Chrome
+    // leaves a crashpad handler behind that wants a moment to go.
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5000)
+
+    run()
+  }
+}
+
+const failures = []
+const warnings = []
+const rows = []
+
+for (const path of budget.urls) {
+  const url = base + path
+  const file = join(out, path.replace(/\W+/g, '_') + '.json')
+
+  process.stderr.write(`Auditing ${url}\n`)
+
+  audit(url, file)
 
   const report = JSON.parse(readFileSync(file, 'utf8'))
   const row = { url: path }

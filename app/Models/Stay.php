@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\IllegalStayTransition;
+use App\Models\Concerns\HasNotices;
 use App\Services\Payments\TakesPayments;
 use App\Support\Money;
 use Carbon\CarbonInterface;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Stay extends Model implements TakesPayments
 {
-    use HasFactory;
+    use HasFactory, HasNotices;
 
     protected $fillable = [
         'customer_id', 'property_id', 'room_type_id',
