@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\GuideSteps\Pages\CreateGuideStep;
 use App\Filament\Resources\GuideSteps\Pages\EditGuideStep;
+use App\Filament\Resources\Media\Pages\CreateMedia;
+use App\Filament\Resources\Media\Pages\EditMedia;
 use App\Models\GuideStep;
 use App\Models\Media;
 use App\Models\User;
@@ -147,19 +149,68 @@ class ImageUploadTest extends TestCase
     {
         Storage::fake('public');
 
-        $this->actingAs($this->admin())
-            ->post(route('admin.media.store'), [
+        Livewire::actingAs($this->admin())
+            ->test(CreateMedia::class)
+            ->fillForm([
                 'type' => 'photo',
-                'title' => 'Madinah at dawn',
-                'file_path' => UploadedFile::fake()->image('madinah.jpg', 1600, 900),
-                'is_published' => '1',
+                'title' => ['en' => 'Madinah at dawn'],
+                'file_path' => UploadedFile::fake()->image('madinah.jpg', 2400, 900),
+                'is_published' => true,
             ])
-            ->assertSessionHasNoErrors();
+            ->call('create')
+            ->assertHasNoFormErrors();
 
         $medium = Media::sole();
 
         $this->assertNotNull($medium->file_path, 'No file path was stored.');
         Storage::disk('public')->assertExists($medium->file_path);
+        [$width] = getimagesizefromstring(Storage::disk('public')->get($medium->file_path));
+        $this->assertSame(1600, $width, 'The photograph was stored at the size it was uploaded.');
+
+        // The gallery's grid reads the thumbnail, so it has to be recorded
+        // as well as written.
+        $this->assertNotNull($medium->thumb_path, 'No thumbnail path was stored.');
+        Storage::disk('public')->assertExists($medium->thumb_path);
+    }
+
+    /**
+     * The Blade controller kept each original under a random name nothing
+     * recorded, so none could ever be matched to its item or deleted.
+     * Replacing a photograph and deleting the item now leave nothing behind
+     * — large, thumbnail or original.
+     */
+    public function test_a_replaced_or_deleted_media_photo_leaves_the_disk(): void
+    {
+        Storage::fake('public');
+
+        Livewire::actingAs($this->admin())
+            ->test(CreateMedia::class)
+            ->fillForm(['type' => 'photo', 'file_path' => UploadedFile::fake()->image('one.jpg', 800, 600)])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $medium = Media::sole();
+        $this->assertCount(3, Storage::disk('public')->allFiles('media'), 'Expected a large image, a thumbnail and the original.');
+
+        Livewire::actingAs($this->admin())
+            ->test(EditMedia::class, ['record' => $medium->getKey()])
+            ->fillForm(['file_path' => []])
+            ->fillForm(['file_path' => UploadedFile::fake()->image('two.jpg', 800, 600)])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $medium->refresh();
+
+        $this->assertSame(
+            [$medium->file_path, $medium->thumb_path],
+            array_values(array_diff(Storage::disk('public')->allFiles('media'), Storage::disk('public')->allFiles('media/original'))),
+            'The replaced photograph left files behind.',
+        );
+        $this->assertCount(1, Storage::disk('public')->allFiles('media/original'));
+
+        $medium->delete();
+
+        $this->assertSame([], Storage::disk('public')->allFiles('media'), 'A deleted item left files behind.');
     }
 
     /**

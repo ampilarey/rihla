@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Resources\GuideSteps\GuideStepResource;
 use App\Filament\Resources\GuideSteps\Pages\ListGuideSteps;
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
+use App\Filament\Resources\Media\MediaResource;
 use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Models\GuideStep;
 use App\Models\Trip;
@@ -156,7 +157,7 @@ class AuthorizationTest extends TestCase
 
         $this->actingAs($leader)->get(route('admin.trips.index'))->assertOk();
         $this->actingAs($leader)->get(route('admin.trips.edit', $trip))->assertForbidden();
-        $this->actingAs($leader)->get(route('admin.media.index'))->assertForbidden();
+        $this->actingAs($leader)->get(MediaResource::getUrl('index'))->assertForbidden();
     }
 
     /**
@@ -222,7 +223,7 @@ class AuthorizationTest extends TestCase
             ['get', route('admin.trips.index')],
             ['get', route('admin.trips.create')],
             ['get', route('admin.trips.edit', $trip)],
-            ['get', route('admin.media.index')],
+            ['get', MediaResource::getUrl('index')],
             // Moved to the staff panel (§9.2).
             ['get', GuideStepResource::getUrl('index')],
             ['get', GuideStepResource::getUrl('edit', ['record' => $step])],

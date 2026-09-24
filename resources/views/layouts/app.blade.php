@@ -236,7 +236,7 @@
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Manage Trips') }}
                                 </a>
-                                <a href="{{ route('admin.media.index') }}" 
+                                <a href="{{ \App\Filament\Resources\Media\MediaResource::getUrl('index') }}" 
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Manage Media') }}
                                 </a>
@@ -346,7 +346,7 @@
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Manage Trips') }}
                             </a>
-                            <a href="{{ route('admin.media.index') }}" 
+                            <a href="{{ \App\Filament\Resources\Media\MediaResource::getUrl('index') }}" 
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Manage Media') }}
                             </a>

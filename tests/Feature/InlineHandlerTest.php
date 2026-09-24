@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Media\Pages\ListMedia;
 use App\Models\Media;
+use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -60,34 +64,45 @@ class InlineHandlerTest extends TestCase
     }
 
     /**
-     * The defect itself. A title carrying both an apostrophe and a double
-     * quote must arrive in the confirmation intact.
+     * The defect itself, on the screen that replaced the one it lived on.
+     * The media list moved to the staff panel (§9.2), whose delete is a
+     * Livewire action behind a confirmation modal rather than a form with a
+     * handler built from the title — so the escaping trap cannot recur
+     * there. What still has to hold is the outcome: a title carrying both
+     * an apostrophe and a double quote is deleted only after the modal, and
+     * the modal is actually there.
      */
-    public function test_a_delete_confirmation_survives_a_title_with_quotes_in_it(): void
+    public function test_deleting_a_media_item_with_quotes_in_its_title_asks_first(): void
     {
-        $title = 'Ahmed\'s "Umrah" photo';
+        $medium = Media::create(['title' => 'Ahmed\'s "Umrah" photo', 'type' => 'photo', 'is_published' => true]);
 
-        Media::create(['title' => $title, 'type' => 'photo', 'is_published' => true]);
+        Livewire::actingAs($this->admin())
+            ->test(ListMedia::class)
+            ->mountTableAction('delete', $medium)
+            ->assertActionMounted(TestAction::make('delete')->table($medium));
 
-        $this->actingAs($this->admin())
-            ->get('/admin/media')
-            ->assertOk()
-            ->assertSee('Are you sure you want to delete this media? — '.$title, escape: true);
+        // Mounting opened the modal and deleted nothing.
+        $this->assertModelExists($medium);
     }
 
-    /** Every destructive admin form must ask first. */
+    /** The last Blade delete form must still ask first. */
     public function test_admin_delete_forms_ask_before_they_destroy(): void
     {
-        $admin = $this->admin();
+        $trip = Trip::create([
+            'title' => ['en' => 'Ramadan Umrah'],
+            'slug' => 'ramadan-umrah',
+            'date_start' => now()->addMonth(),
+            'date_end' => now()->addMonth()->addDays(10),
+            'status' => Trip::STATUS_UPCOMING,
+            'is_published' => true,
+        ]);
 
-        Media::create(['title' => 'A photo', 'type' => 'photo', 'is_published' => true]);
-
-        $html = $this->actingAs($admin)->get('/admin/media')->assertOk()->getContent();
+        $html = $this->actingAs($this->admin())->get('/admin/trips')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression(
-            '/<form[^>]*admin\/media\/\d+[^>]*data-confirm="/s',
+            '/<form[^>]*admin\/trips\/'.$trip->slug.'"[^>]*data-confirm="/s',
             (string) $html,
-            'The media delete form must carry data-confirm.',
+            'The trip delete form must carry data-confirm.',
         );
     }
 
@@ -98,23 +113,17 @@ class InlineHandlerTest extends TestCase
      */
     public function test_every_rendered_data_args_is_valid_json(): void
     {
-        $admin = $this->admin();
-
         $pages = ['/en', '/en/trips', '/en/guide'];
 
         foreach ($pages as $page) {
             $this->assertDataArgsAreJson((string) $this->get($page)->getContent(), $page);
         }
 
-        // `/admin/hero-banners` and `/admin/guide-steps` left this list with
-        // their screens (§9.2). The Filament pages that replaced them render
-        // no `data-args` at all, and the old URLs only redirect — so kept
-        // here they would pass by checking an empty body, which is a guard
-        // reporting green about nothing.
-        foreach (['/admin/media'] as $page) {
-            $html = (string) $this->actingAs($admin)->get($page)->getContent();
-            $this->assertDataArgsAreJson($html, $page);
-        }
+        // `/admin/hero-banners`, `/admin/guide-steps` and `/admin/media`
+        // left this list with their screens (§9.2). The Filament pages that
+        // replaced them render no `data-args` at all, and the old URLs only
+        // redirect — so kept here they would pass by checking an empty body,
+        // which is a guard reporting green about nothing.
     }
 
     private function assertDataArgsAreJson(string $html, string $page): void
