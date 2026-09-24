@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Stays\LostStayFollowUp;
 use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +34,13 @@ class Enquiry extends Model
         'package_id', 'departure_id', 'party_size',
     ];
 
+    /**
+     * `stay_id` and `property_id` are deliberately **not** fillable.
+     *
+     * They are written by {@see LostStayFollowUp}
+     * and by nothing else. A public enquiry form that could set them would
+     * let somebody attach their own message to a stranger's stay.
+     */
     protected $casts = [
         'next_action_at' => 'date',
         'closed_at' => 'datetime',
@@ -107,6 +115,31 @@ class Enquiry extends Model
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
+    }
+
+    /**
+     * The stay that fell through and produced this — §15.7.
+     *
+     * The mirror of {@see booking()}: that records what an enquiry became,
+     * this records what it was.
+     *
+     * @return BelongsTo<Stay, $this>
+     */
+    public function stay(): BelongsTo
+    {
+        return $this->belongsTo(Stay::class);
+    }
+
+    /** @return BelongsTo<Property, $this> */
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    /** Did this enquiry come from a guesthouse ask that did not work out? */
+    public function isFromALostStay(): bool
+    {
+        return $this->stay_id !== null;
     }
 
     /** @return BelongsTo<Customer, $this> */

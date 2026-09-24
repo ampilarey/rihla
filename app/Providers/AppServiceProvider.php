@@ -10,6 +10,7 @@ use App\Models\HeroBanner;
 use App\Models\Media;
 use App\Models\Package;
 use App\Models\Setting;
+use App\Models\Stay;
 use App\Models\Traveller;
 use App\Models\Trip;
 use App\Models\User;
@@ -17,6 +18,7 @@ use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Observers\AuditObserver;
 use App\Observers\CoverImageObserver;
+use App\Observers\LostStayObserver;
 use App\Support\InitialsAvatar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -104,6 +106,13 @@ class AppServiceProvider extends ServiceProvider
         foreach (self::AUDITED as $model) {
             $model::observe(AuditObserver::class);
         }
+
+        // A stay that fell through becomes somebody to ring — §15.7. An
+        // observer rather than a call in the booking service, because a
+        // stay is lost by three different routes and the fourth one
+        // somebody adds next year is the one that would quietly drop a
+        // customer.
+        Stay::observe(LostStayObserver::class);
 
         // Responsive variants at upload time — §10.1. Without this, every
         // cover uploaded after `images:responsive` was last run is

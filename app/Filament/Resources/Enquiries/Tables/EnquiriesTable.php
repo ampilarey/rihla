@@ -45,6 +45,16 @@ class EnquiriesTable
 
                 TextColumn::make('package.title')
                     ->label('About')
+                    // A follow-up from a lost stay (§15.7) has no package;
+                    // it has a guesthouse. Left as it was it read "Not sure
+                    // yet", which is the one thing it is not — the person
+                    // named the property, the dates and the party size, and
+                    // then heard nothing.
+                    ->state(fn (Enquiry $record): ?string => $record->package?->title
+                        ?: $record->property?->name)
+                    ->description(fn (Enquiry $record): ?string => $record->isFromALostStay()
+                        ? 'A guesthouse ask that fell through'
+                        : null)
                     ->placeholder('Not sure yet')
                     ->toggleable(),
 
@@ -81,6 +91,9 @@ class EnquiriesTable
             // and newest-first is how the message from four days ago never
             // gets answered.
             ->defaultSort('created_at', 'asc')
+            // Eager-loaded: the About column reads both, and a queue worked
+            // from the front is exactly where N+1 shows up first.
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['package', 'property']))
             ->filters([
                 SelectFilter::make('status')
                     ->options(array_combine(Enquiry::STATUSES, array_map('ucfirst', Enquiry::STATUSES)))
