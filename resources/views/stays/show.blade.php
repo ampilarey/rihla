@@ -22,6 +22,22 @@
 @section('twitter_image', $shareCard)
 
 {{--
+    The share kit's other half — §15.7. The OG tags above are what a human
+    sees when the link is pasted; this is what a machine reads.
+
+    LodgingBusiness rather than Hotel, and every field below is on the page
+    the reader gets. No breadcrumb list, because this page shows no
+    breadcrumb trail: structured data that describes navigation the page
+    does not have is a claim about the page, not a description of it.
+--}}
+@push('schema')
+    @php($propertySchema = \App\Support\Seo::property($property, url()->current()))
+    @if($propertySchema)
+        <script type="application/ld+json">{!! \App\Support\Seo::json($propertySchema) !!}</script>
+    @endif
+@endpush
+
+{{--
     One property — §15.4 (Phase 9.4).
 
     Rooms are priced and checked for the chosen dates through the same

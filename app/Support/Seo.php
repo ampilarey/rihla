@@ -6,6 +6,8 @@ use App\Http\Middleware\SetLocale;
 use App\Models\Article;
 use App\Models\GuideStep;
 use App\Models\Package;
+use App\Models\Property;
+use App\Models\RoomType;
 use App\Models\Setting;
 use App\Models\Trip;
 use Illuminate\Http\Request;
@@ -324,6 +326,30 @@ class Seo
             $schema['image'] = url(Storage::url($package->cover_image));
         }
 
+        // An island holiday built on a guesthouse says where it goes —
+        // §15.7. It is the one thing the page shows that the trip node had
+        // no way to express: an Umrah package's destination is implicit in
+        // the word, and "Fulidhoo Weekend" is not.
+        //
+        // `itinerary`, because a LodgingBusiness is a Place and that is
+        // where the trip takes the family. Only the name and the island —
+        // the room list and the nightly rates belong to the guesthouse's
+        // own page, which publishes them there.
+        $lodging = $package->property;
+
+        if ($lodging !== null && $lodging->is_published) {
+            $schema['itinerary'] = array_filter([
+                '@type' => 'LodgingBusiness',
+                'name' => $lodging->getTranslation('name', app()->getLocale()) ?: null,
+                'url' => route('stays.show', ['property' => $lodging->slug]),
+                'address' => array_filter([
+                    '@type' => 'PostalAddress',
+                    'addressLocality' => $lodging->island ?: null,
+                    'addressCountry' => 'MV',
+                ]),
+            ]);
+        }
+
         // One offer per upcoming departure, priced from its cheapest tier.
         // A departure with no price carries no offer: "from nothing" is not
         // a price, and omitting the field is honest where a zero is not.
@@ -356,6 +382,147 @@ class Seo
         }
 
         return $schema;
+    }
+
+    /**
+     * A property, as a LodgingBusiness — §15.7.
+     *
+     * ## Why not `Hotel`
+     *
+     * `Hotel`, `Resort` and `BedAndBreakfast` are all narrower and all
+     * carry an implication this site cannot support: a star rating, a
+     * graded classification, a category a tourism board awarded. A
+     * Maldivian guesthouse marketed on behalf of the family who run it is
+     * a lodging business and nothing more precise is *known*, so nothing
+     * more precise is claimed. The same rule that keeps `aggregateRating`
+     * off every node here: the page holds no reviews, and inventing stars
+     * to win a rich result is a Google policy violation and a lie to a
+     * customer at the same time.
+     *
+     * ## Everything below is on the page
+     *
+     * Name, island, check-in and check-out times, amenities, the number of
+     * rooms and the nightly rate per room type are all rendered in the
+     * markup a reader sees. Nothing here is fetched from anywhere else or
+     * filled to satisfy a schema.
+     *
+     * The nightly rate is the **base** rate, because that is what the page
+     * prints when no dates are chosen — a `UnitPriceSpecification` per
+     * night rather than a bare `price`, so a crawler cannot read a
+     * one-night figure as the cost of a stay. A room priced at zero is not
+     * priced yet and carries no offer at all: "from nothing" is not a
+     * price, and the difference between free and unpriced is not one a
+     * customer should have to work out.
+     *
+     * No `telephone`. The number on this page is Rihla's, and hanging it
+     * off the guesthouse's node would publish the agency's switchboard as
+     * the property's own. The `TravelAgency` node on every page carries it
+     * where it belongs.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function property(Property $property, string $url): ?array
+    {
+        $name = $property->getTranslation('name', app()->getLocale());
+
+        if (blank($name) || ! $property->is_published) {
+            return null;
+        }
+
+        $schema = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'LodgingBusiness',
+            'name' => $name,
+            'description' => $property->getTranslation('summary', app()->getLocale()) ?: null,
+            'url' => $url,
+            'currenciesAccepted' => $property->currency,
+        ]);
+
+        if ($property->cover_image) {
+            $schema['image'] = url(Storage::url($property->cover_image));
+        }
+
+        // The island is the locality. Omitted rather than guessed when it
+        // is blank: an address naming only a country is no more use than
+        // no address, and a wrong one is worse than both.
+        $schema['address'] = array_filter([
+            '@type' => 'PostalAddress',
+            'addressLocality' => $property->island ?: null,
+            'addressCountry' => 'MV',
+        ]);
+
+        // Stored as clock times; schema.org wants them as such.
+        if ($property->check_in_time) {
+            $schema['checkinTime'] = (string) $property->check_in_time;
+        }
+
+        if ($property->check_out_time) {
+            $schema['checkoutTime'] = (string) $property->check_out_time;
+        }
+
+        foreach ($property->amenity_list as $amenity) {
+            $schema['amenityFeature'][] = [
+                '@type' => 'LocationFeatureSpecification',
+                'name' => $amenity,
+                'value' => true,
+            ];
+        }
+
+        $rooms = $property->roomTypes;
+
+        // How many rooms there are to let, which is the sum of the
+        // quantities and not the number of *kinds* of room. Three doubles
+        // and a family room is four rooms, not two.
+        $count = (int) $rooms->sum('quantity');
+
+        if ($count > 0) {
+            $schema['numberOfRooms'] = $count;
+        }
+
+        foreach ($rooms as $room) {
+            $offer = self::roomOffer($room, $url);
+
+            if ($offer !== null) {
+                $schema['makesOffer'][] = $offer;
+            }
+        }
+
+        return $schema;
+    }
+
+    /**
+     * One room type, as a nightly offer.
+     *
+     * `UnitPriceSpecification` with `unitCode: DAY` rather than a plain
+     * `price`, because the number is per night and a crawler reading it as
+     * the price of a stay would advertise a week in the Maldives for the
+     * cost of one evening.
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function roomOffer(RoomType $room, string $url): ?array
+    {
+        if ($room->base_rate_minor <= 0) {
+            return null;
+        }
+
+        $rate = $room->baseRate();
+
+        return array_filter([
+            '@type' => 'Offer',
+            'name' => $room->getTranslation('name', app()->getLocale()) ?: null,
+            'url' => $url,
+            'priceSpecification' => [
+                '@type' => 'UnitPriceSpecification',
+                // Whole units. The column is minor units, and publishing
+                // those would quote a hundredfold nightly rate to every
+                // crawler that reads it — the same trap the package offers
+                // carry a note about.
+                'price' => (string) $rate->major(),
+                'priceCurrency' => $rate->currency,
+                'unitCode' => 'DAY',
+            ],
+        ]);
     }
 
     /**
