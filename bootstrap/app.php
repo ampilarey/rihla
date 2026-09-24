@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureServiceEnabled;
 use App\Http\Middleware\FamilySession;
 use App\Http\Middleware\PortalSession;
 use App\Http\Middleware\SecurityHeaders;
@@ -31,6 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'portal' => PortalSession::class,
             'family' => FamilySession::class,
+            // The service registry's gate — §15.3 (Phase 8.1). A route
+            // names the service it belongs to: 'service:stays_guesthouses'.
+            'service' => EnsureServiceEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
