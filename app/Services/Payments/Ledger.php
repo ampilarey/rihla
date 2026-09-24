@@ -3,17 +3,19 @@
 namespace App\Services\Payments;
 
 use App\Exceptions\IllegalPaymentTransition;
-use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Models\User;
 use App\Services\Booking\SeatAllocator;
 use App\Support\Money;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
 /**
- * The only thing in this application that moves `bookings.paid_minor`.
+ * The only thing in this application that moves a cached paid total —
+ * `bookings.paid_minor`, `stays.paid_minor`, and whatever implements
+ * {@see TakesPayments} next.
  *
  * ## Why it is written this way
  *
@@ -56,11 +58,12 @@ final class Ledger
             // The lock before the read. Taking it after would make the
             // recomputation below a snapshot of a total somebody else is
             // already changing.
-            $this->lock($this->bookingKeyFor($payment));
+            $payable = $this->payableFor($payment);
+            $this->lock($payable::class, (int) $payable->getKey());
 
             $payment->transitionTo(Payment::SUCCEEDED, $note, $actor);
 
-            $this->recompute($this->bookingKeyFor($payment));
+            $this->recompute($payable);
 
             return $payment->refresh();
         });
@@ -78,14 +81,15 @@ final class Ledger
     public function refuse(Payment $payment, string $reason, ?User $actor = null): Payment
     {
         return DB::transaction(function () use ($payment, $reason, $actor): Payment {
-            $this->lock($this->bookingKeyFor($payment));
+            $payable = $this->payableFor($payment);
+            $this->lock($payable::class, (int) $payable->getKey());
 
             $payment->transitionTo(Payment::FAILED, $reason, $actor);
 
             // A payment that never succeeded contributes nothing to the sum,
             // so this changes no total — unless it is being refused after a
             // hand-edit, in which case the re-derivation is the point.
-            $this->recompute($this->bookingKeyFor($payment));
+            $this->recompute($payable);
 
             return $payment->refresh();
         });
@@ -103,7 +107,8 @@ final class Ledger
     public function refund(Payment $payment, ?Money $amount = null, ?string $reason = null, ?User $actor = null): Payment
     {
         return DB::transaction(function () use ($payment, $amount, $reason, $actor): Payment {
-            $this->lock($this->bookingKeyFor($payment));
+            $payable = $this->payableFor($payment);
+            $this->lock($payable::class, (int) $payable->getKey());
 
             // An explicit check rather than `$amount?->minor ?? …`: `??`
             // already swallows a null property access, so the nullsafe
@@ -143,70 +148,106 @@ final class Ledger
             // *was* the review.
             $refund->transitionTo(Payment::SUCCEEDED, $reason, $actor);
 
-            $this->recompute($this->bookingKeyFor($payment));
+            $this->recompute($payable);
 
             return $refund->refresh();
         });
     }
 
     /**
-     * Re-derive one booking's paid total from its succeeded payments.
+     * Re-derive one payable's paid total from its succeeded payments.
      *
      * Public because a hand-fixed row, an import, or a console command
      * should be able to put the cached total right without going through a
      * reconciliation that did not happen.
+     *
+     * Takes the model rather than an id — §15.4 (Phase 9.3). An integer
+     * alone stopped being enough the moment a second kind of thing could be
+     * paid for: `recompute(7)` cannot say whether 7 is a booking or a stay,
+     * and guessing wrong writes one customer's money onto another's record.
+     *
+     * @param  Model&TakesPayments  $payable
      */
-    public function recompute(int $bookingId): Money
+    public function recompute($payable): Money
     {
-        return DB::transaction(function () use ($bookingId): Money {
-            $booking = $this->lock($bookingId);
+        return DB::transaction(function () use ($payable): Money {
+            $locked = $this->lock($payable::class, (int) $payable->getKey());
 
             $paid = (int) Payment::query()
-                ->where('payable_type', Booking::class)
-                ->where('payable_id', $bookingId)
+                ->where('payable_type', $locked->getMorphClass())
+                ->where('payable_id', $locked->getKey())
                 ->succeeded()
                 ->sum('amount_minor');
 
-            $booking->forceFill(['paid_minor' => $paid])->save();
+            $locked->storePaidTotal($paid);
 
-            return Money::ofMinor($paid, $booking->currency);
+            return Money::ofMinor($paid, $locked->paymentCurrency());
         });
     }
 
     /**
-     * The booking row, locked for the rest of the transaction.
+     * The thing whose cached total this payment moves.
+     *
+     * Loud rather than lenient — the rule Phase 8.6 wrote down and this
+     * phase inherits. A payment is polymorphic, but only a model that has
+     * somewhere to *put* a total may receive money through here. A type
+     * that does not implement {@see TakesPayments} is a missing cached
+     * total, and skipping it quietly would leave that type's balance
+     * silently wrong from the day it ships.
+     *
+     * @return Model&TakesPayments
+     */
+    private function payableFor(Payment $payment): Model
+    {
+        $type = (string) $payment->payable_type;
+
+        // The *string* is checked before the morph is resolved, and that
+        // order matters: a payable_type naming a class this application no
+        // longer has — a retired model, a typo written straight into the
+        // column, a row restored from an older schema — would fatal on
+        // resolution with "class not found", which names the symbol and not
+        // the problem. Read first, and the refusal can say what is actually
+        // wrong and what to do about it.
+        if (! is_a($type, TakesPayments::class, allow_string: true)) {
+            throw new LogicException(sprintf(
+                'A payment is against %s, which does not implement %s. '
+                .'Give that type a cached total before sending its money through here.',
+                $type,
+                TakesPayments::class,
+            ));
+        }
+
+        $payable = $payment->payable;
+
+        if (! $payable instanceof Model || ! $payable instanceof TakesPayments) {
+            throw new LogicException(sprintf(
+                'A payment is against %s #%s, which no longer exists.',
+                $type,
+                (string) $payment->payable_id,
+            ));
+        }
+
+        return $payable;
+    }
+
+    /**
+     * The payable's row, locked for the rest of the transaction.
      *
      * `lockForUpdate()` is a no-op on SQLite, which is why the MySQL job
      * exists in CI: the guarantee this class rests on cannot be proved by
      * the default test database.
-     */
-    /**
-     * The booking whose cached total this payment moves.
      *
-     * Loud rather than lenient — §15.3 (Phase 8.6). A payment is
-     * polymorphic now, but `bookings.paid_minor` is the only cached total
-     * that exists, so money against anything else has nowhere to land.
-     * Skipping quietly would leave a stay's total silently wrong from the
-     * day Phase 9 ships; this makes that day fail on the first test instead.
+     * @param  class-string<Model>  $type
+     * @return Model&TakesPayments
      */
-    private function bookingKeyFor(Payment $payment): int
+    private function lock(string $type, int $id): Model
     {
-        $bookingId = $payment->bookingKey();
+        $locked = $type::query()->whereKey($id)->lockForUpdate()->firstOrFail();
 
-        if ($bookingId === null) {
-            throw new LogicException(sprintf(
-                'Ledger maintains bookings.paid_minor, and this payment is against %s. '
-                .'Give that type its own cached total before sending its money through here.',
-                (string) $payment->payable_type,
-            ));
+        if (! $locked instanceof TakesPayments) {
+            throw new LogicException($type.' does not implement '.TakesPayments::class.'.');
         }
 
-        return $bookingId;
-    }
-
-    private function lock(int $bookingId): Booking
-    {
-        /** @var Booking */
-        return Booking::whereKey($bookingId)->lockForUpdate()->firstOrFail();
+        return $locked;
     }
 }

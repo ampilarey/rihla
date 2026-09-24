@@ -129,6 +129,16 @@ class Availability
         $overlapping = Stay::query()
             ->where('room_type_id', $room->getKey())
             ->occupying()
+            // A hold whose clock has run out is not holding anything. The
+            // allocator expires it inside its lock, but only when somebody
+            // asks — so between a lapse and the next ask, counting it would
+            // make a public page refuse nights that are free. On a quiet
+            // guesthouse that is indefinite, and it does not look like a
+            // fault: the enquiries simply stop.
+            ->whereNot(fn ($query) => $query
+                ->where('status', Stay::HELD)
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now()))
             ->overlapping($nights[0], $nights[count($nights) - 1]->addDay())
             ->when(
                 $ignoring?->exists,

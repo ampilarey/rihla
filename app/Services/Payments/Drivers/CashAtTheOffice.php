@@ -2,7 +2,6 @@
 
 namespace App\Services\Payments\Drivers;
 
-use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Services\Payments\PaymentGateway;
@@ -37,11 +36,11 @@ final class CashAtTheOffice implements PaymentGateway
     }
 
     /** @param  array<string, mixed>  $details */
-    public function start(Booking $booking, Money $amount, array $details = []): Payment
+    public function start($payable, Money $amount, array $details = []): Payment
     {
         $payment = Payment::create([
-            'payable_type' => $booking->getMorphClass(),
-            'payable_id' => $booking->getKey(),
+            'payable_type' => $payable->getMorphClass(),
+            'payable_id' => $payable->getKey(),
             'method' => Payment::CASH,
             'currency' => $amount->currency,
             'amount_minor' => $amount->minor,

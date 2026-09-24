@@ -259,6 +259,73 @@ class StayAvailabilityTest extends TestCase
         );
     }
 
+    /**
+     * A hold whose clock has run out is not holding anything.
+     *
+     * The allocator expires a lapsed hold inside its row lock — but only
+     * when somebody asks for those dates. Between the lapse and the next
+     * ask, this read-only check is what a public page and a new request
+     * both use, and counting the dead hold would refuse nights that are
+     * free.
+     *
+     * On a quiet guesthouse that state is indefinite, and it does not look
+     * like a fault from outside: the enquiries simply stop arriving. Found
+     * by a booking-flow test that could not make its second request,
+     * not by anything that was looking for it.
+     */
+    public function test_a_hold_whose_clock_ran_out_does_not_block_the_dates(): void
+    {
+        Stay::factory()->create([
+            'room_type_id' => $this->room->id,
+            'property_id' => $this->room->property_id,
+            'check_in' => '2027-03-03',
+            'check_out' => '2027-03-05',
+            'status' => Stay::HELD,
+            'expires_at' => now()->subMinute(),
+        ]);
+
+        $this->assertTrue(
+            $this->availability->isAvailable($this->room, $this->date('2027-03-03'), $this->date('2027-03-05')),
+        );
+    }
+
+    /** A hold still inside its window does block them. */
+    public function test_a_live_hold_still_blocks_the_dates(): void
+    {
+        Stay::factory()->create([
+            'room_type_id' => $this->room->id,
+            'property_id' => $this->room->property_id,
+            'check_in' => '2027-03-03',
+            'check_out' => '2027-03-05',
+            'status' => Stay::HELD,
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $this->assertFalse(
+            $this->availability->isAvailable($this->room, $this->date('2027-03-03'), $this->date('2027-03-05')),
+        );
+    }
+
+    /**
+     * A confirmed stay has no clock, and a null `expires_at` must never be
+     * read as "already lapsed" — that would put every paid-for room back on
+     * sale.
+     */
+    public function test_a_confirmed_stay_with_no_clock_still_blocks_the_dates(): void
+    {
+        Stay::factory()->confirmed()->create([
+            'room_type_id' => $this->room->id,
+            'property_id' => $this->room->property_id,
+            'check_in' => '2027-03-03',
+            'check_out' => '2027-03-05',
+            'expires_at' => null,
+        ]);
+
+        $this->assertFalse(
+            $this->availability->isAvailable($this->room, $this->date('2027-03-03'), $this->date('2027-03-05')),
+        );
+    }
+
     /** A stay re-checked against itself is not its own competitor. */
     public function test_a_stay_does_not_block_its_own_dates(): void
     {
