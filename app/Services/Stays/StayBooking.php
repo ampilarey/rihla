@@ -83,7 +83,7 @@ class StayBooking
         $property = $room->property;
         $quote = $this->availability->quote($room, $checkIn, $checkOut);
 
-        return DB::transaction(fn (): Stay => Stay::create([
+        $stay = DB::transaction(fn (): Stay => Stay::create([
             'customer_id' => $customer->getKey(),
             'property_id' => $property->getKey(),
             'room_type_id' => $room->getKey(),
@@ -101,6 +101,22 @@ class StayBooking
             'special_requests' => $details['special_requests'] ?? null,
             'source' => $details['source'] ?? null,
         ]));
+
+        // §15.6 (Phase 11): a Malé room is the owner's own, so there is no
+        // partner to ring and nothing to wait for. The dates are taken now
+        // and the deposit clock starts — which is exactly what
+        // `instant_book` means, and §15.2 decision 1 is careful that it is
+        // off for anybody else's building.
+        //
+        // Taken *after* the stay exists rather than instead of creating it,
+        // so the same row and the same reference exist either way and the
+        // only difference is the status. A second creation path would be a
+        // second place for the snapshot and the deposit to be computed.
+        if ($property->isInstantBookable()) {
+            return $this->confirmWithPartner($stay);
+        }
+
+        return $stay;
     }
 
     /**

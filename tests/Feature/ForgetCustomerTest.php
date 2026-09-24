@@ -9,6 +9,10 @@ use App\Models\DocumentVersion;
 use App\Models\Enquiry;
 use App\Models\Package;
 use App\Models\Payment;
+use App\Models\Property;
+use App\Models\RoomType;
+use App\Models\Stay;
+use App\Models\StayGuest;
 use App\Models\Traveller;
 use App\Services\Documents\DocumentWallet;
 use App\Services\Payments\SlipVault;
@@ -377,5 +381,52 @@ class ForgetCustomerTest extends TestCase
         $this->assertSame($customer->getKey(), (int) $log->auditable_id);
         $this->assertStringNotContainsString('Real Person', (string) $log->new_values);
         $this->assertStringNotContainsString('Real Person', (string) $log->user_name);
+    }
+
+    /**
+     * **A guesthouse deposit must not survive a deletion request.**
+     *
+     * Payments have been polymorphic since §15.3, and this command matched
+     * `payable_type = Booking` alone — with a note saying a stay's money
+     * would be reached "when Phase 9 gives it a customer of its own".
+     * Phase 9 did, in §15.4, and nothing came back to that line. Between
+     * then and Phase 11 a stay's payment would have been reported erased
+     * and left sitting there with the payer's name on it.
+     *
+     * Found by reading that comment rather than by anything failing, which
+     * is exactly why it gets a test.
+     */
+    public function test_a_stays_payment_and_register_are_erased_too(): void
+    {
+        [$customer] = $this->somebodyWhoTravelled();
+
+        $property = Property::factory()->create();
+        $room = RoomType::factory()->create(['property_id' => $property->getKey()]);
+
+        $stay = Stay::factory()->create([
+            'customer_id' => $customer->getKey(),
+            'property_id' => $property->getKey(),
+            'room_type_id' => $room->getKey(),
+            'special_requests' => 'We are on honeymoon.',
+        ]);
+
+        $payment = Payment::factory()->create([
+            'payable_type' => Stay::class,
+            'payable_id' => $stay->getKey(),
+            'payer_name' => 'Aishath Real Person',
+        ]);
+
+        $guest = StayGuest::factory()->create([
+            'stay_id' => $stay->getKey(),
+            'full_name' => 'Aishath Real Person',
+            'id_number' => 'P7654321',
+        ]);
+
+        $this->artisan('data:forget', ['customer' => $customer->getKey()])->assertSuccessful();
+
+        $this->assertNotSame('Aishath Real Person', $payment->fresh()->payer_name);
+        $this->assertStringNotContainsString('honeymoon', (string) $stay->fresh()->special_requests);
+        $this->assertNotSame('Aishath Real Person', $guest->fresh()->full_name);
+        $this->assertNotSame('P7654321', $guest->fresh()->id_number);
     }
 }

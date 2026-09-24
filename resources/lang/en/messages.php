@@ -770,4 +770,11 @@ return [
     'No dates announced yet — ask us.' => 'No dates announced yet — ask us.',
     'See this holiday' => 'See this holiday',
     'No passport, visa or permit — these are local islands, reached by ferry or speedboat.' => 'No passport, visa or permit — these are local islands, reached by ferry or speedboat.',
+
+    // The guest register — §15.6 (Phase 11).
+    'National ID' => 'National ID',
+    'Passport' => 'Passport',
+    'Guests' => 'Guests',
+    'Who stayed' => 'Who stayed',
+    'Lead guest' => 'Lead guest',
 ];
