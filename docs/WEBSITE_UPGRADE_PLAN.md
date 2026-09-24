@@ -87,6 +87,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 - [12. Phased roadmap](#12-phased-roadmap)
 - [13. Decisions needed from you](#13-decisions-needed-from-you)
 - [14. Risks](#14-risks)
+- [15. Workstream G — Stays: guesthouses, island holidays and rooms (Phases 8–11)](#15-workstream-g--stays-guesthouses-island-holidays-and-rooms-phases-811)
 - [Appendix A — Coverage map of the 107 source documents](#appendix-a--coverage-map-of-the-107-source-documents)
 - [Appendix B — Reference sites, APIs and reading](#appendix-b--reference-sites-apis-and-reading)
 - [Appendix C — Proposed data model](#appendix-c--proposed-data-model)
@@ -1387,6 +1388,10 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | ~~**5 — Knowledge & learning**~~ ✅ **done, apart from the content and the rates nobody has supplied** | The differentiator ships | ~~Knowledge Centre (§7.1)~~ **— the editorial standard built as the state machine; no article ships, because the named reviewer does not exist yet**, ~~Ziyarah Guide with offline (§7.2)~~ **— the same gate, misconceptions as a first-class table, and a save-the-whole-guide control proved against a stopped server; no location ships, for the same reason**, ~~Learning Academy (§7.3)~~ **— the plan is arithmetic on the departure date, the quiz teaches rather than marks, and no module ships for the same reason as the other two**, ~~Scholar Portal (§6.4)~~ **— one queue across all four things waiting, and Ask a Scholar with consent that only the asker can give**, readiness score **— deliberately not a single score; named concerns instead, see §8.2**, ~~full CRM (§8.1)~~ **— quotations that are superseded rather than edited, follow-up tasks, a customer 360 that gathers without judging, and re-engagement as a list rather than a campaign**, ~~finance (§8.4)~~ **— per-journey profitability that distinguishes per-person from fixed costs and refuses to invent an exchange rate** | **10–12 weeks** |
 | ~~**6 — Intelligence**~~ ✅ **done, apart from the key and the scholar nobody has supplied** | Decisions from data | ~~BI dashboard (§8.5)~~ **— nine of §10.5's thirteen KPIs computed, and the other four named as absences rather than proxied; "nothing to measure" is a state of its own, distinct from zero**, ~~forecasting~~ **— seat projection from booking pace, as a range and never a point, that declines below three comparable journeys rather than extrapolate**, ~~smart alerts~~ **— only the conditions no other screen watches, each naming who acts and where, and each shown only to somebody who can act on it**, ~~pilgrim AI assistant (§9.6)~~ **— built, switched off, and structurally incapable of answering a religious question no named scholar has approved; the governance page is ADR 0006, and the public Knowledge Centre reader's pages were built with it so a citation can be checked**, ~~staff drafting assistant~~ **— drafts, and declines to translate into Dhivehi rather than repeat what machine-generated Dhivehi has already cost this site**, ~~personalisation~~ **— one honest line for a signed-in returning pilgrim; no cookie, no profile, and no recommendations**. **Not done, and not code:** an Anthropic API key and a cost model, and the named scholar without whom a key changes nothing | **6–8 weeks** |
 | **7 — Expansion** | New revenue | ~~loyalty & referrals — the referral half~~ **done: who sends Rihla people, what it came to, and whether anybody has written a follow-up down since; it does not claim to know who was thanked**. Hajj, partner/B2B portal, loyalty rewards, Arabic locale, native app shells, marketplace — **each blocked on a business fact or an account nobody has supplied; see below** | **open-ended** |
+| **8 — Foundations for Stays** | The site can carry a second line | service registry with on / coming-soon / off switches in the admin, grouped navigation, homepage hub, **Arabic locale**, BML Connect switched on and proven, payments made polymorphic, Umrah Plus as a package type — §15.3 | **3–4 weeks** |
+| **9 — Stays engine + Guesthouses** | Foreign visitors book and pay for guesthouses Rihla markets | partners, properties, room types, seasonal rates, calendar; request → hold → confirm → deposit; the no-double-booking invariant on MySQL; per-property share kit (URL, share card, PDF) in three languages; Stays board and margin in Filament — §15.4 | **7–9 weeks** |
+| **10 — Island holidays** | Maldivian families book island weekends | `island_holiday` packages on the Umrah engine, optionally built on a guesthouse; permit and visa steps gated off — §15.5 | **1–2 weeks** |
+| **11 — Rooms in Malé** | Nightly rooms, booked and paid online | the Stays engine with `type = rental`, instant book, weekly and monthly rates, guest registration — §15.6 | **1–2 weeks** |
 
 ### What the rest of Phase 7 is waiting on
 
@@ -1399,7 +1404,7 @@ next person does not have to guess, and so none of it gets built speculatively.
 | **Hajj** | A Ministry of Islamic Affairs Hajj quota and licence | Hajj is a separately licensed product with an allocated quota, not a longer Umrah. §2 records that the Ministry fines non-compliant operators up to MVR 30,000, with licence suspension and police referral — and far more for operating unlicensed. Advertising a Hajj package Rihla is not licensed to sell is the one mistake on this list that is a legal problem rather than a product one. |
 | **Partner / B2B agent portal** | Commission rates, credit terms, and whether agents book against Rihla's allocation or their own | The commercial model *is* the data model here. Build it on a guessed commission structure and the schema is wrong, not just the numbers. |
 | **Loyalty rewards** | What a point is worth, what earns one, and whether it discounts a journey or buys something else | The recognition half is built (above). The reward half is a pricing decision, and a loyalty scheme whose value is invented is a liability the operator has to honour. |
-| **Arabic locale** | Somebody who can write and check Arabic | The machinery is done — §9.4 is complete and adding `ar` is configuration. What is missing is the content, and `AGENTS.md` records exactly what happened the last time this codebase shipped a language nobody in the office could read. An `/ar` that is entirely English fallback is worse than no `/ar`. |
+| **Arabic locale** — *now scheduled: Phase 8.4* | Somebody who can write and check Arabic | The machinery is done — §9.4 is complete and adding `ar` is configuration. What is missing is the content, and `AGENTS.md` records exactly what happened the last time this codebase shipped a language nobody in the office could read. An `/ar` that is entirely English fallback is worse than no `/ar`. |
 | **Native app shells** | An Apple Developer account and a Google Play account | Neither can be opened by anybody but the owner. The PWA already installs to a home screen and works offline (§7.2), which is most of what a shell would add. |
 | **Marketplace / multi-tenancy** | Nothing — it is deliberately deferred | §11.24 already records this: revisit if Rihla franchises or white-labels. It describes an organisation with an architecture function. |
 
@@ -1445,6 +1450,249 @@ These block or reshape the plan; everything else I can proceed on with stated as
 | Real passport data copied to the public staging site | High | Anonymising export only (§10.4); never a raw dump |
 | Historical pilgrim data imported with duplicates and bad passports | Medium | Import in dry-run mode with a review queue; duplicate detection with human merge (companion §5.3) |
 | Package major-version churn (Filament v5, Livewire 4, sitemap needing PHP 8.4) | Low | Versions pinned in `composer.json`; upgrade in their own PRs with CI green |
+
+---
+
+## 15. Workstream G — Stays: guesthouses, island holidays and rooms (Phases 8–11)
+
+Rihla becomes a company with two lines of business on one website: **Umrah**,
+which is built, and **Stays** — marketing other people's guesthouses to foreign
+visitors, selling island holidays to Maldivians, and letting rooms in Malé by the
+night. This section is the plan for the second line. It was written after the
+owner delegated the eight decisions that shape it (§15.2), so it states positions
+rather than asking questions; each is the default, and each can be changed in
+the admin without a deploy.
+
+**Not** in this plan: travel-agency services (flights, hotels abroad, visas for
+other countries) and transport (speedboat passengers and cargo). Both were
+scoped in the conversation that produced this section and both are parked
+until the Stays line is running. They are one nav item and one landing page
+each when their time comes; nothing here forecloses them.
+
+### 15.1 Shape of the site after Phase 8
+
+The navigation stops being a flat list of Umrah pages and becomes two groups:
+
+```
+Umrah ▾                 Stays ▾                 About    Contact    [Login]
+├ Packages              ├ Guesthouses
+├ Umrah Plus            ├ Island holidays
+├ Umrah Guide           └ Rooms in Malé
+├ Academy
+└ My portal
+```
+
+Three things this fixes at once. **Holiday packages were about to be a third
+tab, and they are not one thing.** An Umrah with a Turkey extension is an Umrah
+product and belongs under Umrah; a long weekend on Fulidhoo for a Malé family is
+a guesthouse product and belongs under Stays. The owner's correction, recorded so
+it stays corrected: *"Keep holiday packages with Umrah under Umrah services, and
+holiday packages for locals to local islands in the guesthouses part."*
+
+The homepage keeps its Umrah hero and gains a two-card *What we do* strip under
+it — Umrah and Stays — plus a Stays spotlight further down once there is
+something to spotlight. §4.2's principle holds: the homepage introduces, the
+landing page sells. Existing URLs do not move. `/en/packages`, `/en/guide`,
+`/en/trips` keep their addresses, their rankings and their tests.
+
+### 15.2 The eight decisions, taken
+
+The owner asked for a plan and left every open question to me. These are the
+defaults the plan is built on. Each is either a config value or a per-record
+field in the admin, so none of them is a rebuild to change.
+
+| # | Question | Decision | Why |
+|---|---|---|---|
+| 1 | Instant booking, or request first? | **On request, with a deposit, by default.** `properties.instant_book` flips a property to instant. Rooms in Malé default to instant; partner guesthouses default to request. | Rihla does not own the guesthouses. Until a partner has given a written allotment, its availability is not Rihla's to promise, and a double-booking on a foreigner's holiday is the worst first impression a new line can make. |
+| 2 | Deposit, balance, refunds | **30% deposit** when the partner confirms; **balance 14 days before check-in**, or in full at confirmation if the stay is inside 14 days. **Free cancellation until 14 days before**; inside that the deposit is kept; a no-show forfeits the balance. All three are per-property fields with these as the defaults, and the policy is printed on the property page and the confirmation in the customer's language. | Conventional enough that a foreign visitor recognises it and a guesthouse owner will sign it. BML Connect is redirect-based and cannot hold a card, so the deposit is a payment link issued on confirmation and valid for 24 hours — request costs the customer nothing until a real room is theirs. |
+| 3 | BML Connect | **Turn it on in Phase 8.5 and prove it**: one live MVR 1 charge, one refund, one international Visa or Mastercard. If international cards are declined by the merchant agreement, foreigners fall back to bank transfer and the Guesthouses service stays *coming soon* until BML fixes it. | The driver exists (§5.3) and is switched off. The unknown is the merchant account, not the code, and it is the longest external lead item in this whole section. |
+| 4 | Currency | **USD for guesthouse stays, MVR for island holidays and Malé rooms.** The currency belongs to the product, not the reader's language; an Arabic page shows USD and a Dhivehi page shows MVR because that is who each is for. Charged in the displayed currency. | Maldives tourism is priced in USD by every guesthouse on the islands; a local family thinks in rufiyaa. Converting at display time invents a rate, which §8.4 already refuses to do. |
+| 5 | Green Tax and T-GST | **Prices include T-GST.** **Green Tax is a separate line, per person per night, "paid at the property"** by default, with a per-partner switch to *included in our price*. **The Green Tax amount is a config value the owner enters; this plan does not state one.** | Every booking site a foreign visitor has used shows Green Tax separately, and it is legally the establishment's to collect. The rate has changed before and will again; a number written here would be the `Brand::` migration mistake (D95) in a different file. |
+| 6 | Licence to sell stays to foreigners | **Build it all; ship Guesthouses as `coming_soon` until the owner confirms the travel-agency licence.** The service switch is the safeguard, and it is one click. | The plan is not qualified to assume a licence exists, and §12 already records what unlicensed selling costs in this jurisdiction. `coming_soon` shows the pages, takes enquiries, and takes no money. |
+| 7 | Languages | **Arabic in Phase 8.** A fourth locale is a content task later, not a code task — after Phase 8 adding one is a line in `SetLocale::SUPPORTED` and a translator. | Arabic is the market the owner named. Russian, German and Chinese are the other large Maldives markets; none is worth an `/ru` that is English underneath. |
+| 8 | Partner login | **Not in this plan.** Confirmation is an admin button that emails and WhatsApps the partner; the partner replies to a human. A partner portal is a Phase 12 candidate. | Eight guesthouses do not need a portal; they need the owner's phone number. Building the portal first is building the marketplace §11.24 deferred. |
+
+### 15.3 Phase 8 — Foundations
+
+Nothing new goes live in Phase 8. It makes the site able to carry a second line.
+
+| | Deliverable | Detail |
+|---|---|---|
+| **8.1** | **Service registry** | `services` table: `key` (`umrah`, `stays_guesthouses`, `stays_island_holidays`, `stays_rooms`), `state` (`on`, `coming_soon`, `off`), `sort`. A Filament *Services* page with one row per service. A middleware gates each section's routes: `off` is a 404, `coming_soon` renders the landing page with enquiry only and no booking, `on` is everything. Navigation, the homepage strip, the footer columns and the sitemap all read the registry. **Tested by planting**: switch a service off and assert the route 404s, the nav link is gone, the sitemap omits it and the admin resource is still there. |
+| **8.2** | **Navigation** | The grouped menu in §15.1. Mobile accordion. `NavigationFitTest` re-measured for the new item count at 768 and 1024. |
+| **8.3** | **Homepage hub** | *What we do* strip; *Why Rihla* rewritten so every claim is true of a guesthouse customer as well as a pilgrim (licensed, Maldivian-owned, real people on WhatsApp, since 2023); footer *Quick Links* grows a Stays column. Seven of the ten homepage sections stay exactly as they are. |
+| **8.4** | **Arabic locale** | `ar` added to `SetLocale::SUPPORTED`; the RTL switch that already serves Dhivehi covers it; Cairo is already loaded. `resources/lang/ar/` for the shell — navigation, buttons, forms, footer, the booking flow, the emails. **Every string is written or checked by a person who reads Arabic before it merges**; the drafting assistant (§9.6) may draft and may not publish. `TranslationQualityTest` extended to `ar` so the many-to-one signature that betrayed the Dhivehi cannot recur. `hreflang` gains `ar`. |
+| **8.5** | **Card payments on** | `PAYMENTS_CARD=true`; BML Connect proven as in decision 3, with the outcome written into this document. |
+| **8.6** | **Payments become polymorphic** | `payments.payable_type` / `payable_id`, backfilled from `booking_id`, so a payment can belong to a Booking or a Stay. Invoices and receipts follow the same seam. **One migration, run on a local MySQL before it is pushed** — it touches a foreign key and an index, which is the trap `AGENTS.md` names. |
+| **8.7** | **Umrah Plus** | `packages.type` — `umrah`, `umrah_plus`, `island_holiday` — with `umrah` as the backfilled default. Umrah Plus is an Umrah package with an extension segment; it reuses everything and adds an *Extension* block to the package page. Under the Umrah menu. |
+
+### 15.4 Phase 9 — The Stays engine, and guesthouses for foreigners
+
+The one phase in this section that is new engineering. Everything after it
+stands on it.
+
+**Data**
+
+```
+partners        the guesthouse owner: name, island, contact, WhatsApp, email, contract notes,
+                pricing model (net rate | commission %), allotment notes, green_tax_mode
+properties      partner, type (guesthouse | rental), slug, island, name*, summary*,
+                description*, house_rules*, check_in_instructions*, amenities (json),
+                check-in / check-out times, cover, gallery (Media), instant_book, min_nights,
+                currency, deposit_pct, balance_days_before, free_cancel_days, published
+room_types      per property: name*, description*, sleeps, beds, size_m2, amenities,
+                quantity, base_rate_minor
+rates           per room type: from, to, rate_minor, min_nights   (seasonal overrides)
+blocked_dates   per room type: date, source (admin | partner | ical), note
+stays           customer, property, room_type, check_in, check_out, adults, children, nights,
+                currency, rate_snapshot (json), total_minor, deposit_minor, paid_minor,
+                status, requested_at, partner_confirmed_at, deposit_due_at, expires_at,
+                special_requests, source
+stay_guests     stay, full name, nationality, date of birth, passport or ID — encrypted,
+                stored through the document wallet (§5.5), scrubbed by data:anonymise
+```
+
+`*` is translatable through the same `HasTranslations` the packages use, so
+a property carries English, Arabic and Dhivehi in one row.
+
+**Status machine**
+
+```
+requested ──► held ──► confirmed ──► checked_in ──► completed
+    │           │           │
+    ▼           ▼           ▼
+ declined    expired    cancelled
+```
+
+*Requested* is the customer's ask. *Held* is the partner having said yes and the
+dates being taken off the calendar while the deposit link is live. *Confirmed*
+is the deposit paid. A hold that is not paid inside 24 hours expires and frees
+the dates, automatically, and the customer is told. Instant-book properties skip
+from *requested* straight to *held* with the deposit link issued at once.
+
+**The invariant, and where it is enforced.** No two stays may hold the same
+room-type unit on the same night. `room_types.quantity` is the ceiling; the
+count of *held* and *confirmed* stays overlapping a night must never exceed it.
+Enforced the way §5.1 enforces seats: inside a transaction with
+`SELECT … FOR UPDATE` on the room type, with the concurrency test that only
+means anything on MySQL. `AGENTS.md` records why that test runs in CI against
+the real engine.
+
+**Public pages**
+
+- `/{locale}/stays` — landing; filters by island, dates, guests, price; the
+  Guesthouses, Island holidays and Rooms strands as tabs.
+- `/{locale}/stays/{property}` — gallery, room types with live availability for
+  the chosen dates, amenities, the map, house rules, the cancellation policy in
+  the reader's language.
+- **The share kit** — this is the owner's stated need, *"so I can share
+  information for them easily"*: every property has a clean URL per language, a
+  1200×630 share card cut from its cover (the machinery behind
+  `rihla-social.png`), and a one-page PDF fact sheet per language (the machinery
+  behind the invoices). A WhatsApp link to `rihla.mv/ar/stays/maafushi-view` is
+  the whole sales conversation.
+- **Booking**: dates → room type → guests → request → *(partner confirms)* →
+  deposit by card → confirmation with check-in instructions. The customer sees
+  the stay in the same account that shows an Umrah booking. One person, one
+  history, one CRM record.
+
+**Admin (Filament, in a *Stays* navigation group)**
+
+- Partners, Properties (with room types, rates and the calendar as relation
+  managers — `AGENTS.md` records that a relation manager on a view page is
+  read-only unless told otherwise), Stays.
+- The Stays board by status, with a **Confirm** action that writes
+  `partner_confirmed_at`, issues the deposit link and sends the customer and the
+  partner their messages; **Decline** with a reason the customer sees.
+- Finance: sell rate against net rate → margin per stay, into the profitability
+  work of §8.4, which already knows the difference between a per-person and a
+  fixed cost.
+
+**What is tested before it ships**
+
+- The invariant, on MySQL, under concurrency.
+- A hold expires and releases its dates, and the customer is told.
+- A rate change after confirmation does not move a confirmed stay's price
+  (`rate_snapshot`).
+- The deposit, balance and cancellation policy shown on the page is the one
+  applied to the stay.
+- A property with no Arabic falls back to English on `/ar` **and says so** —
+  never a blank, never a machine translation.
+- `data:anonymise` scrubs `stay_guests` against a fixture that holds a passport,
+  because a fixture that never exercises the common case is not a passing test.
+- Lighthouse: `/en/stays` and one property page join the gated set at
+  accessibility 100 and SEO 100.
+
+### 15.5 Phase 10 — Island holidays for Maldivians
+
+The Umrah package engine wearing a different shirt, and filed under Stays.
+
+- `packages.type = island_holiday`, `audience = locals`, an optional
+  `property_id` so the package is built *on* a guesthouse and its nights come
+  off that guesthouse's calendar.
+- Fixed departures like Umrah — a Fulidhoo weekend is a group on a boat on a
+  Thursday — or `flexible_dates` with a minimum stay, through the same booking
+  flow.
+- Visa, Nusuk, travel-readiness and the document wallet's passport requirement
+  are gated by type. A family going to Ukulhas is never asked for a permit.
+- MVR, seasonal pricing, school-holiday departures.
+- `/{locale}/stays/island-holidays` and the package pages; a spotlight on the
+  homepage.
+
+### 15.6 Phase 11 — Rooms in Malé
+
+The Stays engine with `properties.type = rental`. Malé first through the
+`island` field; another island is a row.
+
+- Nightly, weekly and monthly rates (the weekly and monthly are `rates` rows
+  with a `min_nights`).
+- **Instant book by default** — the owner controls these rooms directly.
+- Guest registration at booking: ID or passport for every guest, encrypted,
+  because the law requires the register and somebody will ask for it.
+- Check-in instructions and key handover as the translatable
+  `check_in_instructions` block, sent in the confirmation.
+
+### 15.7 Cross-cutting
+
+- **Notifications** (§4.8 of the phases): *stay requested*, *partner confirmed*,
+  *deposit due*, *hold expiring*, *confirmed*, *check-in tomorrow*, *thank you
+  and review* — in the customer's language; the partner's copy in English.
+- **CRM**: a request that is declined or expires becomes an enquiry with an owner
+  and a next action, so a lost stay is a follow-up rather than a silence.
+- **SEO**: `LodgingBusiness` structured data per property, `TouristTrip` per
+  island holiday, `hreflang` across `en`, `ar`, `dv`.
+- **Anonymisation**: `stays` and `stay_guests` added to `Anonymisation::SCRUB`,
+  with the `gone` stand-in for anything `NOT NULL`.
+- **Rooms is already a word.** The Umrah rooming module (§8.2) owns *Rooms* in
+  the admin; the new line is *Stays* everywhere — resource names, routes,
+  navigation, tests — so nobody opens the wrong one.
+
+### 15.8 Order, and what depends on what
+
+```
+8   Foundations          switches · nav · homepage · Arabic · card on · payments seam · Umrah Plus
+9   Stays + Guesthouses  the engine; the new engineering
+10  Island holidays      small; Umrah engine + a property link
+11  Rooms in Malé        small; Stays engine + guest registration
+```
+
+Phases 10 and 11 are each a fraction of Phase 9. Phase 8 is the one that must
+be finished before anything is switched on, because the switch *is* Phase 8.
+
+**Release discipline is unchanged**: each phase ends green, with a test per
+business rule, an ADR where a decision is not obvious from the code (the
+request-first model and the currency-per-product rule both deserve one), and
+a verified deploy to test.rihla.mv. Production stays manual.
+
+### 15.9 Risks specific to this line
+
+| Risk | Handling |
+|---|---|
+| BML's merchant agreement does not accept international cards | Found out in 8.5, before anything is on sale. Fallback is bank transfer for foreigners and `coming_soon` until it is fixed. |
+| A partner's calendar drifts from Rihla's | Request-first means the partner confirms every stay against their own book. iCal sync with the partner's Booking.com or Airbnb calendar is the Phase 12 answer, and it is import-only. |
+| Arabic content that nobody in the office can read | The same rule as Dhivehi, now written into the test: a human who reads the language signs off every string, and a property without Arabic shows English and says so. |
+| The travel-agency licence is not in place when Phase 9 is done | `coming_soon` — pages up, enquiries in, no money taken. |
+| Green Tax rate changes | A config value with no default, changed in the admin, printed from config on every page and every invoice. |
 
 ---
 
