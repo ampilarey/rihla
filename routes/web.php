@@ -201,6 +201,13 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // other half of that guard — it stops such a slug being minted at all,
     // because a shared link that silently goes somewhere else is worse than
     // one that 404s.
+    //
+    // The share kit — §15.4 (Phase 9.5). Both declared *before* the
+    // catch-all below, for the same ordering reason: `{property}` would
+    // otherwise swallow `card.png` as a slug.
+    Route::get('/stays/{property}/card.png', [StaysController::class, 'shareCard'])->name('stays.card');
+    Route::get('/stays/{property}/sheet.pdf', [StaysController::class, 'factSheet'])->name('stays.sheet');
+
     Route::get('/stays/{property}', [StaysController::class, 'show'])->name('stays.show');
 
     // The Ziyarah Guide (§7.2). The manifest is declared before {slug} or

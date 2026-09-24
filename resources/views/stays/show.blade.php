@@ -3,6 +3,25 @@
 @section('title', $property->name)
 
 {{--
+    The share kit's first half — §15.4 (Phase 9.5). A link dropped into
+    WhatsApp either unfurls into a picture of the guesthouse with its name
+    under it, or it unfurls into the Rihla logo and says nothing about the
+    property. These four lines are that difference.
+
+    The card URL carries a content hash, because every scraper caches by
+    URL for weeks and none re-check on any schedule worth relying on. A
+    stable URL whose bytes change is the same defect `AGENTS.md` records
+    for the service worker: a path that outlives its contents serves last
+    year's artwork for ever.
+--}}
+@section('og_title', $property->name)
+@section('og_description', $property->summary ?: __('messages.A guesthouse in the Maldives, booked through Rihla.'))
+@section('og_image', $shareCard)
+@section('twitter_title', $property->name)
+@section('twitter_description', $property->summary ?: __('messages.A guesthouse in the Maldives, booked through Rihla.'))
+@section('twitter_image', $shareCard)
+
+{{--
     One property — §15.4 (Phase 9.4).
 
     Rooms are priced and checked for the chosen dates through the same
@@ -154,6 +173,25 @@
             <a href="{{ \App\Support\Contact::whatsappUrl() }}" target="_blank" rel="noopener" class="btn-primary">
                 {{ __('messages.Message us') }}
             </a>
+
+            {{-- The other half of the share kit. One page, in the language
+                 of the URL it was asked for from, for a ferry with no
+                 signal or for forwarding to whoever is actually paying.
+
+                 Not offered in Arabic: dompdf applies no contextual
+                 shaping, so an Arabic sheet prints every letter joined to
+                 nothing. The reasoning is on
+                 StaysController::SHEET_LOCALES. This page is the
+                 shareable artefact for an Arabic reader meanwhile, and it
+                 renders correctly in any browser. --}}
+            @if($hasFactSheet)
+            <p class="mt-4">
+                <a href="{{ route('stays.sheet', ['property' => $property->slug]) }}"
+                   class="text-sm text-wine-700 underline hover:no-underline">
+                    {{ __('messages.Download a one-page summary (PDF)') }}
+                </a>
+            </p>
+            @endif
         </div>
     </div>
 </div>

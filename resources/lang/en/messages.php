@@ -758,4 +758,9 @@ return [
     'What is here' => 'What is here',
     'a night' => 'a night',
     'for :nights night(s)' => 'for :nights night(s)',
+
+    // The share kit — §15.4 (Phase 9.5).
+    'A guesthouse in the Maldives, booked through Rihla.' => 'A guesthouse in the Maldives, booked through Rihla.',
+    'Download a one-page summary (PDF)' => 'Download a one-page summary (PDF)',
+    'Sleeps' => 'Sleeps',
 ];

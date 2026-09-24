@@ -7,10 +7,16 @@ use App\Models\Property;
 use App\Models\RoomType;
 use App\Models\Setting;
 use App\Services\Stays\Availability;
+use App\Services\Stays\ShareCard;
+use App\Support\Contact;
 use App\Support\Services as ServiceRegistry;
 use App\Support\StayFilters;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -113,8 +119,139 @@ class StaysController extends Controller
             'filters' => $filters,
             'rooms' => $this->priceRooms($property, $filters),
             'bookable' => ServiceRegistry::isOn($service),
+            'shareCard' => $this->shareCardUrl($property),
+            'hasFactSheet' => in_array(app()->getLocale(), self::SHEET_LOCALES, true),
             'socialSettings' => Setting::getSocialSettings(),
         ]);
+    }
+
+    /**
+     * The absolute URL an OG tag points at.
+     *
+     * Versioned by the cover's own fingerprint, so replacing a photograph
+     * produces a URL no scraper has cached. The brand image when there is
+     * no cover to crop — a generic preview beats a broken one.
+     */
+    private function shareCardUrl(Property $property): string
+    {
+        $cards = app(ShareCard::class);
+        $version = $cards->isSupported() ? $cards->version($property) : null;
+
+        return $version === null
+            ? asset('images/rihla-social.png')
+            : route('stays.card', ['property' => $property->slug]).'?v='.$version;
+    }
+
+    /**
+     * The 1200×630 preview a pasted link shows — §15.4 (Phase 9.5).
+     *
+     * Streamed rather than redirected to storage, so the OG tag points at a
+     * URL on this domain that is always answerable. Cached hard *because
+     * the URL carries a content hash*: replacing a cover produces a
+     * different URL, so a long cache cannot serve last year's photograph —
+     * the trap `AGENTS.md` records for the service worker.
+     *
+     * Falls through to the brand image when there is no cover or no GD. A
+     * plain preview is a smaller problem than a 500 on a page somebody is
+     * trying to share.
+     */
+    public function shareCard(Property $property, ShareCard $cards): Response|RedirectResponse
+    {
+        abort_unless($property->is_published, 404);
+
+        $png = $cards->bytes($property);
+
+        if ($png === null) {
+            return redirect()->away(asset('images/rihla-social.png'));
+        }
+
+        return response($png, 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=31536000, immutable',
+        ]);
+    }
+
+    /**
+     * Locales whose script this PDF can actually be printed in.
+     *
+     * **Arabic is absent, and measured rather than assumed.** dompdf
+     * reverses an RTL run but applies no contextual shaping — a rendered
+     * Arabic sheet extracts as 21 base letters and 0 presentation forms,
+     * which on the page means every letter in its isolated form, joined to
+     * nothing. To an Arabic reader that is not merely ugly; it is visibly
+     * broken, on a document meant to be forwarded to a customer.
+     *
+     * Thaana does not join, so Dhivehi is unaffected and prints correctly
+     * with A_Faruma — the font the guide's boxes taught this codebase to
+     * declare explicitly.
+     *
+     * The Arabic *page* renders perfectly in any browser, and that is the
+     * shareable artefact for an Arabic reader until somebody adds a shaper.
+     * Offering a sheet that prints wrongly would be worse than offering
+     * none: nobody checks a PDF they forwarded.
+     *
+     * @var list<string>
+     */
+    public const SHEET_LOCALES = ['en', 'dv'];
+
+    /**
+     * The one-page fact sheet, in the language the URL asked for.
+     *
+     * The other half of the share kit: a link opens the page, this is what
+     * gets attached when somebody wants the details in their hand, on a
+     * ferry with no signal, or forwarded to whoever is actually paying.
+     */
+    public function factSheet(Property $property): \Symfony\Component\HttpFoundation\Response
+    {
+        abort_unless($property->is_published, 404);
+
+        $service = $property->type === Property::RENTAL ? 'stays_rooms' : 'stays_guesthouses';
+
+        if (ServiceRegistry::isOff($service)) {
+            throw new NotFoundHttpException;
+        }
+
+        $locale = app()->getLocale();
+
+        if (! in_array($locale, self::SHEET_LOCALES, true)) {
+            throw new NotFoundHttpException;
+        }
+
+        $property->load(['roomTypes', 'partner']);
+
+        $pdf = Pdf::loadView('pdf.property', [
+            'property' => $property,
+            'rooms' => $property->roomTypes,
+            'locale' => $locale,
+            'url' => route('stays.show', ['property' => $property->slug]),
+            'cover' => $this->coverForPdf($property),
+            'issuer' => [
+                'name' => (string) config('invoices.issuer.name'),
+                'registration' => config('invoices.issuer.registration'),
+                'phone' => Contact::displayNumber(),
+            ],
+        ]);
+
+        return $pdf->download($property->slug.'-'.$locale.'.pdf');
+    }
+
+    /**
+     * An absolute filesystem path, not a URL.
+     *
+     * dompdf fetches a remote image only when `isRemoteEnabled` is on, and
+     * on this host it is not — a URL renders as a broken-image box in a
+     * document somebody is about to forward. Null when there is no cover,
+     * which the template treats as "no picture" rather than an empty frame.
+     */
+    private function coverForPdf(Property $property): ?string
+    {
+        if (blank($property->cover_image)) {
+            return null;
+        }
+
+        $path = Storage::disk('public')->path((string) $property->cover_image);
+
+        return is_file($path) ? $path : null;
     }
 
     /**
