@@ -238,7 +238,8 @@ class PortalTest extends TestCase
     {
         $booking = $this->booking();
         Payment::factory()->awaitingReview()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'amount_minor' => 1_000_000,
         ]);
 

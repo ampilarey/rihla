@@ -15,7 +15,8 @@ class PaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            'booking_id' => Booking::factory(),
+            'payable_type' => Booking::class,
+            'payable_id' => Booking::factory(),
             'method' => Payment::BANK_TRANSFER,
             'currency' => 'MVR',
             // Whole rufiyaa in laari [R-7].

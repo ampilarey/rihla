@@ -40,7 +40,8 @@ final class CashAtTheOffice implements PaymentGateway
     public function start(Booking $booking, Money $amount, array $details = []): Payment
     {
         $payment = Payment::create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => $booking->getMorphClass(),
+            'payable_id' => $booking->getKey(),
             'method' => Payment::CASH,
             'currency' => $amount->currency,
             'amount_minor' => $amount->minor,

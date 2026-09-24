@@ -98,7 +98,8 @@ class PaymentTest extends TestCase
     {
         $booking = $this->booking();
         $payment = Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'amount_minor' => 1_000_000,
         ]);
 
@@ -119,7 +120,7 @@ class PaymentTest extends TestCase
 
         foreach ([1_000_000, 500_000, 1_350_000] as $amount) {
             $this->ledger()->reconcile(
-                Payment::factory()->create(['booking_id' => $booking->getKey(), 'amount_minor' => $amount]),
+                Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => $amount]),
             );
         }
 
@@ -128,7 +129,7 @@ class PaymentTest extends TestCase
         // Somebody fixes a row by hand — an import, a console session. The
         // recomputation puts the cached total right without a reconciliation
         // that did not happen.
-        Payment::where('booking_id', $booking->getKey())
+        Payment::where('payable_type', Booking::class)->where('payable_id', $booking->getKey())
             ->orderByDesc('id')->first()
             ->forceFill(['amount_minor' => 1_000_000])->save();
 
@@ -140,7 +141,7 @@ class PaymentTest extends TestCase
     public function test_a_refused_payment_adds_nothing(): void
     {
         $booking = $this->booking();
-        $payment = Payment::factory()->awaitingReview()->create(['booking_id' => $booking->getKey()]);
+        $payment = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey()]);
 
         $this->ledger()->refuse($payment, 'The slip is for MVR 2,850, not MVR 28,500');
 
@@ -159,7 +160,7 @@ class PaymentTest extends TestCase
     public function test_a_refund_is_a_negative_payment_that_leaves_the_original_alone(): void
     {
         $booking = $this->booking();
-        $payment = Payment::factory()->create(['booking_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
 
         $this->ledger()->reconcile($payment);
         $refund = $this->ledger()->refund($payment, Money::ofMajor(3_000), 'Changed departure');
@@ -178,7 +179,7 @@ class PaymentTest extends TestCase
     public function test_a_refund_of_the_whole_amount_needs_no_figure(): void
     {
         $booking = $this->booking();
-        $payment = Payment::factory()->create(['booking_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
 
         $this->ledger()->reconcile($payment);
         $this->ledger()->refund($payment, null, 'Cancelled');
@@ -190,7 +191,7 @@ class PaymentTest extends TestCase
     public function test_a_refund_is_negative_however_it_was_asked_for(): void
     {
         $booking = $this->booking();
-        $payment = Payment::factory()->create(['booking_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
         $this->ledger()->reconcile($payment);
 
         $refund = $this->ledger()->refund($payment, Money::ofMinor(-250_000));

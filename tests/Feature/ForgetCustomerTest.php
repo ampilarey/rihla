@@ -84,7 +84,8 @@ class ForgetCustomerTest extends TestCase
         ]);
 
         $payment = Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::SUCCEEDED,
             'amount_minor' => 4500000,
             'payer_name' => 'Aishath Real Person',
@@ -218,7 +219,8 @@ class ForgetCustomerTest extends TestCase
         [$customer, , $booking] = $this->somebodyWhoTravelled();
 
         $payment = Payment::factory()->create([
-            'booking_id' => $booking->getKey(),
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->getKey(),
             'status' => Payment::SUCCEEDED,
         ]);
 

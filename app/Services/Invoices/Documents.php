@@ -54,8 +54,8 @@ final class Documents
     public function receipt(Payment $payment): PdfDocument
     {
         return Pdf::loadView('pdf.receipt', [
-            'payment' => $payment->load(['booking.customer', 'booking.departure.package']),
-            'booking' => $payment->booking,
+            'payment' => $payment->load(['payable.customer', 'payable.departure.package']),
+            'booking' => $payment->booking(),
             'issuer' => $this->issuer(),
             'locale' => app()->getLocale(),
         ]);
