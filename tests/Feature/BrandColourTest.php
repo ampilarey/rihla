@@ -65,6 +65,25 @@ class BrandColourTest extends TestCase
         '#7A5A16' => 'gold-700',
         '#2E2621' => 'the previous ink',
         '#6B6159' => 'the previous ink-muted',
+
+        // The warm neutrals the two document PDFs kept painting after the
+        // rest of the palette had moved. **`#6B6259` is why this block
+        // exists**: the list above already held `#6B6159`, one digit
+        // different, so the guard scanned the invoice and the guesthouse
+        // fact sheet, found a near-miss of a retired colour, and reported
+        // green. A list of exact strings catches only what it was told
+        // exactly — when a value here looks like one already listed, that
+        // is the moment to check the file rather than assume it is covered.
+        '#6B6259' => 'the previous warm ink-muted, a digit away from #6B6159 above',
+        '#E5DED4' => 'the previous warm table border',
+        '#F1EBE3' => 'the previous warm row rule',
+        '#FAF6F0' => 'the previous warm note background',
+
+        // Never in any Rihla palette. It was the fiqh panel's rule in the
+        // Umrah guide PDF, at 2.69:1 against its own background.
+        '#ff6b35' => 'an orange from no palette this site has had',
+        '#fff8f0' => 'the orange panel it sat on',
+        '#f8f9fa' => 'a cool grey from no palette this site has had',
         '#FBF6EC' => 'the previous cream',
         '#F4EDDF' => 'the previous cream-deep',
         '#FFF9F4' => 'warm gray-50',
@@ -100,6 +119,52 @@ class BrandColourTest extends TestCase
         'images/rihla-icon-small.svg',
         'manifest.json',
     ];
+
+    /**
+     * The PDF templates name no colour of their own.
+     *
+     * A stronger property than {@see RETIRED}, and deliberately a different
+     * *kind* of one. That list can only catch what somebody remembered to
+     * add to it, and it has now failed twice in the same way: `#6B6259`
+     * sat in these very files through a whole palette change because the
+     * list held `#6B6159`, one digit off; and `#666`, `#ddd` and `#999`
+     * were invisible to it in principle, because it matches six-digit
+     * strings and CSS also takes three.
+     *
+     * So this asserts what is actually wanted — these files read the
+     * palette rather than repeating it — and cannot go stale, because it
+     * names no colours at all. It is why `Brand::RULE` and
+     * `Brand::GOLD_ON_LIGHT` exist: a value the templates genuinely need
+     * belongs in the palette, not inlined here.
+     *
+     * Applied to the PDFs rather than to every view because Blade
+     * elsewhere paints through Tailwind classes, while dompdf needs real
+     * CSS and so is the one place literals are tempting.
+     */
+    public function test_a_pdf_template_names_no_colour_of_its_own(): void
+    {
+        $offenders = [];
+
+        foreach (File::allFiles(resource_path('views/pdf')) as $file) {
+            $contents = File::get($file->getPathname());
+
+            // Three, four, six or eight digits — every form CSS accepts.
+            if (preg_match_all('/#[0-9A-Fa-f]{3,8}\b/', $contents, $matches) > 0) {
+                foreach (array_unique($matches[0]) as $hex) {
+                    $offenders[] = $file->getRelativePathname().': '.$hex;
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, implode("\n", array_merge(
+            [
+                'A PDF template is painting a colour directly instead of reading App\Support\Brand.',
+                'The palette has one source of truth; a literal here is a copy that goes stale silently.',
+                'If the value it needs is genuinely missing, add it to Brand rather than inlining it:',
+            ],
+            $offenders,
+        )));
+    }
 
     public function test_no_view_still_uses_a_retired_colour(): void
     {

@@ -26,6 +26,16 @@ final class Brand
     /** Accent: rules, icons, premium detail. Takes ink text, never white. */
     public const GOLD = '#EFD34D';
 
+    /**
+     * The same gold where the ground is light.
+     *
+     * `GOLD` is a lemon: bright enough to carry ink on a dark ground and far
+     * too pale to be seen as a *line* on a white one. This is the value to
+     * reach for on paper and on cream — a rule, an underline, a border —
+     * and the two are not interchangeable in either direction.
+     */
+    public const GOLD_ON_LIGHT = '#A88C1F';
+
     /** Body text and dark UI. */
     public const INK = '#2E2245';
 
@@ -37,6 +47,18 @@ final class Brand
 
     /** Warm neutral border, matched in lightness to Tailwind's gray-300. */
     public const BORDER = '#D4CDE0';
+
+    /**
+     * The lighter of the two rules, matching Tailwind's gray-200.
+     *
+     * A printed table needs two weights or it reads as a grid: {@see BORDER}
+     * under the headings, this between the rows. They were `#E5DED4` and
+     * `#F1EBE3` — warm neutrals from the retired palette, with no home in
+     * this one — and keeping the *hierarchy* while changing the values is
+     * the point. Collapsing both onto one border would fix the colour and
+     * lose the document.
+     */
+    public const RULE = '#E8E3EF';
 
     public const WHITE = '#ffffff';
 
