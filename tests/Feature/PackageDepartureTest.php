@@ -57,7 +57,13 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `stay_guests` holds a foreign key into `stays`
+        // First of all: the follow-up migration puts `stay_id` and
+        // `property_id` on `enquiries` (§15.7 — a lost stay becomes a call
+        // rather than a silence). Those constraints outlive the columns
+        // they hang off, so they have to come off before `stays` and
+        // `properties` can be dropped. It is newer than everything below.
+        __DIR__.'/../../database/migrations/2026_09_24_180000_let_an_enquiry_come_from_a_lost_stay.php',
+        // Then: `stay_guests` holds a foreign key into `stays`
         // (§15.6 — the register Maldivian law requires). It is newer than
         // the stays tables and has to go before them, or MySQL refuses to
         // drop `stays` while a register entry still points at it. SQLite
