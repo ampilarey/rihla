@@ -81,6 +81,10 @@ final class Forgetting
         'roll_call_marks' => 'traveller',
         'room_assignments' => 'traveller',
 
+        // A stay belongs to one customer and is reached straight from them,
+        // the same way a booking is — §15.4.
+        'stays' => 'customer',
+
         'enquiry_notes' => 'enquiry',
         'document_versions' => 'document',
         'incident_notes' => 'incident',

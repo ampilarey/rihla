@@ -57,7 +57,14 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
-        // First of all: `assistant_exchanges` holds a foreign key into
+        // First of all: `stays` holds a foreign key into `customers`
+        // (§15.4 — a guesthouse stay belongs to the same person a booking
+        // does, one account and one history). SQLite rolls the booking
+        // domain back without noticing; MySQL refuses to drop `customers`
+        // while a stay still points at it, and the failure lands on the
+        // booking-domain migration rather than on anything about stays.
+        __DIR__.'/../../database/migrations/2026_09_24_150000_create_the_stays_availability.php',
+        // Then: `assistant_exchanges` holds a foreign key into
         // `travellers` (§9.6 — the log of what the pilgrim assistant was
         // asked, kept against the person who asked).
         __DIR__.'/../../database/migrations/2026_09_20_380000_create_the_assistant_log.php',

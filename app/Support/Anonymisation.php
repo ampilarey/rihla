@@ -79,6 +79,12 @@ final class Anonymisation
         ],
         'enquiry_notes' => ['body' => 'text'],
         'bookings' => ['notes' => 'text', 'cancellation_reason' => 'text'],
+        // A stay's free text is written by or about the guest — "we are on
+        // honeymoon", "my mother uses a wheelchair", why a partner declined
+        // them. The dates, the room and the money stay legible, because a
+        // test server with no stays on it cannot be used to reproduce
+        // anything about stays.
+        'stays' => ['special_requests' => 'text', 'cancellation_reason' => 'text'],
         'payments' => [
             'payer_name' => 'name', 'payer_bank' => 'text', 'payer_reference' => 'text',
             'notes' => 'text', 'rejection_reason' => 'text',
@@ -187,6 +193,10 @@ final class Anonymisation
         // scrubbed above; the building is not a person.
         'properties',
         'room_types',
+        // A season and a blocked night are facts about a building's
+        // calendar. Nobody is named in either.
+        'rates',
+        'blocked_dates',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',

@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Properties;
 use App\Filament\Resources\Properties\Pages\CreateProperty;
 use App\Filament\Resources\Properties\Pages\EditProperty;
 use App\Filament\Resources\Properties\Pages\ListProperties;
+use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
+use App\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RoomTypesRelationManager;
 use App\Filament\Resources\Properties\Schemas\PropertyForm;
 use App\Filament\Resources\Properties\Tables\PropertiesTable;
@@ -50,7 +52,11 @@ class PropertyResource extends Resource
 
     public static function getRelations(): array
     {
-        return [RoomTypesRelationManager::class];
+        return [
+            RoomTypesRelationManager::class,
+            RatesRelationManager::class,
+            BlockedDatesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

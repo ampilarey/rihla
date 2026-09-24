@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
@@ -140,6 +141,38 @@ class Property extends Model
     public function roomTypes(): HasMany
     {
         return $this->hasMany(RoomType::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Every season priced anywhere in this building — §15.4 (Phase 9.2).
+     *
+     * Through the rooms, because a rate belongs to a room type and not to
+     * the property. Exposed on the property anyway because that is how a
+     * guesthouse owner thinks about it: "December is this much", across the
+     * whole place. Setting the same dates once per room is how one of them
+     * ends up a month out.
+     *
+     * @return HasManyThrough<Rate, RoomType, $this>
+     */
+    public function rates(): HasManyThrough
+    {
+        return $this->hasManyThrough(Rate::class, RoomType::class)->orderBy('starts_on');
+    }
+
+    /**
+     * Every night anywhere in this building that is not for sale.
+     *
+     * @return HasManyThrough<BlockedDate, RoomType, $this>
+     */
+    public function blockedDates(): HasManyThrough
+    {
+        return $this->hasManyThrough(BlockedDate::class, RoomType::class)->orderBy('date');
+    }
+
+    /** @return HasMany<Stay, $this> */
+    public function stays(): HasMany
+    {
+        return $this->hasMany(Stay::class)->latest('check_in');
     }
 
     /** @param Builder<$this> $query */
