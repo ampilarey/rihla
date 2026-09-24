@@ -1,13 +1,12 @@
 <?php
 
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
+use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\GuideStepController as AdminGuideStepController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
-use App\Http\Controllers\Admin\WhyFeatureController;
-use App\Http\Controllers\Admin\WhySectionController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DevicesController;
@@ -338,19 +337,17 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
     Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
-    // Why Section Management
-    Route::resource('why-sections', WhySectionController::class)
-        ->only(['index', 'edit', 'update'])
-        ->parameters(['why-sections' => 'section']);
-
-    // `index` is excluded alongside show and create because
-    // WhyFeatureController has no such method — the route existed and
-    // returned a 500. Features are listed and added from the section's own
-    // edit screen, so there is nothing for a separate index to show.
-    Route::resource('why-sections.features', WhyFeatureController::class)
-        ->shallow()
-        ->except(['show', 'create', 'index'])
-        ->parameters(['why-sections' => 'section', 'features' => 'feature']);
+    // The "why Rihla" section moved to the staff panel — §9.2. Forwarded
+    // rather than removed, so a bookmark still arrives. Two prefixes, because
+    // the feature routes were `shallow()`: a card's edit page lived at
+    // /admin/features/{id}/edit, not under why-sections. GET only, for the
+    // reason the hero banner redirect gives.
+    Route::get('why-sections/{any?}', fn () => redirect()->to(WhySectionResource::getUrl('index')))
+        ->where('any', '.*')
+        ->name('why-sections.moved');
+    Route::get('features/{any?}', fn () => redirect()->to(WhySectionResource::getUrl('index')))
+        ->where('any', '.*')
+        ->name('why-features.moved');
 });
 
 /*

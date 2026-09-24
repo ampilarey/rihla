@@ -230,54 +230,9 @@ class HomepageTranslationTest extends TestCase
         }
     }
 
-    // The three hero-banner cases that lived here — both languages saved,
-    // Dhivehi never required, English required — moved with the screen to
-    // HeroBannerAdminTest (§9.2) and now drive the Filament form.
+    // The hero-banner cases that lived here moved with that screen to
+    // HeroBannerAdminTest, and the "why Rihla" ones — a card saved in both
+    // languages, the screen never inventing Dhivehi, opening it twice making
+    // one section — to WhySectionAdminTest (§9.2). Both now drive Filament.
 
-    public function test_the_admin_saves_a_why_feature_in_both_languages(): void
-    {
-        $section = WhySection::create(['title' => ['en' => 'Why Rihla'], 'is_active' => true]);
-
-        $this->actingAs($this->admin())->post(route('admin.why-sections.features.store', $section), [
-            'why_section_id' => $section->id,
-            'title' => ['en' => 'Licensed by the Ministry', 'dv' => 'ލައިސަންސް'],
-            'text' => ['en' => 'Registration C11452023.'],
-            'sort_order' => 0,
-        ])->assertSessionHasNoErrors();
-
-        $feature = WhyFeature::sole();
-
-        $this->assertSame('ލައިސަންސް', $feature->getTranslation('title', 'dv'));
-        $this->assertSame('Registration C11452023.', $feature->getTranslation('text', 'en'));
-    }
-
-    /**
-     * Opening this screen used to *create* a section when none existed for the
-     * panel's locale — and the Dhivehi one it created carried two hard-coded
-     * Thaana sentences nobody had written. An editor with the panel in
-     * Dhivehi silently published machine-generated Dhivehi to the homepage.
-     */
-    public function test_opening_the_why_screen_never_invents_dhivehi(): void
-    {
-        app()->setLocale('dv');
-
-        $this->actingAs($this->admin())->get(route('admin.why-sections.index'))->assertRedirect();
-
-        $section = WhySection::sole();
-
-        $this->assertSame('Why Choose Rihla', $section->getTranslation('title', 'en'));
-        $this->assertFalse($section->hasTranslation('title', 'dv'),
-            'The panel wrote Dhivehi nobody typed.');
-    }
-
-    /** And it opens the one that exists rather than adding another. */
-    public function test_opening_the_why_screen_twice_makes_one_section(): void
-    {
-        $admin = $this->admin();
-
-        $this->actingAs($admin)->get(route('admin.why-sections.index'))->assertRedirect();
-        $this->actingAs($admin)->get(route('admin.why-sections.index'))->assertRedirect();
-
-        $this->assertSame(1, WhySection::count());
-    }
 }

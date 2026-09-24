@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
+use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Models\GuideStep;
 use App\Models\Trip;
 use App\Models\User;
@@ -213,7 +214,8 @@ class AuthorizationTest extends TestCase
             // be kept out — which is the property this line has always held.
             ['get', HeroBannerResource::getUrl('index')],
             ['get', route('admin.settings.index')],
-            ['get', route('admin.why-sections.index')],
+            // Moved to the staff panel (§9.2); the same people must still be kept out.
+            ['get', WhySectionResource::getUrl('index')],
         ] as [$method, $url]) {
             $this->actingAs($user)
                 ->{$method}($url)
