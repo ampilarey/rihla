@@ -99,6 +99,26 @@ class Departure extends Model
         return $this->hasMany(DepartureHotel::class)->orderBy('sort_order');
     }
 
+    /**
+     * The legs it flies, in the order they leave (§8.3).
+     *
+     * @return HasMany<DepartureFlight, $this>
+     */
+    public function flights(): HasMany
+    {
+        return $this->hasMany(DepartureFlight::class)->orderBy('departs_at');
+    }
+
+    /**
+     * Coaches, cars and trains on the ground, in time order (§8.3).
+     *
+     * @return HasMany<DepartureTransfer, $this>
+     */
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(DepartureTransfer::class)->orderBy('starts_at');
+    }
+
     /** @return HasMany<ItineraryItem, $this> */
     public function itinerary(): HasMany
     {

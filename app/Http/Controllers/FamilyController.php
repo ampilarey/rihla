@@ -100,6 +100,10 @@ class FamilyController extends Controller
             // check — a privacy rule enforced at the call site is one that
             // gets forgotten at the second call site.
             'accountedFor' => $this->attendanceFor($access),
+            // §6.2's "flight info", group-level like the announcements:
+            // when they leave and when to be at the airport to meet them.
+            // Times only — never the booking reference.
+            'flights' => $departure->flights()->get(),
         ]);
     }
 

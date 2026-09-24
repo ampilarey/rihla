@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\Departure;
+use App\Models\DepartureFlight;
 use App\Models\ModuleCompletion;
 use App\Models\Traveller;
 use App\Models\WaitlistEntry;
@@ -39,10 +40,11 @@ use Illuminate\Database\Eloquent\Collection;
  *
  * ## What this deliberately does not check
  *
- * Flights, transport and supplier coordination (§8.2, §8.3) have no records
- * in this system yet. Reporting "flights: fine" from the absence of data
- * would be a lie of exactly the kind this codebase has been bitten by
- * before, so they are absent rather than green.
+ * Supplier coordination — hotel contracts, allotments — has no records in
+ * this system. Reporting "suppliers: fine" from the absence of data would
+ * be a lie of exactly the kind this codebase has been bitten by before, so
+ * it is absent rather than green. Flights and ground transport were in the
+ * same position until §8.3 gave them records; see {@see flightConcerns()}.
  */
 final class DepartureReadiness
 {
@@ -68,6 +70,10 @@ final class DepartureReadiness
 
     public const LEARNING = 'learning';
 
+    public const FLIGHTS = 'flights';
+
+    public const TRANSPORT = 'transport';
+
     /**
      * Everything worth a person's attention on this departure.
      *
@@ -84,6 +90,8 @@ final class DepartureReadiness
             self::waitlistConcerns($departure),
             self::emergencyContactConcerns($departure),
             self::learningConcerns($departure),
+            self::flightConcerns($departure),
+            self::transportConcerns($departure),
         );
     }
 
@@ -416,6 +424,95 @@ final class DepartureReadiness
                 ? 'One traveller has nobody to ring'
                 : $without.' travellers have nobody to ring',
             'detail' => 'No emergency contact on file. The moment this matters is the moment nobody has time to go looking.',
+        ]];
+    }
+
+    /**
+     * Flights, as recorded under Travel → Flights & transport — §8.3.
+     *
+     * **Nothing recorded is attention, not blocking.** The group will fly
+     * whether or not somebody typed the flight in; what is missing is the
+     * record the portal, the tour leader and the families read. Saying so
+     * is the point — this used to be silent, which read as fine.
+     *
+     * **More travellers than seats is blocking.** When a leg carries a seat
+     * count and the confirmed party is bigger, somebody on this departure
+     * does not have a seat on that aircraft, and that is a person who
+     * cannot go. A leg with no seat count is not compared: an unknown
+     * number is not a shortfall.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function flightConcerns(Departure $departure): array
+    {
+        // Silent until somebody is travelling. A departure nobody has
+        // bought a seat on is months from needing its flights typed in,
+        // and a board that nags about every unsold date stops being read.
+        $travelling = Rooming::travellersOwedABed($departure)->count();
+
+        if ($travelling === 0) {
+            return [];
+        }
+
+        $flights = $departure->flights()->get();
+
+        if ($flights->isEmpty()) {
+            return [[
+                'area' => self::FLIGHTS,
+                'severity' => self::ATTENTION,
+                'headline' => 'No flights recorded',
+                'detail' => 'Nothing says how this group gets there or back. Add the legs under Travel → Flights & transport — the portal and the tour leader read them from there.',
+            ]];
+        }
+
+        $concerns = [];
+
+        if ($flights->where('direction', DepartureFlight::RETURN)->isEmpty()) {
+            $concerns[] = [
+                'area' => self::FLIGHTS,
+                'severity' => self::ATTENTION,
+                'headline' => 'No return flight recorded',
+                'detail' => 'The way out is recorded and the way home is not.',
+            ];
+        }
+
+        foreach ($flights as $flight) {
+            if ($flight->seats === null || $travelling <= $flight->seats) {
+                continue;
+            }
+
+            $short = $travelling - $flight->seats;
+
+            $concerns[] = [
+                'area' => self::FLIGHTS,
+                'severity' => self::BLOCKING,
+                'headline' => $flight->label().' — '.($short === 1 ? 'one seat short' : $short.' seats short'),
+                'detail' => $travelling.' confirmed travellers and '.$flight->seats.' seats on this leg.',
+            ];
+        }
+
+        return $concerns;
+    }
+
+    /**
+     * Ground transport — §8.3. Attention only: a group with no coach
+     * recorded still gets from the airport somehow, but nobody in the
+     * office can say how, and the pilgrim has no meeting point to read.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function transportConcerns(Departure $departure): array
+    {
+        // Silent until somebody is travelling, for the reason given above.
+        if ($departure->transfers()->exists() || Rooming::travellersOwedABed($departure)->isEmpty()) {
+            return [];
+        }
+
+        return [[
+            'area' => self::TRANSPORT,
+            'severity' => self::ATTENTION,
+            'headline' => 'No ground transport recorded',
+            'detail' => 'No coach, car or train is recorded — not even the airport transfer. Add them under Travel → Flights & transport.',
         ]];
     }
 

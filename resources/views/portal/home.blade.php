@@ -205,6 +205,55 @@
             </section>
         @endif
 
+        {{-- §8.3. Times as printed on the ticket, local at each airport.
+             Never the booking reference: a PNR is enough to change a
+             booking on most airline sites, and this page is opened from a
+             link that gets forwarded. --}}
+        @if(config('portal.sections.flights') && $departure->flights->isNotEmpty())
+            <section class="card mb-6">
+                <h2 dir="auto" class="mb-1 text-lg font-semibold text-ink">{{ __('messages.Flights') }}</h2>
+                <p dir="auto" class="mb-4 text-sm text-ink-muted">{{ __('messages.Times are local at each airport.') }}</p>
+                <ul class="divide-y divide-cream-deep">
+                    @foreach($departure->flights as $flight)
+                        <li class="py-3">
+                            <span dir="auto" class="block text-sm text-ink-muted">{{ $flight->directionWords() }}</span>
+                            <span dir="ltr" class="block font-medium text-ink">{{ $flight->airline }} {{ $flight->flight_number }} &middot; {{ $flight->from_airport }} → {{ $flight->to_airport }}</span>
+                            <span class="block text-sm text-ink">
+                                {{ __('messages.Departs') }}
+                                <span dir="ltr">{{ $flight->departs_at->format('D j M, H:i') }}</span>
+                                @if($flight->arrives_at)
+                                    &middot; {{ __('messages.Arrives') }}
+                                    <span dir="ltr">{{ $flight->arrives_at->format('D j M, H:i') }}</span>
+                                @endif
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
+        {{-- Where to be and when. The meeting point is written for the
+             pilgrim; the driver's number stays with the tour leader. --}}
+        @if(config('portal.sections.transport') && $departure->transfers->isNotEmpty())
+            <section class="card mb-6">
+                <h2 dir="auto" class="mb-4 text-lg font-semibold text-ink">{{ __('messages.Getting around') }}</h2>
+                <ul class="divide-y divide-cream-deep">
+                    @foreach($departure->transfers as $transfer)
+                        <li class="py-3">
+                            <span class="block text-sm text-ink-muted">
+                                <span dir="ltr">{{ $transfer->starts_at->format('D j M, H:i') }}</span>
+                                &middot; <span dir="auto">{{ $transfer->modeWords() }}</span>
+                            </span>
+                            <span dir="auto" class="block font-medium text-ink">{{ $transfer->from_place }} → {{ $transfer->to_place }}</span>
+                            @if($transfer->meeting_point)
+                                <span dir="auto" class="block text-sm text-ink">{{ __('messages.Meeting point') }}: {{ $transfer->meeting_point }}</span>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
         {{-- Day by day, when the departure has one entered. --}}
         @if(config('portal.sections.itinerary') && $departure->itinerary->isNotEmpty())
             <section class="card mb-6">

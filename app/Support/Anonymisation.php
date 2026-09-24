@@ -118,6 +118,11 @@ final class Anonymisation
         'nusuk_permits' => ['reference' => 'name', 'refusal_reason' => 'text', 'notes' => 'text'],
         'nusuk_permit_events' => ['note' => 'text'],
         'operations_log_entries' => ['body' => 'text'],
+        // §8.3. The flights themselves are timetable facts and stay; the
+        // notes are free text somebody may have written a name into, and a
+        // transfer's contact number is usually a driver's own phone.
+        'departure_flights' => ['notes' => 'text'],
+        'departure_transfers' => ['contact_phone' => 'phone', 'notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],
         'room_assignments' => ['note' => 'text'],
         'notices' => ['body' => 'text'],

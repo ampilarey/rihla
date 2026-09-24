@@ -52,6 +52,10 @@ return [
         'documents' => true,
         'itinerary' => true,
         'hotels' => true,
+        // §8.3. Times and meeting points, never the airline booking
+        // reference or the driver's number.
+        'flights' => true,
+        'transport' => true,
     ],
 
     /*
