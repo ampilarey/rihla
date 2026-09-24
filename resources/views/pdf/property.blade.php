@@ -141,8 +141,15 @@
         <li>{{ __('messages.:percent% deposit when the guesthouse confirms.', ['percent' => $property->deposit_pct]) }}</li>
         <li>{{ __('messages.The rest is due :days days before you arrive.', ['days' => $property->balance_days_before]) }}</li>
         <li>{{ __('messages.Cancel more than :days days before and the deposit comes back.', ['days' => $property->free_cancel_days]) }}</li>
-        @if($property->partner?->green_tax_mode === \App\Models\Partner::GREEN_TAX_AT_PROPERTY)
-            <li>{{ __('messages.Green tax is paid at the guesthouse, not here.') }}</li>
+        @if($greenTaxAtProperty)
+            <li>
+                {{ __('messages.Green tax is paid at the guesthouse, not here.') }}
+                @if($greenTaxRate)
+                    {{ __('messages.:amount per guest per night.', ['amount' => $greenTaxRate->format()]) }}
+                @endif
+            </li>
+        @else
+            <li>{{ __('messages.Green tax is already included in this price.') }}</li>
         @endif
     </ul>
 </div>

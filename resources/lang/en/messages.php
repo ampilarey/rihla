@@ -777,4 +777,7 @@ return [
     'Guests' => 'Guests',
     'Who stayed' => 'Who stayed',
     'Lead guest' => 'Lead guest',
+    'Green tax is already included in this price.' => 'Green tax is already included in this price.',
+    ':amount per guest per night.' => ':amount per guest per night.',
+    'For your dates and party: :amount.' => 'For your dates and party: :amount.',
 ];

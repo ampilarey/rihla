@@ -51,6 +51,7 @@ class StayBooking
         private readonly StayAllocator $allocator,
         private readonly Gateways $gateways,
         private readonly Ledger $ledger,
+        private readonly GreenTax $greenTax,
     ) {}
 
     /**
@@ -93,7 +94,7 @@ class StayBooking
             'adults' => $adults,
             'children' => $children,
             'currency' => $quote->currency,
-            'rate_snapshot' => $this->snapshotWithPolicy($quote, $property),
+            'rate_snapshot' => $this->snapshotWithPolicy($quote, $property, $adults + $children),
             'total_minor' => $quote->total()->minor,
             'deposit_minor' => $quote->deposit($property->deposit_pct)->minor,
             'status' => Stay::REQUESTED,
@@ -237,7 +238,7 @@ class StayBooking
      *
      * @return array<string, mixed>
      */
-    private function snapshotWithPolicy(Quote $quote, $property): array
+    private function snapshotWithPolicy(Quote $quote, $property, int $guests = 1): array
     {
         return [
             ...$quote->snapshot(),
@@ -246,6 +247,11 @@ class StayBooking
                 'balance_days_before' => (int) $property->balance_days_before,
                 'free_cancel_days' => (int) $property->free_cancel_days,
             ],
+            // Frozen for the same reason as the rest of it — §15.2
+            // decision 5. The amount is a config value a government moves,
+            // and a customer is owed the figure they were shown on the day
+            // rather than whatever it says next season.
+            'green_tax' => $this->greenTax->snapshotFor($property, $guests, $quote->nights()),
         ];
     }
 

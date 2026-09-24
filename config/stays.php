@@ -22,6 +22,39 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Green tax
+    |--------------------------------------------------------------------------
+    |
+    | The Maldives green tax is charged per guest per night. §15.2 decision 5
+    | makes it a separate line, "paid at the property" by default, and says
+    | the amount is a value the owner enters.
+    |
+    | **It is null until they do, and that is deliberate.** The real figure
+    | is set by a government and differs by the kind of property; writing a
+    | plausible one here would put a number on a customer's quote that
+    | nobody at Rihla had checked, which is the defect this codebase keeps
+    | catching in other forms — an invented social link, a made-up playlist
+    | id. Unset, the pages say the tax applies and do not quote a figure,
+    | which is true and useless rather than false and convincing.
+    |
+    | Whether it is already inside the room rate is a per-partner answer
+    | (`partners.green_tax_mode`), because it is a commercial term of that
+    | partner's contract rather than a property of the tax.
+    |
+    */
+
+    'green_tax' => [
+        // Minor units per guest per night. Null means nobody has stated it.
+        'amount_minor' => env('STAYS_GREEN_TAX_MINOR') === null
+            ? null
+            : (int) env('STAYS_GREEN_TAX_MINOR'),
+
+        // The tax is levied in dollars whatever the room is priced in.
+        'currency' => env('STAYS_GREEN_TAX_CURRENCY', 'USD'),
+    ],
+
     'holds' => [
         'hours' => (int) env('STAYS_HOLD_HOURS', 24),
     ],

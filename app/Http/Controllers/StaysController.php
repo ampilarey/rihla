@@ -8,6 +8,7 @@ use App\Models\Property;
 use App\Models\RoomType;
 use App\Models\Setting;
 use App\Services\Stays\Availability;
+use App\Services\Stays\GreenTax;
 use App\Services\Stays\ShareCard;
 use App\Support\Contact;
 use App\Support\Services as ServiceRegistry;
@@ -46,7 +47,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class StaysController extends Controller
 {
-    public function __construct(private readonly Availability $availability) {}
+    public function __construct(
+        private readonly Availability $availability,
+        private readonly GreenTax $greenTax,
+    ) {}
 
     /**
      * The Stays hub.
@@ -135,9 +139,23 @@ class StaysController extends Controller
 
         $property->load(['roomTypes', 'partner']);
 
+        // §15.2 decision 5. The estimate only when the reader has actually
+        // said how many of them there are and for which nights — a figure
+        // computed from a default party size would be a number nobody
+        // asked for, presented as though they had.
+        $guests = $filters->guests;
+        $nights = $filters->hasDates()
+            ? (int) $filters->checkIn->diffInDays($filters->checkOut)
+            : 0;
+
         return view('stays.show', [
             'property' => $property,
             'filters' => $filters,
+            'greenTaxAtProperty' => $this->greenTax->isCollectedAtProperty($property),
+            'greenTaxRate' => $this->greenTax->perGuestPerNight(),
+            'greenTaxEstimate' => $guests !== null && $nights > 0
+                ? $this->greenTax->forParty($guests, $nights)
+                : null,
             'rooms' => $this->priceRooms($property, $filters),
             'bookable' => ServiceRegistry::isOn($service),
             'shareCard' => $this->shareCardUrl($property),
@@ -246,6 +264,13 @@ class StaysController extends Controller
             'locale' => $locale,
             'url' => route('stays.show', ['property' => $property->slug]),
             'cover' => $this->coverForPdf($property),
+            // §15.2 decision 5, on the artefact that actually gets
+            // forwarded. The sheet is what somebody sends to whoever is
+            // paying, so the tax they will be asked for belongs on it —
+            // no party or dates here, so it carries the rate and not a
+            // total.
+            'greenTaxAtProperty' => $this->greenTax->isCollectedAtProperty($property),
+            'greenTaxRate' => $this->greenTax->perGuestPerNight(),
             'issuer' => [
                 'name' => (string) config('invoices.issuer.name'),
                 'registration' => config('invoices.issuer.registration'),
