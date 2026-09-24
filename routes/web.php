@@ -181,15 +181,27 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     Route::get('/guide', [PageController::class, 'guide'])->name('guide');
     Route::get('/guide/pdf', [PageController::class, 'guidePdf'])->name('guide.pdf');
 
-    // The Stays line — §15.3 (Phase 8.2). Each gated by the service
-    // registry: off is a 404, coming_soon and on both show the same
-    // placeholder today because there is nothing yet for either to sell.
+    // The Stays line — §15.3 (Phase 8.2), §15.4 (Phase 9.4). Each strand
+    // is gated by the service registry: off is a 404, coming_soon shows the
+    // page and takes an enquiry, on adds the listing and booking.
+    //
+    // The hub is not gated by the middleware, because no single service
+    // owns it — the controller 404s when every strand is off.
+    Route::get('/stays', [StaysController::class, 'index'])->name('stays.index');
     Route::get('/stays/guesthouses', [StaysController::class, 'guesthouses'])
         ->middleware('service:stays_guesthouses')->name('stays.guesthouses');
     Route::get('/stays/island-holidays', [StaysController::class, 'islandHolidays'])
         ->middleware('service:stays_island_holidays')->name('stays.island-holidays');
     Route::get('/stays/rooms', [StaysController::class, 'rooms'])
         ->middleware('service:stays_rooms')->name('stays.rooms');
+
+    // **Declared last on purpose.** Laravel matches in order, so this must
+    // come after the three strand routes or a property slugged
+    // "guesthouses" would answer for them. Property::RESERVED_SLUGS is the
+    // other half of that guard — it stops such a slug being minted at all,
+    // because a shared link that silently goes somewhere else is worse than
+    // one that 404s.
+    Route::get('/stays/{property}', [StaysController::class, 'show'])->name('stays.show');
 
     // The Ziyarah Guide (§7.2). The manifest is declared before {slug} or
     // "offline" is read as a location slug — the same ordering trap the

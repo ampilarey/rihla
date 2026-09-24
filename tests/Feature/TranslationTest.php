@@ -173,12 +173,33 @@ class TranslationTest extends TestCase
     }
 
     /** @return list<string> */
+    /**
+     * Every group key a view passes to `__()`.
+     *
+     * The pattern used to read `[a-z0-9_.]+` after the group, which matched
+     * only lowercase dotted keys — and **this codebase overwhelmingly uses
+     * sentence keys**: `__('messages.Umrah Packages')`. So the check that
+     * exists to prove every key resolves was silently skipping almost every
+     * key on the site.
+     *
+     * That is not theoretical. Phase 9.4 shipped thirty-four new
+     * `messages.` keys with no English entry; each rendered the literal
+     * string `messages.Stays` on the page, and the page tests passed
+     * because `assertSee('Stays')` matches it as a substring. A guard that
+     * cannot see the thing it is named after reports green about something
+     * else — the shape `AGENTS.md` records for `favicon.ico`.
+     *
+     * Now: anything up to the closing quote, minus the escapes a key cannot
+     * contain.
+     *
+     * @return list<string>
+     */
     private function groupKeysUsedInViews(): array
     {
         $keys = [];
 
         foreach ($this->bladeFiles() as $file) {
-            preg_match_all("/__\('([a-z0-9_]+\.[a-z0-9_.]+)'/", File::get($file), $matches);
+            preg_match_all("/__\('([a-z0-9_]+\.[^'\\\\]+)'/", File::get($file), $matches);
 
             foreach ($matches[1] as $key) {
                 // Only this project's own groups; auth.* and validation.* ship

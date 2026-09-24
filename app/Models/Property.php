@@ -53,6 +53,24 @@ class Property extends Model
     public const TYPES = [self::GUESTHOUSE, self::RENTAL];
 
     /**
+     * Slugs a property may never take — §15.4 (Phase 9.4).
+     *
+     * A property lives at `/{locale}/stays/{slug}`, which sits directly
+     * under the three strand routes. Laravel matches in declaration order,
+     * so a property slugged `guesthouses` would never be reachable: the
+     * strand route would answer first, the property page would simply not
+     * exist, and nothing would report it — a shared link that silently goes
+     * somewhere else is worse than one that 404s.
+     *
+     * The short URL is deliberate. `rihla.mv/ar/stays/maafushi-view` is the
+     * whole sales conversation over WhatsApp, which is what the owner asked
+     * the share kit for, and three reserved words is a small price.
+     *
+     * @var list<string>
+     */
+    public const RESERVED_SLUGS = ['guesthouses', 'island-holidays', 'rooms'];
+
+    /**
      * Per docs/adr/0001-how-content-is-translated.md. `amenities` holds a
      * list per language, the same shape as a package's inclusions.
      *
@@ -122,6 +140,15 @@ class Property extends Model
         static::creating(function (self $property): void {
             if (blank($property->slug)) {
                 $property->slug = Str::slug($property->getTranslation('name', 'en'));
+            }
+
+            // A guesthouse actually called "Rooms" would otherwise mint a
+            // slug that the strand route shadows. Suffixed rather than
+            // refused: the name is legitimate, and a property that cannot
+            // be saved because of a routing detail is a worse answer than
+            // one whose URL reads `rooms-stay`.
+            if (in_array($property->slug, self::RESERVED_SLUGS, true)) {
+                $property->slug .= '-stay';
             }
         });
     }
@@ -211,6 +238,27 @@ class Property extends Model
             ->min('base_rate_minor');
 
         return $minor === null ? null : Money::ofMinor((int) $minor, $this->currency);
+    }
+
+    /**
+     * Is the description a reader in this locale will actually get written
+     * in their language?
+     *
+     * §15.4 asks for a property with no Arabic to fall back to English
+     * **and say so** — never a blank, never a machine translation. That
+     * second half is the point: a page silently in the wrong language
+     * reads as a site that does not care, where one that says "we have not
+     * translated this yet" reads as one that does and has not got to it.
+     *
+     * Judged on `summary` alone, and deliberately. It is the field every
+     * listing card and every share preview shows, so it is the one a reader
+     * meets first — and requiring all five to be present would flag a
+     * perfectly good Arabic page for want of a translated house rule.
+     */
+    public function isTranslatedInto(string $locale): bool
+    {
+        return $locale === 'en'
+            || filled($this->getTranslation('summary', $locale, false));
     }
 
     /**
