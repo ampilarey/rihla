@@ -30,6 +30,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecondFactorController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StaffInvoiceController;
+use App\Http\Controllers\StaysController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\ZiyarahController;
@@ -179,6 +180,16 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
     Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiries.store');
     Route::get('/guide', [PageController::class, 'guide'])->name('guide');
     Route::get('/guide/pdf', [PageController::class, 'guidePdf'])->name('guide.pdf');
+
+    // The Stays line — §15.3 (Phase 8.2). Each gated by the service
+    // registry: off is a 404, coming_soon and on both show the same
+    // placeholder today because there is nothing yet for either to sell.
+    Route::get('/stays/guesthouses', [StaysController::class, 'guesthouses'])
+        ->middleware('service:stays_guesthouses')->name('stays.guesthouses');
+    Route::get('/stays/island-holidays', [StaysController::class, 'islandHolidays'])
+        ->middleware('service:stays_island_holidays')->name('stays.island-holidays');
+    Route::get('/stays/rooms', [StaysController::class, 'rooms'])
+        ->middleware('service:stays_rooms')->name('stays.rooms');
 
     // The Ziyarah Guide (§7.2). The manifest is declared before {slug} or
     // "offline" is read as a location slug — the same ordering trap the
