@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Pages\SocialSettings;
 use App\Filament\Resources\GuideSteps\GuideStepResource;
 use App\Filament\Resources\GuideSteps\Pages\ListGuideSteps;
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Filament\Resources\Media\MediaResource;
 use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Models\GuideStep;
+use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
@@ -125,15 +127,46 @@ class AuthorizationTest extends TestCase
     {
         $manager = $this->staff(Access::CONTENT_MANAGER);
 
-        $this->actingAs($manager)->get(route('admin.settings.index'))->assertForbidden();
-        $this->actingAs($manager)->post(route('admin.settings.update'), [])->assertForbidden();
+        // Moved to the staff panel (§9.2).
+        $this->actingAs($manager)->get(SocialSettings::getUrl())->assertForbidden();
     }
 
     public function test_operations_manager_may_touch_settings(): void
     {
-        $this->actingAs($this->staff(Access::OPERATIONS_MANAGER))
-            ->get(route('admin.settings.index'))
-            ->assertOk();
+        $manager = $this->staff(Access::OPERATIONS_MANAGER);
+
+        $this->actingAs($manager)->get(SocialSettings::getUrl())->assertOk();
+
+        Livewire::actingAs($manager)
+            ->test(SocialSettings::class)
+            ->fillForm(['whatsapp_number' => '9601112222'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('9601112222', Setting::getSocialSettings()['whatsapp_number']);
+    }
+
+    /**
+     * The policy keeps `setting.view` and `setting.update` apart. No role
+     * holds the first without the second today, but a person given only the
+     * first sees the form read-only rather than a Save button that fails —
+     * and the call is refused if it is made anyway.
+     */
+    public function test_viewing_the_settings_does_not_allow_saving_them(): void
+    {
+        Setting::setSocialSettings(['whatsapp_number' => '9607972434']);
+
+        $viewer = User::factory()->create();
+        $viewer->givePermissionTo(Permission::findOrCreate('admin.access'), Permission::findOrCreate('setting.view'));
+
+        Livewire::actingAs($viewer)
+            ->test(SocialSettings::class)
+            ->assertOk()
+            ->assertFormFieldDisabled('whatsapp_number')
+            ->call('save')
+            ->assertForbidden();
+
+        $this->assertSame('9607972434', Setting::getSocialSettings()['whatsapp_number']);
     }
 
     public function test_reporting_may_look_but_not_change(): void
@@ -230,7 +263,7 @@ class AuthorizationTest extends TestCase
             // Moved to the staff panel (§9.2). The same people must still
             // be kept out — which is the property this line has always held.
             ['get', HeroBannerResource::getUrl('index')],
-            ['get', route('admin.settings.index')],
+            ['get', SocialSettings::getUrl()],
             // Moved to the staff panel (§9.2); the same people must still be kept out.
             ['get', WhySectionResource::getUrl('index')],
         ] as [$method, $url]) {
