@@ -265,6 +265,23 @@ class ForgetCustomer extends Command
             });
         }
 
+        // Notices hang off a polymorphic owner since §15.7, so there is no
+        // `booking_id` column here either — and both owners matter for the
+        // same reason payments' did: a headline reading "Ibrahim, your
+        // guesthouse has confirmed" is the person's name, in a table a
+        // deletion request has already reported clean.
+        if ($table === 'notices') {
+            return DB::table('notices')->where(function (Builder $query) use ($keys): void {
+                $query->where(function (Builder $q) use ($keys): void {
+                    $q->where('noticeable_type', Booking::class)
+                        ->whereIn('noticeable_id', $keys['booking'] ?: [0]);
+                })->orWhere(function (Builder $q) use ($keys): void {
+                    $q->where('noticeable_type', Stay::class)
+                        ->whereIn('noticeable_id', $keys['stay'] ?: [0]);
+                });
+            });
+        }
+
         if ($table === 'quotations') {
             return DB::table('quotations')->where(function (Builder $query) use ($keys): void {
                 $query->whereIn('booking_id', $keys['booking'] ?: [0])

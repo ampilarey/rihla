@@ -67,6 +67,14 @@ final class Forgetting
         'waitlist_entries' => 'customer',
 
         'payments' => 'booking',
+
+        // Polymorphic since §15.7, so there is no `booking_id` to match:
+        // `ForgetCustomer::queryFor()` matches both owners by hand, the
+        // way it already does for payments. Left at 'booking' this would
+        // have thrown on a column that no longer exists — which is the
+        // loud half of the trap. The quiet half is the stay's notices
+        // surviving an erasure that reported itself honoured, and
+        // `ForgetCustomerTest` now holds both.
         'notices' => 'booking',
         'portal_accesses' => 'booking',
         'family_accesses' => 'booking',

@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\DocumentVersion;
 use App\Models\Enquiry;
+use App\Models\Notice;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Property;
@@ -428,5 +429,67 @@ class ForgetCustomerTest extends TestCase
         $this->assertStringNotContainsString('honeymoon', (string) $stay->fresh()->special_requests);
         $this->assertNotSame('Aishath Real Person', $guest->fresh()->full_name);
         $this->assertNotSame('P7654321', $guest->fresh()->id_number);
+    }
+
+    /**
+     * A notice's body is scrubbed, whichever kind of thing it is about —
+     * §15.7.
+     *
+     * `notices` became polymorphic when a stay needed to be told things,
+     * and `Forgetting::REACHED` still said `booking`. That is the two-list
+     * trap `AGENTS.md` records, in both its halves. The **loud** half is a
+     * query against a `booking_id` column that no longer exists, which
+     * stops the command. The **quiet** half is worse and is what this
+     * test is for: a guesthouse notice — *"USD 60 holds Sea-facing double
+     * from 3 March, the hold runs out on…"* — sitting unscrubbed on a
+     * public test server after a request this command reported as
+     * honoured.
+     *
+     * Both owners asserted, because getting one right and leaving the
+     * other is precisely how the payments version of this shipped.
+     *
+     * Note what is *not* claimed: the row survives, and so does the
+     * headline. `Anonymisation::SCRUB` classifies `notices` as
+     * `['body' => 'text']` on the reasoning that a headline comes from a
+     * closed vocabulary the sweep writes — "You travel tomorrow", "We
+     * still need a passport" — and names nobody. The body is the half
+     * that carries dates, amounts and a property, and it is the half that
+     * goes.
+     */
+    public function test_a_notice_about_either_a_booking_or_a_stay_is_scrubbed(): void
+    {
+        [$customer, , $booking] = $this->somebodyWhoTravelled();
+
+        $property = Property::factory()->create();
+        $room = RoomType::factory()->create(['property_id' => $property->getKey()]);
+
+        $stay = Stay::factory()->create([
+            'customer_id' => $customer->getKey(),
+            'property_id' => $property->getKey(),
+            'room_type_id' => $room->getKey(),
+        ]);
+
+        $onBooking = Notice::raise(
+            $booking,
+            Notice::BOOKING_CONFIRMED,
+            'Your booking is confirmed',
+            'Departure is 3 March 2027.',
+        );
+
+        $onStay = Notice::raise(
+            $stay,
+            Notice::DEPOSIT_DUE,
+            'Maafushi View has your rooms',
+            'USD 60 holds Sea-facing double from 3 March 2027.',
+        );
+
+        $this->artisan('data:forget', ['customer' => $customer->getKey()])->assertSuccessful();
+
+        $this->assertStringNotContainsString('3 March', (string) $onBooking->fresh()->body);
+        $this->assertStringNotContainsString(
+            'Sea-facing double',
+            (string) $onStay->fresh()->body,
+            'A guesthouse notice outlived the erasure unscrubbed.',
+        );
     }
 }

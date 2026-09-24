@@ -194,10 +194,7 @@ class PortalController extends Controller
             Notice::raise($booking, $kind, $notice['headline'], $notice['body']);
         }
 
-        $notices = Notice::where('booking_id', $booking->getKey())
-            ->outstanding()
-            ->orderByDesc('created_at')
-            ->get();
+        $notices = $booking->notices()->outstanding()->get();
 
         foreach ($notices as $notice) {
             $notice->markSeen();
