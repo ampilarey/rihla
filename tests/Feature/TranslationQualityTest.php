@@ -118,7 +118,7 @@ class TranslationQualityTest extends TestCase
             'Guide steps repeat the same du\'a; that is filler, not content.',
         );
 
-        foreach (['en', 'dv'] as $locale) {
+        foreach (['en', 'dv', 'ar'] as $locale) {
             // Without fallback: the English reference showing through on a
             // step with no Dhivehi is the fallback working, not ten steps
             // sharing one citation.
@@ -209,7 +209,7 @@ class TranslationQualityTest extends TestCase
         $this->seed(WhySectionSeeder::class);
 
         foreach (WhySection::with('features')->get() as $section) {
-            foreach (['en', 'dv'] as $locale) {
+            foreach (['en', 'dv', 'ar'] as $locale) {
                 // Without fallback: the English body showing through on an
                 // untranslated card is the fallback working, not two cards
                 // sharing one sentence.

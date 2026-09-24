@@ -50,7 +50,7 @@ use Illuminate\Support\Facades\Route;
 //
 // Views did not have to change: SetLocale calls URL::defaults(['locale' => …]),
 // so route('trips.show', $slug) keeps working and emits the right prefix.
-Route::prefix('{locale}')->where(['locale' => 'en|dv'])->group(function () {
+Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     // Additive. /trips is untouched and still served by TripController; a
     // package is the product and a departure one dated run of it, which is

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ $locale }}" dir="{{ $locale === 'dv' ? 'rtl' : 'ltr' }}">
+<html lang="{{ $locale }}" dir="{{ \App\Http\Middleware\SetLocale::isRtl($locale) ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $locale === 'en' ? 'How to Perform Umrah' : 'އުމްރަހް ކުރުންނަށްޓަކައި' }}</title>
+    <title>{{ $locale === 'dv' ? 'އުމްރަހް ކުރުންނަށްޓަކައި' : 'How to Perform Umrah' }}</title>
     <style>
         @if($locale === 'dv')
             {{-- storage/fonts/Faruma.ttf has never existed. dompdf silently
