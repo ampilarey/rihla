@@ -230,39 +230,9 @@ class HomepageTranslationTest extends TestCase
         }
     }
 
-    public function test_the_admin_saves_a_banner_in_both_languages(): void
-    {
-        $this->actingAs($this->admin())->post(route('admin.hero-banners.store'), [
-            'title' => ['en' => 'Umrah 2026', 'dv' => 'ޢުމްރާ ٢٠٢٦'],
-            'subtitle' => ['en' => 'From Malé', 'dv' => ''],
-            'overlay_opacity' => 40,
-        ])->assertSessionHasNoErrors()->assertRedirect();
-
-        $banner = HeroBanner::sole();
-
-        $this->assertSame('ޢުމްރާ ٢٠٢٦', $banner->getTranslation('title', 'dv'));
-        $this->assertFalse($banner->hasTranslation('subtitle', 'dv'));
-    }
-
-    public function test_dhivehi_is_never_required_on_a_banner(): void
-    {
-        $this->actingAs($this->admin())->post(route('admin.hero-banners.store'), [
-            'title' => ['en' => 'Umrah 2026', 'dv' => ''],
-            'overlay_opacity' => 40,
-        ])->assertSessionHasNoErrors();
-
-        $this->assertSame(1, HeroBanner::count());
-    }
-
-    public function test_english_is_required_on_a_banner(): void
-    {
-        $this->actingAs($this->admin())->post(route('admin.hero-banners.store'), [
-            'title' => ['en' => '', 'dv' => 'ޢުމްރާ'],
-            'overlay_opacity' => 40,
-        ])->assertSessionHasErrors('title.en');
-
-        $this->assertSame(0, HeroBanner::count());
-    }
+    // The three hero-banner cases that lived here — both languages saved,
+    // Dhivehi never required, English required — moved with the screen to
+    // HeroBannerAdminTest (§9.2) and now drive the Filament form.
 
     public function test_the_admin_saves_a_why_feature_in_both_languages(): void
     {

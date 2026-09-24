@@ -106,7 +106,11 @@ class InlineHandlerTest extends TestCase
             $this->assertDataArgsAreJson((string) $this->get($page)->getContent(), $page);
         }
 
-        foreach (['/admin/guide-steps', '/admin/media', '/admin/hero-banners'] as $page) {
+        // `/admin/hero-banners` left this list with the screen (§9.2). The
+        // Filament page that replaced it renders no `data-args` at all, so
+        // the property this checks — every one of them valid JSON — has
+        // nothing there to hold; the old URL now only redirects.
+        foreach (['/admin/guide-steps', '/admin/media'] as $page) {
             $html = (string) $this->actingAs($admin)->get($page)->getContent();
             $this->assertDataArgsAreJson($html, $page);
         }

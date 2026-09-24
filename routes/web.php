@@ -1,8 +1,8 @@
 <?php
 
+use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\GuideStepController as AdminGuideStepController;
-use App\Http\Controllers\Admin\HeroBannerController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
@@ -319,11 +319,14 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
     Route::resource('media', AdminMediaController::class);
 
     Route::resource('guide-steps', AdminGuideStepController::class);
-    Route::resource('hero-banners', HeroBannerController::class);
-
-    // Hero banner additional routes
-    Route::post('hero-banners/{heroBanner}/toggle-status', [HeroBannerController::class, 'toggleStatus'])->name('hero-banners.toggle-status');
-    Route::post('hero-banners/update-order', [HeroBannerController::class, 'updateOrder'])->name('hero-banners.update-order');
+    // Hero banners moved to the staff panel — §9.2, the first of the Blade
+    // screens to go. A redirect rather than a 404, so a bookmark or a link
+    // in somebody's notes still lands on the screen that replaced it. GET
+    // only: nothing submits to the old endpoints now that their forms are
+    // gone, and silently accepting a stale POST would be worse than a 405.
+    Route::get('hero-banners/{any?}', fn () => redirect()->to(HeroBannerResource::getUrl('index')))
+        ->where('any', '.*')
+        ->name('hero-banners.moved');
 
     // Guide step additional routes
     Route::post('guide-steps/update-order', [AdminGuideStepController::class, 'updateOrder'])->name('guide-steps.update-order');

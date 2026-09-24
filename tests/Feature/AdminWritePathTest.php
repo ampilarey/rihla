@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\HeroBanner;
 use App\Models\Media;
 use App\Models\Trip;
 use App\Models\User;
@@ -171,32 +170,9 @@ class AdminWritePathTest extends TestCase
         $this->assertDatabaseMissing('media', ['id' => $medium->id]);
     }
 
-    public function test_a_hero_banner_can_be_created_updated_and_deleted(): void
-    {
-        $admin = $this->admin();
-
-        $this->actingAs($admin)->post(route('admin.hero-banners.store'), [
-            'title' => 'Journeys that stay with you',
-            'subtitle' => 'Umrah from the Maldives',
-            'overlay_opacity' => 40,
-        ])->assertSessionHasNoErrors()->assertRedirect();
-
-        $banner = HeroBanner::sole();
-        $this->assertSame('Journeys that stay with you', $banner->title);
-
-        $this->actingAs($admin)->put(route('admin.hero-banners.update', $banner), [
-            'title' => 'Journeys that stay with you, always',
-            'overlay_opacity' => 50,
-        ])->assertSessionHasNoErrors()->assertRedirect();
-
-        $this->assertSame(50, $banner->fresh()->overlay_opacity);
-
-        $this->actingAs($admin)
-            ->delete(route('admin.hero-banners.destroy', $banner))
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('hero_banners', ['id' => $banner->id]);
-    }
+    // Hero banners moved to the staff panel (§9.2). Their create, update
+    // and delete are now driven through the Filament form in
+    // HeroBannerAdminTest::test_a_banner_can_be_created_updated_and_deleted.
 
     public function test_a_why_section_can_be_updated(): void
     {
