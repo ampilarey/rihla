@@ -1,9 +1,9 @@
 <?php
 
+use App\Filament\Resources\GuideSteps\GuideStepResource;
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\GuideStepController as AdminGuideStepController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
@@ -317,7 +317,12 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
     Route::resource('trips', AdminTripController::class);
     Route::resource('media', AdminMediaController::class);
 
-    Route::resource('guide-steps', AdminGuideStepController::class);
+    // The Umrah guide's steps moved to the staff panel — §9.2. Forwarded
+    // for the reason the hero banner redirect below gives. The old reorder,
+    // toggle and bulk-status endpoints are the table's own controls now.
+    Route::get('guide-steps/{any?}', fn () => redirect()->to(GuideStepResource::getUrl('index')))
+        ->where('any', '.*')
+        ->name('guide-steps.moved');
     // Hero banners moved to the staff panel — §9.2, the first of the Blade
     // screens to go. A redirect rather than a 404, so a bookmark or a link
     // in somebody's notes still lands on the screen that replaced it. GET
@@ -326,11 +331,6 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
     Route::get('hero-banners/{any?}', fn () => redirect()->to(HeroBannerResource::getUrl('index')))
         ->where('any', '.*')
         ->name('hero-banners.moved');
-
-    // Guide step additional routes
-    Route::post('guide-steps/update-order', [AdminGuideStepController::class, 'updateOrder'])->name('guide-steps.update-order');
-    Route::post('guide-steps/{guideStep}/toggle-status', [AdminGuideStepController::class, 'toggleStatus'])->name('guide-steps.toggle-status');
-    Route::post('guide-steps/bulk-update-status', [AdminGuideStepController::class, 'bulkUpdateStatus'])->name('guide-steps.bulk-update-status');
 
     Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 

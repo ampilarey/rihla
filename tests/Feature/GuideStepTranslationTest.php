@@ -2,12 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\GuideSteps\Pages\CreateGuideStep;
+use App\Filament\Resources\GuideSteps\Pages\EditGuideStep;
+use App\Filament\Resources\GuideSteps\Pages\ListGuideSteps;
 use App\Models\GuideStep;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Features\SupportTesting\Testable;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -29,6 +34,19 @@ class GuideStepTranslationTest extends TestCase
     private function admin(): User
     {
         return User::factory()->create()->assignRole(Access::SUPER_ADMIN);
+    }
+
+    /**
+     * The staff panel's create form (§9.2), which replaced the Blade one.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function create(array $data): Testable
+    {
+        return Livewire::actingAs($this->admin())
+            ->test(CreateGuideStep::class)
+            ->fillForm($data)
+            ->call('create');
     }
 
     public function test_the_locale_column_is_gone(): void
@@ -150,7 +168,7 @@ class GuideStepTranslationTest extends TestCase
 
     public function test_the_admin_form_saves_both_languages_in_one_submit(): void
     {
-        $this->actingAs($this->admin())->post(route('admin.guide-steps.store'), [
+        $this->create([
             'step_number' => 1,
             'title' => ['en' => 'Intention', 'dv' => 'ނިއްޔާ'],
             'summary' => ['en' => 'Make the intention.', 'dv' => 'ނިޔަތް ގަންނާށެވެ'],
@@ -158,8 +176,8 @@ class GuideStepTranslationTest extends TestCase
             // One item per line, per language.
             'checklist' => ['en' => "Make sincere intention\nFocus on purpose", 'dv' => ''],
             'fiqh_notes' => ['en' => "Obligatory in all four schools\n\nMust precede Ihram"],
-            'is_published' => '1',
-        ])->assertSessionHasNoErrors()->assertRedirect();
+            'is_published' => true,
+        ])->assertHasNoFormErrors();
 
         $step = GuideStep::sole();
 
@@ -177,23 +195,23 @@ class GuideStepTranslationTest extends TestCase
      */
     public function test_dhivehi_is_never_required(): void
     {
-        $this->actingAs($this->admin())->post(route('admin.guide-steps.store'), [
+        $this->create([
             'step_number' => 1,
             'title' => ['en' => 'Intention', 'dv' => ''],
             'summary' => ['en' => 'Make the intention.', 'dv' => ''],
-            'is_published' => '1',
-        ])->assertSessionHasNoErrors();
+            'is_published' => true,
+        ])->assertHasNoFormErrors();
 
         $this->assertSame(1, GuideStep::count());
     }
 
     public function test_english_is_required(): void
     {
-        $this->actingAs($this->admin())->post(route('admin.guide-steps.store'), [
+        $this->create([
             'step_number' => 1,
             'title' => ['en' => '', 'dv' => 'ނިއްޔާ'],
             'summary' => ['en' => 'Make the intention.'],
-        ])->assertSessionHasErrors('title.en');
+        ])->assertHasFormErrors(['title.en' => 'required']);
 
         $this->assertSame(0, GuideStep::count());
     }
@@ -251,11 +269,11 @@ class GuideStepTranslationTest extends TestCase
             'is_published' => true,
         ]);
 
-        $this->actingAs($this->admin())->post(route('admin.guide-steps.store'), [
+        $this->create([
             'step_number' => 1,
             'title' => ['en' => 'Ihram'],
             'summary' => ['en' => 'Enter the state of Ihram.'],
-        ])->assertSessionHasErrors('step_number');
+        ])->assertHasFormErrors(['step_number' => 'unique']);
 
         $this->assertSame(1, GuideStep::count());
     }
@@ -270,11 +288,43 @@ class GuideStepTranslationTest extends TestCase
             'is_published' => true,
         ]);
 
-        $content = $this->actingAs($this->admin())
-            ->get(route('admin.guide-steps.index'))
-            ->assertOk()
-            ->getContent();
+        Livewire::actingAs($this->admin())
+            ->test(ListGuideSteps::class)
+            ->assertCountTableRecords(1)
+            ->assertSeeText('Intention');
+    }
 
-        $this->assertSame(1, substr_count($content, 'Intention'));
+    /**
+     * Deleting a Dhivehi line in the panel used to leave it stored: the form
+     * dropped the blank locale, and assigning `{"en": …}` to a translatable
+     * attribute merges into what is there. The only way to remove a
+     * translation was to type a different one over it — on the guide, where
+     * AGENTS.md records machine-made Dhivehi that had to be taken out.
+     */
+    public function test_blanking_the_dhivehi_removes_it(): void
+    {
+        $step = GuideStep::create([
+            'step_number' => 1,
+            'title' => ['en' => 'Intention', 'dv' => 'ނިއްޔާ'],
+            'summary' => ['en' => 'Make the intention.', 'dv' => 'ނިޔަތް ގަންނާށެވެ'],
+            'checklist' => ['en' => ['Make sincere intention'], 'dv' => ['ނިޔަތް']],
+            'is_published' => true,
+        ]);
+
+        Livewire::actingAs($this->admin())
+            ->test(EditGuideStep::class, ['record' => $step->getKey()])
+            ->fillForm(['title' => ['dv' => ''], 'summary' => ['dv' => ''], 'checklist' => ['dv' => '']])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $step->refresh();
+
+        $this->assertFalse($step->hasTranslation('title', 'dv'), 'The Dhivehi title an editor deleted is still there.');
+        $this->assertFalse($step->hasTranslation('summary', 'dv'));
+        $this->assertFalse($step->hasTranslation('checklist', 'dv'));
+        // The English is untouched, and is what a Dhivehi reader now gets.
+        $this->assertSame('Intention', $step->getTranslation('title', 'en'));
+        $this->assertSame('Intention', $step->getTranslation('title', 'dv'));
+        $this->assertSame(['Make sincere intention'], $step->getTranslation('checklist', 'dv'));
     }
 }

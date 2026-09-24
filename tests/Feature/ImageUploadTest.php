@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\GuideSteps\Pages\CreateGuideStep;
+use App\Filament\Resources\GuideSteps\Pages\EditGuideStep;
 use App\Models\GuideStep;
 use App\Models\Media;
 use App\Models\User;
@@ -9,6 +11,8 @@ use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportTesting\Testable;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -26,26 +30,31 @@ class ImageUploadTest extends TestCase
         return User::factory()->create()->assignRole(Access::SUPER_ADMIN);
     }
 
-    /** @return array<string, mixed> */
-    private function step(array $overrides = []): array
+    /**
+     * A guide step through the staff panel's form, which replaced the Blade
+     * one (§9.2). It has to store what the Blade form stored — a WebP at a
+     * capped width — not the upload as it arrived.
+     */
+    private function createStep(array $overrides = []): Testable
     {
-        return array_merge([
-            'step_number' => 1,
-            'title' => 'Ihram',
-            'summary' => 'Enter the state of Ihram.',
-            'is_published' => '1',
-        ], $overrides);
+        return Livewire::actingAs($this->admin())
+            ->test(CreateGuideStep::class)
+            ->fillForm(array_merge([
+                'step_number' => 1,
+                'title' => ['en' => 'Ihram'],
+                'summary' => ['en' => 'Enter the state of Ihram.'],
+                'is_published' => true,
+            ], $overrides))
+            ->call('create');
     }
 
     public function test_a_guide_step_image_is_stored_and_converted(): void
     {
         Storage::fake('public');
 
-        $this->actingAs($this->admin())
-            ->post(route('admin.guide-steps.store'), $this->step([
-                'image' => UploadedFile::fake()->image('ihram.jpg', 1600, 900),
-            ]))
-            ->assertSessionHasNoErrors();
+        $this->createStep([
+            'image_path' => UploadedFile::fake()->image('ihram.jpg', 1600, 900),
+        ])->assertHasNoFormErrors();
 
         $step = GuideStep::sole();
 
@@ -55,6 +64,48 @@ class ImageUploadTest extends TestCase
         // Re-encoded rather than stored as uploaded: WebP at a capped width is
         // the whole point of processing it.
         $this->assertStringEndsWith('.webp', $step->image_path);
+        [$width] = getimagesizefromstring(Storage::disk('public')->get($step->image_path));
+        $this->assertSame(1200, $width, 'The picture was stored at the size it was uploaded.');
+        Storage::disk('public')->assertExists(str_replace('.webp', '-thumb.webp', $step->image_path));
+    }
+
+    /**
+     * The Blade controller deleted the old picture by hand in update() and
+     * destroy(). The model does it now, so it holds whichever screen saves.
+     */
+    public function test_a_replaced_or_deleted_guide_step_picture_leaves_the_disk(): void
+    {
+        Storage::fake('public');
+
+        $this->createStep([
+            'image_path' => UploadedFile::fake()->image('one.jpg', 800, 600),
+        ])->assertHasNoFormErrors();
+
+        $step = GuideStep::sole();
+        $first = $step->image_path;
+        $firstThumb = str_replace('.webp', '-thumb.webp', $first);
+
+        Livewire::actingAs($this->admin())
+            ->test(EditGuideStep::class, ['record' => $step->getKey()])
+            // Removed, then the new one — what the browser's picker does.
+            // Filling a new file straight over the old one appends it
+            // alongside, which no editor can do.
+            ->fillForm(['image_path' => []])
+            ->fillForm(['image_path' => UploadedFile::fake()->image('two.jpg', 800, 600)])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $second = $step->fresh()->image_path;
+
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+        Storage::disk('public')->assertMissing($firstThumb);
+        Storage::disk('public')->assertExists($second);
+
+        $step->fresh()->delete();
+
+        Storage::disk('public')->assertMissing($second);
+        Storage::disk('public')->assertMissing(str_replace('.webp', '-thumb.webp', $second));
     }
 
     /**
@@ -66,21 +117,15 @@ class ImageUploadTest extends TestCase
     {
         Storage::fake('public');
 
-        $admin = $this->admin();
+        $this->createStep([
+            'step_number' => 1,
+            'image_path' => UploadedFile::fake()->image('one.jpg', 800, 600),
+        ])->assertHasNoFormErrors();
 
-        $this->actingAs($admin)
-            ->post(route('admin.guide-steps.store'), $this->step([
-                'step_number' => 1,
-                'image' => UploadedFile::fake()->image('one.jpg', 800, 600),
-            ]))
-            ->assertSessionHasNoErrors();
-
-        $this->actingAs($admin)
-            ->post(route('admin.guide-steps.store'), $this->step([
-                'step_number' => 2,
-                'image' => UploadedFile::fake()->image('two.jpg', 800, 600),
-            ]))
-            ->assertSessionHasNoErrors();
+        $this->createStep([
+            'step_number' => 2,
+            'image_path' => UploadedFile::fake()->image('two.jpg', 800, 600),
+        ])->assertHasNoFormErrors();
 
         $paths = GuideStep::orderBy('step_number')->pluck('image_path');
 
@@ -125,11 +170,9 @@ class ImageUploadTest extends TestCase
     {
         Storage::fake('public');
 
-        $this->actingAs($this->admin())
-            ->post(route('admin.guide-steps.store'), $this->step([
-                'image' => UploadedFile::fake()->create('payload.php', 16, 'application/x-php'),
-            ]))
-            ->assertSessionHasErrors('image');
+        $this->createStep([
+            'image_path' => UploadedFile::fake()->create('payload.php', 16, 'application/x-php'),
+        ])->assertHasFormErrors(['image_path']);
 
         $this->assertSame(0, GuideStep::count());
     }
