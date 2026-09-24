@@ -24,6 +24,27 @@
             <p class="text-ink-muted">{{ $progress['detail'] }}</p>
         </section>
 
+        @if ($flights->isNotEmpty())
+            {{-- When they fly, and when to be at the airport to meet them.
+                 The same times the pilgrim sees, and never the booking
+                 reference. --}}
+            <section class="card mb-6">
+                <h2 class="mb-1 text-lg font-bold text-ink">Flights</h2>
+                <p class="mb-4 text-sm text-ink-muted">Times are local at each airport.</p>
+                <ul class="divide-y divide-cream-deep">
+                    @foreach ($flights as $flight)
+                        <li class="py-3">
+                            <span class="block text-sm text-ink-muted">{{ \App\Models\DepartureFlight::directionLabel($flight->direction) }}</span>
+                            <span dir="ltr" class="block font-medium text-ink">{{ $flight->airline }} {{ $flight->flight_number }} &middot; {{ $flight->from_airport }} → {{ $flight->to_airport }}</span>
+                            <span class="block text-sm text-ink" dir="ltr">
+                                Departs {{ $flight->departs_at->format('D j M, H:i') }}@if ($flight->arrives_at) &middot; arrives {{ $flight->arrives_at->format('D j M, H:i') }}@endif
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
         @if ($accountedFor->isNotEmpty())
             {{-- Only reached when the pilgrim turned sharing on. The
                  controller returns an empty collection otherwise, so this

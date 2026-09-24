@@ -90,8 +90,8 @@
         <x-filament::callout
             color="gray"
             icon="heroicon-o-information-circle"
-            heading="Flights and transport are not on this board"
-            description="Nothing in this system records them yet, and reporting them as fine from the absence of data would be a lie. They appear here when there is something real to read."
+            heading="Supplier contracts are not on this board"
+            description="Flights and ground transport are checked above, from what is recorded under Travel → Flights & transport. Hotel contracts and other supplier arrangements are not recorded anywhere yet, and reporting them as fine from the absence of data would be a lie."
         />
     @endif
 </x-filament-panels::page>

@@ -202,6 +202,7 @@ class DepartureBoardTest extends TestCase
         Livewire::actingAs($this->staff(Access::OPERATIONS_MANAGER))
             ->test(DepartureBoard::class)
             ->assertOk()
-            ->assertSee('Flights and transport are not on this board');
+            ->assertSee('Supplier contracts are not on this board')
+            ->assertDontSee('Flights and transport are not on this board');
     }
 }

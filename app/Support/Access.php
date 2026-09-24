@@ -262,6 +262,16 @@ final class Access
         'rooming.view',
         'rooming.update',
 
+        // Flights and ground transport (§8.3). Delete exists here where it
+        // does not on incidents: a flight entered against the wrong
+        // departure is a typo, not evidence, and leaving it would put the
+        // wrong times in front of pilgrims.
+        'logistics.viewAny',
+        'logistics.view',
+        'logistics.create',
+        'logistics.update',
+        'logistics.delete',
+
         // Incidents on the ground (§8.3, §6.5). No delete verb, and none is
         // ever added: an incident report that can be removed is evidence
         // that can be removed — the same reasoning that kept `delete` off
@@ -640,6 +650,13 @@ final class Access
 
         $roomingReadOnly = ['rooming.viewAny', 'rooming.view'];
 
+        $logistics = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'logistics',
+        ));
+
+        $logisticsReadOnly = ['logistics.viewAny', 'logistics.view'];
+
         $incidents = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'incident',
@@ -784,6 +801,7 @@ final class Access
                 $costs,
                 ['profit.view', 'kpi.view', 'draft.use'],
                 $rooming,
+                $logistics,
                 $incidents,
                 $attendance,
                 $opsLog,
@@ -842,6 +860,9 @@ final class Access
             self::TOUR_LEADER => array_merge(
                 ['admin.access', 'trip.viewAny', 'trip.view'],
                 $roomingReadOnly,
+                // The flight times and the coach pickups are the day they
+                // run; changing them is the office's.
+                $logisticsReadOnly,
                 // They are the person standing there when it happens. An
                 // incident that has to wait for the office to open is one
                 // recorded from memory two days later, if at all.
@@ -902,6 +923,8 @@ final class Access
                 // Reads the rooming to answer "who am I sharing with?";
                 // rearranging it is operations' job.
                 $roomingReadOnly,
+                // And "what time is the flight?".
+                $logisticsReadOnly,
             ),
 
             // Reads the review queue and signs articles off. Nothing else
@@ -961,6 +984,7 @@ final class Access
                 $quotationsReadOnly,
                 $tasksWithoutAssigning,
                 $roomingReadOnly,
+                $logisticsReadOnly,
                 // Takes the call from a family at home asking what happened.
                 $incidentsReadOnly,
                 $attendanceReadOnly,

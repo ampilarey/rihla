@@ -949,7 +949,7 @@ The "intelligent grouping" this section asks for is **not** built, and that is t
 
 It is **not** the "readiness score" this section asks for, and that too is deliberate. "72%" tells the person who has to act nothing; "three passports missing, one hotel's rooming unsettled, no scholar" is a morning's work. So it returns named concerns at two severities: **blocking** (a traveller cannot go, money is owed, no tour leader) and **attention** (rooming unsettled, no scholar, seats held but never confirmed, a queue while seats sit free). Folding the two together would either raise a false alarm on every departure or bury the real one.
 
-Flights, transport and supplier coordination are **absent rather than green**. Nothing in this system records them, and reporting them as fine from the absence of data is the class of lie that put invented social links and a `PLxxxxxxxxxx` playlist on the live site. The board says so on its face.
+Flights, transport and supplier coordination were **absent rather than green**: nothing recorded them, and reporting them as fine from the absence of data is the class of lie that put invented social links and a `PLxxxxxxxxxx` playlist on the live site. Flights and transport now have records (§8.3, 4.9) and the board checks them; supplier contracts still have none, and the board says so on its face.
 
 ### 8.3 Operations (Phase 4)
 
@@ -979,7 +979,9 @@ The daily log is **deliberately not an incident**: the coach being forty minutes
 
 The Tour Leader takes the counts and writes the day up, because they are the one standing at the coach door. They cannot delete a count: a count deleted from the coach is a count nobody can check.
 
-Still to come in this section: pre-departure checklists, flight and transport records, and the Nusuk compliance gate's own screen.
+**Shipped (4.9): flights and ground transport.** Each leg a departure flies (direction, airline, flight number, airports, local times, seats held, the group's booking reference) and each coach, car or train on the ground (when, from, to, a meeting point written for the pilgrim, the company and the driver's number), at *Travel → Flights* and *Travel → Ground transport*. Times are the **local wall-clock time where it happens**, as printed on the ticket, and are never converted. The departure board now reads them: *no flights recorded*, *no return flight* and *no ground transport* are attention; **more confirmed travellers than seats on a leg is blocking**, because somebody on that departure does not have a seat. All of it stays silent until somebody is actually travelling, or every unsold date nags. The pilgrim's portal shows the times and meeting points; the family page shows the flights, so somebody knows when to be at Velana. **Neither ever shows the booking reference or the driver's number** — a PNR is enough to change a booking on most airline sites, and both pages open from links that get forwarded. Operations writes them; the tour leader, booking staff and pilgrim support read them (`logistics.*`).
+
+Still to come in this section: pre-departure checklists, and the Nusuk compliance gate's own screen.
 
 Defer the thread's real-time "Command Center" with live maps (`30-...`) to Phase 6+; it presumes staffing Rihla does not have.
 

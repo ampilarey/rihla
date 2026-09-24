@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `departure_flights` and `departure_transfers` hang
+        // off `departures` (§8.3), so MySQL refuses to drop `departures`
+        // while either still points at it.
+        __DIR__.'/../../database/migrations/2026_09_25_100000_create_flights_and_transfers.php',
         // First of all: the follow-up migration puts `stay_id` and
         // `property_id` on `enquiries` (§15.7 — a lost stay becomes a call
         // rather than a silence). Those constraints outlive the columns
