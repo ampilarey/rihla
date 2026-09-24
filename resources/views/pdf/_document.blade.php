@@ -43,25 +43,25 @@
             body { font-family: 'DejaVu Sans', sans-serif; }
         @endif
 
-        body { margin: 0; padding: 28px; font-size: 11px; line-height: 1.5; color: #2E2245; }
+        body { margin: 0; padding: 28px; font-size: 11px; line-height: 1.5; color: {{ \App\Support\Brand::INK }}; }
 
-        .head { border-bottom: 2px solid #A88C1F; padding-bottom: 14px; margin-bottom: 18px; }
-        .issuer { font-size: 16px; font-weight: bold; color: #5F498A; }
-        .muted { color: #6B6259; }
+        .head { border-bottom: 2px solid {{ \App\Support\Brand::GOLD_ON_LIGHT }}; padding-bottom: 14px; margin-bottom: 18px; }
+        .issuer { font-size: 16px; font-weight: bold; color: {{ \App\Support\Brand::WINE }}; }
+        .muted { color: {{ \App\Support\Brand::INK_MUTED }}; }
         .doc-title { font-size: 20px; font-weight: bold; margin: 0 0 2px; }
 
         table { width: 100%; border-collapse: collapse; }
         .parties td { vertical-align: top; width: 50%; padding: 0 0 14px; }
-        .lines th { text-align: start; border-bottom: 1px solid #E5DED4; padding: 6px 4px; font-size: 10px; text-transform: uppercase; color: #6B6259; }
-        .lines td { border-bottom: 1px solid #F1EBE3; padding: 7px 4px; }
+        .lines th { text-align: start; border-bottom: 1px solid {{ \App\Support\Brand::BORDER }}; padding: 6px 4px; font-size: 10px; text-transform: uppercase; color: {{ \App\Support\Brand::INK_MUTED }}; }
+        .lines td { border-bottom: 1px solid {{ \App\Support\Brand::RULE }}; padding: 7px 4px; }
         .num { text-align: end; }
 
         .totals { margin-top: 14px; width: 55%; }
         .totals td { padding: 4px; }
-        .totals .grand td { border-top: 2px solid #2E2245; font-weight: bold; font-size: 13px; }
+        .totals .grand td { border-top: 2px solid {{ \App\Support\Brand::INK }}; font-weight: bold; font-size: 13px; }
 
-        .note { margin-top: 22px; padding: 10px; background: #FAF6F0; font-size: 10px; }
-        .foot { margin-top: 26px; border-top: 1px solid #E5DED4; padding-top: 10px; font-size: 10px; color: #6B6259; }
+        .note { margin-top: 22px; padding: 10px; background: {{ \App\Support\Brand::CREAM }}; font-size: 10px; }
+        .foot { margin-top: 26px; border-top: 1px solid {{ \App\Support\Brand::BORDER }}; padding-top: 10px; font-size: 10px; color: {{ \App\Support\Brand::INK_MUTED }}; }
 
         /* Money and references are Latin in both languages. Without this the
            RTL page drags the currency code and the trailing punctuation to

@@ -41,33 +41,33 @@
             padding: 20px;
             font-size: 12px;
             line-height: 1.4;
-            color: #2E2245;
+            color: {{ \App\Support\Brand::INK }};
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #A88C1F;
+            border-bottom: 2px solid {{ \App\Support\Brand::GOLD_ON_LIGHT }};
         }
         
         .logo {
             font-size: 24px;
             font-weight: bold;
-            color: #5F498A;
+            color: {{ \App\Support\Brand::WINE }};
             margin-bottom: 10px;
         }
         
         .title {
             font-size: 20px;
             font-weight: bold;
-            color: #2E2245;
+            color: {{ \App\Support\Brand::INK }};
             margin-bottom: 10px;
         }
         
         .subtitle {
             font-size: 14px;
-            color: #666;
+            color: {{ \App\Support\Brand::INK_MUTED }};
         }
         
         .toc {
@@ -78,9 +78,9 @@
         .toc-title {
             font-size: 16px;
             font-weight: bold;
-            color: #5F498A;
+            color: {{ \App\Support\Brand::WINE }};
             margin-bottom: 15px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid {{ \App\Support\Brand::BORDER }};
             padding-bottom: 5px;
         }
         
@@ -90,7 +90,7 @@
         }
         
         .toc-number {
-            color: #A88C1F;
+            color: {{ \App\Support\Brand::GOLD_ON_LIGHT }};
             font-weight: bold;
         }
         
@@ -105,9 +105,16 @@
             margin-bottom: 15px;
         }
         
+        /* Ink on gold, never white — the rule Brand::GOLD states and this
+           did not follow. Measured, the shipped version was white on the
+           gold at 1.49:1: a step number a pilgrim could not read on the
+           document they carry. Ink on the same gold is 9.85:1.
+           Hexes are deliberately not written out here — BrandColourTest
+           scans this file as plain text, and a comment naming a retired
+           colour would make the guard cry wolf. */
         .step-number {
-            background: #EFD34D;
-            color: white;
+            background: {{ \App\Support\Brand::GOLD }};
+            color: {{ \App\Support\Brand::INK }};
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -122,7 +129,7 @@
         .step-title {
             font-size: 16px;
             font-weight: bold;
-            color: #2E2245;
+            color: {{ \App\Support\Brand::INK }};
         }
         
         .step-content {
@@ -137,30 +144,35 @@
         .step-details {
             margin-bottom: 10px;
             padding: 10px;
-            background: #f8f9fa;
-            border-left: 3px solid #5F498A;
+            background: {{ \App\Support\Brand::CREAM }};
+            border-left: 3px solid {{ \App\Support\Brand::WINE }};
         }
         
         .step-reference {
             margin-bottom: 10px;
             padding: 10px;
             font-style: italic;
-            color: #564F66;
-            border-left: 3px solid #A88C1F;
+            color: {{ \App\Support\Brand::INK_MUTED }};
+            border-left: 3px solid {{ \App\Support\Brand::GOLD_ON_LIGHT }};
         }
 
         .step-dua {
             margin-bottom: 10px;
             padding: 10px;
-            background: #FFFDF0;
-            border-left: 3px solid #A88C1F;
+            background: {{ \App\Support\Brand::CREAM }};
+            border-left: 3px solid {{ \App\Support\Brand::GOLD_ON_LIGHT }};
         }
         
         .step-fiqh {
             margin-bottom: 10px;
             padding: 10px;
-            background: #fff8f0;
-            border-left: 3px solid #ff6b35;
+            background: {{ \App\Support\Brand::CREAM }};
+            /* Was a bright orange on a warm off-white, from no palette this
+               site has ever had, measuring 2.69:1 against its own
+               background. The panels are told apart by their rule and not
+               their fill, so this one takes ink — wine, gold and ink being
+               three a reader can actually tell apart. */
+            border-left: 3px solid {{ \App\Support\Brand::INK }};
         }
         
         .step-checklist {
@@ -174,24 +186,24 @@
         
         .checklist-item:before {
             content: "☐ ";
-            color: #A88C1F;
+            color: {{ \App\Support\Brand::GOLD_ON_LIGHT }};
             font-weight: bold;
         }
         
         .footer {
             margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid {{ \App\Support\Brand::BORDER }};
             text-align: center;
             font-size: 10px;
-            color: #666;
+            color: {{ \App\Support\Brand::INK_MUTED }};
         }
         
         .page-number {
             text-align: center;
             margin-top: 20px;
             font-size: 10px;
-            color: #999;
+            color: {{ \App\Support\Brand::INK_MUTED }};
         }
         
         @media print {
