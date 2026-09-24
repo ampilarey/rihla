@@ -57,6 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `departure_checklist_items` hangs off `departures`
+        // (§8.3), so it goes before the departures can.
+        __DIR__.'/../../database/migrations/2026_09_25_110000_create_departure_checklists.php',
         // Newest of all: `departure_flights` and `departure_transfers` hang
         // off `departures` (§8.3), so MySQL refuses to drop `departures`
         // while either still points at it.

@@ -272,6 +272,17 @@ final class Access
         'logistics.update',
         'logistics.delete',
 
+        // Pre-departure checklists (§8.3). `tick` is separate from
+        // `update`: the person who submits the group visa ticks that line;
+        // deciding what is on the list, and what stops a departure, is the
+        // office's.
+        'checklist.viewAny',
+        'checklist.view',
+        'checklist.create',
+        'checklist.update',
+        'checklist.delete',
+        'checklist.tick',
+
         // Incidents on the ground (§8.3, §6.5). No delete verb, and none is
         // ever added: an incident report that can be removed is evidence
         // that can be removed — the same reasoning that kept `delete` off
@@ -657,6 +668,15 @@ final class Access
 
         $logisticsReadOnly = ['logistics.viewAny', 'logistics.view'];
 
+        $checklists = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'checklist',
+        ));
+
+        $checklistsTickOnly = ['checklist.viewAny', 'checklist.view', 'checklist.tick'];
+
+        $checklistsReadOnly = ['checklist.viewAny', 'checklist.view'];
+
         $incidents = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'incident',
@@ -802,6 +822,7 @@ final class Access
                 ['profit.view', 'kpi.view', 'draft.use'],
                 $rooming,
                 $logistics,
+                $checklists,
                 $incidents,
                 $attendance,
                 $opsLog,
@@ -863,6 +884,9 @@ final class Access
                 // The flight times and the coach pickups are the day they
                 // run; changing them is the office's.
                 $logisticsReadOnly,
+                // Ticks the lines that are theirs — the briefing, the
+                // meeting at the airport.
+                $checklistsTickOnly,
                 // They are the person standing there when it happens. An
                 // incident that has to wait for the office to open is one
                 // recorded from memory two days later, if at all.
@@ -925,6 +949,7 @@ final class Access
                 $roomingReadOnly,
                 // And "what time is the flight?".
                 $logisticsReadOnly,
+                $checklistsTickOnly,
             ),
 
             // Reads the review queue and signs articles off. Nothing else
@@ -985,6 +1010,7 @@ final class Access
                 $tasksWithoutAssigning,
                 $roomingReadOnly,
                 $logisticsReadOnly,
+                $checklistsReadOnly,
                 // Takes the call from a family at home asking what happened.
                 $incidentsReadOnly,
                 $attendanceReadOnly,
@@ -1010,6 +1036,9 @@ final class Access
                 // needs, because this is the role sitting in front of Nusuk.
                 ['departure.nusuk', 'departure.viewAny', 'departure.view'],
                 $bookingsReadOnly,
+                // The visa and permit lines on the checklist are this
+                // role's to tick.
+                $checklistsTickOnly,
             ),
         ];
     }

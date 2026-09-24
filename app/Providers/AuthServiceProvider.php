@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
+use App\Models\DepartureChecklistItem;
 use App\Models\DepartureFlight;
 use App\Models\DepartureTransfer;
 use App\Models\Document;
@@ -38,6 +39,7 @@ use App\Policies\ArticlePolicy;
 use App\Policies\AuditLogPolicy;
 use App\Policies\BookingPolicy;
 use App\Policies\CustomerPolicy;
+use App\Policies\DepartureChecklistItemPolicy;
 use App\Policies\DepartureFlightPolicy;
 use App\Policies\DeparturePolicy;
 use App\Policies\DepartureTransferPolicy;
@@ -89,6 +91,7 @@ class AuthServiceProvider extends ServiceProvider
         RollCall::class => RollCallPolicy::class,
         Room::class => RoomPolicy::class,
         DepartureFlight::class => DepartureFlightPolicy::class,
+        DepartureChecklistItem::class => DepartureChecklistItemPolicy::class,
         DepartureTransfer::class => DepartureTransferPolicy::class,
         VisaApplication::class => VisaApplicationPolicy::class,
         WaitlistEntry::class => WaitlistEntryPolicy::class,

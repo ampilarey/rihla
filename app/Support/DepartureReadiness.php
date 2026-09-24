@@ -74,6 +74,8 @@ final class DepartureReadiness
 
     public const TRANSPORT = 'transport';
 
+    public const CHECKLIST = 'checklist';
+
     /**
      * Everything worth a person's attention on this departure.
      *
@@ -92,6 +94,7 @@ final class DepartureReadiness
             self::learningConcerns($departure),
             self::flightConcerns($departure),
             self::transportConcerns($departure),
+            self::checklistConcerns($departure),
         );
     }
 
@@ -514,6 +517,49 @@ final class DepartureReadiness
             'headline' => 'No ground transport recorded',
             'detail' => 'No coach, car or train is recorded — not even the airport transfer. Add them under Travel → Flights & transport.',
         ]];
+    }
+
+    /**
+     * Checklist lines past their date and not done — §8.3.
+     *
+     * Blocking only for the lines the office marked as blocking; the rest
+     * are attention. Not gated on anybody travelling, unlike flights: a
+     * line exists because somebody put it there, so it is never noise.
+     * Named, not counted, while there are few enough to read — "group
+     * visa submitted" is a phone call, "3 items" is a screen to open.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function checklistConcerns(Departure $departure): array
+    {
+        $overdue = $departure->checklist()
+            ->open()
+            ->whereNotNull('due_on')
+            ->whereDate('due_on', '<', today())
+            ->get();
+
+        $concerns = [];
+
+        foreach ([true => self::BLOCKING, false => self::ATTENTION] as $blocking => $severity) {
+            $items = $overdue->where('is_blocking', (bool) $blocking);
+
+            if ($items->isEmpty()) {
+                continue;
+            }
+
+            $concerns[] = [
+                'area' => self::CHECKLIST,
+                'severity' => $severity,
+                'headline' => $items->count() === 1
+                    ? 'Overdue: '.$items->first()->title
+                    : $items->count().' checklist items overdue',
+                'detail' => $items->count() === 1
+                    ? 'Due '.$items->first()->due_on->format('j M').' and not done.'
+                    : 'Not done: '.self::sentenceList($items->pluck('title')->take(5)->values()->all()).($items->count() > 5 ? ', and more.' : '.'),
+            ];
+        }
+
+        return $concerns;
     }
 
     /** @return Collection<int, Booking> */
