@@ -533,6 +533,11 @@ return [
     'Leave us a phone number or an email so we can reply.' => 'Leave us a phone number or an email so we can reply.',
     'Thank you — we have your message and will come back to you.' => 'Thank you — we have your message and will come back to you.',
 
+    // Umrah Plus, the extension segment (§15.3, Phase 8.7).
+    'The extension' => 'The extension',
+    ':count night in :place|:count nights in :place' => ':count night in :place|:count nights in :place',
+    'Umrah Plus' => 'Umrah Plus',
+
     // The homepage "What we do" strip (§15.1/§15.3, Phase 8.3).
     'What we do' => 'What we do',
     'Umrah packages, guides and support from Malé to Makkah and Madinah.' => 'Umrah packages, guides and support from Malé to Makkah and Madinah.',

@@ -22,10 +22,37 @@ class Package extends Model
     use HasFactory, HasTranslations;
 
     protected $fillable = [
-        'slug', 'title', 'summary', 'details', 'inclusions', 'exclusions',
-        'nights', 'accessibility_rating', 'accessibility_notes',
+        'slug', 'type', 'title', 'summary', 'details', 'inclusions', 'exclusions',
+        'nights', 'extension_destination', 'extension_nights', 'extension_details',
+        'accessibility_rating', 'accessibility_notes',
         'cover_image', 'is_published', 'sort_order',
     ];
+
+    // ── What kind of product this is — §15.3 (Phase 8.7) ─────────────────
+
+    /** The pilgrimage itself. Every package that existed before this column. */
+    public const UMRAH = 'umrah';
+
+    /**
+     * An Umrah with an extension segment — a few nights in Istanbul on the
+     * way home. Still an Umrah product, still under the Umrah menu: the
+     * owner's correction in §15.1, which exists because this was about to
+     * become a third tab called "Holidays".
+     */
+    public const UMRAH_PLUS = 'umrah_plus';
+
+    /**
+     * A weekend on a local island for a Maldivian family. Sells nothing
+     * yet — Phase 10 builds it on this engine — and it is a *guesthouse*
+     * product, so it belongs under Stays and never under Umrah.
+     */
+    public const ISLAND_HOLIDAY = 'island_holiday';
+
+    /** @var list<string> */
+    public const TYPES = [self::UMRAH, self::UMRAH_PLUS, self::ISLAND_HOLIDAY];
+
+    /** The two that belong under the Umrah menu, as opposed to Stays. */
+    public const UMRAH_TYPES = [self::UMRAH, self::UMRAH_PLUS];
 
     /**
      * Per docs/adr/0001-how-content-is-translated.md. `inclusions`,
@@ -40,6 +67,7 @@ class Package extends Model
      */
     public array $translatable = [
         'title', 'summary', 'details', 'inclusions', 'exclusions', 'accessibility_notes',
+        'extension_details',
     ];
 
     /**
@@ -58,12 +86,16 @@ class Package extends Model
      */
     protected $casts = [
         'nights' => 'integer',
+        'extension_nights' => 'integer',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
         'inclusions' => 'array',
         'exclusions' => 'array',
         'accessibility_notes' => 'array',
     ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['type' => self::UMRAH];
 
     protected static function booted(): void
     {
@@ -150,5 +182,28 @@ class Package extends Model
     public function scopePublished($query)
     {
         return $query->where('is_published', true);
+    }
+
+    /**
+     * @param  Builder<$this>  $query
+     * @param  list<string>  $types
+     */
+    public function scopeOfType($query, array $types)
+    {
+        return $query->whereIn('type', $types);
+    }
+
+    /**
+     * Does this package have an extension worth a block on its page?
+     *
+     * The type alone is not enough. A package can be marked Umrah Plus and
+     * saved before anybody has typed where the extension goes, and an
+     * "Extension" heading over an empty box reads as a broken page rather
+     * than an unfinished one.
+     */
+    public function hasExtension(): bool
+    {
+        return $this->type === self::UMRAH_PLUS
+            && filled($this->extension_destination);
     }
 }

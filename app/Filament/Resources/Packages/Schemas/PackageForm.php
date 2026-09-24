@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Packages\Schemas;
 
+use App\Models\Package;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -62,6 +63,50 @@ class PackageForm
                     ->maxValue(60)
                     ->helperText('Leave blank to take it from each departure\'s dates.'),
 
+                // §15.3 (Phase 8.7). Live, because the extension fields
+                // below appear and become required from this answer.
+                Select::make('type')
+                    ->label('Kind of package')
+                    ->options([
+                        Package::UMRAH => 'Umrah',
+                        Package::UMRAH_PLUS => 'Umrah Plus — an Umrah with an extension',
+                        Package::ISLAND_HOLIDAY => 'Island holiday — a local island, sold to Maldivians',
+                    ])
+                    ->default(Package::UMRAH)
+                    ->required()
+                    ->live()
+                    ->helperText('Umrah and Umrah Plus sit under the Umrah menu. An island holiday is a guesthouse product and sits under Stays.'),
+            ]),
+
+            // Only an Umrah Plus has one, so the block is not there to be
+            // half-filled on the other two.
+            Section::make('The extension')
+                ->description('The segment that makes this an Umrah Plus — a few nights somewhere on the way home.')
+                ->columns(2)
+                ->visible(fn ($get): bool => $get('type') === Package::UMRAH_PLUS)
+                ->schema([
+                    TextInput::make('extension_destination')
+                        ->label('Where')
+                        ->maxLength(120)
+                        // Required only when the block is showing: a package
+                        // saved as an Umrah must not be held up by a field
+                        // its type does not have.
+                        ->required(fn ($get): bool => $get('type') === Package::UMRAH_PLUS)
+                        ->helperText('"Istanbul, Türkiye". This is what the package page shows first.'),
+
+                    TextInput::make('extension_nights')
+                        ->label('How many nights')
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(30),
+
+                    Textarea::make('extension_details')
+                        ->label('What the extension includes')
+                        ->rows(4)
+                        ->columnSpanFull(),
+                ]),
+
+            Section::make('Publishing')->columns(2)->schema([
                 Select::make('accessibility_rating')
                     ->options([
                         'easy' => 'Easy — short walks, lifts throughout',
