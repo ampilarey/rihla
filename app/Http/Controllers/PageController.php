@@ -91,7 +91,7 @@ class PageController extends Controller
         $referer = (string) $request->headers->get('referer');
         $path = '/'.ltrim((string) (parse_url($referer, PHP_URL_PATH) ?: '/'), '/');
 
-        $stripped = preg_replace('#^/(?:en|dv)(?=/|$)#', '', $path, 1, $count);
+        $stripped = preg_replace('#^/(?:'.implode('|', SetLocale::SUPPORTED).')(?=/|$)#', '', $path, 1, $count);
 
         // Admin and auth pages are not localised in the path. The session is
         // updated and the visitor stays where they are.

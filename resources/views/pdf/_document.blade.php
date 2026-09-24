@@ -12,7 +12,7 @@
     is what somebody carries to the airport.
 --}}
 <!DOCTYPE html>
-<html lang="{{ $locale }}" dir="{{ $locale === 'dv' ? 'rtl' : 'ltr' }}">
+<html lang="{{ $locale }}" dir="{{ \App\Http\Middleware\SetLocale::isRtl($locale) ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <title>{{ $title }}</title>

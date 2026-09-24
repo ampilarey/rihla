@@ -11,7 +11,20 @@ use Symfony\Component\HttpFoundation\Response;
 class SetLocale
 {
     /** Locales the public site is published in. */
-    public const SUPPORTED = ['en', 'dv'];
+    public const SUPPORTED = ['en', 'dv', 'ar'];
+
+    /**
+     * Locales read right-to-left — §15.3 (Phase 8.4). Named explicitly
+     * rather than derived as "every locale but English", so a future
+     * left-to-right addition (a fourth locale is "a content task later"
+     * per §15.2) does not have to be excluded here to stay correct.
+     */
+    public const RTL = ['dv', 'ar'];
+
+    public static function isRtl(string $locale): bool
+    {
+        return in_array($locale, self::RTL, true);
+    }
 
     /**
      * Resolve the request's locale and make it the default for URL generation.
@@ -42,7 +55,7 @@ class SetLocale
         // would receive 'en' where it expects a slug.
         $request->route()?->forgetParameter('locale');
 
-        $isRtl = $locale === 'dv';
+        $isRtl = self::isRtl($locale);
 
         view()->share('isRTL', $isRtl);
         view()->share('htmlDir', $isRtl ? 'rtl' : 'ltr');

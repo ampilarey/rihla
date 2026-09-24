@@ -85,7 +85,7 @@ class Seo
         $path = '/'.ltrim($request->path(), '/');
         $path = $path === '//' ? '/' : $path;
 
-        $stripped = preg_replace('#^/(?:en|dv)(?=/|$)#', '', $path, 1, $count);
+        $stripped = preg_replace('#^/(?:'.implode('|', SetLocale::SUPPORTED).')(?=/|$)#', '', $path, 1, $count);
 
         if ($count === 0) {
             return [];

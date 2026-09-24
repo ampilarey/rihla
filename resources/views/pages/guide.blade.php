@@ -85,7 +85,7 @@
 <div class="min-h-screen bg-gray-50" 
      x-data="umrahGuide()" 
      x-init="init({{ $guideSteps->count() }})"
-     dir="{{ app()->getLocale() === 'dv' ? 'rtl' : 'ltr' }}">
+     dir="{{ \App\Http\Middleware\SetLocale::isRtl(app()->getLocale()) ? 'rtl' : 'ltr' }}">
 
     <!-- Page Header -->
     <div class="bg-gradient-to-r from-wine-600 to-wine-500 text-white">
