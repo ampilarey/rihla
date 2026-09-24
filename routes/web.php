@@ -1,11 +1,11 @@
 <?php
 
+use App\Filament\Pages\SocialSettings;
 use App\Filament\Resources\GuideSteps\GuideStepResource;
 use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Filament\Resources\Media\MediaResource;
 use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
@@ -338,8 +338,9 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
 
     Route::get('audit', [AuditLogController::class, 'index'])->name('audit.index');
 
-    Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
-    Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+    // Social links and the contact number moved to the staff panel — §9.2.
+    // Forwarded for the reason the hero banner redirect gives.
+    Route::get('settings', fn () => redirect()->to(SocialSettings::getUrl()))->name('settings.moved');
 
     // The "why Rihla" section moved to the staff panel — §9.2. Forwarded
     // rather than removed, so a bookmark still arrives. Two prefixes, because
