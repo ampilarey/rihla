@@ -46,17 +46,60 @@ final class TravelReadiness
     public const REQUIREMENTS = [self::PASSPORT, self::VISA, self::PERMIT];
 
     /**
-     * Each requirement, met or not.
+     * The requirements this booking's product actually has — §15.5
+     * (Phase 10).
+     *
+     * An island holiday has none. A Maldivian family catching the Thursday
+     * ferry to Ukulhas needs no passport, no visa and no Umrah permit, and
+     * asking for them is not a harmless extra field: it is a form somebody
+     * abandons, and a board reading "not ready" for a family who are
+     * entirely ready to go.
+     *
+     * Read from the package rather than listed at each call site, so a
+     * fifth place that cares cannot be written without meeting it.
+     *
+     * @return list<string>
+     */
+    public static function requiredFor(Booking $booking): array
+    {
+        $package = $booking->departure?->package;
+
+        // No package reachable is not a licence to ask for nothing. A
+        // booking whose departure or package has gone is a broken row, and
+        // the safe reading of a broken row is the strict one — better to
+        // ask a family for a passport they do not need than to send a
+        // pilgrim to Jeddah without a visa.
+        if ($package === null) {
+            return self::REQUIREMENTS;
+        }
+
+        return $package->needsTravelDocuments() ? self::REQUIREMENTS : [];
+    }
+
+    /**
+     * Each requirement this booking actually has, met or not.
+     *
+     * An island holiday returns an empty array, which {@see isReady()}
+     * correctly reads as ready: there is nothing standing between that
+     * family and the ferry.
      *
      * @return array<string, bool>
      */
     public static function forTraveller(Booking $booking, Traveller $traveller): array
     {
-        return [
-            self::PASSPORT => self::hasUsablePassport($traveller, $booking->departure),
-            self::VISA => self::hasIssuedVisa($booking, $traveller),
-            self::PERMIT => self::hasIssuedUmrahPermit($booking, $traveller),
+        $answers = [
+            self::PASSPORT => fn (): bool => self::hasUsablePassport($traveller, $booking->departure),
+            self::VISA => fn (): bool => self::hasIssuedVisa($booking, $traveller),
+            self::PERMIT => fn (): bool => self::hasIssuedUmrahPermit($booking, $traveller),
         ];
+
+        $required = [];
+
+        foreach (self::requiredFor($booking) as $requirement) {
+            $required[$requirement] = $answers[$requirement]();
+        }
+
+        return $required;
     }
 
     public static function isReady(Booking $booking, Traveller $traveller): bool

@@ -763,4 +763,11 @@ return [
     'A guesthouse in the Maldives, booked through Rihla.' => 'A guesthouse in the Maldives, booked through Rihla.',
     'Download a one-page summary (PDF)' => 'Download a one-page summary (PDF)',
     'Sleeps' => 'Sleeps',
+
+    // Island holidays — §15.5 (Phase 10).
+    'Your own dates, from :nights night(s).' => 'Your own dates, from :nights night(s).',
+    ':count date(s) announced' => ':count date(s) announced',
+    'No dates announced yet — ask us.' => 'No dates announced yet — ask us.',
+    'See this holiday' => 'See this holiday',
+    'No passport, visa or permit — these are local islands, reached by ferry or speedboat.' => 'No passport, visa or permit — these are local islands, reached by ferry or speedboat.',
 ];

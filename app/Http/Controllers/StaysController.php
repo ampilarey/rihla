@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\RoomNotAvailable;
+use App\Models\Package;
 use App\Models\Property;
 use App\Models\RoomType;
 use App\Models\Setting;
@@ -76,14 +77,34 @@ class StaysController extends Controller
         ));
     }
 
+    /**
+     * Island holidays run on the **package** engine, not the stays one —
+     * §15.5 (Phase 10). They are filed here because they are a guesthouse
+     * product, which is the owner's correction in §15.1, and they are
+     * listed from `packages` because that is where they live.
+     */
     public function islandHolidays(Request $request): View
     {
-        // Island holidays run on the *package* engine, not this one — §15.5
-        // (Phase 10). Nothing lists here yet, and saying so is better than
-        // an empty grid pretending the catalogue is bare.
-        return $this->comingSoon('stays_island_holidays', __(
-            'messages.Short island holidays for Maldivian families — a weekend away, arranged the way our Umrah groups already are. Tell us which island and when, and we will put together a plan.',
-        ));
+        $blurb = __('messages.Short island holidays for Maldivian families — a weekend away, arranged the way our Umrah groups already are. Tell us which island and when, and we will put together a plan.');
+
+        $holidays = Package::published()
+            ->ofType([Package::ISLAND_HOLIDAY])
+            ->with(['publishedDepartures' => fn ($query) => $query->upcoming()->with('priceTiers'), 'property'])
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        if ($holidays->isEmpty()) {
+            return $this->comingSoon('stays_island_holidays', $blurb);
+        }
+
+        return view('stays.island-holidays', [
+            'label' => __(ServiceRegistry::catalogue()['stays_island_holidays']['label']),
+            'blurb' => $blurb,
+            'holidays' => $holidays,
+            'bookable' => ServiceRegistry::isOn('stays_island_holidays'),
+            'socialSettings' => Setting::getSocialSettings(),
+        ]);
     }
 
     public function rooms(Request $request): View
