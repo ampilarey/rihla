@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Models\GuideStep;
 use App\Models\Trip;
 use App\Models\User;
@@ -208,7 +209,9 @@ class AuthorizationTest extends TestCase
             ['get', route('admin.media.index')],
             ['get', route('admin.guide-steps.index')],
             ['get', route('admin.guide-steps.edit', $step)],
-            ['get', route('admin.hero-banners.index')],
+            // Moved to the staff panel (§9.2). The same people must still
+            // be kept out — which is the property this line has always held.
+            ['get', HeroBannerResource::getUrl('index')],
             ['get', route('admin.settings.index')],
             ['get', route('admin.why-sections.index')],
         ] as [$method, $url]) {

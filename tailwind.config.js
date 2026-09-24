@@ -4,6 +4,13 @@ export default {
     "./resources/**/*.blade.php",
     "./resources/**/*.js",
     "./resources/**/*.vue",
+    // A hero banner stores its size, weight and radius as class names, so
+    // the list of allowed ones has to be somewhere Tailwind reads. Until
+    // this line the only place four of them were written was the Blade
+    // admin form — delete that form and they compile to nothing. One file,
+    // named exactly, rather than all of app/: scanning PHP broadly would
+    // emit a class for every string that happened to look like one.
+    "./app/Support/HeroBannerStyle.php",
   ],
   theme: {
     extend: {

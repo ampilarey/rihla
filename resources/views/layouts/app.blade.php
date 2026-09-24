@@ -240,7 +240,10 @@
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Manage Media') }}
                                 </a>
-                                <a href="{{ route('admin.hero-banners.index') }}" 
+                                {{-- Moved to the staff panel (§9.2). Linked there
+                                     directly rather than through the redirect,
+                                     so the menu does not bounce people. --}}
+                                <a href="{{ \App\Filament\Resources\HeroBanners\HeroBannerResource::getUrl('index') }}" 
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Hero Banners') }}
                                 </a>
@@ -347,7 +350,7 @@
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Manage Media') }}
                             </a>
-                            <a href="{{ route('admin.hero-banners.index') }}" 
+                            <a href="{{ \App\Filament\Resources\HeroBanners\HeroBannerResource::getUrl('index') }}" 
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Hero Banners') }}
                             </a>

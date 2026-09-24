@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\HeroBanner;
 use App\Support\Brand;
+use App\Support\Contrast;
 use Database\Seeders\HeroBannerSeeder;
 use Database\Seeders\SettingsSeeder;
 use Database\Seeders\TripSeeder;
@@ -374,28 +375,31 @@ class BrandColourTest extends TestCase
         $this->assertLessThan(4.5, $this->contrast(Brand::GOLD, Brand::WHITE));
     }
 
+    /**
+     * The formula lives in {@see Contrast} now, which the hero banner form
+     * also uses — a colour pair a person chooses is held to the same
+     * arithmetic as the palette's own. Two copies of it would be two
+     * places for the next change to reach only one of.
+     *
+     * A null ratio means the input was not a solid hex colour, which in
+     * this suite is a mistake in the test rather than something to skip.
+     */
     private function contrast(string $a, string $b): float
     {
-        $la = $this->luminance($a);
-        $lb = $this->luminance($b);
+        $ratio = Contrast::ratio($a, $b);
 
-        return (max($la, $lb) + 0.05) / (min($la, $lb) + 0.05);
+        $this->assertNotNull($ratio, "Not a solid hex colour: {$a} or {$b}.");
+
+        return $ratio;
     }
 
     private function luminance(string $hex): float
     {
-        [$r, $g, $b] = array_map(
-            static function (string $pair): float {
-                $channel = hexdec($pair) / 255;
+        $luminance = Contrast::luminance($hex);
 
-                return $channel <= 0.03928
-                    ? $channel / 12.92
-                    : (($channel + 0.055) / 1.055) ** 2.4;
-            },
-            str_split(ltrim($hex, '#'), 2),
-        );
+        $this->assertNotNull($luminance, "Not a solid hex colour: {$hex}.");
 
-        return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+        return $luminance;
     }
 
     /**

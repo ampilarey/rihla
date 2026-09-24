@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\GuideStep;
-use App\Models\HeroBanner;
 use App\Models\Media;
 use App\Models\User;
 use App\Support\Access;
@@ -96,22 +95,8 @@ class ImageUploadTest extends TestCase
         Storage::disk('public')->assertExists($paths[1]);
     }
 
-    public function test_a_hero_banner_image_is_stored(): void
-    {
-        Storage::fake('public');
-
-        $this->actingAs($this->admin())
-            ->post(route('admin.hero-banners.store'), [
-                'title' => 'Journeys that stay with you',
-                'overlay_opacity' => 40,
-                'image' => UploadedFile::fake()->image('hero.jpg', 2400, 1200),
-            ])
-            ->assertSessionHasNoErrors();
-
-        $banner = HeroBanner::sole();
-
-        $this->assertNotNull($banner->image_path, 'No image path was stored.');
-    }
+    // A hero banner's photograph is now uploaded through the staff panel;
+    // see HeroBannerAdminTest::test_a_photograph_is_stored_with_its_variants.
 
     public function test_a_media_photo_is_stored(): void
     {
