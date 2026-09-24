@@ -274,6 +274,6 @@ class TranslationQualityTest extends TestCase
         $this->get('/dv')
             ->assertOk()
             ->assertSee('Why Choose Rihla')
-            ->assertSee('Trusted Guides');
+            ->assertSee('Licensed and registered');
     }
 }

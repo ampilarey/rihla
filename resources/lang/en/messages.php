@@ -533,6 +533,11 @@ return [
     'Leave us a phone number or an email so we can reply.' => 'Leave us a phone number or an email so we can reply.',
     'Thank you — we have your message and will come back to you.' => 'Thank you — we have your message and will come back to you.',
 
+    // The homepage "What we do" strip (§15.1/§15.3, Phase 8.3).
+    'What we do' => 'What we do',
+    'Umrah packages, guides and support from Malé to Makkah and Madinah.' => 'Umrah packages, guides and support from Malé to Makkah and Madinah.',
+    'Guesthouses, island holidays and rooms in Malé.' => 'Guesthouses, island holidays and rooms in Malé.',
+
     // The Stays placeholder pages (§15.3, Phase 8.2).
     'The fastest way to reach us is WhatsApp.' => 'The fastest way to reach us is WhatsApp.',
     'Or leave your details' => 'Or leave your details',

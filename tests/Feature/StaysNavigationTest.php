@@ -71,7 +71,10 @@ class StaysNavigationTest extends TestCase
 
         $this->assertSame(2, substr_count($html, 'aria-label="Umrah"'));
         $this->assertSame(2, substr_count($html, 'aria-label="Stays"'));
-        $this->assertSame(2, substr_count($html, route('stays.island-holidays')));
+        // Nav (desktop + mobile) plus the homepage's own "What we do" strip
+        // and footer column (§15.3, Phase 8.3) — each reads the same
+        // registry and links to the same route.
+        $this->assertSame(4, substr_count($html, route('stays.island-holidays')));
     }
 
     /** An unknown/off service key never reaches the nav, even if planted directly. */

@@ -481,7 +481,11 @@
              fails the test instead of sliding one under them. --}}
         <footer class="bg-ink text-white py-12 overflow-x-hidden">
             <div class="container mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                {{-- A fifth column only when there is a Stays column to
+                     show — otherwise this renders exactly as it always has.
+                     Both class strings are written out in full so Tailwind's
+                     scanner finds whichever one a given request needs. --}}
+                <div class="grid grid-cols-1 gap-8 {{ $staysNavItems->isNotEmpty() ? 'md:grid-cols-5' : 'md:grid-cols-4' }}">
                     <!-- Company Info -->
                     <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center mb-4">
@@ -561,6 +565,25 @@
                             </li>
                         </ul>
                     </div>
+
+                    {{-- Stays — §15.1/§15.3 (Phase 8.3). Same registry gate
+                         as the nav and the homepage strip: no column, and no
+                         extra grid width, until a Stays service is not off. --}}
+                    @if ($staysNavItems->isNotEmpty())
+                        <div>
+                            <h2 class="text-lg font-semibold mb-4 text-gold-500">{{ __('Stays') }}</h2>
+                            <ul class="space-y-2">
+                                @foreach ($staysNavItems as $item)
+                                    <li>
+                                        <a href="{{ route($item['route']) }}"
+                                           class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                            {{ __($item['label']) }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     <!-- Contact Info -->
                     <div>
