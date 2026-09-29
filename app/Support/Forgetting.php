@@ -107,6 +107,9 @@ final class Forgetting
         // do not.
         'reviews' => 'stay',
         'review_invitations' => 'stay',
+        // What the guest, the host and Rihla wrote to each other about the
+        // stay — §16.11. Reached through the stay.
+        'stay_messages' => 'stay',
 
         'enquiry_notes' => 'enquiry',
         'document_versions' => 'document',

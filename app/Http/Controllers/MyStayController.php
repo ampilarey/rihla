@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\DeskRefusal;
 use App\Models\Stay;
+use App\Models\StayMessage;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Services\Payments\SlipVault;
 use App\Services\Stays\StayAllocator;
 use App\Services\Stays\StayBooking;
 use App\Services\Stays\StayGatekeeper;
+use App\Services\Stays\StayMessages;
 use App\Support\Contact;
 use App\Support\Money;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -65,7 +68,12 @@ class MyStayController extends Controller
         $stay = $this->stay($request);
         $due = $this->amountDue($stay);
 
+        // §16.11: opening the page is reading the conversation.
+        $conversation = app(StayMessages::class);
+        $conversation->markRead($stay, StayMessage::GUEST);
+
         return view('my-stay.home', [
+            'messages' => $conversation->thread($stay),
             'stay' => $stay,
             'property' => $stay->property,
             'due' => $due,
@@ -77,6 +85,24 @@ class MyStayController extends Controller
             'freeCancelUntil' => $stay->check_in->copy()->subDays((int) ($stay->rate_snapshot['policy']['free_cancel_days'] ?? 14)),
             'freshLink' => session('stay_link'),
         ]);
+    }
+
+    /** The guest writes to their host and to Rihla — §16.11. */
+    public function storeMessage(Request $request, StayMessages $conversation): RedirectResponse
+    {
+        $stay = $this->stay($request);
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:'.StayMessage::MAX_LENGTH],
+        ]);
+
+        try {
+            $conversation->post($stay, StayMessage::GUEST, $validated['body']);
+        } catch (DeskRefusal $refusal) {
+            return back()->withErrors(['body' => $refusal->getMessage()])->withInput();
+        }
+
+        return redirect()->to(route('my-stay.home').'#stay-messages')->with('status', __('messages.Sent. The host and Rihla can both read it.'));
     }
 
     public function storePayment(Request $request, SlipVault $slips): RedirectResponse

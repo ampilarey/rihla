@@ -3,6 +3,7 @@
 namespace App\Filament\Host\Widgets;
 
 use App\Filament\Host\Pages\Housekeeping;
+use App\Filament\Host\Pages\Messages;
 use App\Filament\Host\Resources\Bookings\BookingResource;
 use App\Models\Partner;
 use App\Models\PropertyUnit;
@@ -15,8 +16,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Today at the desk — §16.6. Each number is a link to the list behind it.
- *
- * Unread messages join this row when messages exist (Phase 14.5).
  */
 class Today extends StatsOverviewWidget
 {
@@ -49,6 +48,8 @@ class Today extends StatsOverviewWidget
             Stat::make('Still owing', $owing)
                 ->description('Guests in house with a balance')
                 ->url($this->bookings(['today' => ['value' => 'in_house']])),
+            Stat::make('Unread messages', Messages::unreadFor($host->getKey()))
+                ->url(Messages::getUrl()),
             Stat::make('Rooms to clean', Housekeeping::unitsOf($host->getKey())->where('housekeeping', PropertyUnit::DIRTY)->count())
                 ->url(Housekeeping::getUrl(['filters' => ['housekeeping' => ['value' => PropertyUnit::DIRTY]]])),
         ];

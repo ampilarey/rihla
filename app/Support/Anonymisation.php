@@ -118,6 +118,9 @@ final class Anonymisation
         'reviews' => ['body' => 'null', 'host_reply' => 'null', 'hidden_reason' => 'null'],
         // An invitation to review — the token is a credential.
         'review_invitations' => ['token_hash' => 'token'],
+        // The conversation about a stay — §16.11. Private, so a stand-in
+        // reads better than a blank; the column cannot be null anyway.
+        'stay_messages' => ['body' => 'text'],
         // The guest register — §15.6. Names and government identifiers for
         // people who are not even Rihla's customers: one person books a
         // room for four, and the other three never agreed to anything.

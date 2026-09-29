@@ -5,8 +5,11 @@ namespace App\Filament\Resources\Stays\Pages;
 use App\Filament\Resources\Stays\StayResource;
 use App\Models\Stay;
 use App\Models\StayAccess;
+use App\Models\StayMessage;
+use App\Models\User;
 use App\Services\Stays\Reviews;
 use App\Services\Stays\StayGatekeeper;
+use App\Services\Stays\StayMessages;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -16,9 +19,38 @@ class ViewStay extends ViewRecord
 {
     protected static string $resource = StayResource::class;
 
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+
+        // §16.11: somebody at Rihla opening the stay is Rihla reading it.
+        if (auth()->user()?->can('stay.update') === true) {
+            app(StayMessages::class)->markRead($this->stay(), StayMessage::RIHLA);
+        }
+    }
+
     protected function getHeaderActions(): array
     {
-        return [$this->stayLinkAction(), $this->reviewLinkAction()];
+        return [$this->messageAction(), $this->stayLinkAction(), $this->reviewLinkAction()];
+    }
+
+    /** Rihla writes into the stay's conversation — the guest and the host both read it. */
+    private function messageAction(): Action
+    {
+        return Action::make('message')
+            ->label('Message')
+            ->icon('heroicon-o-chat-bubble-left-right')
+            ->visible(fn (): bool => auth()->user()?->can('stay.update') === true)
+            ->modalDescription('The guest reads this on their stay page, and the host on their booking.')
+            ->schema([
+                Textarea::make('body')->label('Message')->required()->rows(4)->maxLength(StayMessage::MAX_LENGTH),
+            ])
+            ->action(function (array $data): void {
+                $user = auth()->user();
+                app(StayMessages::class)->post($this->stay(), StayMessage::RIHLA, $data['body'], $user instanceof User ? $user : null);
+
+                Notification::make()->success()->title('Sent')->send();
+            });
     }
 
     /**

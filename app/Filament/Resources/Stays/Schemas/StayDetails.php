@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Stays\Schemas;
 use App\Models\Payment;
 use App\Models\Stay;
 use App\Models\StayGuest;
+use App\Models\StayMessage;
 use App\Models\User;
 use App\Services\Stays\StayBill;
 use App\Services\Stays\StayBooking;
@@ -213,6 +214,29 @@ class StayDetails
                                     ? self::mask($state)
                                     : $state)
                                 ->placeholder('—'),
+                        ]),
+                ]),
+
+            // §16.11: the conversation with the guest, on both panels.
+            Section::make('Messages')
+                ->visible(fn (Stay $record): bool => $record->messages()->exists())
+                ->schema([
+                    RepeatableEntry::make('messages')
+                        ->hiddenLabel()
+                        ->schema([
+                            TextEntry::make('body')
+                                ->hiddenLabel()
+                                ->prose()
+                                ->helperText(fn (StayMessage $record): string => sprintf(
+                                    '%s · %s%s',
+                                    match ($record->sender) {
+                                        StayMessage::GUEST => 'The guest',
+                                        StayMessage::HOST => 'The host',
+                                        default => 'Rihla',
+                                    },
+                                    $record->sent_at->format('j M, H:i'),
+                                    $record->read_at !== null ? ' · read' : '',
+                                )),
                         ]),
                 ]),
 

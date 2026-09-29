@@ -11,10 +11,12 @@ use App\Models\PropertyUnit;
 use App\Models\Stay;
 use App\Models\StayCharge;
 use App\Models\StayGuest;
+use App\Models\StayMessage;
 use App\Models\User;
 use App\Services\Stays\StayBill;
 use App\Services\Stays\StayBooking;
 use App\Services\Stays\StayDesk;
+use App\Services\Stays\StayMessages;
 use App\Support\HostContext;
 use App\Support\Money;
 use Filament\Actions\Action;
@@ -41,6 +43,14 @@ class ViewBooking extends ViewRecord
 {
     protected static string $resource = BookingResource::class;
 
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+
+        // §16.11: the host opening the booking is the host reading it.
+        app(StayMessages::class)->markRead($this->stay(), StayMessage::HOST);
+    }
+
     public function getSubheading(): ?string
     {
         return BookingResource::statusLabel($this->stay()->status)
@@ -55,6 +65,7 @@ class ViewBooking extends ViewRecord
             $this->decline(),
             $this->checkIn(),
             $this->checkOut(),
+            $this->message(),
             $this->recordPayment(),
             $this->printBill(),
             ActionGroup::make([
@@ -201,6 +212,32 @@ class ViewBooking extends ViewRecord
                 }
 
                 Notification::make()->title('Checked out')->success()->send();
+                $this->refreshStay();
+            });
+    }
+
+    /** Write to the guest — §16.11. They read it on their stay page, and Rihla sees it too. */
+    private function message(): Action
+    {
+        return Action::make('message')
+            ->label('Message the guest')
+            ->icon('heroicon-o-chat-bubble-left-right')
+            ->color('gray')
+            ->authorize(fn (): bool => $this->may())
+            ->modalDescription('The guest reads this on their stay page. Rihla can read it too.')
+            ->schema([
+                Textarea::make('body')->label('Message')->required()->rows(4)->maxLength(StayMessage::MAX_LENGTH),
+            ])
+            ->action(function (array $data): void {
+                try {
+                    app(StayMessages::class)->post($this->stay(), StayMessage::HOST, $data['body'], $this->user());
+                } catch (DeskRefusal $refusal) {
+                    Notification::make()->title('Not sent')->body($refusal->getMessage())->danger()->send();
+
+                    return;
+                }
+
+                Notification::make()->title('Sent')->success()->send();
                 $this->refreshStay();
             });
     }

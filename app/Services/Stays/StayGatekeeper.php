@@ -24,7 +24,8 @@ use Illuminate\Support\Str;
  */
 final class StayGatekeeper
 {
-    private const SESSION_STAY = 'my_stay.stay';
+    /** Public for the message limiter, which counts per stay (§16.11). */
+    public const SESSION_STAY = 'my_stay.stay';
 
     private const SESSION_UNTIL = 'my_stay.until';
 
