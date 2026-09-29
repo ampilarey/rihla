@@ -57,6 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `packages.sold_to` and `price_tiers.audience`
+        // (§16 Phase 15). No foreign key, but left recorded while both
+        // tables are dropped and re-created below, they would come back
+        // without the columns and the migration would never run again.
+        __DIR__.'/../../database/migrations/2026_09_30_150000_sell_island_holidays_to_visitors_too.php',
         // Newest of all: `property_addons` hangs off `properties` (§16.14).
         __DIR__.'/../../database/migrations/2026_09_30_140000_create_property_addons.php',
         // Newest of all: `stay_messages` hangs off `stays` (§16.11).

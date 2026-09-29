@@ -945,4 +945,8 @@ return [
     'Paid to the host at the property, not now.' => 'Paid to the host at the property, not now.',
     ':amount for your party' => ':amount for your party',
     'Extras you can add' => 'Extras you can add',
+    'Maldivians from :price' => 'Maldivians from :price',
+    'Visitors from :price' => 'Visitors from :price',
+    'Packages at this guesthouse' => 'Packages at this guesthouse',
+    'See the package' => 'See the package',
 ];

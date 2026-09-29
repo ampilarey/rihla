@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Audience;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +24,7 @@ class Package extends Model
     use HasFactory, HasTranslations;
 
     protected $fillable = [
-        'slug', 'type', 'property_id', 'title', 'summary', 'details', 'inclusions', 'exclusions',
+        'slug', 'type', 'sold_to', 'property_id', 'title', 'summary', 'details', 'inclusions', 'exclusions',
         'nights', 'flexible_dates', 'min_nights',
         'extension_destination', 'extension_nights', 'extension_details',
         'accessibility_rating', 'accessibility_notes',
@@ -63,6 +64,19 @@ class Package extends Model
 
     /** Maldivian families, going to a local island. */
     public const LOCALS = 'locals';
+
+    // ── Which price lists it sells at — §16 Phase 15 ─────────────────────
+
+    /** Both price lists: a local price in rufiyaa and a visitor's in dollars. */
+    public const SOLD_TO_BOTH = 'both';
+
+    /**
+     * `sold_to` values. Every package before Phase 15 is `local`, which
+     * prices exactly as it always did.
+     *
+     * @var list<string>
+     */
+    public const SOLD_TO = [Audience::LOCAL, Audience::TOURIST, self::SOLD_TO_BOTH];
 
     /**
      * Per docs/adr/0001-how-content-is-translated.md. `inclusions`,
@@ -107,7 +121,7 @@ class Package extends Model
     ];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['type' => self::UMRAH];
+    protected $attributes = ['type' => self::UMRAH, 'sold_to' => Audience::LOCAL];
 
     protected static function booted(): void
     {
@@ -160,10 +174,10 @@ class Package extends Model
      *
      * @return list<string>
      */
-    public function occupanciesOffered(): array
+    public function occupanciesOffered(?string $audience = null): array
     {
         $offered = $this->publishedDepartures
-            ->flatMap(fn (Departure $departure): array => $departure->priceTiers->pluck('occupancy')->all())
+            ->flatMap(fn (Departure $departure): array => $departure->occupanciesOffered($audience))
             ->unique();
 
         return array_values(array_filter(
@@ -222,6 +236,36 @@ class Package extends Model
     public function audience(): string
     {
         return $this->type === self::ISLAND_HOLIDAY ? self::LOCALS : self::PILGRIMS;
+    }
+
+    /**
+     * The price lists a guest may buy this at — §16 Phase 15.
+     *
+     * @return list<string>
+     */
+    public function audiencesSold(): array
+    {
+        return match ($this->sold_to) {
+            Audience::TOURIST => [Audience::TOURIST],
+            self::SOLD_TO_BOTH => [Audience::LOCAL, Audience::TOURIST],
+            default => [Audience::LOCAL],
+        };
+    }
+
+    public function sellsTo(string $audience): bool
+    {
+        return in_array($audience, $this->audiencesSold(), true);
+    }
+
+    /**
+     * The price list a guest is quoted from when they have not said: the
+     * one they asked for if the package sells at it, otherwise the first it
+     * does sell at. A local-only package quotes every reader the local
+     * price, as every package did before Phase 15.
+     */
+    public function audienceFor(?string $wanted): string
+    {
+        return $wanted !== null && $this->sellsTo($wanted) ? $wanted : $this->audiencesSold()[0];
     }
 
     /**

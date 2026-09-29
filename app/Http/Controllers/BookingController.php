@@ -15,6 +15,7 @@ use App\Models\WaitlistEntry;
 use App\Services\Booking\SeatAllocator;
 use App\Services\Booking\Waitlist;
 use App\Services\Payments\Drivers\BankTransfer;
+use App\Support\Audience;
 use App\Support\Checkout;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -68,6 +69,11 @@ class BookingController extends Controller
 
         return view('booking.start', [
             'package' => $package,
+            // Which price list to open on — §16 Phase 15: the one asked
+            // for, else the reader's language's guess, else the package's.
+            'audience' => $package->audienceFor(is_string($request->query('audience'))
+                ? $request->query('audience')
+                : Audience::fromLocale(app()->getLocale())),
             'departures' => $package->publishedDepartures,
             'selected' => $this->preselectedDeparture($package, $request),
             'socialSettings' => Setting::getSocialSettings(),
@@ -83,7 +89,12 @@ class BookingController extends Controller
             'departure' => ['required', 'integer'],
             'occupancy' => ['required', 'string', 'in:'.implode(',', PriceTier::OCCUPANCIES)],
             'seats' => ['required', 'integer', 'min:1', 'max:'.(int) config('booking.party.max', 12)],
+            'audience' => ['nullable', 'in:'.implode(',', Audience::ALL)],
         ]);
+
+        // Which price list — §16 Phase 15. A package sold at one only is
+        // quoted from that one whatever the request says.
+        $audience = $package->audienceFor($validated['audience'] ?? null);
 
         /** @var Departure|null $departure */
         $departure = $package->publishedDepartures->find($validated['departure']);
@@ -94,7 +105,7 @@ class BookingController extends Controller
             ]);
         }
 
-        if ($departure->tierFor($validated['occupancy']) === null) {
+        if ($departure->tierFor($validated['occupancy'], audience: $audience) === null) {
             return back()->withInput()->withErrors([
                 'occupancy' => __('messages.This departure does not offer that room type.'),
             ]);
@@ -111,7 +122,7 @@ class BookingController extends Controller
             return back()->withInput()->withErrors(['seats' => $this->seatsGoneMessage($departure)]);
         }
 
-        Checkout::remember($hold, $validated['occupancy']);
+        Checkout::remember($hold, $validated['occupancy'], $audience);
 
         return redirect()->route('booking.travellers');
     }
@@ -143,6 +154,7 @@ class BookingController extends Controller
         }
 
         $occupancy = Checkout::occupancy() ?? PriceTier::OCCUPANCIES[0];
+        $audience = Checkout::audience();
         $departure = $hold->departure;
 
         $validated = $request->validate([
@@ -161,7 +173,7 @@ class BookingController extends Controller
             return back()->withInput()->withErrors(['travellers' => $complaint]);
         }
 
-        $booking = DB::transaction(function () use ($validated, $hold, $departure, $occupancy): Booking {
+        $booking = DB::transaction(function () use ($validated, $hold, $departure, $occupancy, $audience): Booking {
             $customer = Customer::create([
                 'name' => $validated['contact_name'],
                 'phone' => $validated['contact_phone'],
@@ -172,11 +184,12 @@ class BookingController extends Controller
                 'customer_id' => $customer->getKey(),
                 'departure_id' => $departure->getKey(),
                 'seats' => $hold->seats,
-                'currency' => $departure->lead_price->currency ?? 'MVR',
+                // One currency per booking: the price list's (§16 Phase 15).
+                'currency' => $departure->leadPriceFor($audience)->currency ?? $departure->lead_price->currency ?? 'MVR',
             ]);
 
             foreach (array_values($validated['travellers']) as $index => $details) {
-                $this->addTraveller($booking, $customer, $departure, $occupancy, $details, isLead: $index === 0);
+                $this->addTraveller($booking, $customer, $departure, $occupancy, $details, isLead: $index === 0, audience: $audience);
             }
 
             $booking->recalculateTotal();
@@ -314,6 +327,7 @@ class BookingController extends Controller
         string $occupancy,
         array $details,
         bool $isLead,
+        string $audience = Audience::LOCAL,
     ): void {
         $traveller = Traveller::create([
             'customer_id' => $customer->getKey(),
@@ -325,7 +339,7 @@ class BookingController extends Controller
         ]);
 
         $paxType = PriceTier::paxTypeForAge($traveller->ageOn($departure->date_start));
-        $tier = $departure->tierFor($occupancy, $paxType) ?? $departure->tierFor($occupancy);
+        $tier = $departure->tierFor($occupancy, $paxType, $audience) ?? $departure->tierFor($occupancy, audience: $audience);
 
         $line = $booking->travellers()->create([
             'traveller_id' => $traveller->getKey(),

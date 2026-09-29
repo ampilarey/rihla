@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\HostPage;
+use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Property;
 use App\Models\PropertyPhoto;
@@ -81,6 +82,7 @@ class HostPageController extends Controller
             'partner' => $partner,
             'page' => $page,
             'listings' => $listings,
+            'packages' => $this->packages($listings),
             'audience' => $audience,
             'photos' => $this->photos($listings),
             'points' => $listings
@@ -105,6 +107,29 @@ class HostPageController extends Controller
         }
 
         return $view;
+    }
+
+    /**
+     * Rihla's island holidays built on one of this host's listed places —
+     * §16 Phase 15, *Packages at this guesthouse*. Published only, and only
+     * while the island-holidays door is not off.
+     *
+     * @param  Collection<int, Property>  $listings
+     * @return Collection<int, Package>
+     */
+    private function packages($listings)
+    {
+        if ($listings->isEmpty() || ServiceRegistry::isOff('stays_island_holidays')) {
+            return new Collection;
+        }
+
+        return Package::published()
+            ->ofType([Package::ISLAND_HOLIDAY])
+            ->whereIn('property_id', $listings->pluck('id')->all())
+            ->with(['publishedDepartures' => fn ($query) => $query->upcoming()->with('priceTiers')])
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
     }
 
     /** The 1200×630 preview a pasted link shows — the host's cover, as a listing's. */

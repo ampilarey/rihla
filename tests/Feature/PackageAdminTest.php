@@ -234,6 +234,31 @@ class PackageAdminTest extends TestCase
         $this->assertSame('MVR 28,500', $tier->formatted);
     }
 
+    /** §16 Phase 15: a visitor's price is typed in dollars and kept as its own tier. */
+    public function test_a_visitor_price_is_typed_in_dollars_beside_the_local_one(): void
+    {
+        $package = Package::factory()->islandHoliday()->create(['sold_to' => Package::SOLD_TO_BOTH]);
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(DeparturesRelationManager::class, [
+                'ownerRecord' => $package,
+                'pageClass' => EditPackage::class,
+            ])
+            ->callTableAction('create', data: [
+                'date_start' => '2027-03-01',
+                'date_end' => '2027-03-03',
+                'status' => Departure::STATUS_UPCOMING,
+                'priceTiers' => [
+                    ['audience' => 'local', 'occupancy' => 'double', 'pax_type' => 'adult', 'amount_minor' => 3_000],
+                    ['audience' => 'tourist', 'occupancy' => 'double', 'pax_type' => 'adult', 'amount_minor' => 250],
+                ],
+            ])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame('MVR 3,000', PriceTier::where('audience', 'local')->sole()->formatted);
+        $this->assertSame('USD 250', PriceTier::where('audience', 'tourist')->sole()->formatted);
+    }
+
     public function test_an_existing_price_is_shown_back_in_rufiyaa(): void
     {
         $package = Package::factory()->create();

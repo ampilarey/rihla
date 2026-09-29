@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Audience;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,7 @@ class PriceTier extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['departure_id', 'occupancy', 'pax_type', 'amount_minor', 'currency', 'sort_order'];
+    protected $fillable = ['departure_id', 'audience', 'occupancy', 'pax_type', 'amount_minor', 'currency', 'sort_order'];
 
     protected $casts = [
         'amount_minor' => 'integer',
@@ -37,6 +38,7 @@ class PriceTier extends Model
      * @var array<string, mixed>
      */
     protected $attributes = [
+        'audience' => 'local',
         'currency' => 'MVR',
         'pax_type' => 'adult',
         'sort_order' => 0,
@@ -78,6 +80,21 @@ class PriceTier extends Model
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
+    }
+
+    /**
+     * A visitor's price is in the visitor's currency — §16 Phase 15. Set
+     * here rather than trusted from a form, so a tourist tier can never be
+     * saved in rufiyaa and quoted to a visitor as if it were dollars. A
+     * local tier keeps the currency it has, as every tier always did.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $tier): void {
+            if ($tier->audience === Audience::TOURIST) {
+                $tier->currency = strtoupper((string) config('marketplace.currencies.tourist', 'USD'));
+            }
+        });
     }
 
     public function money(): Money

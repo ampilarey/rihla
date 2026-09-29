@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Audience;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -220,27 +221,44 @@ class Departure extends Model
      * price everybody as an adult, not have a child discount invented for
      * it. Callers fall back deliberately.
      */
-    public function tierFor(string $occupancy, string $paxType = PriceTier::ADULT): ?PriceTier
+    public function tierFor(string $occupancy, string $paxType = PriceTier::ADULT, string $audience = Audience::LOCAL): ?PriceTier
     {
         return $this->priceTiers
-            ->firstWhere(fn (PriceTier $tier): bool => $tier->occupancy === $occupancy && $tier->pax_type === $paxType);
+            ->firstWhere(fn (PriceTier $tier): bool => $tier->occupancy === $occupancy
+                && $tier->pax_type === $paxType
+                && $tier->audience === $audience);
     }
 
-    /** The occupancies this departure actually prices, in price-list order. */
-    public function occupanciesOffered(): array
+    /**
+     * The occupancies this departure actually prices, in price-list order —
+     * for one price list, or for any when none is named.
+     */
+    public function occupanciesOffered(?string $audience = null): array
     {
+        $tiers = $audience === null ? $this->priceTiers : $this->priceTiers->where('audience', $audience);
+
         return array_values(array_filter(
             PriceTier::OCCUPANCIES,
-            fn (string $occupancy): bool => $this->priceTiers->contains('occupancy', $occupancy),
+            fn (string $occupancy): bool => $tiers->contains('occupancy', $occupancy),
         ));
     }
 
-    /** The cheapest tier — what a "from" price means. */
+    /**
+     * The cheapest tier — what a "from" price means.
+     *
+     * From the local price list, as it always was; a departure priced only
+     * for visitors (§16 Phase 15) falls back to theirs rather than showing
+     * no price at all. Never the cheapest across two currencies.
+     */
     public function getLeadPriceAttribute(): ?Money
     {
-        $tier = $this->priceTiers->sortBy('amount_minor')->first();
+        return $this->leadPriceFor(Audience::LOCAL) ?? $this->leadPriceFor(Audience::TOURIST);
+    }
 
-        return $tier?->money();
+    /** The cheapest tier on one price list, or null when it prices nothing there. */
+    public function leadPriceFor(string $audience): ?Money
+    {
+        return $this->priceTiers->where('audience', $audience)->sortBy('amount_minor')->first()?->money();
     }
 
     // ── Dates ────────────────────────────────────────────────────────────
