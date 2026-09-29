@@ -2,9 +2,14 @@
 
 namespace App\Filament\Resources\Stays\Schemas;
 
+use App\Models\Payment;
 use App\Models\Stay;
 use App\Models\StayGuest;
+use App\Models\User;
+use App\Services\Stays\StayBill;
 use App\Services\Stays\StayBooking;
+use App\Support\HostContext;
+use App\Support\HostRole;
 use App\Support\Money;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -26,7 +31,12 @@ use Filament\Schemas\Schema;
  */
 class StayDetails
 {
-    public static function configure(Schema $schema): Schema
+    /**
+     * The same screen in both panels. In `/host` ({@see $forHost}) the guest
+     * register's identifiers are masked for whoever may not see them whole
+     * — reception, per §16.6's role table.
+     */
+    public static function configure(Schema $schema, bool $forHost = false): Schema
     {
         return $schema->components([
             Section::make('The stay')->columns(3)->schema([
@@ -87,7 +97,74 @@ class StayDetails
                 TextEntry::make('currency')
                     ->label('Still owed')
                     ->formatStateUsing(fn ($state, Stay $record): string => $record->outstanding()->format()),
+
+                // §16.9: whose hands the money is in. The guest's total is
+                // one number; who holds it is two.
+                TextEntry::make('paid_to_rihla')
+                    ->label('Paid online, to Rihla')
+                    ->state(fn (Stay $record): string => $record->paidToRihla()->format()),
+
+                TextEntry::make('paid_to_host')
+                    ->label('Paid at the property')
+                    ->state(fn (Stay $record): string => $record->paidToHost()->format()),
+
+                TextEntry::make('commission_minor')
+                    ->label('Rihla\'s commission')
+                    ->visible(fn (Stay $record): bool => $record->commission_pct_snapshot !== null)
+                    ->formatStateUsing(fn (?int $state, Stay $record): string => sprintf(
+                        '%s (%d%%) · host receives %s',
+                        Money::ofMinor((int) $state, $record->currency)->format(),
+                        (int) $record->commission_pct_snapshot,
+                        Money::ofMinor((int) $record->host_net_minor, $record->currency)->format(),
+                    )),
             ]),
+
+            // §16.10. The room and Green Tax lines come from the snapshot;
+            // what the host added is below them.
+            Section::make('The bill')
+                ->visible(fn (Stay $record): bool => in_array($record->status, [Stay::HELD, Stay::CONFIRMED, Stay::CHECKED_IN, Stay::COMPLETED], true))
+                ->columns(2)
+                ->schema([
+                    TextEntry::make('bill_lines')
+                        ->label('Lines')
+                        ->columnSpanFull()
+                        ->listWithLineBreaks()
+                        ->state(fn (Stay $record): array => array_map(
+                            fn (array $line): string => $line['description'].' — '.$line['total']->format(),
+                            StayBill::for($record)->lines(),
+                        )),
+
+                    TextEntry::make('bill_total')
+                        ->label('Bill total')
+                        ->state(fn (Stay $record): string => StayBill::for($record)->total()->format()),
+
+                    TextEntry::make('bill_balance')
+                        ->label('Balance at the desk')
+                        ->state(function (Stay $record): string {
+                            $balance = StayBill::for($record)->balance();
+
+                            return $balance->minor < 0
+                                ? 'In credit: '.Money::ofMinor(-$balance->minor, $balance->currency)->format()
+                                : $balance->format();
+                        }),
+
+                    TextEntry::make('payments_list')
+                        ->label('Payments')
+                        ->columnSpanFull()
+                        ->listWithLineBreaks()
+                        ->placeholder('None yet')
+                        ->state(fn (Stay $record): array => $record->payments
+                            ->where('status', Payment::SUCCEEDED)
+                            ->map(fn (Payment $payment): string => sprintf(
+                                '%s %s · %s · %s',
+                                $payment->amount_minor < 0 ? 'Refunded' : 'Received',
+                                Money::ofMinor(abs($payment->amount_minor), $payment->currency)->format(),
+                                $payment->collected_by === Payment::COLLECTED_BY_HOST ? 'at the property' : 'online, by Rihla',
+                                $payment->paid_at?->format('j M Y') ?? '—',
+                            ))
+                            ->values()
+                            ->all()),
+                ]),
 
             // Read from the snapshot, deliberately. See the class docblock.
             Section::make('What the guest was told')
@@ -132,6 +209,9 @@ class StayDetails
 
                             TextEntry::make('id_number')
                                 ->label(fn (StayGuest $record): string => $record->identifierLabel())
+                                ->formatStateUsing(fn (?string $state): ?string => $forHost && ! self::mayUnmask()
+                                    ? self::mask($state)
+                                    : $state)
                                 ->placeholder('—'),
                         ]),
                 ]),
@@ -142,5 +222,26 @@ class StayDetails
                     TextEntry::make('cancellation_reason')->label('Reason the guest was given')->hiddenLabel(),
                 ]),
         ]);
+    }
+
+    /** Whether the person in `/host` may read identifiers whole. */
+    private static function mayUnmask(): bool
+    {
+        $host = HostContext::current();
+        $user = auth()->user();
+
+        return $host !== null && $user instanceof User && HostRole::allows($user->roleAt($host), HostRole::REGISTER_UNMASKED);
+    }
+
+    /** "••••••4821": enough to match a document at the desk, not to copy it. */
+    public static function mask(?string $identifier): ?string
+    {
+        if ($identifier === null || $identifier === '') {
+            return $identifier;
+        }
+
+        $shown = mb_strlen($identifier) > 6 ? 4 : 1;
+
+        return str_repeat('•', mb_strlen($identifier) - $shown).mb_substr($identifier, -$shown);
     }
 }

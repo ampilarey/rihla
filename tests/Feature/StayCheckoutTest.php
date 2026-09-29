@@ -173,8 +173,13 @@ class StayCheckoutTest extends TestCase
         $stay = Stay::sole();
         $this->assertSame(Stay::HELD, $stay->status);
 
+        // §16.9: under `commission_deposit` the online payment is Rihla's
+        // commission — 15% of USD 200 — and the rest is paid at the
+        // property. Not the property's own 30% deposit.
+        $this->assertSame($stay->commission_minor, $stay->deposit_minor);
+
         $this->get(route('my-stay.home', ['locale' => 'en']))
-            ->assertSee('To pay now: USD 60', false)
+            ->assertSee('To pay now: USD 30', false)
             ->assertSee('7730000012345')
             ->assertSee('Send us your transfer slip');
     }

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
@@ -201,6 +202,20 @@ class Stay extends Model implements TakesPayments
         return $this->belongsTo(Property::class);
     }
 
+    /**
+     * The host whose building this is — §16.6.
+     *
+     * Through the property, because a stay has no host column of its own
+     * and should not grow one: a second copy of "whose is this" is a
+     * second thing to keep right. The host panel's tenant scope walks this.
+     *
+     * @return HasOneThrough<Partner, Property, $this>
+     */
+    public function partner(): HasOneThrough
+    {
+        return $this->hasOneThrough(Partner::class, Property::class, 'id', 'id', 'property_id', 'partner_id');
+    }
+
     /** @return BelongsTo<RoomType, $this> */
     public function roomType(): BelongsTo
     {
@@ -311,10 +326,45 @@ class Stay extends Model implements TakesPayments
         return Money::ofMinor(max(0, $this->total_minor - $this->paid_minor), $this->currency);
     }
 
-    /** Has the deposit this stay was held for actually landed? */
+    /**
+     * Has the deposit this stay was held for actually landed — **with Rihla**?
+     *
+     * §16.9: money a host records at the property is the guest's, and
+     * counts towards what they have paid, but it is not the deposit that
+     * confirms a marketplace stay. Counting it would let a host confirm a
+     * stay whose booking deposit — Rihla's commission — never arrived.
+     */
     public function depositIsPaid(): bool
     {
-        return $this->deposit_minor > 0 && $this->paid_minor >= $this->deposit_minor;
+        return $this->deposit_minor > 0 && $this->paidToRihla()->minor >= $this->deposit_minor;
+    }
+
+    /**
+     * What Rihla holds: the paid total less what the host took.
+     *
+     * Worked out from the cached total rather than a second SUM so that a
+     * stay with no host payments — every stay before §16 — answers exactly
+     * as it always did.
+     */
+    public function paidToRihla(): Money
+    {
+        return Money::ofMinor($this->paid_minor - $this->paidToHost()->minor, $this->currency);
+    }
+
+    /** What the host has recorded taking at the property, refunds netted. */
+    public function paidToHost(): Money
+    {
+        if (! $this->exists) {
+            return Money::ofMinor(0, $this->currency);
+        }
+
+        $minor = (int) $this->payments()
+            ->reorder()
+            ->where('collected_by', Payment::COLLECTED_BY_HOST)
+            ->succeeded()
+            ->sum('amount_minor');
+
+        return Money::ofMinor($minor, $this->currency);
     }
 
     // ── App\Services\Payments\TakesPayments ───────────────────────────────
