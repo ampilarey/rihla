@@ -30,7 +30,7 @@
                         {{ __('messages.Departing in') }}
                     </label>
                     <select id="finder-month" name="month"
-                            class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                            class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                         <option value="">{{ __('messages.Any month') }}</option>
                         @foreach($options->months as $month)
                             <option value="{{ $month['value'] }}" @selected($filters->month === $month['value'])>
@@ -46,7 +46,7 @@
                             {{ __('messages.Budget per person') }}
                         </label>
                         <select id="finder-budget" name="budget"
-                                class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                             <option value="">{{ __('messages.Any budget') }}</option>
                             @foreach($options->budgets as $budget)
                                 <option value="{{ $budget['value'] }}"
@@ -64,7 +64,7 @@
                             {{ __('messages.Length') }}
                         </label>
                         <select id="finder-nights" name="nights"
-                                class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                             <option value="">{{ __('messages.Any length') }}</option>
                             @foreach($options->durations as $duration)
                                 <option value="{{ $duration['value'] }}" @selected($filters->maxNights === $duration['value'])>

@@ -47,7 +47,7 @@
                     <input
                         type="text" id="label" name="label" maxlength="60"
                         placeholder="Mum, or the family group"
-                        class="w-full rounded-xl border border-cream-deep px-4 py-3"
+                        class="w-full rounded-xl border border-gray-500 px-4 py-3"
                     >
                     <p class="mt-1 text-sm text-ink-muted">
                         Only so you can tell your links apart. Nobody else sees it.

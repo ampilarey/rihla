@@ -22,6 +22,9 @@ return [
     */
     'currencies' => [
         'local' => env('MARKETPLACE_LOCAL_CURRENCY', 'MVR'),
+        // Only what a tourist's price *range* in search is typed in. A
+        // tourist is still charged in each property's own currency.
+        'tourist' => env('MARKETPLACE_TOURIST_CURRENCY', 'USD'),
     ],
 
     /*

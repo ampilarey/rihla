@@ -296,7 +296,7 @@
                                                 {{ __('messages.Full name') }}
                                             </label>
                                             <input id="wl-name-{{ $departure->id }}" name="name" type="text" required dir="auto"
-                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                                         </div>
 
                                         <div>
@@ -304,7 +304,7 @@
                                                 {{ __('messages.Phone') }}
                                             </label>
                                             <input id="wl-phone-{{ $departure->id }}" name="phone" type="tel" required dir="ltr"
-                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                                         </div>
 
                                         <div>
@@ -313,7 +313,7 @@
                                             </label>
                                             <input id="wl-seats-{{ $departure->id }}" name="seats" type="number" inputmode="numeric"
                                                    min="1" max="{{ config('booking.party.max') }}" value="1" dir="ltr"
-                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                                         </div>
 
                                         <div class="sm:col-span-2">
@@ -321,7 +321,7 @@
                                                 {{ __('messages.Email (optional)') }}
                                             </label>
                                             <input id="wl-email-{{ $departure->id }}" name="email" type="email" dir="ltr"
-                                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                                         </div>
 
                                         <button type="submit" class="btn-secondary sm:col-span-2">

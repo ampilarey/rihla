@@ -35,7 +35,7 @@
         <div>
             <label for="stays-island" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Island') }}</label>
             <select id="stays-island" name="island"
-                    class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                    class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                 <option value="">{{ __('messages.Any island') }}</option>
                 @foreach($islands as $island)
                     <option value="{{ $island }}" @selected($filters->island === $island)>{{ $island }}</option>
@@ -47,21 +47,21 @@
             <label for="stays-from" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Check in') }}</label>
             <input id="stays-from" name="from" type="date" dir="ltr"
                    value="{{ $filters->checkIn?->toDateString() }}"
-                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
         </div>
 
         <div>
             <label for="stays-to" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Check out') }}</label>
             <input id="stays-to" name="to" type="date" dir="ltr"
                    value="{{ $filters->checkOut?->toDateString() }}"
-                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
         </div>
 
         <div>
             <label for="stays-guests" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Guests') }}</label>
             <input id="stays-guests" name="guests" type="number" min="1" max="30" inputmode="numeric" dir="ltr"
                    value="{{ $filters->guests }}"
-                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
         </div>
 
         <div class="flex items-end">

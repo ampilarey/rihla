@@ -2364,7 +2364,7 @@ it would have nothing to refuse and would change today's request flow for
 net-rate partners, whose `commission_pct` is rightly null.
 
 **Phase 13 — Guests book and pay online (3–4 weeks).**
-1. The search page with the new filters, cards, pagination, the door cards.
+1. ~~The search page with the new filters, cards, pagination, the door cards.~~ **Done:** `/stays` keeps the door cards and lists every listing behind a door that is not off, filtered by island, atoll, kind, dates (through `Availability`), guests and a price range, sorted by recommended, price or newest, 24 a page. The audience defaults from the language and is a visible choice; a listing with no price for it is not shown to it. A price range is read in the audience's currency and never compared across currencies. `Property::listable()` — published, approved, host active and verified — is now the one rule for search, the strand pages, the listing page and the share kit (`StaysSearchTest`). **Not yet:** the rating filter and sort and the amenities filter — the first needs reviews (Phase 14), the second amenities as data rather than translated free text. **Found on the way:** thirty-six form fields across the site had a border colour and no border width, so they rendered as blank space — the booking forms and the MFA challenge among them; `FormFieldBorderTest` now fails on any field whose edge cannot show.
 2. The listing page: gallery, lazy map, rooms with quotes per audience,
    *Book*.
 3. The booking flow, the stay session and `/my-stay`, notices for each step,

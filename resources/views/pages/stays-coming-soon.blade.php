@@ -46,7 +46,7 @@
                     <label dir="auto" for="stays-enquiry-name" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Your name') }}</label>
                     <input id="stays-enquiry-name" name="name" type="text" required maxlength="255"
                            value="{{ old('name') }}" dir="auto"
-                           class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                           class="w-full rounded-xl border border-gray-500 px-3 py-2">
                     <x-input-error :messages="$errors->get('name')" class="mt-1" />
                 </div>
 
@@ -54,7 +54,7 @@
                     <label dir="auto" for="stays-enquiry-phone" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Phone') }}</label>
                     <input id="stays-enquiry-phone" name="phone" type="tel" maxlength="40" inputmode="tel"
                            value="{{ old('phone') }}" dir="ltr"
-                           class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                           class="w-full rounded-xl border border-gray-500 px-3 py-2">
                     <x-input-error :messages="$errors->get('phone')" class="mt-1" />
                 </div>
 
@@ -62,7 +62,7 @@
                     <label dir="auto" for="stays-enquiry-email" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Email') }}</label>
                     <input id="stays-enquiry-email" name="email" type="email" maxlength="255"
                            value="{{ old('email') }}" dir="ltr"
-                           class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                           class="w-full rounded-xl border border-gray-500 px-3 py-2">
                     <x-input-error :messages="$errors->get('email')" class="mt-1" />
                 </div>
 
@@ -70,14 +70,14 @@
                     <label dir="auto" for="stays-enquiry-party" class="mb-1 block text-sm text-ink-muted">{{ __('messages.How many of you?') }}</label>
                     <input id="stays-enquiry-party" name="party_size" type="number" min="1" max="60" inputmode="numeric"
                            value="{{ old('party_size') }}" dir="ltr"
-                           class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                           class="w-full rounded-xl border border-gray-500 px-3 py-2">
                     <x-input-error :messages="$errors->get('party_size')" class="mt-1" />
                 </div>
 
                 <div>
                     <label dir="auto" for="stays-enquiry-message" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Anything else?') }}</label>
                     <textarea id="stays-enquiry-message" name="message" rows="3" maxlength="2000" dir="auto"
-                              class="w-full rounded-xl border border-cream-deep px-3 py-2">{{ old('message', __('messages.Interested in: :service', ['service' => $label])) }}</textarea>
+                              class="w-full rounded-xl border border-gray-500 px-3 py-2">{{ old('message', __('messages.Interested in: :service', ['service' => $label])) }}</textarea>
                     <x-input-error :messages="$errors->get('message')" class="mt-1" />
                 </div>
 

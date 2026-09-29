@@ -25,7 +25,7 @@
         </label>
         <input id="portal-amount" name="amount" type="number" min="1" inputmode="numeric" required
                value="{{ old('amount', max(1, $balance->major())) }}"
-               class="w-full rounded-xl border border-cream-deep px-3 py-2" dir="ltr">
+               class="w-full rounded-xl border border-gray-500 px-3 py-2" dir="ltr">
         <x-input-error :messages="$errors->get('amount')" class="mt-1" />
     </div>
 
@@ -35,7 +35,7 @@
         </label>
         <input id="portal-paid-at" name="paid_at" type="date" max="{{ now()->toDateString() }}"
                value="{{ old('paid_at') }}"
-               class="w-full rounded-xl border border-cream-deep px-3 py-2" dir="ltr">
+               class="w-full rounded-xl border border-gray-500 px-3 py-2" dir="ltr">
         <x-input-error :messages="$errors->get('paid_at')" class="mt-1" />
     </div>
 
@@ -45,7 +45,7 @@
         </label>
         <input id="portal-payer" name="payer_name" type="text" maxlength="255"
                value="{{ old('payer_name') }}"
-               class="w-full rounded-xl border border-cream-deep px-3 py-2" dir="auto">
+               class="w-full rounded-xl border border-gray-500 px-3 py-2" dir="auto">
         <x-input-error :messages="$errors->get('payer_name')" class="mt-1" />
     </div>
 
@@ -55,7 +55,7 @@
         </label>
         <input id="portal-slip" name="slip" type="file" required
                accept="{{ implode(',', (array) config('payments.slips.mime_types')) }}"
-               class="w-full rounded-xl border border-cream-deep px-3 py-2">
+               class="w-full rounded-xl border border-gray-500 px-3 py-2">
         <x-input-error :messages="$errors->get('slip')" class="mt-1" />
     </div>
 

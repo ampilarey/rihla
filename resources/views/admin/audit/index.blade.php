@@ -12,7 +12,7 @@
     </div>
 
     <form method="GET" class="flex flex-wrap gap-3 mb-6">
-        <select name="event" class="rounded-lg border-gray-300 text-sm">
+        <select name="event" class="rounded-lg border border-gray-500 px-3 py-2 text-sm">
             <option value="">{{ __('All events') }}</option>
             @foreach (['created', 'updated', 'deleted'] as $event)
                 <option value="{{ $event }}" @selected(request('event') === $event)>
@@ -21,7 +21,7 @@
             @endforeach
         </select>
 
-        <select name="subject" class="rounded-lg border-gray-300 text-sm">
+        <select name="subject" class="rounded-lg border border-gray-500 px-3 py-2 text-sm">
             <option value="">{{ __('All records') }}</option>
             @foreach ($subjects as $subject)
                 <option value="{{ $subject }}" @selected(request('subject') === $subject)>
