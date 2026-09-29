@@ -29,4 +29,19 @@
             @endforeach
         @endif
     </x-filament::section>
+
+    @php($statements = $this->statements())
+    <x-filament::section heading="Statements" description="Issued on the 2nd for the month before, and never changed afterwards.">
+        @forelse ($statements as $statement)
+            <x-filament::callout color="gray" icon="heroicon-o-document-text"
+                :heading="$statement->label()"
+                :description="'Yours ' . $statement->money('net_minor')->format() . ' · Rihla holds ' . $statement->money('rihla_holds_minor')->format() . ' · ' . $statement->reference">
+                <x-slot name="footer">
+                    <x-filament::button size="sm" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadStatement({{ $statement->id }})">Download PDF</x-filament::button>
+                </x-slot>
+            </x-filament::callout>
+        @empty
+            <x-filament::callout color="gray" icon="heroicon-o-document-text" heading="No statements yet" description="Your first arrives on the 2nd of next month." />
+        @endforelse
+    </x-filament::section>
 </x-filament-panels::page>
