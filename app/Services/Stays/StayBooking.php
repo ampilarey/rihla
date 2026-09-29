@@ -124,6 +124,7 @@ class StayBooking
             'special_requests' => $details['special_requests'] ?? null,
             'source' => $details['source'] ?? null,
             'created_via' => $details['created_via'] ?? Stay::VIA_GUEST,
+            'created_by' => $details['created_by'] ?? null,
         ]));
 
         if ($fromMarketplace) {

@@ -498,6 +498,11 @@ final class Access
         'stay.view',
         'stay.update',
         'stay.confirm',
+        // Taking a booking for a guest on the phone — §16 Phase 13.4. Not a
+        // raw `create`: the stay is still made by the booking flow, with
+        // its availability check, its lock and its frozen quote; this only
+        // says who may start that flow on somebody else's behalf.
+        'stay.book',
 
         'setting.view',
         'setting.update',
