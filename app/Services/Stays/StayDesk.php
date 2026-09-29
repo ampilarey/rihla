@@ -247,8 +247,14 @@ class StayDesk
         return app(StayAllocator::class)->release($stay, Stay::CANCELLED, $reason);
     }
 
-    /** @throws DeskRefusal */
-    private function assertUnitFits(Stay $stay, PropertyUnit $unit): void
+    /**
+     * The room is of the kind booked, in use, and nobody else is in it —
+     * now, at check-in; or on any of these nights, when a booking is being
+     * put in a room ahead of time ({@see $forTheNights}).
+     *
+     * @throws DeskRefusal
+     */
+    public function assertUnitFits(Stay $stay, PropertyUnit $unit, bool $forTheNights = false): void
     {
         if ((int) $unit->room_type_id !== (int) $stay->room_type_id || (int) $unit->property_id !== (int) $stay->property_id) {
             throw new DeskRefusal('That room is not one of the kind this guest booked.');
@@ -258,13 +264,24 @@ class StayDesk
             throw new DeskRefusal($unit->label.' is out of use.');
         }
 
-        $occupied = Stay::query()
+        $others = Stay::query()
             ->where('unit_id', $unit->getKey())
-            ->where('status', Stay::CHECKED_IN)
-            ->whereKeyNot($stay->getKey())
-            ->exists();
+            ->whereKeyNot($stay->getKey());
 
-        if ($occupied) {
+        if ($forTheNights) {
+            $taken = $others
+                ->whereIn('status', [Stay::HELD, Stay::CONFIRMED, Stay::CHECKED_IN])
+                ->overlapping($stay->check_in, $stay->check_out)
+                ->exists();
+
+            if ($taken) {
+                throw new DeskRefusal($unit->label.' is already given to another booking on some of these nights. Choose another room, or leave it unassigned.');
+            }
+
+            return;
+        }
+
+        if ($others->where('status', Stay::CHECKED_IN)->exists()) {
             throw new DeskRefusal($unit->label.' has somebody in it. Check them out first, or choose another room.');
         }
     }

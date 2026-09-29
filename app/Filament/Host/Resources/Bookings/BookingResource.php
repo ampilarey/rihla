@@ -108,6 +108,11 @@ class BookingResource extends Resource
             ])
             ->defaultSort('check_in')
             ->filters([
+                // The dashboard's numbers link here, one filter each.
+                SelectFilter::make('today')
+                    ->label('Today')
+                    ->options(self::TODAY)
+                    ->query(fn (Builder $query, array $data): Builder => self::today($query, $data['value'] ?? null)),
                 SelectFilter::make('status')
                     ->options(array_combine(Stay::STATUSES, array_map(self::statusLabel(...), Stay::STATUSES)))
                     ->multiple(),
@@ -131,6 +136,29 @@ class BookingResource extends Resource
             ->recordActions([ViewAction::make()])
             ->emptyStateHeading('No bookings yet')
             ->emptyStateDescription('Every booking for your listings appears here — from Rihla, and the ones you enter yourself.');
+    }
+
+    /** @var array<string, string> */
+    public const TODAY = [
+        'arriving' => 'Arriving today',
+        'leaving' => 'Leaving today',
+        'in_house' => 'In house',
+    ];
+
+    /**
+     * @param  Builder<Stay>  $query
+     * @return Builder<Stay>
+     */
+    public static function today(Builder $query, ?string $which): Builder
+    {
+        $today = now()->toDateString();
+
+        return match ($which) {
+            'arriving' => $query->whereIn('stays.status', [Stay::HELD, Stay::CONFIRMED])->whereDate('check_in', $today),
+            'leaving' => $query->where('stays.status', Stay::CHECKED_IN)->whereDate('check_out', '<=', $today),
+            'in_house' => $query->where('stays.status', Stay::CHECKED_IN),
+            default => $query,
+        };
     }
 
     public static function statusLabel(string $status): string
