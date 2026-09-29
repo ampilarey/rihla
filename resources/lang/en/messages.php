@@ -880,4 +880,12 @@ return [
     'Your stay is booked.' => 'Your stay is booked.',
     'Your stay is cancelled. We will refund what you paid and tell you when it is on its way.' => 'Your stay is cancelled. We will refund what you paid and tell you when it is on its way.',
     'Your stay is cancelled. You owe nothing.' => 'Your stay is cancelled. You owe nothing.',
+
+    // The stay on paper — §16.7 (Phase 13.3b)
+    'Stay confirmation' => 'Stay confirmation',
+    'Guest' => 'Guest',
+    'Where' => 'Where',
+    'Still to pay' => 'Still to pay',
+    'Check-in from :time.' => 'Check-in from :time.',
+    'Download your stay summary (PDF)' => 'Download your stay summary (PDF)',
 ];

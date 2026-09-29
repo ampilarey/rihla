@@ -228,6 +228,7 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         Route::get('/my-stay', [MyStayController::class, 'home'])->name('my-stay.home');
         Route::post('/my-stay/payments', [MyStayController::class, 'storePayment'])->name('my-stay.payments.store');
         Route::post('/my-stay/cancel', [MyStayController::class, 'cancel'])->name('my-stay.cancel');
+        Route::get('/my-stay/confirmation.pdf', [MyStayController::class, 'confirmation'])->name('my-stay.confirmation');
         Route::post('/my-stay/leave', [MyStayController::class, 'leave'])->name('my-stay.leave');
     });
 

@@ -66,6 +66,17 @@ class Notice extends Model
     public const CHECK_IN_SOON = 'check_in_soon';
 
     /**
+     * A guest asked for a room online and the host has not answered yet —
+     * §16.7. The WhatsApp line that says "we have it, you pay nothing
+     * until they say yes", which a guest who closed the tab never saw.
+     *
+     * A declined request has no notice of its own on purpose: §15.7 makes
+     * it a CRM follow-up, a person ringing them, and a queue line saying
+     * the same thing would be the second message about one event.
+     */
+    public const STAY_REQUESTED = 'stay_requested';
+
+    /**
      * A closed list, because every one of these is raised from a record
      * that already exists. There is no notice for anything this system
      * cannot observe — which is what stops it inventing news.
@@ -77,7 +88,19 @@ class Notice extends Model
         self::DOCUMENT_NEEDED, self::DOCUMENT_REJECTED,
         self::VISA_ISSUED, self::PERMIT_ISSUED, self::DEPARTURE_SOON,
         self::STAY_CONFIRMED, self::DEPOSIT_DUE, self::BALANCE_DUE, self::CHECK_IN_SOON,
+        self::STAY_REQUESTED,
     ];
+
+    /**
+     * News that happens once, rather than a condition that can recur.
+     *
+     * A missing passport handled today and still missing next week is news
+     * again ({@see raise()}). "We have your request" is not: handled once,
+     * a sweep an hour later must not put it back on the queue.
+     *
+     * @var list<string>
+     */
+    public const ONCE = [self::STAY_REQUESTED];
 
     /**
      * The ones a customer must act on, as opposed to be pleased about.
@@ -180,7 +203,7 @@ class Notice extends Model
         $outstanding = self::where('noticeable_type', $about->getMorphClass())
             ->where('noticeable_id', $about->getKey())
             ->where('kind', $kind)
-            ->whereNull('handled_at')
+            ->when(! in_array($kind, self::ONCE, true), fn ($query) => $query->whereNull('handled_at'))
             ->exists();
 
         if ($outstanding) {
@@ -279,6 +302,7 @@ class Notice extends Model
             self::DEPOSIT_DUE => 'Deposit due',
             self::BALANCE_DUE => 'Balance due',
             self::CHECK_IN_SOON => 'Check-in coming up',
+            self::STAY_REQUESTED => 'Stay requested',
             default => 'Unknown',
         };
     }

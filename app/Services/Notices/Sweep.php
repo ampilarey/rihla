@@ -75,12 +75,12 @@ final class Sweep
             }
         }
 
-        // The stays half — §15.7. Live means held or confirmed and not yet
+        // The stays half — §15.7. Live means requested, held or confirmed and not yet
         // behind us: a stay that was declined, cancelled or lapsed has
         // nothing outstanding, and a follow-up for the two Rihla caused is
         // the CRM's job rather than this one.
         $stays = Stay::query()
-            ->whereIn('status', [Stay::HELD, Stay::CONFIRMED])
+            ->whereIn('status', [Stay::REQUESTED, Stay::HELD, Stay::CONFIRMED])
             ->where('check_out', '>=', now()->startOfDay())
             ->with(['property', 'customer', 'roomType'])
             ->get();
@@ -122,6 +122,22 @@ final class Sweep
     {
         $notices = [];
         $house = $stay->property?->getTranslation('name', 'en') ?: 'the guesthouse';
+
+        // Asked for, not yet answered — §16.7. Once, and only for a stay a
+        // guest made themselves: one the office or the host entered was a
+        // conversation that already happened.
+        if ($stay->status === Stay::REQUESTED && $stay->created_via === Stay::VIA_GUEST) {
+            $notices[Notice::STAY_REQUESTED] = [
+                'headline' => 'We have your request for '.$house,
+                'body' => sprintf(
+                    '%s to %s, %s. Reference %s. We are checking with the guesthouse and will confirm within 24 hours — you pay nothing until then.',
+                    $stay->check_in->format('j F Y'),
+                    $stay->check_out->format('j F Y'),
+                    $stay->roomType?->getTranslation('name', 'en') ?: 'your room',
+                    $stay->reference,
+                ),
+            ];
+        }
 
         // Held: the guesthouse agreed, and a clock is running. This is the
         // one state on this list with a deadline behind it — a hold that

@@ -198,6 +198,40 @@ class StayNoticeTest extends TestCase
     }
 
     /**
+     * A guest who asked online is told it arrived, once — §16.7. Handled,
+     * it stays handled: "we have your request" is an event, not a
+     * condition that can come back.
+     */
+    public function test_an_online_request_is_acknowledged_once(): void
+    {
+        $stay = $this->stay();
+
+        app(Sweep::class)->run();
+
+        $notice = $stay->notices()->where('kind', Notice::STAY_REQUESTED)->sole();
+        $this->assertStringContainsString('Maafushi View', $notice->headline);
+        $this->assertStringContainsString($stay->reference, (string) $notice->body);
+        $this->assertStringContainsString('you pay nothing until then', (string) $notice->body);
+
+        $notice->markHandled(User::factory()->create());
+        app(Sweep::class)->run();
+        app(Sweep::class)->run();
+
+        $this->assertSame(1, $stay->notices()->where('kind', Notice::STAY_REQUESTED)->count());
+    }
+
+    /** A stay the office or a host entered was a conversation already had. */
+    public function test_a_request_somebody_entered_for_the_guest_is_not_acknowledged(): void
+    {
+        $stay = $this->stay();
+        $stay->forceFill(['created_via' => Stay::VIA_STAFF])->save();
+
+        app(Sweep::class)->run();
+
+        $this->assertSame(0, $stay->notices()->where('kind', Notice::STAY_REQUESTED)->count());
+    }
+
+    /**
      * A stay that fell through has nothing outstanding — §15.7 gives those
      * to the CRM as a follow-up, which is a different job from telling
      * somebody their room is ready.
