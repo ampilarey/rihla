@@ -215,8 +215,12 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     Route::post('/stays/review/{token}', [StayReviewController::class, 'store'])
         ->middleware('throttle:stay-book')->name('stays.review.store');
 
+    // Browse by atoll — §16 Phase 15. "atolls" is a reserved listing slug.
+    Route::get('/stays/atolls', [StaysController::class, 'atolls'])->name('stays.atolls');
+
     // A host's own page — §16.8. Before `{property}` for the same reason:
     // "hosts" is a reserved listing slug, and these must be matched first.
+    Route::get('/stays/hosts', [HostPageController::class, 'index'])->name('stays.hosts');
     Route::get('/stays/hosts/{partner:slug}/card.png', [HostPageController::class, 'shareCard'])->name('stays.host.card');
     Route::get('/stays/hosts/{partner:slug}', [HostPageController::class, 'show'])->name('stays.host');
 

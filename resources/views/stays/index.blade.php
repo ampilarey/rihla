@@ -54,9 +54,16 @@
 
     @if($hasListings)
         <section aria-labelledby="stays-search-heading">
-            <h2 id="stays-search-heading" dir="auto" class="mb-4 text-2xl font-bold text-ink">
-                {{ __('messages.Find a place to stay') }}
-            </h2>
+            <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 id="stays-search-heading" dir="auto" class="text-2xl font-bold text-ink">
+                    {{ __('messages.Find a place to stay') }}
+                </h2>
+                <p dir="auto" class="text-sm">
+                    <a href="{{ route('stays.atolls') }}" class="text-wine-700 underline hover:no-underline">{{ __('messages.Stays by atoll') }}</a>
+                    <span aria-hidden="true" class="text-ink-muted">·</span>
+                    <a href="{{ route('stays.hosts') }}" class="text-wine-700 underline hover:no-underline">{{ __('messages.Our hosts') }}</a>
+                </p>
+            </div>
 
             <form method="GET" action="{{ route('stays.index') }}" class="card mb-8 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
                 {{-- Who is booking decides which price is shown — §16.7. A

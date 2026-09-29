@@ -932,4 +932,11 @@ return [
     'Write a message first.' => 'Write a message first.',
     'Keep a message under :count characters.' => 'Keep a message under :count characters.',
     'Sent. The host and Rihla can both read it.' => 'Sent. The host and Rihla can both read it.',
+    'Stays by atoll' => 'Stays by atoll',
+    'Pick an atoll to see every place to stay in it.' => 'Pick an atoll to see every place to stay in it.',
+    'Search every place to stay' => 'Search every place to stay',
+    'Our hosts' => 'Our hosts',
+    'Nothing listed by atoll yet' => 'Nothing listed by atoll yet',
+    'The guesthouses and landlords you book through Rihla. Every one has been checked by a person at Rihla before anything was listed.' => 'The guesthouses and landlords you book through Rihla. Every one has been checked by a person at Rihla before anything was listed.',
+    'No host pages yet' => 'No host pages yet',
 ];
