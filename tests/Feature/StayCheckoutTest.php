@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Exceptions\CommissionNotSet;
+use App\Filament\Resources\Stays\Pages\ViewStay;
 use App\Models\Customer;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -10,9 +11,11 @@ use App\Models\Property;
 use App\Models\RoomType;
 use App\Models\Stay;
 use App\Models\StayAccess;
+use App\Models\User;
 use App\Services\Stays\Commission;
 use App\Services\Stays\StayBooking;
 use App\Services\Stays\StayGatekeeper;
+use App\Support\Access;
 use App\Support\Audience;
 use App\Support\Services;
 use Carbon\CarbonImmutable;
@@ -20,7 +23,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 use Illuminate\Testing\TestResponse;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -402,6 +407,59 @@ class StayCheckoutTest extends TestCase
         $this->withSession(['portal.booking' => 1, 'portal.until' => now()->addHour()->timestamp])
             ->get(route('my-stay.home', ['locale' => 'en']))
             ->assertRedirect(route('my-stay.locked', ['locale' => 'en']));
+    }
+
+    // ── The stay on paper ────────────────────────────────────────────────
+
+    public function test_the_guest_can_download_their_stay_as_a_pdf(): void
+    {
+        $this->book();
+
+        $response = $this->get(route('my-stay.confirmation', ['locale' => 'en']));
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString(Stay::sole()->reference.'.pdf', (string) $response->headers->get('Content-Disposition'));
+    }
+
+    /** Not a URL anybody can guess: the session decides whose stay it is. */
+    public function test_the_pdf_is_behind_the_stay_session(): void
+    {
+        $this->get(route('my-stay.confirmation', ['locale' => 'en']))
+            ->assertRedirect(route('my-stay.locked', ['locale' => 'en']));
+    }
+
+    /** dompdf does not shape Arabic, so an Arabic reader is given English. */
+    public function test_an_arabic_reader_gets_the_english_pdf(): void
+    {
+        $this->book();
+
+        $rendered = [];
+        View::composer('pdf.stay', function ($view) use (&$rendered): void {
+            $rendered[] = [$view->getData()['locale'], app()->getLocale()];
+        });
+
+        $this->get(route('my-stay.confirmation', ['locale' => 'ar']))->assertOk();
+        $this->get(route('my-stay.confirmation', ['locale' => 'dv']))->assertOk();
+
+        // The template and the translator both, not just the variable.
+        $this->assertSame([['en', 'en'], ['dv', 'dv']], $rendered);
+    }
+
+    // ── The office sends a link ──────────────────────────────────────────
+
+    public function test_staff_can_send_a_guest_a_fresh_link_to_their_stay(): void
+    {
+        $this->book();
+        $stay = Stay::sole();
+
+        Livewire::actingAs(User::factory()->create()->assignRole(Access::SUPER_ADMIN))
+            ->test(ViewStay::class, ['record' => $stay->getRouteKey()])
+            ->mountAction('stayLink')
+            ->assertActionMounted('stayLink');
+
+        // The one made at booking, and the one the office just minted.
+        $this->assertSame(2, StayAccess::where('stay_id', $stay->id)->live()->count());
     }
 
     // ── The listing's Book button ────────────────────────────────────────

@@ -139,6 +139,14 @@
         @endif
     </section>
 
+    @if(! in_array($stay->status, [\App\Models\Stay::DECLINED, \App\Models\Stay::EXPIRED, \App\Models\Stay::CANCELLED], true))
+        <p class="mb-6 text-center">
+            <a href="{{ route('my-stay.confirmation') }}" class="text-sm text-wine-700 underline hover:no-underline">
+                {{ __('messages.Download your stay summary (PDF)') }}
+            </a>
+        </p>
+    @endif
+
     <form method="POST" action="{{ route('my-stay.leave') }}" class="text-center">
         @csrf
         <button type="submit" class="text-sm text-wine-700 underline hover:no-underline">{{ __('messages.Sign out of this page') }}</button>

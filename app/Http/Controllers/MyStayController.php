@@ -8,10 +8,13 @@ use App\Services\Payments\SlipVault;
 use App\Services\Stays\StayAllocator;
 use App\Services\Stays\StayBooking;
 use App\Services\Stays\StayGatekeeper;
+use App\Support\Contact;
 use App\Support\Money;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The guest's own stay — `/my-stay`, §16.7, §16 Phase 13.3.
@@ -132,6 +135,40 @@ class MyStayController extends Controller
             ->with('status', $stay->paid_minor > 0
                 ? __('messages.Your stay is cancelled. We will refund what you paid and tell you when it is on its way.')
                 : __('messages.Your stay is cancelled. You owe nothing.'));
+    }
+
+    /**
+     * The stay on paper — §16.7. In English or Dhivehi: dompdf does not
+     * shape Arabic (AGENTS.md), so an Arabic reader gets the English
+     * rather than a page of disconnected letters. The web page stays the
+     * Arabic reader's artefact, and it renders correctly.
+     */
+    public function confirmation(Request $request): Response
+    {
+        $stay = $this->stay($request);
+        $locale = in_array(app()->getLocale(), StaysController::SHEET_LOCALES, true) ? app()->getLocale() : 'en';
+        $previous = app()->getLocale();
+        app()->setLocale($locale);
+
+        try {
+            $pdf = Pdf::loadView('pdf.stay', [
+                'stay' => $stay->loadMissing(['customer', 'property', 'roomType', 'charges']),
+                'policy' => $stay->rate_snapshot['policy'] ?? [],
+                'greenTax' => $stay->rate_snapshot['green_tax'] ?? [],
+                'locale' => $locale,
+                'issuer' => [
+                    'name' => (string) config('invoices.issuer.name'),
+                    'registration' => config('invoices.issuer.registration'),
+                    'address' => config('invoices.issuer.address'),
+                    'email' => config('invoices.issuer.email'),
+                    'phone' => Contact::displayNumber(),
+                ],
+            ]);
+
+            return $pdf->download($stay->reference.'.pdf');
+        } finally {
+            app()->setLocale($previous);
+        }
     }
 
     public function leave(): RedirectResponse
