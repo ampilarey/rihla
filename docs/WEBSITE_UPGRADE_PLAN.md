@@ -1,7 +1,7 @@
 # Rihla Platform — Website Upgrade Plan
 
-**Version:** 1.41
-**Date:** 2026-09-18 (see revision history)
+**Version:** 1.43
+**Date:** 2026-09-29 (see revision history)
 **Status:** Proposed — awaiting prioritisation decisions (see §13)
 **Owner:** Rihla Travels (Reg. No. C11452023)
 **Scope:** rihla.mv (production) and test.rihla.mv (staging)
@@ -25,6 +25,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 
 | Version | Change |
 |---|---|
+| 1.43 | **§16 — the Stays marketplace.** The owner asked for what Booking.com and Airbnb are: any property owner lists, guests search everything in one place and pay by card, each host has a branded page, each host runs their whole business here, Rihla earns a commission. Written as an implementation plan for an agent that has not read the conversation: what already exists (the engine, the lock, the ledger, the register), what was found missing by reading the code rather than the plan (no online booking form — `stays.show` ends in a WhatsApp button; the scheduler is not wired; one photograph per property; no BML callback route), eleven decisions with their reasons ([ADR 0008](adr/0008-hosts-run-their-business-here.md)), the data, the `/host` panel on Filament tenancy, the search and booking flow, the storefront and its guarded branding, the money (commission on marketplace bookings only; two settlement models on one set of tables), the operations a host needs, reviews and messages, the prerequisites cPanel imposes, the privacy classification of every new table, five phases with planting tests, and the traps. §15.2 decision 8 and the §11.24 deferral are superseded. |
 | 1.42 | **The violet palette, and the three things a class sweep could not reach.** Tokens swapped in place, so no view changed. Then an audit found the sweep incomplete in ways CI could not see. `public/offline.html` is a standalone page with its own stylesheet, precached by the service worker, and it sat at the old wine-to-ink gradient throughout (D93). `BrandColourTest::RETIRED` — the guard built for exactly this — was never told what had just been retired, which is why `#DBD3CE` survived in the error layout and `#5B524D` in the guide PDF (D94). And `2026_09_18_170000_rebrand_stored_banner_colours` wrote its values as `Brand::` constants, so it had already stamped test and production with `#8E2653`; changing the constant moved the stylesheets and left the rows, and the homepage call-to-action would have deployed maroon on a violet site (D95). D62 also closes properly here: the logo test asserted the two marks "differ only in the hull", which could never catch that the old sails were 1.8:1 on the footer and 2.38:1 on white. It now measures every fill against its own ground. A later pass found one more: `favicon.ico` was still the maroon mark, held there by an assertion that only checked the file was not empty (D96). The icon set moved to the two guide colours as field and figure — a chiffon disc on a violet ground — which is the one arrangement that puts both brand colours at full strength on any browser chrome, since as two sails on a third ground they cannot both clear 3:1. |
 | 1.41 | **Full layout audit, every public page rendered and read.** The headline defect was invisible to every test and obvious in a screenshot: `.card` carried no padding, so on every page the heading of every card sat flush against its left border — measured at 0px in the browser (D88). Also found: the hero's primary button was wine on the wine hero, so the secondary outranked it (D89); the homepage "Learn More" pointed at `/about`, which does not exist (D90); Contact rendered an empty "Follow Us" card and sold "hidden gems" and "your travel style" on an Umrah page (D91); one trip or one social link sat alone at the left of a three-column grid (D92). Colour enhancement stays inside the palette: gold takes the primary action it is permitted (with ink text), section headings share the 404 page's gold-rule motif, and the home page alternates cream and cream-deep instead of white and near-white. One finding withdrawn on checking: `gray-*` here is already remapped to a warm scale, so the ~950 grey classes are on-palette. |
 | 1.40 | **rihla.mv is live on this work** — five weeks of it, promoted by hand because the tooling ships with the release it deploys. The homepage now reads "Umrah Made Simple for Maldivian Pilgrims" instead of `hero_title`, the resort holidays are gone, and all four security headers are present. The first phone screenshot of it found D87: the fixed WhatsApp and Catalog buttons are wine-filled and float over wine sections, where they have **1.00:1** against their own backdrop — the circle vanishes and the icon hangs in mid-air. |
@@ -88,6 +89,7 @@ Sections §2–§10 are the plan. §12 is the phased roadmap with effort. If you
 - [13. Decisions needed from you](#13-decisions-needed-from-you)
 - [14. Risks](#14-risks)
 - [15. Workstream G — Stays: guesthouses, island holidays and rooms (Phases 8–11)](#15-workstream-g--stays-guesthouses-island-holidays-and-rooms-phases-811)
+- [16. Workstream H — The Stays marketplace: hosts, storefronts, and a place to run the business (Phases 12–16)](#16-workstream-h--the-stays-marketplace-hosts-storefronts-and-a-place-to-run-the-business-phases-1216)
 - [Appendix A — Coverage map of the 107 source documents](#appendix-a--coverage-map-of-the-107-source-documents)
 - [Appendix B — Reference sites, APIs and reading](#appendix-b--reference-sites-apis-and-reading)
 - [Appendix C — Proposed data model](#appendix-c--proposed-data-model)
@@ -1398,6 +1400,11 @@ Estimates assume **one full-time Laravel developer** plus the owner for content 
 | **9 — Stays engine + Guesthouses** | Foreign visitors book and pay for guesthouses Rihla markets | partners, properties, room types, seasonal rates, calendar; request → hold → confirm → deposit; the no-double-booking invariant on MySQL; per-property share kit (URL, share card, PDF) in three languages; Stays board and margin in Filament — §15.4 | **7–9 weeks** |
 | **10 — Island holidays** | Maldivian families book island weekends | `island_holiday` packages on the Umrah engine, optionally built on a guesthouse; permit and visa steps gated off — §15.5 | **1–2 weeks** |
 | **11 — Rooms in Malé** | Nightly rooms, booked and paid online | the Stays engine with `type = rental`, instant book, weekly and monthly rates, guest registration — §15.6 | **1–2 weeks** |
+| **12 — Foundations for the marketplace** | The engine can carry many hosts and two audiences | the scheduler wired; tourist and local rates with one calendar; physical units; photo galleries; approval and verification states; commission and settlement snapshots on every stay; Rihla as its own host — §16.14 | **2–3 weeks** |
+| **13 — Guests book and pay online** | A stay is booked and paid without a phone call | the marketplace search; gallery, map and reviews on the listing; the booking flow; the guest's *my stay* page; BML live and proved; online cancellation inside the policy — §16.7 | **3–4 weeks** |
+| **14 — Hosts** | A host runs their business here and owns a page | the `/host` panel on Filament tenancy: listings, calendar, bookings from every source, check-in with the register, bills, housekeeping, team; the branded storefront with two layouts and a contrast guard; verified reviews; messages — §16.6, §16.8, §16.10, §16.11 | **6–8 weeks** |
+| **15 — The rest of the business** | Reports, statements, add-ons, packages on the marketplace | occupancy and tax reports; monthly statements as PDFs; atolls and the host directory; host add-ons; island holidays with a tourist price on the host's page — §16.14 | **3–4 weeks** |
+| **16 — Full collection and beyond** | Rihla pays hosts out; hosts get their own address | `full_collection` with payouts; other sites' calendars imported; host subdomains; promotions; host-built packages — §16.14 | **open-ended** |
 
 ### What the rest of Phase 7 is waiting on
 
@@ -1412,7 +1419,7 @@ next person does not have to guess, and so none of it gets built speculatively.
 | **Loyalty rewards** | What a point is worth, what earns one, and whether it discounts a journey or buys something else | The recognition half is built (above). The reward half is a pricing decision, and a loyalty scheme whose value is invented is a liability the operator has to honour. |
 | **Arabic locale** — *now scheduled: Phase 8.4* | Somebody who can write and check Arabic | The machinery is done — §9.4 is complete and adding `ar` is configuration. What is missing is the content, and `AGENTS.md` records exactly what happened the last time this codebase shipped a language nobody in the office could read. An `/ar` that is entirely English fallback is worse than no `/ar`. |
 | **Native app shells** | An Apple Developer account and a Google Play account | Neither can be opened by anybody but the owner. The PWA already installs to a home screen and works offline (§7.2), which is most of what a shell would add. |
-| **Marketplace / multi-tenancy** | Nothing — it is deliberately deferred | §11.24 already records this: revisit if Rihla franchises or white-labels. It describes an organisation with an architecture function. |
+| **Marketplace / multi-tenancy** — *now scheduled: Phases 12–16, §16* | The prerequisites in §16.12 and the inputs in §16.16 | §11.24 deferred a *platform* marketplace, and that deferral stands for white-labelling. What is scheduled is narrower and real: hosts editing their own listings and running their bookings on the engine that already exists, with Rihla the only merchant ([ADR 0008](adr/0008-hosts-run-their-business-here.md)). |
 
 **None of these is a small amount of code once the fact exists.** They are
 listed as blocked rather than as remaining work so that the absence is a
@@ -1436,6 +1443,9 @@ These block or reshape the plan; everything else I can proceed on with stated as
 6. **Content ownership** — who writes and who *religiously reviews* the Knowledge Centre and Academy? Phase 5 is content-bound, not code-bound.
 7. **[R-5] Production runtime versions** — which MySQL/MariaDB version does the cPanel account run, and is PHP really 8.4 (the deploy scripts reference `ea-php84`)? The DB version matters because The capacity invariant `capacity_held + capacity_confirmed <= capacity_total` is enforced with a CHECK constraint, which needs MySQL 8.0.16+ or MariaDB 10.2+. On an older engine the row lock becomes the sole defence and that must be recorded deliberately. Verify before the booking tables are created.
 8. ~~**[R-1] Locale in the URL (P0.7)**~~ **answered and shipped** (`f4c41cc`): approve moving locale into the route. Without it the P0.5 SEO work ships tags that do nothing.
+10. **The marketplace's money (§16.9)** — the default commission percentage, and confirmation that hosts start on `commission_deposit` (the online payment is Rihla's commission; the balance is paid at the property). Both are config and per-host fields; the plan refuses a marketplace booking until the percentage is stated rather than guess one.
+11. **Who may list (§16.3 decision 3)** — only hosts with a Ministry of Tourism registration Rihla has checked, which is the default. Saying otherwise is one config line and a licensing question the plan is not qualified to answer.
+12. **The accounts only you can open (§16.12, §16.16)** — an S3-compatible bucket for photographs, an SMTP account, and the BML credentials with the three-step proof. Host registration stays switched off until the first two exist.
 9. **Logo** — the colour system is live but the mark is untouched. Three candidates exist (`BRAND.md` §4): recolour the current mark, the dhoni with the Kaaba, or the two-sail dhoni alone. Whichever is chosen, the asset set is the same job and it clears six broken references — an empty `favicon.ico` and five 404s. Independent of everything else in this plan.
 
 ---
@@ -1516,7 +1526,7 @@ field in the admin, so none of them is a rebuild to change.
 | 5 | Green Tax and T-GST | **Prices include T-GST.** **Green Tax is a separate line, per person per night, "paid at the property"** by default, with a per-partner switch to *included in our price*. **The Green Tax amount is a config value the owner enters; this plan does not state one.** | Every booking site a foreign visitor has used shows Green Tax separately, and it is legally the establishment's to collect. The rate has changed before and will again; a number written here would be the `Brand::` migration mistake (D95) in a different file. |
 | 6 | Licence to sell stays to foreigners | **Build it all; ship Guesthouses as `coming_soon` until the owner confirms the travel-agency licence.** The service switch is the safeguard, and it is one click. | The plan is not qualified to assume a licence exists, and §12 already records what unlicensed selling costs in this jurisdiction. `coming_soon` shows the pages, takes enquiries, and takes no money. |
 | 7 | Languages | **Arabic in Phase 8.** A fourth locale is a content task later, not a code task — after Phase 8 adding one is a line in `SetLocale::SUPPORTED` and a translator. | Arabic is the market the owner named. Russian, German and Chinese are the other large Maldives markets; none is worth an `/ru` that is English underneath. |
-| 8 | Partner login | **Not in this plan.** Confirmation is an admin button that emails and WhatsApps the partner; the partner replies to a human. A partner portal is a Phase 12 candidate. | Eight guesthouses do not need a portal; they need the owner's phone number. Building the portal first is building the marketplace §11.24 deferred. |
+| 8 | Partner login | ~~**Not in this plan.**~~ **Superseded by §16 (ADR 0008):** hosts get a panel at `/host` in Phase 14, and it is where they run their business, not only where they confirm. Until then, confirmation stays an admin button. | The reasoning held for eight guesthouses Rihla markets by hand. It does not hold for a marketplace, where the host's calendar has to be the host's own. |
 
 ### 15.3 Phase 8 — Foundations
 
@@ -1695,10 +1705,764 @@ a verified deploy to test.rihla.mv. Production stays manual.
 | Risk | Handling |
 |---|---|
 | BML's merchant agreement does not accept international cards | Found out in 8.5, before anything is on sale. Fallback is bank transfer for foreigners and `coming_soon` until it is fixed. |
-| A partner's calendar drifts from Rihla's | Request-first means the partner confirms every stay against their own book. iCal sync with the partner's Booking.com or Airbnb calendar is the Phase 12 answer, and it is import-only. |
+| A partner's calendar drifts from Rihla's | Request-first means the partner confirms every stay against their own book. §16 makes the host's own calendar the one here — every booking from every source through one lock — and imports other sites' calendars in Phase 16, import-only. |
 | Arabic content that nobody in the office can read | The same rule as Dhivehi, now written into the test: a human who reads the language signs off every string, and a property without Arabic shows English and says so. |
 | The travel-agency licence is not in place when Phase 9 is done | `coming_soon` — pages up, enquiries in, no money taken. |
 | Green Tax rate changes | A config value with no default, changed in the admin, printed from config on every page and every invoice. |
+
+---
+
+## 16. Workstream H — The Stays marketplace: hosts, storefronts, and a place to run the business (Phases 12–16)
+
+Rihla becomes a marketplace. Any property owner in the Maldives — a guesthouse
+on Thoddoo, an apartment in Hulhumalé, a family letting a room on Fulidhoo —
+lists what they have; a guest, foreign or Maldivian, searches every listing in
+one place, picks an island and dates, and pays by card; each host has a branded
+page of their own; and each host runs their whole business here — every
+booking from every source, the occupancy calendar, check-in, bills, housekeeping
+and the tax reports — so they need no other tool. Rihla is paid a commission on
+the bookings the marketplace brings.
+
+This section is the plan for that. It was written on 2026-09-29 after the owner
+asked for it and answered the questions that shape it; [ADR 0008](adr/0008-hosts-run-their-business-here.md)
+records the decisions. It is written to be implemented by an agent that has
+**not** read the conversation: every table, screen, rule and test is named, and
+the traps `AGENTS.md` records are pointed at where they apply. Read §15 first —
+this builds on the Stays engine it describes, and none of that engine is
+rewritten.
+
+### 16.1 What exists, and what this adds
+
+The transactional core of a marketplace is already built and tested. This is
+an extension of it, not a second system.
+
+| Already there (§15) | Used as |
+|---|---|
+| `partners` with `commission_pct`, `pricing_model`, `green_tax_mode` | The host record. Keeps its name. |
+| `properties` on any island, `room_types` with `quantity`, seasonal `rates`, `blocked_dates` | The listing, its rooms and its calendar |
+| `App\Services\Stays\Availability` and `StayAllocator` — the no-double-booking row lock, proved by `StayLockTest` | The one path every booking from every source goes through |
+| `StayBooking`: request → hold → confirm → deposit; frozen `rate_snapshot` and policy; `balanceDueAt()`, `cancellationIsFree()` | The booking service, gaining an audience and a commission |
+| `stay_guests` with the encrypted identifier — the register §15.6 requires | Check-in |
+| Polymorphic `payments`, the `Ledger`, the `BmlConnect` driver waiting for credentials | Money |
+| `Notice`/`HasNotices` on `Stay`, `Sweep`, `LostStayFollowUp` | What the guest is told, and what happens when a stay is lost |
+| `StayFilters` (island, dates, guests), `stays.show` with live quotes, the share kit, `LodgingBusiness` structured data | The search and listing pages, extended |
+| The service registry and `EnsureServiceEnabled` | The doors, unchanged |
+| The `/staff` Filament panel, `Access`, the policies, `Anonymisation` / `Forgetting`, `ResponsiveImage`, `EncryptedIdentifier`, the PDF stack, `ReadableColour` | Reused as-is |
+
+What is missing, found by reading the code rather than the plan:
+
+- **There is no online request or booking form.** `stays.show` ends in a
+  *Message us* WhatsApp button, and `/staff` has no *create stay* page — a
+  stay can be created today only by calling `StayBooking::request()` in
+  code. The guest-facing booking flow is new work, not a polish.
+- **The scheduler is not wired.** `stays:expire-holds`, `bookings:expire-holds`
+  and `notices:sweep` exist as commands, and nothing in `routes/console.php`
+  or `bootstrap/app.php` schedules them. A hold that never expires is a room
+  nobody can book.
+- **One photograph per property** (`cover_image`); no gallery, no map
+  coordinates, no atoll.
+- **No host login, no reviews, no messages, no guest-facing stay page**, and
+  no BML callback route (`HandlesCallbacks` is an interface without a route).
+
+### 16.2 The rules the implementer must not break
+
+1. **One inventory, many doors.** A guesthouse, an apartment and an island
+   holiday are rows in the same tables, on the same calendar, through the same
+   `StayAllocator`. The three menu entries filter; they do not fork.
+2. **Every booking from every source takes the lock.** A host typing in a
+   walk-in goes through `StayBooking::request()` and `StayAllocator::hold()`
+   exactly as a marketplace guest does. Nothing writes `stays` rows directly.
+3. **Rihla's frame, the host's body.** Header, footer, search, the booking
+   steps and every payment page are Rihla's. The host's brand fills the body
+   of the storefront and listing pages only. Guests always see who is taking
+   their money.
+4. **Nothing is invented.** No seeded hosts, listings, ratings or reviews; a
+   `StaysShowcaseSeeder`-style fixture for CI only, refusing in production.
+   Empty states say "nothing here yet". `AGENTS.md` records what invented
+   content has already cost this site.
+5. **Money is never converted and never floats.** Tourist prices are USD,
+   local prices are MVR (`config/marketplace.php`), a stay is in one currency
+   from quote to receipt, and every amount is integer minor units through
+   `App\Support\Money` [R-7].
+6. **Every rule of the state is configuration**, never a constant: Green Tax
+   (exists), whether it applies to Maldivians, T-GST and GST rates for the
+   reports, the registration requirement, the default commission. No number
+   is written into this plan.
+7. **Two lists, same commit.** Any new table holding a person's words or
+   identifiers goes into `Anonymisation::SCRUB` and into
+   `Forgetting::REACHED` or `NOT_ONE_PERSONS` in the same PR (`AGENTS.md`).
+   Any new table with a foreign key into `stays`, `customers`, `travellers` or
+   `bookings` goes into `PackageDepartureTest::DEPENDENT_MIGRATIONS`, or the
+   MySQL job fails on a table the failure never names.
+8. **Existing URLs do not move.** `/stays`, `/stays/guesthouses`,
+   `/stays/rooms`, `/stays/island-holidays`, `/stays/{property}` keep their
+   addresses and their tests. New segments are added to
+   `Property::RESERVED_SLUGS` and declared *before* `/stays/{property}` in
+   `routes/web.php`, for the ordering reason the existing comment there gives.
+9. **Tailwind does nothing inside a Filament panel.** The host panel is built
+   from Filament components, like `/staff` (`AGENTS.md`). Public pages use
+   the site's palette classes as before.
+
+### 16.3 The decisions, taken
+
+Defaults the plan is built on. Each is a config value, a per-host field or a
+per-listing field, so none is a rebuild to change.
+
+| # | Question | Decision | Why |
+|---|---|---|---|
+| 1 | How does Rihla get paid? | **Commission on marketplace bookings only**, per host (`partners.commission_pct`), snapshotted onto the stay. Direct bookings a host enters carry no commission. Default rate in `config/marketplace.php` **left null for the owner to state**. | ADR 0008. A free tool that hosts run their business in is what keeps the calendar true. |
+| 2 | Who holds the guest's money? | **Rihla, always** — BML pays one merchant. Per host, `settlement_model` is `commission_deposit` (the online payment *is* the commission; balance to the host at the property) or `full_collection` (Rihla takes all, pays the host out against a statement). New hosts default to the first; Rihla's own rooms use the second from day one; payouts for other hosts arrive in Phase 16. | The first needs no payout plumbing and Rihla never holds a host's money; the second is what guests trust more, once there is volume to justify it. |
+| 3 | Who may list? | **Only hosts a person at Rihla has verified.** Sign-up asks for the Ministry of Tourism registration number and a scan; a listing goes live only when the host is `verified` and the listing is `approved`. `marketplace.require_registration` (default `true`) is the switch if the owner ever decides otherwise. | §15.2 decision 6 and §12: Rihla now facilitates stays for foreigners at buildings it does not own. The registration number is shown on the listing. |
+| 4 | Do hosts edit their own listings? | **Yes, with approval.** A new host and each new listing need Rihla's approval once; edits to an approved listing go live immediately; Rihla can withdraw a listing with a reason at any time. | Concierge entry does not scale past the first ten hosts; unreviewed listings are how invented content reaches a live site. |
+| 5 | Reviews? | **On, verified only.** One review per completed stay, invited after check-out, published 48 hours after submission unless Rihla hides it with a reason; the host may reply once. Ratings are computed from published reviews, never stored. | A marketplace with no reviews does not convert; unverified reviews are worse than none. |
+| 6 | Tourists and Maldivians? | **Two prices per room type — tourist (USD) and local (MVR) — either optional**, one calendar. Audience declared at booking by nationality; Green Tax follows the tourist rate; `stays.green_tax.applies_to_locals` (default `false`) is the owner's to confirm with MIRA. | Every guesthouse already runs two rate cards. Currency per audience replaces §15.2 decision 4's currency per product, and includes it. |
+| 7 | Where do hosts work? | **A second Filament panel at `/host`**, tenant-scoped to the host, same `users` table, roles owner / manager / reception per host. | ADR 0003 and the framework's own tenancy: a host cannot query another host's rows even if a screen forgets to check. |
+| 8 | How far does branding go? | Logo, cover photos, two colours checked by `ReadableColour`, a font from a short list, tagline and story in three languages, gallery, contact links, sections switched on or off, **two layouts**. No page builder, no custom CSS. Own subdomain or domain: Phase 16. | Enough to be a brand, not enough to be a broken page. |
+| 9 | Physical rooms? | **Yes.** `property_units` under each room type ("Deluxe Sea View: Rooms 3, 4, 5"). The engine still counts by room type; units are the allocation and housekeeping layer a host needs. | A host cannot put a guest in "one of three". |
+| 10 | Island holidays? | Stay Rihla's curated product on the Umrah engine (§15.5), gaining an `audience` and a tourist price in Phase 15, shown on the host's page as *Packages at this guesthouse*. Host-created add-ons and packages: Phase 15. | Higher margin, and the engine already runs them. |
+| 11 | Photos, mail, cron? | **Prerequisites, not features.** A media disk on object storage before host registration opens; SMTP before host invitations rely on it; the scheduler wired in Phase 12. | ADR 0002's constraints, met rather than ignored. |
+
+### 16.4 Shape of the site after Phase 14
+
+```
+Umrah ▾                 Stays ▾                       About    Contact    [Login]   [For hosts]
+├ Packages              ├ Search all stays
+├ Umrah Plus            ├ Guesthouses
+├ Umrah Guide           ├ Rooms & apartments          ← the "Rooms in Malé" door, any island
+├ Academy               ├ Island holidays
+└ My portal             └ List your property
+```
+
+| URL | What |
+|---|---|
+| `/{locale}/stays` | The marketplace search: every approved listing of every active host, filtered by island, atoll, dates, guests, kind, price, amenities, rating. The three door cards sit above the results. |
+| `/{locale}/stays/guesthouses`, `/stays/rooms`, `/stays/island-holidays` | Unchanged routes; the search page with a filter pre-applied. `Services::catalogue()`'s label for `stays_rooms` becomes *Rooms & apartments* — the **key and route stay**. |
+| `/{locale}/stays/hosts/{partner:slug}` | The host's storefront (§16.8). `hosts` joins `Property::RESERVED_SLUGS`. |
+| `/{locale}/stays/{property}` | The listing page, gaining gallery, map, reviews, the host card and a *Book* button per room. |
+| `/{locale}/stays/{property}/book` … `/stays/book/confirmation` | The booking flow (§16.7). `book` joins `RESERVED_SLUGS`. |
+| `/{locale}/my-stay/enter/{token}`, `/my-stay` | The guest's page for one stay, by signed link — the pilgrim portal's pattern (`Gatekeeper`, `PortalSession`) for a `Stay`. |
+| `/payments/bml/callback` | BML Connect's return and webhook, outside the locale prefix, CSRF-exempt, signature-checked by the driver. |
+| `/host`, `/host/login`, `/host/register`, `/host/{partner:slug}/…` | The host panel (§16.6). |
+| `/staff` → Stays → Hosts, Listings for approval, Reviews | The staff side (§16.6, §16.11). |
+
+The homepage's *What we do* strip gains "List your property" as a third,
+smaller card once Phase 14 ships; nothing else on the homepage moves.
+
+### 16.5 Data
+
+Named as the migrations should name them. `+` is a column added to an existing
+table; `*` is translatable through `HasTranslations` (English, Dhivehi,
+Arabic), filled and saved through `EditsTranslations`. Every money column is
+minor units. Every new foreign key into a commercial record is
+`restrictOnDelete` unless stated; every new table with a key into `stays`
+or `customers` is added to `PackageDepartureTest::DEPENDENT_MIGRATIONS`
+**newest first**.
+
+```
+partners               the host — the table keeps its name (ADR 0008)
+  + slug (unique; minted from name like Property; RESERVED_SLUGS applies)
+  + kind            guesthouse | homestay | rental_owner | agency
+  + registration_number (nullable), registration_expires_on (nullable)
+  + registration_document_path (nullable; documents disk, EncryptedFile)
+  + verification    unverified | pending | verified | refused   verified_at, verified_by → users, verification_note
+  + status          pending | active | suspended                suspended_reason
+  + terms_accepted_at, terms_version
+  + settlement_model  commission_deposit | full_collection
+  + recommended_at, recommended_note                          the manual "Rihla Recommended" mark
+  + is_rihla (bool)                                             Rihla's own rooms are a host too
+  + payout_bank_name, payout_account_name, payout_account_number (EncryptedIdentifier)   — Phase 16
+
+host_memberships       partner_id, user_id, role (owner | manager | reception), invited_by → users, accepted_at
+                       unique (partner_id, user_id)
+host_invitations       partner_id, email, role, token_hash (unique), invited_by, expires_at, accepted_at
+
+host_pages             partner_id (unique), layout (story | grid), logo_path, cover_path,
+                       colour_primary, colour_accent, font (one of config('marketplace.fonts')),
+                       tagline*, about*, sections (json: story, gallery, map, reviews, faq, contact),
+                       faq* (json list of question/answer), whatsapp, instagram, facebook, website_url, published_at
+
+properties
+  + kind            guesthouse | whole_home | apartment | private_room   (type stays: guesthouse | rental drives the door)
+  + atoll (nullable), latitude, longitude (nullable decimals)
+  + approval        draft | pending | approved | changes_requested | withdrawn
+  + submitted_at, approved_at, approved_by → users, approval_note
+
+property_photos        property_id (cascade), room_type_id (nullable, cascade), disk, path, caption*, sort_order
+                       `cover_image` stays the cover; photos are the gallery. Variants via ResponsiveImage on save
+                       and forgotten on delete — CoverImageObserver's pattern, both halves (AGENTS.md).
+property_units         property_id (cascade), room_type_id (cascade), label, floor (nullable),
+                       housekeeping (clean | dirty | inspected), is_active, sort_order
+                       Invariant, tested: active units per room type <= room_types.quantity is NOT required —
+                       quantity is what is sold, units are what exists; the panel warns when they differ.
+
+room_types
+  + local_rate_minor (nullable)        MVR. base_rate_minor stays the tourist rate in the property's currency.
+rates
+  + audience  tourist | local  (default tourist); index (room_type_id, audience, starts_on, ends_on)
+
+stays
+  + audience  tourist | local
+  + unit_id → property_units (nullable, nullOnDelete)
+  + source widened: marketplace | direct | phone | whatsapp | walk_in | other_site   (string(40) already)
+  + created_via  guest | host | staff;  created_by → users (nullable)
+  + commission_pct_snapshot, commission_minor, host_net_minor, settlement_model_snapshot
+  + checked_in_at, checked_out_at
+stay_charges           stay_id (cascade), kind (room | extra | green_tax | discount | adjustment),
+                       description, quantity, unit_minor, total_minor, currency, added_by → users (nullable), created_at
+                       The room line is written from the snapshot at confirmation; extras by the host.
+payments
+  + collected_by  rihla | host  (default rihla)
+  + partner_id (nullable) — set when collected_by = host, so a host's cash is theirs in every report
+
+stay_accesses          stay_id (cascade), token_hash (unique), issued_by (nullable), expires_at, revoked_at
+                       mirrors portal_accesses; only the hash is stored.
+stay_threads           stay_id (unique, cascade), last_message_at
+stay_messages          thread_id (cascade), sender (guest | host | rihla), sender_user_id (nullable), body, sent_at, read_at
+
+reviews                stay_id (unique, cascade), property_id, partner_id, customer_id,
+                       rating (1–5), cleanliness, accuracy, communication, value (1–5, nullable),
+                       body (nullable), locale, submitted_at, published_at (nullable), hidden_at, hidden_reason,
+                       host_reply (nullable), host_replied_at
+review_invitations     stay_id (unique, cascade), token_hash (unique), expires_at, used_at
+
+host_statements        partner_id, period_start, period_end, currency, gross_minor, commission_minor, net_minor,
+                       pdf_path, issued_at, issued_by                                   — Phase 15
+payouts                partner_id, statement_id, amount_minor, currency, paid_at, reference, recorded_by — Phase 16
+
+packages
+  + audience  tourist | local | both                                                     — Phase 15
+```
+
+**Config.** A new `config/marketplace.php`:
+
+```php
+'currencies' => ['tourist' => 'USD', 'local' => 'MVR'],
+'default_commission_pct' => env('MARKETPLACE_COMMISSION_PCT'),      // null until the owner states it
+'require_registration' => env('MARKETPLACE_REQUIRE_REGISTRATION', true),
+'review_publish_after_hours' => 48,
+'review_invite_days' => 30,
+'fonts' => ['inter', 'montserrat', 'cairo'],                         // the ones the site already loads
+'media_disk' => env('MEDIA_DISK', 'public'),
+'host_registration' => ['enabled' => env('HOST_REGISTRATION_OPEN', false), 'per_hour' => 5],
+```
+
+`config/stays.php` gains `green_tax.applies_to_locals` (default `false`) and
+`tax.tgst_pct` / `tax.gst_pct` (both `null` until stated; the reports refuse
+rather than guess when null — §16.10). `config/mfa.php` gains
+`hosts.required` (default `false`).
+
+**Audience.** `App\Support\Audience` — a small final class with `TOURIST`,
+`LOCAL`, `currency()` from config, `fromNationality(?string)` (Maldivian →
+local, otherwise tourist) and `fromLocale()` (`dv` → local, else tourist).
+`Availability::quote()` takes an `Audience` and reads `rates` for it and the
+matching base rate; a room with no rate for the audience is *not for sale to
+that audience* and is left out of that audience's search results. `Quote`
+carries the audience and its currency into `rate_snapshot`. `GreenTax::snapshotFor()`
+takes the audience and returns nothing for `local` unless
+`applies_to_locals`. The existing tests keep passing because the default
+audience is `tourist` and the tourist rate is `base_rate_minor`.
+
+### 16.6 The host panel — `/host`
+
+**Provider.** `App\Providers\Filament\HostPanelProvider`, registered beside the
+staff one: `id('host')`, `path('host')`, `brandName('Rihla for Hosts')`, the
+same colours and middleware as `StaffPanelProvider`, its own `->login()` at
+`/host/login` (the staff panel deliberately has none — a host is not sent to
+the staff sign-in), `->registration(RegisterHost::class)` as a custom page,
+`->tenant(Partner::class, slugAttribute: 'slug', ownershipRelationship: 'partner')`,
+`->tenantMenu(fn () => auth()->user()->hosts()->count() > 1)`, resources
+discovered from `app/Filament/Host/Resources` and pages from
+`app/Filament/Host/Pages`. `authMiddleware` keeps `RequireSecondFactor`,
+which reads `mfa.hosts.required` and applies to the owner role when true.
+
+**Users.** `User` implements `Filament\Models\Contracts\HasTenants`:
+`getTenants()` returns `$this->hosts` (a `belongsToMany(Partner::class, 'host_memberships')->withPivot('role', 'accepted_at')`),
+`canAccessTenant()` is "an accepted membership and the host is not
+suspended". `canAccessPanel()` becomes a `match` on `$panel->getId()`:
+`'host'` → has any accepted membership; anything else → `admin.access`, as
+now. Staff who also own a guesthouse simply have both. A host user has **no
+spatie role and no `admin.access`**, so `/staff` stays closed to them —
+assert this.
+
+**Registration** (`RegisterHost`, a custom Filament page on the guest side of
+the panel): host name, kind, island, contact name, phone, WhatsApp, email,
+password, registration number and scan (required when
+`require_registration`), terms checkbox with the version stored. It creates
+the `User`, the `Partner` (`status = pending`, `verification = pending`), the
+owner membership and the `HostPage` row with defaults, then signs in to a
+dashboard that says *"Your account is being checked"* and lets them build
+listings meanwhile. Throttled by `throttle:host-register`
+(`marketplace.host_registration.per_hour` per IP) and gated by
+`host_registration.enabled` — off until the media disk and mail exist
+(§16.12). This is **not** the Breeze `/register` that D16 closed; that stays
+closed, and `RegistrationTest` keeps asserting it.
+
+**Roles inside a host** — `App\Support\HostRole`, three constants and one
+`allows(string $ability): bool` map:
+
+| Ability | owner | manager | reception |
+|---|---|---|---|
+| bookings: view, create direct, accept/decline, check in/out, add charge, record host-collected payment, cancel | ✓ | ✓ | ✓ |
+| listings: edit, photos, rates, blocked dates, units, submit for approval | ✓ | ✓ | — |
+| messages, reviews reply | ✓ | ✓ | ✓ (messages only) |
+| my page (branding) | ✓ | ✓ | — |
+| earnings, statements, reports with money | ✓ | ✓ | — |
+| guest register: see identifiers unmasked / export | ✓ | ✓ | masked |
+| team, payout details, settlement, terms | ✓ | — | — |
+
+Host-side policies (`App\Policies\Host\*`) resolve the tenant with
+`Filament::getTenant()` and the membership from it; they are separate classes
+from the staff policies, which keep answering from `Access` permissions.
+
+**Tenant scoping.** Every host resource names its ownership relationship.
+`Property` and `HostPage` have `partner_id`; `Stay`, `Review`, `StayThread` do
+not — `Partner` gains `stays(): HasManyThrough` (through `properties`),
+`reviews()` and `threads()` likewise, and those resources set
+`$tenantRelationshipName` accordingly. **Prove the scope by planting:** a
+test creates two hosts, opens host A's panel and requests host B's stay by id
+through `Livewire::test(ViewStay…)` and by URL, and asserts 404 both ways;
+then removes the scoping on one resource and watches the test fail before
+putting it back.
+
+**Screens** (`App\Filament\Host\…`):
+
+| Screen | What it does |
+|---|---|
+| `Pages\Dashboard` | Today: arrivals, departures, in-house, requests waiting for a yes, balances due, unread messages, dirty rooms. Each number is a link. The "being checked" callout while the host is `pending`. |
+| `Pages\Calendar` | Units down the side, days across (a month, navigable). Each stay a coloured block by status (`OCCUPYING` statuses and `checked_in` fill; `requested` outlined). Click a block → the stay; click a free cell → *New booking* with the date and unit filled. A Livewire page rendering a table of `<x-filament::…>` components — no drag-and-drop, no JavaScript library. |
+| `Resources\StayResource` ("Bookings") | List with filters (status, dates, source, property). View with the stay, guests, charges, payments, messages. Actions, each behind `HostRole`: **Accept** (→ `StayBooking::confirmWithPartner`, which holds the dates; refuses if they have gone, saying so), **Decline** with a reason the guest reads, **Check in** (assign a unit; capture the guest register — `StayGuest` rows, identifier through `EncryptedIdentifier`; refuses without a lead guest; `status → checked_in`), **Check out** (`→ completed`, `checked_out_at`, the unit → `dirty`), **Add charge** (`stay_charges`), **Record payment received here** (a `Payment` with `collected_by = host`, method cash / transfer / card at property, `status = succeeded`, reconciled by the host — never for a marketplace deposit, see §16.9), **Cancel** (applies the snapshot policy, releases the dates via `StayAllocator::release`), **Print bill** (PDF, §16.10). |
+| `Pages\NewBooking` | A direct booking: guest name, phone, email, nationality (→ audience), dates, room type, unit (optional), the quoted rate editable for direct bookings only, deposit taken now (host-collected), source, notes. Goes through `StayBooking::request()` → `hold()` → `confirm()` in one transaction; `source` ≠ `marketplace`; `commission_minor = 0`. Refuses a double booking with the same sentence the marketplace does. |
+| `Resources\PropertyResource` ("Listings") | Create and edit, with tabs per language; relation managers: **Room types** (with a nested units repeater), **Photos** (upload to `marketplace.media_disk`, re-encoded to WebP, EXIF stripped, `ResponsiveImage::generate` on save, `forget` on delete), **Rates** (season + audience), **Blocked dates**, **Policy** (deposit, balance days, free-cancel days, min nights, check-in/out times, instant book). **Submit for approval** action; the approval badge; *changes requested* shows Rihla's note. Relation managers on an edit page, not a view page (the read-only trap, `AGENTS.md`). |
+| `Resources\ReviewResource` | Read; **Reply** once (editable for 24 hours). |
+| `Pages\Messages` | Threads with unread first; reply box; 2,000 characters; plain text. |
+| `Pages\MyPage` | The storefront editor (§16.8) with a *Preview* link that opens the public page with `?preview=` for members only. |
+| `Resources\TeamResource` | Memberships and invitations: invite by email with a role; the invitation link is shown on screen as well as mailed, because mail may not be configured (the portal-link pattern). Owner only. |
+| `Pages\Earnings` | Per month: marketplace bookings, gross, commission, net; direct bookings, gross; what Rihla holds and what it owes or is owed. Statements when they exist. |
+| `Pages\Reports` | §16.10. |
+| `Pages\Settings` (the tenant profile page) | Contact details, WhatsApp, island, kind, registration, terms version accepted, settlement model (read-only, set by Rihla), payout details (owner; Phase 16). |
+
+**Staff side** (`/staff`): a `Hosts` resource (`PartnerResource` grows it):
+list by `verification` and `status`, view with the registration scan (a
+signed, expiring link like documents), **Verify** / **Refuse** with a note,
+**Suspend** / **Reinstate**, set `commission_pct` and `settlement_model`,
+**Recommend**. A `Listings for approval` filter on the existing
+`PropertyResource` with **Approve** / **Request changes** / **Withdraw**. A
+`Reviews` resource with **Hide** (reason required) / **Unhide**. The existing
+Stays board gains the host column and the `collected_by` split.
+
+### 16.7 The marketplace and the booking flow
+
+**Search** (`StaysController::index` becomes the search; the hub's three cards
+move to the top of it). `StayFilters` gains `atoll`, `kind[]`, `price_min`,
+`price_max` (in the audience's currency), `amenities[]`, `rating_min`, `sort`
+(`price`, `rating`, `newest`) and `audience` (default from locale, overridable
+by a toggle "I am a Maldivian citizen / a visitor"). Results are properties
+that are `is_published`, `approval = approved`, whose host is `active` and
+`verified`, whose door's service is not `off`, and that have at least one room
+type with a rate for the audience — and, when dates are given, at least one
+room free through `Availability`, as today. Cards: cover, name, island and
+atoll, kind, *from* price for the audience, rating and count when ≥ 1
+published review, the host's name linking to the storefront. Paginated, 24
+per page. The list is a single query with eager loads; `ContactNumberTest`'s
+query budget applies to it.
+
+**Listing page** (`stays.show`, extended): gallery with a keyboard-reachable
+lightbox (Alpine, no library); map (Leaflet bundled through Vite, OpenStreetMap
+tiles, loaded only when scrolled into view; CSP `img-src` gains the tile
+hosts, `script-src` unchanged because the bundle is local); rooms with a live
+quote for the chosen dates and audience and a **Book** button each; the
+policy; Green Tax line for tourists; reviews (paginated, newest first, host
+replies under them); the host card (logo, name, verified badge, "usually
+replies within …", link). `LodgingBusiness` gains `aggregateRating` **only
+when a published review exists** — `SeoTest` currently asserts the absence
+and is changed to assert presence *iff* reviews exist, in both directions.
+
+**Booking flow** — one page per step, server-rendered, no JavaScript needed,
+for the reason §5.2 gives (a phone on mobile data):
+
+1. `GET /stays/{property}/book?room=&check_in=&check_out=&adults=&children=&audience=` —
+   the quote restated, the policy printed, the total and what is paid now
+   (§16.9), the Green Tax note.
+2. `POST` → guest details: name, email, phone, nationality (fixes the
+   audience; a mismatch with the chosen one re-quotes and says so), special
+   requests, the terms checkbox. The customer is found by email, then phone,
+   else created — `CustomerImport`'s duplicate rules, never a silent merge.
+3. `POST /stays/book/confirm` → `StayBooking::request()`. Instant-book
+   properties are held at once (existing behaviour) and go to payment; request-
+   first properties become `requested` and the confirmation page says *"we
+   will confirm within 24 hours; you pay nothing until then"*. Throttled
+   (`throttle:stay-book`, 10 per hour per IP) and honeypotted like the enquiry
+   form.
+4. Payment: `GET /my-stay/pay` (inside the stay session) offers what
+   `Gateways::available()` returns — BML card when the driver `isAvailable()`,
+   bank transfer with the slip upload through `SlipVault`, never cash for a
+   marketplace deposit. BML: `start()` redirects; the callback route calls
+   `handleCallback()`, which is idempotent; the guest returns to `/my-stay`,
+   which shows the state the *callback* wrote, not the query string.
+5. `Notice::STAY_CONFIRMED` (exists) when the deposit lands; new kinds
+   `stay_requested`, `stay_accepted` (with the pay link and the deadline),
+   `stay_declined`, `review_requested`, added to `Notice::KINDS` and to
+   `Sweep::noticesForStay()`. All in the guest's language; the host's copy
+   in English.
+
+**The guest's page** (`/my-stay`): status and dates; the bill (charges and
+payments); *Pay the balance* when `full_collection` and due; *Cancel* when
+`cancellationIsFree()` (else it says what is kept and offers WhatsApp);
+messages with the host; the review form after check-out; a confirmation PDF.
+Entered through `stay_accesses` exactly as `PortalAccess` works
+(`Services\Stays\StayGatekeeper`, `StaySession` middleware): 30-day links,
+12-hour sessions, only the hash stored. The link is what every notice carries.
+Pilgrim portal code is **not** generalised to a polymorphic payable in this
+phase — two small classes beat one clever one until a third portal exists.
+
+**Hosts are told.** Each `requested` stay writes a row the host dashboard
+lists and, when mail is configured, sends one message with a link to accept;
+the same for a message from a guest and a review. No WhatsApp API exists
+(§11.2); the panel shows a `wa.me` link to the guest's number where the host
+has `bookings` ability.
+
+### 16.8 The host storefront
+
+`/{locale}/stays/hosts/{partner:slug}`, rendered by `HostPageController::show`,
+answering 404 unless the host is `active` and the page `published_at` is set
+(members see it unpublished with `?preview=` and a signed token).
+
+**Two layouts**, both inside Rihla's header and footer:
+
+- `story`: cover across the top with logo and tagline; *About* in the reader's
+  language (fallback to English, said so — `StaysPublicPagesTest`'s rule);
+  listings as cards; gallery; map; reviews; FAQ; contact.
+- `grid`: listings first, then the rest.
+
+**Branding fields and their guards.** `colour_primary` and `colour_accent`
+are validated with `ReadableColour::on(Brand::CREAM, …)` for text on the page
+ground and `ReadableColour::pair()` for the button (accent as background,
+white or ink as text — the form picks the text colour that passes and shows
+it). The chosen font is one of `marketplace.fonts`, all already loaded by the
+site. Logo and cover go through the media disk and `ResponsiveImage`. The
+about text is `HasTranslations` with the three tabs. Sections are toggled,
+not arranged.
+
+**What the page carries that the host cannot edit:** the verified badge and
+registration number, the computed rating and review count, the computed
+"usually replies within…", the *Rihla Recommended* mark when set, and the
+*Booked through Rihla* line with the licence number — the trust the frame
+provides.
+
+**Share kit.** `ShareCard` gains a host variant (`/stays/hosts/{slug}/card.png`,
+cover + logo + name, cache-busted by the covers' fingerprints as today) and
+the page carries OG tags, `Organization` structured data with `LodgingBusiness`
+children, and is listed in the sitemap.
+
+### 16.9 Money
+
+Every amount is `Money`, integer minor units, one currency per stay from
+quote to receipt.
+
+**Commission.** At `StayBooking::request()`, for `source = marketplace`:
+`commission_pct_snapshot = partner.commission_pct ?? config default`,
+`commission_minor = round(total × pct / 100)`, `host_net_minor = total − commission`.
+A null default and a null host rate refuse the request with a message naming
+the missing setting — a marketplace booking with no commission recorded is a
+silent loss. For every other source all three are zero.
+
+**Settlement.** `settlement_model_snapshot` is copied from the host at request:
+
+| | `commission_deposit` | `full_collection` |
+|---|---|---|
+| Paid online to Rihla | `deposit_minor = commission_minor` (labelled *booking deposit* to the guest) | `deposit_minor = deposit_pct × total` (existing), balance online by `balanceDueAt()` |
+| Paid to the host | The balance, at the property; the host records it (`collected_by = host`) | Nothing directly; Rihla pays `host_net_minor` out against a statement (Phase 16) |
+| Confirms the stay | The Rihla-collected deposit succeeding (`Ledger::reconcile` → `StayBooking::settle`) | The same |
+| Free cancellation | Rihla refunds the deposit in full — Rihla forgoes commission on a stay that did not happen | Rihla refunds the deposit; balance never taken |
+| Inside the window / no-show | Deposit kept (Rihla's commission); the host receives nothing, and the host terms say so | Deposit kept; Rihla pays the host the deposit less commission |
+
+Rihla's own rooms (`is_rihla`) use `full_collection` with `commission_pct = 0`.
+
+**The ledger.** `Ledger::recompute()` keeps summing every succeeded payment
+into `paid_minor` — it is the guest's paid total. Two helpers are added and
+used by the boards: `paidToRihla()` and `paidToHost()`, filtering
+`collected_by`. **Rule, tested by planting:** `Stay::depositIsPaid()` counts
+Rihla-collected payments only, so a host recording cash cannot confirm a
+marketplace stay whose deposit was never paid. The test records a host
+payment on a `held` marketplace stay and asserts it stays `held`; then
+loosens the filter and watches it confirm.
+
+**Refunds.** `Ledger::refund()` (exists) refunds Rihla-collected payments only;
+a host-collected payment is refunded by the host and recorded as a negative
+host payment. Refunds by card go back through BML; the driver's `refund` is
+part of the Phase 13 proof (§15.2 decision 3).
+
+**Green Tax and T-GST.** Unchanged in kind: prices include T-GST; Green Tax is
+a separate line for tourist stays, at the property by default
+(`partner.green_tax_mode`). The stay's `rate_snapshot['green_tax']` (exists)
+is what the reports sum. Nothing here computes tax owed to MIRA from a rate
+this plan states; the rates are config and the owner's.
+
+**Statements** (Phase 15): monthly per host, from completed stays in the
+period: marketplace gross, commission, net; direct gross for the host's own
+records; what Rihla holds; a PDF through the existing PDF stack, `Brand`
+colours only (the host's colours never enter a PDF — `AGENTS.md`'s palette
+traps). **Payouts** (Phase 16): a `payouts` row per bank transfer Rihla makes
+against a statement, recorded by Finance in `/staff`.
+
+### 16.10 Running the business
+
+**Bookings from every source, one calendar.** Marketplace, direct, phone,
+WhatsApp, walk-in, another site — all `stays` rows, all through the allocator.
+A host who lists on Airbnb blocks or enters those nights here; import from
+other calendars is Phase 16.
+
+**Check-in and the register.** Assign a unit (only units of the stay's room
+type; a `dirty` unit warns and does not refuse — the room may have just been
+done). Guest register rows per person: name, nationality, date of birth,
+identifier type and number (`EncryptedIdentifier`). The lead guest's
+nationality is checked against the stay's audience; a mismatch is shown, and
+the host may add an adjustment charge or leave it — the platform does not
+re-price a stay behind the guest's back. Check-out closes the stay and marks
+the unit `dirty`.
+
+**The bill.** `stay_charges` starts with the room line written from the
+snapshot at confirmation (and the Green Tax line where collected at the
+property); extras, discounts and adjustments are the host's. Payments against
+the stay from both collectors. Balance = charges − payments. *Print bill* is a
+PDF from `pdf/_document.blade.php`'s layout with the host's name, logo and
+registration number in the header and Rihla's line in the footer; `Brand`
+colours only.
+
+**Housekeeping.** A `units` board: each unit's status, who is in it, when they
+leave; **Mark clean** / **Mark inspected** (reception may). Auto-`dirty` on
+check-out. Nothing else — no task assignment, no staff rota.
+
+**Reports** (`Pages\Reports`), all computed at read time, never stored, for a
+month or a date range:
+
+- Occupancy: occupied unit-nights ÷ (active units × nights), by property.
+- Average nightly rate: room revenue ÷ occupied unit-nights, per currency.
+- Revenue by source and by audience; commission paid.
+- Green Tax collected: Σ over tourist stays of guests × nights × the rate in
+  each stay's snapshot — the figure the MIRA return asks for.
+- T-GST and GST: revenue ÷ (1 + rate) × rate, per currency, **only when
+  `stays.tax.tgst_pct` / `gst_pct` are set**; otherwise the row says
+  *"nobody has stated the rate"* — the KPI board's rule.
+- The guest register for the range, as CSV, identifiers unmasked for owner
+  and manager, masked for reception; every export is audit-logged.
+
+**Team.** Owner invites by email with a role; the link is on screen too.
+Removing a member revokes their sessions (`SignedInDevices`). An owner cannot
+remove the last owner.
+
+### 16.11 Reviews, messages and trust
+
+**Reviews.** `notices:sweep` writes `review_requested` one day after
+`checked_out_at` for `completed` stays without a review, with a
+`review_invitations` token (30 days, single use). The form (`/my-stay/review`
+or the token link): overall 1–5, four optional sub-ratings, text, language.
+One per stay, enforced by the unique key. Published automatically
+`review_publish_after_hours` later unless Rihla hides it (reason required,
+shown to the author, never to the public). The host replies once. Averages
+are computed by query with the review count; shown from the first review;
+`aggregateRating` in the structured data likewise. A hidden review counts for
+nothing. **Tested by planting:** a review on a stay that never reached
+`completed` is refused; a second review on the same stay is refused; hiding
+removes it from the average.
+
+**Messages.** One thread per stay. Guest through `/my-stay`, host through the
+panel, Rihla staff through the stay's view in `/staff` as `rihla`. Plain
+text, 2,000 characters, `throttle:stay-message` 30 per hour, read receipts
+by `read_at`. Email ping to the other side when mail is configured; otherwise
+the unread count on the dashboard and the guest's page is the ping.
+
+**Trust signals**, every one computed or set by a person at Rihla, none
+typed by the host: the verified badge (`verification = verified`); the
+registration number; "usually replies within N hours" (median of first host
+action on `requested` stays and guest messages over 90 days, shown from five
+samples); *Rihla Recommended* (`recommended_at`, manual); the rating.
+
+### 16.12 Prerequisites: photos, mail, the scheduler
+
+- **The scheduler.** `routes/console.php` gains `Schedule::command(...)` for
+  `stays:expire-holds` (every ten minutes), `bookings:expire-holds`,
+  `notices:sweep` (hourly), and later `host:statements` (monthly);
+  the server's cron runs `php artisan schedule:run` every minute (one line,
+  documented in `DEPLOYMENT_GUIDE.md`). `rihla:preflight` warns when
+  `schedule:run` has not recorded a run in fifteen minutes (a cache key the
+  schedule's `->onSuccess()` writes). **First task of Phase 12**, because
+  nothing after it is safe without expiring holds.
+- **Photos.** `marketplace.media_disk` names the disk; `config/filesystems.php`'s
+  `s3` disk (exists) points at an S3-compatible bucket the owner creates
+  (Backblaze B2, Wasabi, DigitalOcean Spaces — any of them; the code does not
+  care). `ResponsiveImage` already takes a disk. Uploads: images only, 8 MB,
+  re-encoded to WebP at 1600 px with a 400 px thumbnail (`MediaImage`'s
+  pattern), **EXIF stripped** — a phone photograph carries the host's home
+  coordinates. Until the disk exists, `host_registration.enabled` stays
+  `false` and the panel is used by Rihla's own host record only.
+- **Mail.** `MAIL_MAILER=smtp` with a provider account (§11); every mail here
+  degrades to an on-screen link or an unread count when it is `log`, and a
+  test asserts each flow completes with mail off.
+- **BML.** Credentials, the callback route over HTTPS, and the proof in
+  §15.2 decision 3 — a live MVR 1 charge, a refund, one international card —
+  before `stays_guesthouses` leaves `coming_soon`.
+- **CSP.** Tile hosts in `img-src`; nothing in `script-src` changes.
+- **Lighthouse.** `/stays` (search) and one listing page join
+  `lighthouse-budget.json`; the map is lazy so the 900 KB cap holds.
+
+### 16.13 Privacy, compliance and the two lists
+
+| Table | `Anonymisation` | `Forgetting` |
+|---|---|---|
+| `partners` (payout account) | `payout_account_number → null`, `payout_account_name → name` | `NOT_ONE_PERSONS` (exists) |
+| `host_memberships` | `KEEP` (users are scrubbed already) | `NOT_ONE_PERSONS`: staff of a supplier |
+| `host_invitations` | `email → email`, `token_hash → token` | `NOT_ONE_PERSONS` |
+| `host_pages` | `KEEP` (a business's words) | `NOT_ONE_PERSONS` |
+| `property_photos`, `property_units` | `KEEP` | `NOT_ONE_PERSONS` |
+| `stay_charges` | `description → text` | `REACHED` via `stay` |
+| `stay_accesses` | `token_hash → token` | `REACHED` via `stay` |
+| `stay_threads`, `stay_messages` | `body → text` | `REACHED` via `stay` |
+| `reviews` | `body → text`, `host_reply → text` | `REACHED` via `stay` — the author's; hiding is not erasure, erasure deletes |
+| `review_invitations` | `token_hash → token` | `REACHED` via `stay` |
+| `host_statements`, `payouts` | `KEEP` (money, no person) | `NOT_ONE_PERSONS` |
+
+`config/retention.php` gains `stay_messages` and `reviews` (both `null` —
+the owner states a period), and `stay_accesses` (expired rows pruned after
+90 days). `AppServiceProvider::AUDITED` gains `Partner`, `Property`,
+`HostPage`, `Review` and `StayCharge`. The guest register export and every
+unmasking of an identifier is written to the audit log with who and when.
+A host's data on leaving is a supplier procedure, documented in the host
+terms, not `data:forget`.
+
+### 16.14 Phases 12–16
+
+Each phase ends green on both database jobs, with a test per business rule,
+the AGENTS.md checks run (`composer analyse`, named-file Pint, the MySQL
+suite when a migration touches a key or index), and a deploy to
+test.rihla.mv verified. Production stays manual. Nothing is switched on for
+the public until §16.12's prerequisites are met and the owner has run the
+BML proof.
+
+**Phase 12 — Foundations for the marketplace (2–3 weeks).** No public change.
+1. The scheduler wired and preflight-checked.
+2. `config/marketplace.php`; `Audience`; dual rates on `room_types` and
+   `rates`; `Availability::quote()` by audience; `GreenTax` by audience; the
+   stay's `audience`, currency and snapshot. `StayAvailabilityTest` and
+   `StayBookingTest` gain the local cases; a room with no local rate is not
+   sold to a local.
+3. `property_units`, `properties.kind / atoll / latitude / longitude / approval`,
+   `property_photos` with variants generated and forgotten; `partners`'
+   verification, status, settlement and slug columns; `stays`' commission and
+   source columns; `payments.collected_by`; `stay_charges`.
+4. `RESERVED_SLUGS` gains `hosts`, `book`, `search`; the route order test
+   (`StaysPublicPagesTest::test_the_strand_routes_are_not_shadowed`) extended.
+5. Rihla's own host record (`is_rihla`, `full_collection`, commission 0),
+   created by a migration that finds-or-creates by a fixed slug — data written
+   as literals, never `Brand::`-style constants (D95).
+6. Both privacy lists and `DEPENDENT_MIGRATIONS` updated; `Anonymisation::unclassified()`
+   and `Forgetting::unreached()` both empty.
+*Tested by planting:* a second `hold()` on the last unit-night fails on MySQL
+with the lock named (`StayLockTest` extended for the audience path); a
+marketplace stay with a null commission is refused.
+
+**Phase 13 — Guests book and pay online (3–4 weeks).**
+1. The search page with the new filters, cards, pagination, the door cards.
+2. The listing page: gallery, lazy map, rooms with quotes per audience,
+   *Book*.
+3. The booking flow, the stay session and `/my-stay`, notices for each step,
+   the BML callback route and the proof, bank transfer with slips, online
+   cancellation inside the policy.
+4. `/staff`: a **New stay** page so staff can take a phone booking (the same
+   `NewBooking` component the host panel reuses in Phase 14).
+*Tested by planting:* `cancellationIsFree()` stubbed true inside the window
+must fail the cancellation test; the callback with a tampered signature must
+not confirm; two guests posting the last room at once — one confirmation.
+
+**Phase 14 — Hosts (6–8 weeks).** The panel, the storefront, reviews,
+messages.
+1. `HostPanelProvider`, `HasTenants`, memberships, roles, registration (off by
+   switch), the staff Hosts resource with verify/suspend.
+2. Listings, rooms, units, photos, rates, blocked dates, policy, approval.
+3. Bookings: accept/decline, direct bookings, check-in with the register,
+   check-out, charges, host-collected payments, cancel, the bill PDF; the
+   occupancy calendar; housekeeping; the dashboard.
+4. My page: the two layouts, branding with the contrast guard, preview,
+   publish; the public storefront, its share card, sitemap and structured
+   data.
+5. Reviews end to end; messages end to end; team and invitations; earnings.
+*Tested by planting:* the tenant-scope test (§16.6); a reception member
+opening earnings → 403; an unverified host's listing absent from search even
+when `approved`; a colour pair under 4.5:1 refused on the page editor;
+`aggregateRating` present iff a published review exists.
+
+**Phase 15 — The rest of the business (3–4 weeks).** Reports with the tax
+rows; monthly statements as PDFs; atoll browsing and the host directory;
+host add-ons (extras a guest picks at booking, priced per stay or per person)
+and `packages.audience` with a tourist price for island holidays; *Packages
+at this guesthouse* on the storefront; homepage card *List your property*.
+
+**Phase 16 — Full collection and beyond (open-ended).** `full_collection` for
+other hosts with payouts and Finance's screen; import of other sites'
+calendars (iCal, import only); host subdomains (`{slug}.rihla.mv`, wildcard
+DNS and the panel's `tenantDomain`); promotions and long-stay discounts;
+host-built packages.
+
+### 16.15 Deliberately not built
+
+A page builder or custom CSS for hosts. Automatic room allocation. Dynamic
+pricing. Currency conversion of any kind. Real-time chat. A host mobile app
+(the panel is responsive and installs as the PWA does). A public API for
+hosts. Payments to hosts by anything other than a bank transfer Finance
+records. Split settlement — BML does not offer it; revisit if it does.
+
+### 16.16 What the owner must supply
+
+| Item | Blocks |
+|---|---|
+| BML Connect merchant credentials, and the three-step proof | Any online card payment; guesthouses leaving `coming_soon` |
+| The default commission percentage | Phase 12's null refuses every marketplace booking until it is set |
+| An S3-compatible storage account for photographs | Opening host registration |
+| An SMTP account | Host invitations and pings by mail (everything degrades to on-screen links without it) |
+| The Green Tax amount, and whether it applies to Maldivians | Tourist quotes and the Green Tax report |
+| T-GST and GST rates for the reports | The tax rows of the host reports (they refuse until stated) |
+| The host terms and the guest terms, read by a lawyer, with a version | Registration and booking both require acceptance of a version |
+| Whether anyone may list without a Ministry registration | Default is no; `marketplace.require_registration` |
+
+### 16.17 Notes for whoever implements this
+
+Read `AGENTS.md` in full first; these are the traps it records that this
+work walks straight into, and the ones this section adds.
+
+- **Filament tenancy scopes only resources that name a relationship.** A
+  resource without `$tenantOwnershipRelationshipName` / `$tenantRelationshipName`
+  in a tenant panel throws on load, which is the safe failure; a resource
+  that names the wrong one silently shows everything. The planting test in
+  §16.6 is not optional.
+- **Relation managers are lazy and read-only on view pages** — put the
+  host's relation managers on `EditProperty`, and test them with
+  `Livewire::test(RM::class, ['ownerRecord' => …, 'pageClass' => …])`.
+- **A Filament closure column throws in its own request while the page answers
+  200.** Test every host table through `Livewire::test(ListX::class)`.
+- **`dropForeign`, `dropIndex`, `dropColumn`, each in its own `Schema::table()`**,
+  should any column here ever be removed; run the MySQL suite locally
+  (`apt-get install mariadb-server`) for every migration in this section.
+- **`wasChanged()` is false on insert**: photo observers need `created()` and
+  `updated()` both.
+- **A blank locale must be written as `null`** through `EditsTranslations`,
+  never dropped, or a host cannot delete their own Dhivehi.
+- **Larastan wants the generic on every relation**, including the new
+  `HasManyThrough` ones on `Partner`.
+- **Money is `Money`.** No floats, no `number_format` on a raw column, no
+  `round()` on a total that is then stored.
+- **`SeoTest` asserts no `AggregateRating`** today — change the assertion, do
+  not delete it.
+- **Do not reuse a test file name** (`ls tests/Feature` first). Suggested
+  new files: `MarketplaceSearchTest`, `StayBookingFlowTest`, `MyStayTest`,
+  `HostPanelTest`, `HostTenancyTest`, `HostRoleTest`, `HostStorefrontTest`,
+  `HostBrandingTest`, `DirectBookingTest`, `CheckInTest`, `StayBillTest`,
+  `HousekeepingTest`, `HostReportsTest`, `ReviewTest`, `StayMessageTest`,
+  `SettlementTest`, `HostStatementTest`. Extend `StaysPublicPagesTest`,
+  `StayAvailabilityTest`, `StayBookingTest`, `StayLockTest`,
+  `StaysAdminTest`, `StaysBoardTest`, `StayNoticeTest`; do not replace them.
+- **One PR per numbered item above**, each green on both database jobs, each
+  with `composer analyse` clean and Pint run on named files. Merging to `main`
+  deploys to test.rihla.mv only; production is the owner's manual run.
 
 ---
 
