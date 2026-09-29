@@ -153,7 +153,9 @@ the surface, not the equality of two artefacts.
 
 - **Assigning `{"en": …}` to a spatie-translatable attribute *merges*; it does not replace.** A locale missing from the array keeps whatever was stored, so a form that *drops* a blank Dhivehi box leaves the old Dhivehi in place, and the editor who deleted it sees it come back. Every `/staff` translation form had this until `EditsTranslations::withoutEmptyLocales()` started writing blank locales as `null`, which spatie reads as untranslated (`hasTranslation()` false, English fallback). `[]` is **not** equivalent: an empty list counts as a translation. Only a locale the form never sent is left alone — which is what keeps a one-language edit from wiping the other.
 
-- **`./vendor/bin/pint` with no path argument reformats the whole tree.** This codebase carries many pre-existing style violations (CI only checks changed files), so a bare `pint` quietly adds a dozen unrelated files to the diff. Always name the files.
+- **The Stays marketplace is planned, not built: §16 of `docs/WEBSITE_UPGRADE_PLAN.md` and ADR 0008.** Before touching `partners`, `properties`, `room_types`, `rates` or `stays` for any host, storefront, review, commission or panel work, read that section: it names the tables, the screens, the money rules, the phases and the tests, and it was written so an agent without the conversation can implement it. The two lists (`Anonymisation` and `Forgetting`) and `PackageDepartureTest::DEPENDENT_MIGRATIONS` apply to every table it adds.
+
+ reformats the whole tree.** This codebase carries many pre-existing style violations (CI only checks changed files), so a bare `pint` quietly adds a dozen unrelated files to the diff. Always name the files.
 
 - **A Blade component tag needs `/>`.** `<x-thing ... >` is an *opening* tag and Blade then hunts for `</x-thing>`, failing with `syntax error, unexpected token "endforeach"` pointing at a line nowhere near the real one. Converting an `<img ...>` to `<x-stored-image ...>` is exactly where this bites.
 
