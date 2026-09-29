@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Providers\Filament\HostPanelProvider;
 use App\Providers\Filament\StaffPanelProvider;
 use App\Support\Csp;
 use Closure;
@@ -152,6 +153,9 @@ class SecurityHeaders
         $pulse = trim((string) config('pulse.path'), '/');
 
         return $request->is(StaffPanelProvider::PATH, StaffPanelProvider::PATH.'/*')
+            // The host panel is the same Filament, with the same needs —
+            // §16.6. Behind its own login; the public site is unchanged.
+            || $request->is(HostPanelProvider::PATH, HostPanelProvider::PATH.'/*')
             || ($pulse !== '' && $request->is($pulse, $pulse.'/*'));
     }
 

@@ -457,6 +457,11 @@ final class Access
         'partner.view',
         'partner.create',
         'partner.update',
+        // §16.6: checking a host's tourism registration and deciding
+        // whether they may sell. Separate from `update` — fixing a phone
+        // number is not the same act as letting somebody take guests'
+        // money through Rihla.
+        'partner.verify',
 
         'property.viewAny',
         'property.view',

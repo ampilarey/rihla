@@ -2379,8 +2379,8 @@ not confirm; two guests posting the last room at once — one confirmation.
 
 **Phase 14 — Hosts (6–8 weeks).** The panel, the storefront, reviews,
 messages.
-1. `HostPanelProvider`, `HasTenants`, memberships, roles, registration (off by
-   switch), the staff Hosts resource with verify/suspend.
+1. ~~`HostPanelProvider`, `HasTenants`, memberships, roles, registration (off by
+   switch), the staff Hosts resource with verify/suspend.~~ **Done:** `/host` is a second Filament panel with its own login, tenancy on `partners` by slug, and the site's Filament script policy (the public site keeps its nonce). `host_memberships` (owner, manager, reception; accepted memberships only) and `host_invitations` (hash-only tokens; the accept flow and team screen are item 5). `User` implements `HasTenants`: a suspended host's team is shut out on the next request, a host user holds no spatie role, and `/staff` stays closed to them. `HostRole::allows()` is the plan's role table as code. `RegisterHost` makes the user, the host (pending, verification pending, terms version stored) and the owner membership in one transaction, stores the registration scan encrypted on the documents disk, and is **closed unless `HOST_REGISTRATION_OPEN` is on *and* host terms exist** (`HOST_TERMS_VERSION`, `HOST_TERMS_URL`) — a checkbox agreeing to a document that does not exist records nothing. Filament's sign-up sends a verification e-mail to a route this panel does not have; overridden, or every sign-up would have ended on a missing-route error after the account was made. `/staff` → Partners gains verification and status badges and filters, and **Host** actions behind a new `partner.verify`: open the registration scan, Verify, Refuse (a note the host reads), Suspend (a reason required) and Reinstate, Recommend (`HostPanelTest`).
 2. Listings, rooms, units, photos, rates, blocked dates, policy, approval.
 3. Bookings: accept/decline, direct bookings, check-in with the register,
    check-out, charges, host-collected payments, cancel, the bill PDF; the

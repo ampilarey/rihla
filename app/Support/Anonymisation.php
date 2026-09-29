@@ -103,6 +103,9 @@ final class Anonymisation
         // the test server. The address the link was first used from is a
         // person's.
         'stay_accesses' => ['token_hash' => 'token', 'first_used_ip' => 'null'],
+        // An invitation to work for a host — §16.13. The address is a
+        // person's and the token a credential.
+        'host_invitations' => ['email' => 'email', 'token_hash' => 'token'],
         // The guest register — §15.6. Names and government identifiers for
         // people who are not even Rihla's customers: one person books a
         // room for four, and the other three never agreed to anything.
@@ -235,6 +238,9 @@ final class Anonymisation
         // of a building and "Room 4, first floor"; nobody is named.
         'property_photos',
         'property_units',
+        // Who works for which host, and in which role — §16.13. The people
+        // are `users`, scrubbed above; the join names nobody.
+        'host_memberships',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',
