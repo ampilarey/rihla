@@ -35,6 +35,9 @@ Schedule::command('bookings:expire-holds')->everyTenMinutes()->withoutOverlappin
 
 Schedule::command('notices:sweep')->hourly()->withoutOverlapping(10);
 
+// §16.9: last month's host statements, on the 2nd so the month has closed.
+Schedule::command('stays:statements')->monthlyOn(2, '03:15')->withoutOverlapping(30);
+
 // Proof the scheduler is alive, read by `rihla:preflight`. A missing cron
 // line fails nothing loudly — holds just stop expiring — so the deploy
 // checklist is where somebody finds out.

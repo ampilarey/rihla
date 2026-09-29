@@ -2,15 +2,19 @@
 
 namespace App\Filament\Host\Pages;
 
+use App\Models\HostStatement;
 use App\Models\Partner;
 use App\Models\User;
 use App\Services\Hosts\Earnings as EarningsReport;
+use App\Services\Hosts\Statements;
 use App\Support\HostContext;
 use App\Support\HostRole;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Pages\Page;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Url;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * What the host earned, month by month — §16.6. Owner and manager only;
@@ -65,6 +69,31 @@ class Earnings extends Page
     public function report(): array
     {
         return app(EarningsReport::class)->forMonth($this->host(), $this->start());
+    }
+
+    /**
+     * Statements issued to this host, newest first — §16.9.
+     *
+     * @return Collection<int, HostStatement>
+     */
+    public function statements()
+    {
+        return HostStatement::query()
+            ->where('partner_id', $this->host()->getKey())
+            ->orderByDesc('period_start')
+            ->orderBy('currency')
+            ->limit(24)
+            ->get();
+    }
+
+    public function downloadStatement(int $id): StreamedResponse
+    {
+        abort_unless(self::canAccess(), 403);
+
+        $statement = HostStatement::query()->where('partner_id', $this->host()->getKey())->findOrFail($id);
+        $pdf = app(Statements::class)->pdf($statement);
+
+        return response()->streamDownload(fn () => print ($pdf), $statement->reference.'.pdf', ['Content-Type' => 'application/pdf']);
     }
 
     private function host(): Partner

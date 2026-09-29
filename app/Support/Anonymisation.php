@@ -256,6 +256,9 @@ final class Anonymisation
         // Who works for which host, and in which role — §16.13. The people
         // are `users`, scrubbed above; the join names nobody.
         'host_memberships',
+        // A host's month in figures — §16.9. A business's takings and
+        // Rihla's commission; no guest is named in a row.
+        'host_statements',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',
