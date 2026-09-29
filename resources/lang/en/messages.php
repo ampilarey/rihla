@@ -888,4 +888,16 @@ return [
     'Still to pay' => 'Still to pay',
     'Check-in from :time.' => 'Check-in from :time.',
     'Download your stay summary (PDF)' => 'Download your stay summary (PDF)',
+    // A host's own page — §16.8.
+    'Photographs' => 'Photographs',
+    'Questions and answers' => 'Questions and answers',
+    'Our story' => 'Our story',
+    'Where you can stay' => 'Where you can stay',
+    'Nothing to book here just yet.' => 'Nothing to book here just yet.',
+    'Checked by Rihla' => 'Checked by Rihla',
+    'Rihla recommends' => 'Rihla recommends',
+    'Website' => 'Website',
+    'Booked through Rihla Travels. Rihla checks every host before their page goes live.' => 'Booked through Rihla Travels. Rihla checks every host before their page goes live.',
+    'This host has not written their story in your language yet, so it is shown in English.' => 'This host has not written their story in your language yet, so it is shown in English.',
+    'Preview: this page is not published yet, and only people with this link can see it.' => 'Preview: this page is not published yet, and only people with this link can see it.',
 ];

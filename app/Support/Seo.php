@@ -5,7 +5,9 @@ namespace App\Support;
 use App\Http\Middleware\SetLocale;
 use App\Models\Article;
 use App\Models\GuideStep;
+use App\Models\HostPage;
 use App\Models\Package;
+use App\Models\Partner;
 use App\Models\Property;
 use App\Models\RoomType;
 use App\Models\Setting;
@@ -484,6 +486,39 @@ class Seo
 
             if ($offer !== null) {
                 $schema['makesOffer'][] = $offer;
+            }
+        }
+
+        return $schema;
+    }
+
+    /**
+     * A host's own page — §16.8: the business, with each listing as a
+     * `LodgingBusiness` under it. Only what the page shows: no rating until
+     * reviews exist (§16.11), and links out only where the host gave them.
+     *
+     * @param  iterable<Property>  $listings
+     * @return array<string, mixed>
+     */
+    public static function host(Partner $partner, HostPage $page, iterable $listings, string $url): array
+    {
+        $schema = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $partner->name,
+            'url' => $url,
+            'description' => $page->getTranslation('tagline', app()->getLocale()) ?: null,
+            'logo' => $page->logo_path ? url(Storage::url($page->logo_path)) : null,
+            'image' => $page->cover_path ? url(Storage::url($page->cover_path)) : null,
+            'sameAs' => array_values(array_filter([$page->instagram, $page->facebook, $page->website_url])) ?: null,
+        ]);
+
+        foreach ($listings as $listing) {
+            $child = self::property($listing, route('stays.show', ['property' => $listing->slug]));
+
+            if ($child !== null) {
+                unset($child['@context']);
+                $schema['subOrganization'][] = $child;
             }
         }
 

@@ -104,12 +104,12 @@ class StaysController extends Controller
         $listable = $types === []
             ? (new Property)->newCollection()
             : Property::listable()->ofType($types)->offering($filters->audience)
-                ->with(['roomTypes', 'partner'])
+                ->with(['roomTypes', 'partner.page'])
                 ->get();
 
         $found = $filters->apply(
             Property::query()->whereIn('id', $listable->modelKeys())
-        )->with(['roomTypes', 'partner'])->get();
+        )->with(['roomTypes', 'partner.page'])->get();
 
         if ($filters->hasDates()) {
             $found = $found->filter(fn (Property $property): bool => $this->hasAnythingFree($property, $filters));
@@ -255,7 +255,7 @@ class StaysController extends Controller
 
         $filters = StayFilters::fromRequest($request);
 
-        $property->load(['roomTypes', 'partner', 'photos.roomType']);
+        $property->load(['roomTypes', 'partner.page', 'photos.roomType']);
 
         // §15.2 decision 5. The estimate only when the reader has actually
         // said how many of them there are and for which nights — a figure

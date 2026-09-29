@@ -14,6 +14,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HostPageController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\LeaderController;
@@ -206,6 +207,11 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // The share kit — §15.4 (Phase 9.5). Both declared *before* the
     // catch-all below, for the same ordering reason: `{property}` would
     // otherwise swallow `card.png` as a slug.
+    // A host's own page — §16.8. Before `{property}` for the same reason:
+    // "hosts" is a reserved listing slug, and these must be matched first.
+    Route::get('/stays/hosts/{partner:slug}/card.png', [HostPageController::class, 'shareCard'])->name('stays.host.card');
+    Route::get('/stays/hosts/{partner:slug}', [HostPageController::class, 'show'])->name('stays.host');
+
     Route::get('/stays/{property}/card.png', [StaysController::class, 'shareCard'])->name('stays.card');
     Route::get('/stays/{property}/sheet.pdf', [StaysController::class, 'factSheet'])->name('stays.sheet');
 

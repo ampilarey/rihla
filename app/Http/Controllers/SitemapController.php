@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetLocale;
 use App\Models\Article;
+use App\Models\HostPage;
 use App\Models\Package;
+use App\Models\Partner;
 use App\Models\Trip;
 use App\Models\ZiyarahLocation;
 use Illuminate\Http\Response;
@@ -105,6 +107,25 @@ class SitemapController extends Controller
                 'path' => '/articles/'.$article->slug,
                 'lastmod' => $article->updated_at?->toAtomString(),
                 'changefreq' => 'monthly',
+                'priority' => '0.6',
+            ];
+        }
+
+        // Hosts' own pages — §16.8. Only a published page of a host guests
+        // may see; a preview link is never listed.
+        $hostPages = HostPage::query()
+            ->whereNotNull('published_at')
+            ->whereHas('partner', fn ($query) => $query
+                ->where('status', Partner::STATUS_ACTIVE)
+                ->where('verification', Partner::VERIFIED))
+            ->with('partner:id,slug')
+            ->get(['id', 'partner_id', 'updated_at']);
+
+        foreach ($hostPages as $hostPage) {
+            $entries[] = [
+                'path' => '/stays/hosts/'.$hostPage->partner->slug,
+                'lastmod' => $hostPage->updated_at?->toAtomString(),
+                'changefreq' => 'weekly',
                 'priority' => '0.6',
             ];
         }

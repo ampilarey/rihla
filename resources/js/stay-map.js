@@ -17,10 +17,23 @@ export function startStayMap() {
         return;
     }
 
-    const lat = Number(element.dataset.lat);
-    const lng = Number(element.dataset.lng);
+    // One place (a listing: data-lat, data-lng, data-label) or several (a
+    // host's page — §16.8: data-points, a JSON list of {lat, lng, name}).
+    let points = [];
 
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    try {
+        points = element.dataset.points
+            ? JSON.parse(element.dataset.points)
+            : [{ lat: element.dataset.lat, lng: element.dataset.lng, name: element.dataset.label || '' }];
+    } catch {
+        return;
+    }
+
+    points = points
+        .map((point) => ({ lat: Number(point.lat), lng: Number(point.lng), name: point.name || '' }))
+        .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
+
+    if (points.length === 0) {
         return;
     }
 
@@ -32,20 +45,26 @@ export function startStayMap() {
 
         element.textContent = '';
 
-        const map = L.map(element, { scrollWheelZoom: false }).setView([lat, lng], 14);
+        const map = L.map(element, { scrollWheelZoom: false }).setView([points[0].lat, points[0].lng], 14);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map);
 
-        L.circleMarker([lat, lng], {
-            radius: 10,
-            color: '#2E2245',
-            weight: 2,
-            fillColor: '#5F498A',
-            fillOpacity: 0.9,
-        }).addTo(map).bindTooltip(element.dataset.label || '');
+        points.forEach((point) => {
+            L.circleMarker([point.lat, point.lng], {
+                radius: 10,
+                color: '#2E2245',
+                weight: 2,
+                fillColor: '#5F498A',
+                fillOpacity: 0.9,
+            }).addTo(map).bindTooltip(point.name);
+        });
+
+        if (points.length > 1) {
+            map.fitBounds(points.map((point) => [point.lat, point.lng]), { padding: [30, 30], maxZoom: 15 });
+        }
     };
 
     if (!('IntersectionObserver' in window)) {

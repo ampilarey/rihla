@@ -217,7 +217,11 @@
 
                             @if($property->partner)
                                 <p dir="auto" class="mt-1 text-xs text-ink-muted">
-                                    {{ __('messages.Hosted by :host', ['host' => $property->partner->name]) }}
+                                    @if($hostPage = $property->hostPageUrl())
+                                        {!! __('messages.Hosted by :host', ['host' => '<a href="'.e($hostPage).'" class="underline hover:no-underline">'.e($property->partner->name).'</a>']) !!}
+                                    @else
+                                        {{ __('messages.Hosted by :host', ['host' => $property->partner->name]) }}
+                                    @endif
                                 </p>
                             @endif
 

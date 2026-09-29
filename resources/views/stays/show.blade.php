@@ -67,6 +67,12 @@
                     <span aria-hidden="true">·</span> {{ \App\Models\Property::kindLabel($property->kind) }}
                 @endif
             </p>
+            {{-- §16.8: the host's own page, when they have published one. --}}
+            @if($hostPage = $property->hostPageUrl())
+                <p dir="auto" class="mt-1 text-sm text-ink-muted">
+                    {!! __('messages.Hosted by :host', ['host' => '<a href="'.e($hostPage).'" class="text-wine-700 underline hover:no-underline">'.e($property->partner->name).'</a>']) !!}
+                </p>
+            @endif
         </header>
 
         @if($property->cover_image)
