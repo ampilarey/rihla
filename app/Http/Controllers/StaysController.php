@@ -96,10 +96,7 @@ class StaysController extends Controller
 
         $filters = StayFilters::fromRequest($request);
 
-        $types = array_keys(array_filter(
-            self::DOORS,
-            fn (string $service): bool => ! ServiceRegistry::isOff($service),
-        ));
+        $types = self::openTypes();
 
         $listable = $types === []
             ? (new Property)->newCollection()
@@ -142,6 +139,56 @@ class StaysController extends Controller
             'priceCurrency' => $this->priceCurrency($filters->audience),
             'socialSettings' => Setting::getSocialSettings(),
         ]);
+    }
+
+    /**
+     * The kinds of building whose door is not off.
+     *
+     * @return list<string>
+     */
+    public static function openTypes(): array
+    {
+        return array_keys(array_filter(
+            self::DOORS,
+            fn (string $service): bool => ! ServiceRegistry::isOff($service),
+        ));
+    }
+
+    /**
+     * Browse by atoll — §16 Phase 15.
+     *
+     * Every atoll with something listed in it, how many places and on
+     * which islands, each a link into the search with the atoll already
+     * chosen. Counted for the same audience the search would default to,
+     * so the number on the card is the number of results the link opens.
+     * A listing with no atoll recorded is left off rather than filed under
+     * a guess.
+     */
+    public function atolls(Request $request): View
+    {
+        $types = self::openTypes();
+        abort_if($types === [], 404);
+
+        $filters = StayFilters::fromRequest($request);
+
+        $atolls = Property::listable()->ofType($types)->offering($filters->audience)
+            ->whereNotNull('atoll')
+            ->where('atoll', '!=', '')
+            ->get(['id', 'atoll', 'island'])
+            ->groupBy('atoll')
+            ->map(fn (Collection $properties, string $atoll): array => [
+                'name' => $atoll,
+                'count' => $properties->count(),
+                'islands' => $properties->pluck('island')->filter()->unique()->sort()->values()->all(),
+                'url' => route('stays.index', array_filter([
+                    'atoll' => $atoll,
+                    'audience' => $request->filled('audience') ? $filters->audience : null,
+                ])),
+            ])
+            ->sortKeys()
+            ->values();
+
+        return view('stays.atolls', ['atolls' => $atolls]);
     }
 
     /**

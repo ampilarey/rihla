@@ -111,6 +111,14 @@ class SitemapController extends Controller
             ];
         }
 
+        // Browse by atoll and the host directory — §16 Phase 15. Listed
+        // while a Stays door is open, since both 404 when none is.
+        if (StaysController::openTypes() !== []) {
+            foreach (['/stays/atolls', '/stays/hosts'] as $path) {
+                $entries[] = ['path' => $path, 'lastmod' => null, 'changefreq' => 'weekly', 'priority' => '0.6'];
+            }
+        }
+
         // Hosts' own pages — §16.8. Only a published page of a host guests
         // may see; a preview link is never listed.
         $hostPages = HostPage::query()

@@ -27,6 +27,42 @@ use Illuminate\Support\Facades\URL;
  */
 class HostPageController extends Controller
 {
+    /**
+     * Every host with a page a guest may open — §16 Phase 15.
+     *
+     * The same gate as {@see show()}: listed (active and verified) and
+     * published, and at least one listing behind a door that is not off,
+     * so the directory never links to a page with nothing on it to book.
+     */
+    public function index(): View
+    {
+        $types = StaysController::openTypes();
+        abort_if($types === [], 404);
+
+        $listed = fn ($properties) => $properties->listable()->ofType($types);
+
+        $hosts = Partner::query()
+            ->where('status', Partner::STATUS_ACTIVE)
+            ->where('verification', Partner::VERIFIED)
+            ->whereHas('page', fn ($page) => $page->whereNotNull('published_at'))
+            ->whereHas('properties', $listed)
+            ->with(['page', 'properties' => $listed])
+            ->orderBy('name')
+            ->get();
+
+        return view('stays.hosts', [
+            'hosts' => $hosts->map(fn (Partner $host): array => [
+                'partner' => $host,
+                'page' => $host->page,
+                'listings' => $host->properties->count(),
+                'places' => $host->properties
+                    ->map(fn (Property $property): string => collect([$property->island, $property->atoll])->filter()->implode(', '))
+                    ->filter()->unique()->sort()->values()->all(),
+                'rating' => $host->rating(),
+            ]),
+        ]);
+    }
+
     public function show(Request $request, Partner $partner): View|Response
     {
         $page = $this->page($partner);

@@ -129,7 +129,7 @@ class Property extends Model
      *
      * @var list<string>
      */
-    public const RESERVED_SLUGS = ['guesthouses', 'island-holidays', 'rooms', 'hosts', 'book', 'search', 'review'];
+    public const RESERVED_SLUGS = ['guesthouses', 'island-holidays', 'rooms', 'hosts', 'atolls', 'book', 'search', 'review'];
 
     /**
      * Per docs/adr/0001-how-content-is-translated.md. `amenities` holds a
