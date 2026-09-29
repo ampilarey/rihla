@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Partner;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Schema;
  * rebuild `packages`, and a rebuild cascade-deletes every departure hanging
  * off it — the AGENTS.md trap, which `PackageDepartureTest` hit here: it
  * replays this migration after copying trips and found its departure gone.
- * Hosts are suspended, not deleted; if one ever is, {@see \App\Models\Partner}
+ * Hosts are suspended, not deleted; if one ever is, {@see Partner}
  * hands their packages back to Rihla in its `deleting` hook.
  *
  * Down drops the index before the column, in separate calls (AGENTS.md).
