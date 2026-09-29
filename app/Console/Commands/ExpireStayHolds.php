@@ -21,9 +21,9 @@ use Illuminate\Console\Command;
  * somebody notices; a guesthouse that quietly stops being bookable just
  * receives no enquiries, and nothing about that looks like a fault.
  *
- * Suitable for a cPanel cron entry every fifteen minutes. If nobody ever
- * sets one up, nothing breaks — which is the point, on a host where nobody
- * watches the scheduler.
+ * Scheduled every ten minutes in routes/console.php (§16.12). If the cron
+ * line that drives the schedule is missing, nothing breaks — which is the
+ * point, on a host where nobody watches it — and `rihla:preflight` says so.
  */
 class ExpireStayHolds extends Command
 {

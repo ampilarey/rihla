@@ -2340,7 +2340,7 @@ the public until §16.12's prerequisites are met and the owner has run the
 BML proof.
 
 **Phase 12 — Foundations for the marketplace (2–3 weeks).** No public change.
-1. The scheduler wired and preflight-checked.
+1. ~~The scheduler wired and preflight-checked.~~ **Done:** `routes/console.php` schedules the two hold expiries every ten minutes and the notice sweep hourly, each with a ten-minute overlap lock; a heartbeat every minute feeds a `rihla:preflight` warning; `scripts/install-scheduler-cron.sh` installs the cron line for whichever site it is run in (`SchedulerTest`).
 2. `config/marketplace.php`; `Audience`; dual rates on `room_types` and
    `rates`; `Availability::quote()` by audience; `GreenTax` by audience; the
    stay's `audience`, currency and snapshot. `StayAvailabilityTest` and

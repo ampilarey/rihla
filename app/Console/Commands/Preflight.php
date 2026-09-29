@@ -6,6 +6,7 @@ use App\Models\Setting;
 use App\Models\Trip;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
@@ -24,6 +25,12 @@ class Preflight extends Command
 
     /** Big enough to be worth saying, small enough to still be fixable. */
     private const LOG_SIZE_WARNING = 100 * 1024 * 1024;
+
+    /** Written every minute by the schedule (routes/console.php). */
+    public const SCHEDULE_HEARTBEAT = 'rihla.schedule.heartbeat';
+
+    /** How stale the heartbeat may be before a deploy is told about it. */
+    private const SCHEDULE_STALE_MINUTES = 15;
 
     /** @var list<array{string, string}> */
     private array $failures = [];
@@ -44,6 +51,7 @@ class Preflight extends Command
             $this->checkProductionEnvironment();
             $this->checkNoDemoContent();
             $this->checkLogging();
+            $this->checkScheduler();
         }
 
         foreach ($this->warnings as [$name, $detail]) {
@@ -250,6 +258,40 @@ class Preflight extends Command
      * an Umrah site. The seeders refuse to run there now, but a database
      * restored from test would carry it in anyway.
      */
+    /**
+     * Is `schedule:run` actually running — §16.12.
+     *
+     * A warning rather than a failure: the cron line lives in cPanel, not in
+     * the release, so the very first deploy of this check cannot have it
+     * yet, and refusing that deploy would be refusing the fix. Nothing fails
+     * loudly without it either — holds just stop expiring and notices stop
+     * being raised — which is exactly why somebody has to be told here.
+     */
+    private function checkScheduler(): void
+    {
+        $fix = 'run scripts/install-scheduler-cron.sh once in cPanel Terminal';
+
+        try {
+            $last = Cache::get(self::SCHEDULE_HEARTBEAT);
+        } catch (\Throwable $e) {
+            $this->addWarning('scheduler', 'could not be checked: '.$e->getMessage());
+
+            return;
+        }
+
+        if (! is_int($last)) {
+            $this->addWarning('scheduler', "schedule:run has never run on this host; stay holds will not expire on their own — {$fix}");
+
+            return;
+        }
+
+        $minutes = (int) floor((now()->getTimestamp() - $last) / 60);
+
+        if ($minutes > self::SCHEDULE_STALE_MINUTES) {
+            $this->addWarning('scheduler', "schedule:run last ran {$minutes} minutes ago; the cron line has stopped — {$fix}");
+        }
+    }
+
     private function checkNoDemoContent(): void
     {
         $slugs = ['maldives-island-hopping-adventure', 'luxury-resort-experience', 'cultural-heritage-tour'];

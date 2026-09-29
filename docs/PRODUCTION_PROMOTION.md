@@ -61,6 +61,18 @@ the site is offline for the middle of this, usually under a minute.
 **Look at the test site first.** Everything you are about to promote is already running
 on `test.rihla.mv`. If something there looks wrong, it will look wrong on `rihla.mv`.
 
+**Once per site: the scheduler's cron line.** Stay holds expire and notices are raised by
+`php artisan schedule:run`, which needs one cron entry per site (§16.12). Install it once;
+re-running is harmless:
+
+```
+cd /home/rihla/rihla.mv-app && bash scripts/install-scheduler-cron.sh
+cd /home/rihla/test.rihla.mv && bash scripts/install-scheduler-cron.sh
+```
+
+Preflight warns on every deploy until it has seen the scheduler run in the last fifteen
+minutes.
+
 ---
 
 ## The deploy
