@@ -79,6 +79,10 @@ class StaysShowcaseSeeder extends Seeder
             'approval' => Property::APPROVED,
             'kind' => Property::KIND_GUESTHOUSE,
             'atoll' => 'Kaafu',
+            // Maafushi's harbour, near enough — so the audit covers a
+            // listing with its map, the way a real one will look.
+            'latitude' => 3.9412,
+            'longitude' => 73.4903,
         ])->save();
 
         RoomType::firstOrCreate(

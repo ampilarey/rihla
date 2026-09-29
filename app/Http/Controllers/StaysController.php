@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\NotSoldToAudience;
 use App\Exceptions\RoomNotAvailable;
 use App\Models\Package;
 use App\Models\Property;
+use App\Models\PropertyPhoto;
 use App\Models\RoomType;
 use App\Models\Setting;
 use App\Services\Stays\Availability;
@@ -12,6 +14,7 @@ use App\Services\Stays\GreenTax;
 use App\Services\Stays\ShareCard;
 use App\Support\Audience;
 use App\Support\Contact;
+use App\Support\Money;
 use App\Support\Services as ServiceRegistry;
 use App\Support\StayFilters;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -252,7 +255,7 @@ class StaysController extends Controller
 
         $filters = StayFilters::fromRequest($request);
 
-        $property->load(['roomTypes', 'partner']);
+        $property->load(['roomTypes', 'partner', 'photos.roomType']);
 
         // §15.2 decision 5. The estimate only when the reader has actually
         // said how many of them there are and for which nights — a figure
@@ -266,17 +269,40 @@ class StaysController extends Controller
         return view('stays.show', [
             'property' => $property,
             'filters' => $filters,
+            // Whether this reader owes Green Tax at all — §16.3 decision 6.
+            // A local stay is exempt unless the owner configures otherwise,
+            // and telling a Maldivian family about a foreigners' tax would
+            // be a line of worry about money nobody will ask them for.
+            'greenTaxApplies' => $this->greenTax->appliesTo($filters->audience),
             'greenTaxAtProperty' => $this->greenTax->isCollectedAtProperty($property),
             'greenTaxRate' => $this->greenTax->perGuestPerNight(),
             'greenTaxEstimate' => $guests !== null && $nights > 0
                 ? $this->greenTax->forParty($guests, $nights)
                 : null,
             'rooms' => $this->priceRooms($property, $filters),
+            'photos' => $this->gallery($property),
             'bookable' => ServiceRegistry::isOn($service),
             'shareCard' => $this->shareCardUrl($property),
             'hasFactSheet' => in_array(app()->getLocale(), self::SHEET_LOCALES, true),
             'socialSettings' => Setting::getSocialSettings(),
         ]);
+    }
+
+    /**
+     * The listing's photographs, as the gallery and its lightbox read them.
+     *
+     * A photo with no caption is described by its room, or by the building,
+     * so no image reaches a screen reader with nothing to say.
+     *
+     * @return list<array{src: string, alt: string, caption: string}>
+     */
+    private function gallery(Property $property): array
+    {
+        return $property->photos->map(fn (PropertyPhoto $photo): array => [
+            'src' => Storage::disk($photo->disk)->url($photo->path),
+            'alt' => (string) ($photo->caption ?: ($photo->roomType->name ?? $property->name)),
+            'caption' => (string) ($photo->caption ?: ($photo->roomType->name ?? '')),
+        ])->values()->all();
     }
 
     /**
@@ -485,14 +511,31 @@ class StaysController extends Controller
      */
     private function priceRooms(Property $property, StayFilters $filters): array
     {
-        return $property->roomTypes->map(function (RoomType $room) use ($filters): array {
+        $audience = $filters->audience;
+
+        return $property->roomTypes->map(function (RoomType $room) use ($filters, $audience, $property): array {
+            // Not sold to this audience at all — §16.3 decision 6. Said on
+            // the card rather than the room hidden, so a Maldivian reader
+            // knows the room exists and why they cannot have it.
+            if (! $this->availability->offers($room, $audience)) {
+                return ['room' => $room, 'offered' => false, 'nightly' => null, 'quote' => null, 'available' => null, 'reason' => null];
+            }
+
+            $nightly = $audience === Audience::LOCAL
+                ? ($room->local_rate_minor !== null ? Money::ofMinor($room->local_rate_minor, Audience::currencyAt($property, $audience)) : null)
+                : $room->baseRate();
+
             if (! $filters->hasDates()) {
-                return [
-                    'room' => $room,
-                    'quote' => null,
-                    'available' => null,
-                    'reason' => null,
-                ];
+                return ['room' => $room, 'offered' => true, 'nightly' => $nightly, 'quote' => null, 'available' => null, 'reason' => null];
+            }
+
+            try {
+                $quote = $this->availability->quote($room, $filters->checkIn, $filters->checkOut, $audience);
+            } catch (NotSoldToAudience) {
+                // A local season that covers some of the nights and not
+                // the rest: the room is theirs to buy, just not for these
+                // dates.
+                return ['room' => $room, 'offered' => true, 'nightly' => $nightly, 'quote' => null, 'available' => false, 'reason' => null];
             }
 
             $available = true;
@@ -507,7 +550,9 @@ class StaysController extends Controller
 
             return [
                 'room' => $room,
-                'quote' => $this->availability->quote($room, $filters->checkIn, $filters->checkOut),
+                'offered' => true,
+                'nightly' => $nightly,
+                'quote' => $quote,
                 'available' => $available,
                 'reason' => $reason,
             ];

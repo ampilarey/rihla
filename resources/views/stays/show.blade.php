@@ -61,9 +61,12 @@
     <div class="mx-auto max-w-3xl">
         <header class="mb-6">
             <h1 dir="auto" class="section-title text-start">{{ $property->name }}</h1>
-            @if($property->island)
-                <p dir="auto" class="text-ink-muted">{{ $property->island }}</p>
-            @endif
+            <p dir="auto" class="text-ink-muted">
+                {{ collect([$property->island, $property->atoll])->filter()->implode(', ') }}
+                @if($property->kind)
+                    <span aria-hidden="true">·</span> {{ \App\Models\Property::kindLabel($property->kind) }}
+                @endif
+            </p>
         </header>
 
         @if($property->cover_image)
@@ -71,6 +74,62 @@
                  alt="{{ $property->name }}"
                  width="1200" height="630" decoding="async"
                  class="mb-6 w-full rounded-2xl object-cover">
+        @endif
+
+        {{-- The gallery — §16.7. Each thumbnail is a button, so it is
+             reached and opened from the keyboard; the lightbox is a native
+             <dialog>, which traps focus, closes on Escape and hands focus
+             back to the thumbnail that opened it without any code here.
+             The arrow keys step through the photos. --}}
+        @if($photos !== [])
+            @php($photoCount = count($photos))
+            {{-- One image in the lightbox, its address set when a photo is
+                 opened. Rendering every photo inside the closed dialog
+                 either downloads them all on arrival or, lazily, never —
+                 a lazy image in a closed <dialog> is not fetched when the
+                 dialog opens, and the lightbox showed nothing. --}}
+            <section class="mb-8" aria-labelledby="stays-photos-heading"
+                     x-data="{ open: 0, photos: @js($photos), show(i) { this.open = i; this.$refs.lightbox.showModal() }, next() { this.open = (this.open + 1) % this.photos.length }, prev() { this.open = (this.open + this.photos.length - 1) % this.photos.length } }">
+                <h2 id="stays-photos-heading" class="sr-only">{{ __('messages.Photos') }}</h2>
+
+                <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    @foreach($property->photos as $photo)
+                        <li>
+                            <button type="button" x-on:click="show({{ $loop->index }})"
+                                    class="block w-full overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-wine-500"
+                                    aria-label="{{ __('messages.Open photo :number of :count', ['number' => $loop->iteration, 'count' => $photoCount]) }}">
+                                <img src="{{ $photos[$loop->index]['src'] }}"
+                                     @if($srcset = \App\Support\ResponsiveImage::srcset($photo->path, $photo->disk)) srcset="{{ $srcset }}" sizes="(min-width: 640px) 33vw, 50vw" @endif
+                                     alt="{{ $photos[$loop->index]['alt'] }}"
+                                     width="400" height="300" loading="lazy" decoding="async"
+                                     class="aspect-[4/3] h-full w-full object-cover">
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <dialog x-ref="lightbox"
+                        x-on:keydown.arrow-right.prevent="next()"
+                        x-on:keydown.arrow-left.prevent="prev()"
+                        x-on:click.self="$refs.lightbox.close()"
+                        aria-label="{{ __('messages.Photos') }}"
+                        class="w-full max-w-4xl rounded-2xl bg-ink p-0 text-white backdrop:bg-ink/80">
+                    <figure class="m-0">
+                        <img x-bind:src="photos[open].src" x-bind:alt="photos[open].alt" src="{{ $photos[0]['src'] }}" alt=""
+                             class="max-h-[75vh] w-full object-contain">
+                        <figcaption dir="auto" class="px-4 pt-3 text-sm">
+                            <span x-text="photos[open].caption"></span>
+                            <span class="text-cream" x-text="'· ' + (open + 1) + ' / ' + photos.length"></span>
+                        </figcaption>
+                    </figure>
+
+                    <div class="flex items-center justify-between gap-3 p-4">
+                        <button type="button" x-on:click="prev()" class="btn-gold">{{ __('messages.Previous') }}</button>
+                        <form method="dialog"><button type="submit" class="btn-gold">{{ __('messages.Close') }}</button></form>
+                        <button type="button" x-on:click="next()" class="btn-gold">{{ __('messages.Next') }}</button>
+                    </div>
+                </dialog>
+            </section>
         @endif
 
         @if(filled($property->summary))
@@ -86,6 +145,46 @@
             <h2 id="stays-rooms-heading" dir="auto" class="mb-4 text-2xl font-bold text-ink">
                 {{ __('messages.Rooms') }}
             </h2>
+
+            {{-- Dates, party and who is booking, on the page itself — a
+                 guest who arrived from a shared link never saw the search. --}}
+            <form method="GET" action="{{ route('stays.show', ['property' => $property->slug]) }}"
+                  class="card mb-6 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+                <fieldset class="sm:col-span-2 lg:col-span-4">
+                    <legend class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Prices for') }}</legend>
+                    <div class="flex flex-wrap gap-4">
+                        <label class="inline-flex items-center gap-2 text-sm text-ink">
+                            <input type="radio" name="audience" value="tourist" @checked($filters->audience === 'tourist')
+                                   class="border border-gray-500 text-wine-600 focus:ring-wine-500">
+                            {{ __('messages.A visitor to the Maldives') }}
+                        </label>
+                        <label class="inline-flex items-center gap-2 text-sm text-ink">
+                            <input type="radio" name="audience" value="local" @checked($filters->audience === 'local')
+                                   class="border border-gray-500 text-wine-600 focus:ring-wine-500">
+                            {{ __('messages.A Maldivian citizen or resident') }}
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div>
+                    <label for="show-from" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Check in') }}</label>
+                    <input id="show-from" name="from" type="date" dir="ltr" value="{{ $filters->checkIn?->toDateString() }}"
+                           class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
+                </div>
+                <div>
+                    <label for="show-to" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Check out') }}</label>
+                    <input id="show-to" name="to" type="date" dir="ltr" value="{{ $filters->checkOut?->toDateString() }}"
+                           class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
+                </div>
+                <div>
+                    <label for="show-guests" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Guests') }}</label>
+                    <input id="show-guests" name="guests" type="number" min="1" max="30" inputmode="numeric" dir="ltr" value="{{ $filters->guests }}"
+                           class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="btn-primary w-full">{{ __('messages.Check prices') }}</button>
+                </div>
+            </form>
 
             @if($filters->hasDates())
                 <p dir="auto" class="mb-4 text-sm text-ink-muted">
@@ -115,7 +214,11 @@
                             </div>
 
                             <div class="text-end">
-                                @if($entry['quote'] && $entry['available'])
+                                @if(! $entry['offered'])
+                                    <p dir="auto" class="rounded-full bg-cream-deep px-3 py-1 text-sm text-ink">
+                                        {{ __('messages.Not offered at local prices') }}
+                                    </p>
+                                @elseif($entry['quote'] && $entry['available'])
                                     <p dir="auto" class="text-lg font-bold text-ink">{{ $entry['quote']->total()->format() }}</p>
                                     <p dir="auto" class="text-xs text-ink-muted">
                                         {{ __('messages.for :nights night(s)', ['nights' => $entry['quote']->nights()]) }}
@@ -124,9 +227,13 @@
                                     <p dir="auto" class="rounded-full bg-cream-deep px-3 py-1 text-sm text-ink">
                                         {{ __('messages.Not free for those dates') }}
                                     </p>
-                                @else
-                                    <p dir="auto" class="text-lg font-bold text-ink">{{ $room->baseRate()->format() }}</p>
+                                @elseif($entry['nightly'])
+                                    <p dir="auto" class="text-lg font-bold text-ink">{{ $entry['nightly']->format() }}</p>
                                     <p dir="auto" class="text-xs text-ink-muted">{{ __('messages.a night') }}</p>
+                                @else
+                                    {{-- Priced by season only: a figure here would be
+                                         a price most dates do not have. --}}
+                                    <p dir="auto" class="text-sm text-ink-muted">{{ __('messages.Choose your dates for a price') }}</p>
                                 @endif
                             </div>
                         </div>
@@ -177,7 +284,9 @@
                      first is how a family of four meet twenty guest-nights
                      of tax at the check-out desk, in a currency they do
                      not hold, having read a page that mentioned it. --}}
-                @if($greenTaxAtProperty)
+                @if(! $greenTaxApplies)
+                    {{-- Nothing said: Green Tax is not this reader's to pay. --}}
+                @elseif($greenTaxAtProperty)
                     <li>
                         {{ __('messages.Green tax is paid at the guesthouse, not here.') }}
                         @if($greenTaxRate)
@@ -194,6 +303,26 @@
                 @endif
             </ul>
         </section>
+
+        {{-- Where it is — §16.7. Only when somebody has placed it; the map
+             loads when scrolled near, and the link works without it. --}}
+        @if($property->latitude !== null && $property->longitude !== null)
+            <section class="mb-10" aria-labelledby="stays-map-heading">
+                <h2 id="stays-map-heading" dir="auto" class="mb-3 text-2xl font-bold text-ink">
+                    {{ __('messages.Where it is') }}
+                </h2>
+                <div id="stay-map"
+                     data-lat="{{ $property->latitude }}" data-lng="{{ $property->longitude }}" data-label="{{ $property->name }}"
+                     class="h-72 w-full overflow-hidden rounded-2xl bg-cream-deep"
+                     role="region" aria-label="{{ __('messages.Map') }}"></div>
+                <p class="mt-2 text-sm">
+                    <a href="https://www.openstreetmap.org/?mlat={{ $property->latitude }}&amp;mlon={{ $property->longitude }}#map=15/{{ $property->latitude }}/{{ $property->longitude }}"
+                       target="_blank" rel="noopener" class="text-wine-700 underline hover:no-underline">
+                        {{ __('messages.Open the map in a new tab') }}
+                    </a>
+                </p>
+            </section>
+        @endif
 
         <div class="card text-center">
             <p dir="auto" class="mb-4 text-sm text-ink-muted">
