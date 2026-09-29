@@ -253,6 +253,9 @@ final class Anonymisation
         // of a building and "Room 4, first floor"; nobody is named.
         'property_photos',
         'property_units',
+        // A listing's add-ons and their prices — §16 Phase 15. Product
+        // content; what a guest picked lives on their stay's bill.
+        'property_addons',
         // Who works for which host, and in which role — §16.13. The people
         // are `users`, scrubbed above; the join names nobody.
         'host_memberships',

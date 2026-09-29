@@ -275,6 +275,16 @@ class Property extends Model
         return $this->hasMany(PropertyPhoto::class)->orderBy('sort_order')->orderBy('id');
     }
 
+    /**
+     * Extras a guest can add when booking — §16 Phase 15.
+     *
+     * @return HasMany<PropertyAddon, $this>
+     */
+    public function addons(): HasMany
+    {
+        return $this->hasMany(PropertyAddon::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     /** @return HasMany<PropertyUnit, $this> */
     public function units(): HasMany
     {

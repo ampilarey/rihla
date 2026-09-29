@@ -5,6 +5,7 @@ namespace App\Filament\Host\Resources\Listings;
 use App\Filament\Host\Resources\Listings\Pages\CreateListing;
 use App\Filament\Host\Resources\Listings\Pages\EditListing;
 use App\Filament\Host\Resources\Listings\Pages\ListListings;
+use App\Filament\Resources\Properties\RelationManagers\AddonsRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\PhotosRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
@@ -95,6 +96,7 @@ class ListingResource extends Resource
             PhotosRelationManager::class,
             RatesRelationManager::class,
             BlockedDatesRelationManager::class,
+            AddonsRelationManager::class,
         ];
     }
 

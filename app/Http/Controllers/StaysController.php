@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Services\Stays\Availability;
 use App\Services\Stays\GreenTax;
 use App\Services\Stays\ShareCard;
+use App\Services\Stays\StayAddons;
 use App\Support\Audience;
 use App\Support\Contact;
 use App\Support\Money;
@@ -333,6 +334,8 @@ class StaysController extends Controller
                 ? $this->greenTax->forParty($guests, $nights)
                 : null,
             'rooms' => $this->priceRooms($property, $filters),
+            // §16 Phase 15: what can be added at booking, for this reader.
+            'addons' => StayAddons::offered($property->addons()->where('is_active', true)->with('property')->get(), $filters->audience),
             'photos' => $this->gallery($property),
             'bookable' => ServiceRegistry::isOn($service),
             'shareCard' => $this->shareCardUrl($property),
