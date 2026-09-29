@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Properties;
 use App\Filament\Resources\Properties\Pages\CreateProperty;
 use App\Filament\Resources\Properties\Pages\EditProperty;
 use App\Filament\Resources\Properties\Pages\ListProperties;
+use App\Filament\Resources\Properties\RelationManagers\AddonsRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\PhotosRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
@@ -60,6 +61,7 @@ class PropertyResource extends Resource
             BlockedDatesRelationManager::class,
             UnitsRelationManager::class,
             PhotosRelationManager::class,
+            AddonsRelationManager::class,
         ];
     }
 

@@ -939,4 +939,10 @@ return [
     'Nothing listed by atoll yet' => 'Nothing listed by atoll yet',
     'The guesthouses and landlords you book through Rihla. Every one has been checked by a person at Rihla before anything was listed.' => 'The guesthouses and landlords you book through Rihla. Every one has been checked by a person at Rihla before anything was listed.',
     'No host pages yet' => 'No host pages yet',
+    'per person' => 'per person',
+    'per stay' => 'per stay',
+    'Add to your stay (optional)' => 'Add to your stay (optional)',
+    'Paid to the host at the property, not now.' => 'Paid to the host at the property, not now.',
+    ':amount for your party' => ':amount for your party',
+    'Extras you can add' => 'Extras you can add',
 ];

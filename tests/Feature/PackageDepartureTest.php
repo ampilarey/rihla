@@ -57,6 +57,8 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `property_addons` hangs off `properties` (§16.14).
+        __DIR__.'/../../database/migrations/2026_09_30_140000_create_property_addons.php',
         // Newest of all: `stay_messages` hangs off `stays` (§16.11).
         __DIR__.'/../../database/migrations/2026_09_30_120000_create_stay_messages.php',
         // Newest of all: `reviews` and `review_invitations` hang off `stays`

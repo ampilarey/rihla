@@ -280,6 +280,27 @@
             </section>
         @endif
 
+        {{-- Add-ons — §16 Phase 15. Picked on the booking page, paid at the property. --}}
+        @if($addons->isNotEmpty())
+            <section class="mb-10" aria-labelledby="stays-addons-heading">
+                <h2 id="stays-addons-heading" dir="auto" class="mb-1 text-2xl font-bold text-ink">
+                    {{ __('messages.Extras you can add') }}
+                </h2>
+                <p dir="auto" class="mb-3 text-sm text-ink-muted">{{ __('messages.Paid to the host at the property, not now.') }}</p>
+                <ul dir="auto" class="grid gap-2 text-brand-body sm:grid-cols-2">
+                    @foreach($addons as $addon)
+                        <li>
+                            <span class="font-medium text-ink">{{ $addon->name }}</span>
+                            — {{ $addon->priceFor($filters->audience)->format() }} {{ $addon->pricingLabel() }}
+                            @if($addon->description)
+                                <span class="block text-sm text-ink-muted">{{ $addon->description }}</span>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
         @if(filled($property->house_rules))
             <section class="mb-10" aria-labelledby="stays-rules-heading">
                 <h2 id="stays-rules-heading" dir="auto" class="mb-3 text-2xl font-bold text-ink">

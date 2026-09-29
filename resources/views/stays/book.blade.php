@@ -134,6 +134,31 @@
             <p dir="auto" class="mt-1 text-xs text-ink-muted">{{ __('messages.The guesthouse checks this against your ID at check-in.') }}</p>
         </fieldset>
 
+        {{-- Add-ons — §16 Phase 15. Paid at the property, on the bill with
+             the rest of the extras; nothing here changes the deposit. --}}
+        @if($addons->isNotEmpty())
+            <fieldset>
+                <legend dir="auto" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Add to your stay (optional)') }}</legend>
+                <p dir="auto" class="mb-2 text-xs text-ink-muted">{{ __('messages.Paid to the host at the property, not now.') }}</p>
+                <div class="space-y-2">
+                    @foreach($addons as $addon)
+                        @php($each = $addon->priceFor($filters->audience))
+                        <label class="flex items-start gap-2 text-sm text-ink">
+                            <input type="checkbox" name="addons[]" value="{{ $addon->getKey() }}" class="mt-1"
+                                   @checked(in_array((string) $addon->getKey(), array_map('strval', (array) old('addons', [])), true))>
+                            <span dir="auto">
+                                <span class="font-medium">{{ $addon->name }}</span>
+                                — {{ $each->format() }} {{ $addon->pricingLabel() }}@if($addon->pricing === \App\Models\PropertyAddon::PER_PERSON && $guests > 1) ({{ __('messages.:amount for your party', ['amount' => \App\Support\Money::ofMinor($each->minor * $addon->quantityFor($guests), $each->currency)->format()]) }})@endif
+                                @if($addon->description)
+                                    <span class="block text-xs text-ink-muted">{{ $addon->description }}</span>
+                                @endif
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+            </fieldset>
+        @endif
+
         <div>
             <label for="book-requests" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Anything the host should know? (optional)') }}</label>
             <textarea id="book-requests" name="special_requests" rows="3" maxlength="1000" dir="auto"

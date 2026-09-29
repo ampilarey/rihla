@@ -12,6 +12,7 @@ use App\Models\Stay;
 use App\Services\Stays\Availability;
 use App\Services\Stays\Commission;
 use App\Services\Stays\GreenTax;
+use App\Services\Stays\StayAddons;
 use App\Services\Stays\StayBooking;
 use App\Services\Stays\StayGatekeeper;
 use App\Support\Audience;
@@ -54,6 +55,7 @@ class StayCheckoutController extends Controller
         private readonly GreenTax $greenTax,
         private readonly StayBooking $booking,
         private readonly StayGatekeeper $gatekeeper,
+        private readonly StayAddons $addons,
     ) {}
 
     public function start(Request $request, Property $property): View|RedirectResponse
@@ -96,6 +98,8 @@ class StayCheckoutController extends Controller
             'greenTaxApplies' => $this->greenTax->appliesTo($filters->audience),
             'greenTaxAtProperty' => $this->greenTax->isCollectedAtProperty($property),
             'greenTaxEstimate' => $this->greenTax->forParty($guests, $quote->nights()),
+            'addons' => StayAddons::offered($property->addons()->where('is_active', true)->with('property')->get(), $filters->audience),
+            'guests' => $guests,
         ]);
     }
 
@@ -122,6 +126,8 @@ class StayCheckoutController extends Controller
             'phone' => ['required', 'string', 'max:40'],
             'citizenship' => ['required', 'in:maldivian,other'],
             'special_requests' => ['nullable', 'string', 'max:1000'],
+            'addons' => ['nullable', 'array', 'max:50'],
+            'addons.*' => ['integer'],
             'accept' => ['accepted'],
         ], [
             'accept.accepted' => __('messages.Please confirm you have read the payment and cancellation terms.'),
@@ -160,7 +166,7 @@ class StayCheckoutController extends Controller
         // person decides. Made in the same transaction as the stay, so a
         // refusal leaves no customer behind with nothing booked.
         try {
-            $stay = DB::transaction(fn (): Stay => $this->booking->request(
+            $stay = DB::transaction(fn (): Stay => $this->withAddons($this->booking->request(
                 Customer::create([
                     'name' => $validated['name'],
                     'email' => $validated['email'],
@@ -177,7 +183,7 @@ class StayCheckoutController extends Controller
                     'created_via' => Stay::VIA_GUEST,
                 ],
                 audience: $audience,
-            ));
+            ), $validated['addons'] ?? []));
         } catch (RoomNotAvailable $refusal) {
             return redirect()->route('stays.show', ['property' => $property->slug, 'from' => $validated['from'], 'to' => $validated['to']])
                 ->with('status', $refusal->getMessage());
@@ -198,6 +204,19 @@ class StayCheckoutController extends Controller
         $this->gatekeeper->open($stay->getKey());
 
         return redirect()->route('my-stay.home')->with('stay_link', route('my-stay.enter', ['token' => $token]));
+    }
+
+    /**
+     * The add-ons the guest ticked, onto the new stay's bill — inside the
+     * booking's transaction, so a refusal leaves no stray lines behind.
+     *
+     * @param  array<int, mixed>  $ids
+     */
+    private function withAddons(Stay $stay, array $ids): Stay
+    {
+        $this->addons->attach($stay, $ids);
+
+        return $stay;
     }
 
     /**
