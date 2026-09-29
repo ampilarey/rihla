@@ -61,12 +61,20 @@ final class Commission
         $pct = $this->assertSet($partner);
         $commission = intdiv($stay->total_minor * $pct, 100);
 
-        $stay->forceFill([
+        $stay->forceFill(array_filter([
             'commission_pct_snapshot' => $pct,
             'commission_minor' => $commission,
             'host_net_minor' => $stay->total_minor - $commission,
             'settlement_model_snapshot' => $partner->settlement_model,
-        ])->save();
+            // §16.9: under `commission_deposit` the online payment *is* the
+            // commission and the rest is paid to the host at the property,
+            // so Rihla never holds a host's money. A host on a net rate
+            // (commission zero) keeps the property's own deposit: a zero
+            // deposit could never be paid, and the stay could never confirm.
+            'deposit_minor' => $partner->settlement_model === Partner::COMMISSION_DEPOSIT && $commission > 0
+                ? $commission
+                : null,
+        ], fn ($value): bool => $value !== null))->save();
 
         return $stay;
     }

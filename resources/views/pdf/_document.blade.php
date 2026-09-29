@@ -112,6 +112,10 @@
         <p>{{ config('invoices.terms.note') }}</p>
     @endif
     <p>{{ __('messages.Questions about this document? Message us on :number.', ['number' => $issuer['phone']]) }}</p>
+    {{-- A host's bill carries Rihla's line under the host's own — §16.10. --}}
+    @if(filled($footer ?? null))
+        <p>{{ $footer }}</p>
+    @endif
 </div>
 
 </body>

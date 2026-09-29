@@ -106,6 +106,14 @@ final class Ledger
      */
     public function refund(Payment $payment, ?Money $amount = null, ?string $reason = null, ?User $actor = null): Payment
     {
+        // §16.9: Rihla can only give back money Rihla holds. Cash a host
+        // took at the property is refunded by the host, across their own
+        // counter — and a refund row written here would copy no collector,
+        // so it would be counted as Rihla's money leaving.
+        if ($payment->collected_by === Payment::COLLECTED_BY_HOST) {
+            throw new \InvalidArgumentException('That money was taken by the host at the property, so the host refunds it.');
+        }
+
         return DB::transaction(function () use ($payment, $amount, $reason, $actor): Payment {
             $payable = $this->payableFor($payment);
             $this->lock($payable::class, (int) $payable->getKey());

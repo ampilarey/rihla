@@ -26,6 +26,10 @@ class StaysTable
 
                 TextColumn::make('property.name')->label('Property')->wrap()->toggleable(),
 
+                // §16.6: whose building. Once there are many hosts, "which
+                // guesthouse" and "whose business" are different questions.
+                TextColumn::make('property.partner.name')->label('Host')->wrap()->toggleable(),
+
                 TextColumn::make('roomType.name')->label('Room')->wrap()->toggleable(),
 
                 TextColumn::make('check_in')
