@@ -308,8 +308,13 @@ class StaysFoundationTest extends TestCase
     public function test_an_inactive_partner_is_out_of_the_active_scope(): void
     {
         $working = Partner::factory()->create();
-        Partner::factory()->inactive()->create();
+        $inactive = Partner::factory()->inactive()->create();
 
-        $this->assertSame([$working->id], Partner::active()->pluck('id')->all());
+        // Not "the only active one": Rihla's own host record is made by a
+        // migration (§16 Phase 12.5) and is active on every database.
+        $active = Partner::active()->pluck('id')->all();
+
+        $this->assertContains($working->id, $active);
+        $this->assertNotContains($inactive->id, $active);
     }
 }

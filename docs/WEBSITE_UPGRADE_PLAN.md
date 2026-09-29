@@ -2348,16 +2348,20 @@ BML proof.
    `property_photos` with variants generated and forgotten; `partners`'
    verification, status, settlement and slug columns; `stays`' commission and
    source columns; `payments.collected_by`; `stay_charges`.~~ **Done:** one migration (`2026_09_29_110000_prepare_stays_for_many_hosts`) backfills every existing partner as verified and active with a unique slug and every existing property as approved — they were all entered by staff after a phone call — with literals, never constants; a partner or property entered through `/staff` is verified or approved as it is saved, and anything else starts at `unverified`/`draft`. Verification, status, settlement, `is_rihla`, approval, the commission snapshots and `payments.collected_by` are not fillable. A photo's original and variants go when it is replaced or deleted, including through a deleted listing or room type, whose database cascade fires no model event. A Malé rental's `kind` is left null rather than guessed (`MarketplaceFoundationTest`).
-4. `RESERVED_SLUGS` gains `hosts`, `book`, `search`; the route order test
-   (`StaysPublicPagesTest::test_the_strand_routes_are_not_shadowed`) extended.
-5. Rihla's own host record (`is_rihla`, `full_collection`, commission 0),
+4. ~~`RESERVED_SLUGS` gains `hosts`, `book`, `search`; the route order test
+   (`StaysPublicPagesTest::test_the_strand_routes_are_not_shadowed`) extended.~~ **Done:** reserved ahead of their routes, and `test_every_literal_stays_route_is_a_reserved_slug` reads the router, so a new `/stays/…` route fails until its word is reserved. The `/staff` property form now refuses a reserved slug on edit as well as create — before, only a slug the model minted was guarded, and one typed into the form was saved as-is.
+5. ~~Rihla's own host record (`is_rihla`, `full_collection`, commission 0),
    created by a migration that finds-or-creates by a fixed slug — data written
-   as literals, never `Brand::`-style constants (D95).
+   as literals, never `Brand::`-style constants (D95).~~ **Done:** slug `rihla-travels`; a partner merely *named* Rihla is never adopted; `Partner::rihla()` finds it by the flag, because the test server's scrub rewrites every slug; rolling back leaves it standing once it holds rooms (`RihlaHostTest`).
 6. ~~Both privacy lists and `DEPENDENT_MIGRATIONS` updated; `Anonymisation::unclassified()`
    and `Forgetting::unreached()` both empty.~~ **Done** with item 3: `stay_charges` is scrubbed and reached through its stay; photos and units are kept; a partner's slug is scrubbed with its name (a new `slug` stand-in), as are the verification note, suspension reason and registration document. Both §16 migrations are in `DEPENDENT_MIGRATIONS` — the audience one too, because leaving it recorded while `stays` is dropped and re-created brings the table back without `audience`.
 *Tested by planting:* a second `hold()` on the last unit-night fails on MySQL
 with the lock named (`StayLockTest` extended for the audience path); a
-marketplace stay with a null commission is refused.
+marketplace stay with a null commission is refused. **Moved to Phase 13.3:**
+the commission snapshot and its refusal belong to the marketplace booking
+flow, which is the first thing to create a `marketplace` stay. Written now,
+it would have nothing to refuse and would change today's request flow for
+net-rate partners, whose `commission_pct` is rightly null.
 
 **Phase 13 — Guests book and pay online (3–4 weeks).**
 1. The search page with the new filters, cards, pagination, the door cards.

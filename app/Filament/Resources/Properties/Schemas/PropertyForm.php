@@ -80,6 +80,11 @@ class PropertyForm
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
+                    // The model suffixes a reserved slug when it mints one;
+                    // typed in here, on create or edit, it would be saved
+                    // as-is and the listing would never render.
+                    ->notIn(Property::RESERVED_SLUGS)
+                    ->validationMessages(['not_in' => 'That address belongs to a Stays page. Choose another.'])
                     ->helperText('The public URL, one per language. Changing it breaks every link already shared.'),
 
                 TextInput::make('island')

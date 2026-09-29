@@ -205,6 +205,24 @@ class StaysAdminTest extends TestCase
         $this->assertSame('English Only', $property->name);
     }
 
+    /**
+     * The model only guards a slug it mints. Typed into the form — on
+     * create or on a later edit — a reserved word would be saved as-is
+     * and the listing would sit behind a Stays page, never rendering.
+     */
+    public function test_the_form_refuses_a_slug_a_stays_page_owns(): void
+    {
+        $property = Property::factory()->create(['slug' => 'harbour-view']);
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(EditProperty::class, ['record' => $property->getRouteKey()])
+            ->fillForm(['slug' => 'search'])
+            ->call('save')
+            ->assertHasFormErrors(['slug' => 'not_in']);
+
+        $this->assertSame('harbour-view', $property->fresh()->slug);
+    }
+
     public function test_editing_a_property_keeps_the_languages_it_already_had(): void
     {
         $property = Property::factory()->create([
