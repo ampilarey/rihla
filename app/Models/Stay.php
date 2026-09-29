@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * Somebody's nights in a guesthouse — §15.4 (Phase 9.2).
@@ -220,6 +221,17 @@ class Stay extends Model implements TakesPayments
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Money recorded against this stay, by any method — §8.6 made payments
+     * polymorphic; this is the stay's side of it.
+     *
+     * @return MorphMany<Payment, $this>
+     */
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(Payment::class, 'payable')->orderBy('id');
     }
 
     /** @return HasMany<StayCharge, $this> */

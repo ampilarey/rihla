@@ -180,6 +180,11 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('register', fn (Request $request) => Limit::perHour(5)->by($request->ip()));
 
+        // §16.7: ten stay bookings an hour from one address. Each makes a
+        // customer, a stay and a link, so an unthrottled form is a way to
+        // fill the office's board with nonsense.
+        RateLimiter::for('stay-book', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
+
         RateLimiter::for('password-reset', fn (Request $request) => [
             Limit::perHour(5)->by($request->ip()),
             Limit::perHour(3)->by(Str::lower((string) $request->input('email'))),

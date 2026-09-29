@@ -1,4 +1,4 @@
-@props(['booking', 'balance'])
+@props(['booking' => null, 'balance', 'action' => null])
 
 {{--
     Sending a transfer slip.
@@ -10,11 +10,14 @@
 
     Prefilled with the balance, which is what most people are sending, and
     editable because part-payments are normal here.
+
+    Shared by the Pilgrim Portal and a guest's stay page (§16.7), which
+    posts it to its own `action`.
 --}}
 <form method="POST"
-      action="{{ route('portal.payments.store', ['locale' => app()->getLocale()]) }}"
+      action="{{ $action ?? route('portal.payments.store', ['locale' => app()->getLocale()]) }}"
       enctype="multipart/form-data"
-      class="mt-4 space-y-3 rounded-xl border border-cream-deep p-4">
+      class="mt-4 space-y-3 rounded-xl border border-gray-300 p-4">
     @csrf
 
     <h3 dir="auto" class="font-semibold text-ink">{{ __('messages.Send us your transfer slip') }}</h3>

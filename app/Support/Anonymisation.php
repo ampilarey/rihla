@@ -98,6 +98,11 @@ final class Anonymisation
         // the description is typed by a host at the desk and can say
         // anything about the guest ("birthday cake for Aishath").
         'stay_charges' => ['description' => 'text'],
+        // A guest's links into their own stay — §16.7. Only the hash is
+        // stored; replaced so no link from the real site opens anything on
+        // the test server. The address the link was first used from is a
+        // person's.
+        'stay_accesses' => ['token_hash' => 'token', 'first_used_ip' => 'null'],
         // The guest register — §15.6. Names and government identifiers for
         // people who are not even Rihla's customers: one person books a
         // room for four, and the other three never agreed to anything.

@@ -241,6 +241,15 @@
                         @if(filled($room->description))
                             <p dir="auto" class="mt-3 text-sm text-ink-muted">{{ $room->description }}</p>
                         @endif
+
+                        {{-- Book — §16.7. Only for a quoted, free room behind
+                             a door that is on; coming_soon takes no money. --}}
+                        @if($bookable && $entry['quote'] && $entry['available'] && ($filters->guests ?? 1) <= $room->sleeps)
+                            <a href="{{ route('stays.book', ['property' => $property->slug, 'room' => $room->getKey(), 'from' => $filters->checkIn->toDateString(), 'to' => $filters->checkOut->toDateString(), 'adults' => $filters->guests ?? 1, 'audience' => $filters->audience]) }}"
+                               class="btn-primary mt-4 w-full sm:w-auto">
+                                {{ __('messages.Book this room') }}
+                            </a>
+                        @endif
                     </article>
                 @endforeach
             </div>

@@ -101,6 +101,7 @@ final class Forgetting
         // a line ("cake for Aishath"); reached through the stay, the way
         // the register is.
         'stay_charges' => 'stay',
+        'stay_accesses' => 'stay',
 
         'enquiry_notes' => 'enquiry',
         'document_versions' => 'document',

@@ -19,6 +19,7 @@ use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\LeaderController;
 use App\Http\Controllers\LearningController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\MyStayController;
 use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecondFactorController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StaffInvoiceController;
+use App\Http\Controllers\StayCheckoutController;
 use App\Http\Controllers\StaysController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\WaitlistController;
@@ -207,7 +209,27 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     Route::get('/stays/{property}/card.png', [StaysController::class, 'shareCard'])->name('stays.card');
     Route::get('/stays/{property}/sheet.pdf', [StaysController::class, 'factSheet'])->name('stays.sheet');
 
+    // Booking a stay — §16.7 (Phase 13.3). Two segments, so neither can
+    // be shadowed by `{property}` below; the POST is throttled per IP and
+    // honeypotted like the enquiry form.
+    Route::get('/stays/{property}/book', [StayCheckoutController::class, 'start'])->name('stays.book');
+    Route::post('/stays/{property}/book', [StayCheckoutController::class, 'store'])
+        ->middleware('throttle:stay-book')->name('stays.book.store');
+
     Route::get('/stays/{property}', [StaysController::class, 'show'])->name('stays.show');
+
+    // The guest's own stay — §16.7. Entered by a link that is spent for a
+    // session, exactly as the Pilgrim Portal is, and behind its own gate:
+    // a portal session never opens a stay, nor a stay session the portal.
+    Route::get('/my-stay/enter/{token}', [MyStayController::class, 'enter'])->name('my-stay.enter');
+    Route::get('/my-stay/locked', [MyStayController::class, 'locked'])->name('my-stay.locked');
+
+    Route::middleware('my-stay')->group(function () {
+        Route::get('/my-stay', [MyStayController::class, 'home'])->name('my-stay.home');
+        Route::post('/my-stay/payments', [MyStayController::class, 'storePayment'])->name('my-stay.payments.store');
+        Route::post('/my-stay/cancel', [MyStayController::class, 'cancel'])->name('my-stay.cancel');
+        Route::post('/my-stay/leave', [MyStayController::class, 'leave'])->name('my-stay.leave');
+    });
 
     // The Ziyarah Guide (§7.2). The manifest is declared before {slug} or
     // "offline" is read as a location slug — the same ordering trap the
