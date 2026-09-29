@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Host\Pages\Dashboard;
 use App\Filament\Host\Pages\RegisterHost;
+use App\Filament\Host\Widgets\Today;
 use App\Filament\InitialsAvatarProvider;
 use App\Http\Middleware\RequireSecondFactor;
 use App\Models\Partner;
@@ -61,6 +62,7 @@ class HostPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Host/Resources'), for: 'App\Filament\Host\Resources')
             ->discoverPages(in: app_path('Filament/Host/Pages'), for: 'App\Filament\Host\Pages')
             ->pages([Dashboard::class])
+            ->widgets([Today::class])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
