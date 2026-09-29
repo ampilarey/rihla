@@ -267,6 +267,16 @@ class Stay extends Model implements TakesPayments
     }
 
     /**
+     * The conversation about this stay — §16.11.
+     *
+     * @return HasMany<StayMessage, $this>
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(StayMessage::class)->orderBy('sent_at')->orderBy('id');
+    }
+
+    /**
      * Who actually slept there — §15.6 (Phase 11).
      *
      * Not the same list as "the customer": one person books a room for

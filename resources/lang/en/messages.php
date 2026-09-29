@@ -923,4 +923,13 @@ return [
     'What guests said' => 'What guests said',
     ':count review|:count reviews' => ':count review|:count reviews',
     'Best rated' => 'Best rated',
+    // Messages about a stay — §16.11.
+    'Messages' => 'Messages',
+    'Ask the host anything — arrival times, transfers, what to bring. Rihla reads it too.' => 'Ask the host anything — arrival times, transfers, what to bring. Rihla reads it too.',
+    'Your message' => 'Your message',
+    'You' => 'You',
+    'The host' => 'The host',
+    'Write a message first.' => 'Write a message first.',
+    'Keep a message under :count characters.' => 'Keep a message under :count characters.',
+    'Sent. The host and Rihla can both read it.' => 'Sent. The host and Rihla can both read it.',
 ];

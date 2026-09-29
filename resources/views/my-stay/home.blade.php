@@ -124,6 +124,40 @@
         @endif
     </section>
 
+    {{-- §16.11: one conversation with the host and Rihla. --}}
+    @unless(in_array($stay->status, [\App\Models\Stay::DECLINED, \App\Models\Stay::EXPIRED], true))
+        <section id="stay-messages" class="card mb-6" aria-labelledby="my-stay-messages-heading">
+            <h2 id="my-stay-messages-heading" dir="auto" class="mb-2 text-lg font-bold text-ink">{{ __('messages.Messages') }}</h2>
+
+            @if($messages->isEmpty())
+                <p dir="auto" class="mb-4 text-sm text-ink-muted">{{ __('messages.Ask the host anything — arrival times, transfers, what to bring. Rihla reads it too.') }}</p>
+            @else
+                <ol class="mb-4 space-y-3">
+                    @foreach($messages as $message)
+                        <li class="rounded-xl px-4 py-3 text-sm {{ $message->sender === \App\Models\StayMessage::GUEST ? 'ms-8 bg-cream-deep' : 'me-8 border border-gray-200 bg-white' }}">
+                            <p class="text-xs text-ink-muted">
+                                <span dir="auto" class="font-semibold text-ink">{{ $message->senderLabel() }}</span>
+                                · <time datetime="{{ $message->sent_at->toIso8601String() }}">{{ $message->sent_at->isoFormat('D MMM, HH:mm') }}</time>
+                            </p>
+                            <p dir="auto" class="mt-1 whitespace-pre-line text-ink">{{ $message->body }}</p>
+                        </li>
+                    @endforeach
+                </ol>
+            @endif
+
+            <form method="POST" action="{{ route('my-stay.messages') }}">
+                @csrf
+                <label for="stay-message-body" class="sr-only">{{ __('messages.Your message') }}</label>
+                <textarea id="stay-message-body" name="body" rows="3" maxlength="{{ \App\Models\StayMessage::MAX_LENGTH }}" dir="auto" required
+                          class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('body') }}</textarea>
+                @error('body')
+                    <p dir="auto" class="mt-1 text-sm text-error" role="alert">{{ $message }}</p>
+                @enderror
+                <button type="submit" class="btn-secondary mt-2">{{ __('messages.Send') }}</button>
+            </form>
+        </section>
+    @endunless
+
     <section class="card mb-6" aria-labelledby="my-stay-cancel-heading">
         <h2 id="my-stay-cancel-heading" dir="auto" class="mb-2 text-lg font-bold text-ink">{{ __('messages.Changing your plans') }}</h2>
         @if($canCancel)

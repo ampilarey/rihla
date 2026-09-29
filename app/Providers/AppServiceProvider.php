@@ -19,6 +19,7 @@ use App\Models\WhySection;
 use App\Observers\AuditObserver;
 use App\Observers\CoverImageObserver;
 use App\Observers\LostStayObserver;
+use App\Services\Stays\StayGatekeeper;
 use App\Support\InitialsAvatar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -184,6 +185,14 @@ class AppServiceProvider extends ServiceProvider
         // customer, a stay and a link, so an unthrottled form is a way to
         // fill the office's board with nonsense.
         RateLimiter::for('stay-book', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
+
+        // §16.11: a guest writing to their host. Thirty an hour is a
+        // conversation; more is somebody pasting into the box.
+        // Counted per stay, from the stay page's own session, so a guest
+        // on two phones shares one allowance.
+        RateLimiter::for('stay-message', fn (Request $request) => Limit::perHour(30)->by(
+            'stay-message:'.($request->session()->get(StayGatekeeper::SESSION_STAY) ?? $request->ip()),
+        ));
 
         RateLimiter::for('password-reset', fn (Request $request) => [
             Limit::perHour(5)->by($request->ip()),
