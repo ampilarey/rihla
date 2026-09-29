@@ -2394,8 +2394,8 @@ opening earnings → 403; an unverified host's listing absent from search even
 when `approved`; a colour pair under 4.5:1 refused on the page editor;
 `aggregateRating` present iff a published review exists.
 
-**Phase 15 — The rest of the business (3–4 weeks).** Reports with the tax
-rows; monthly statements as PDFs; atoll browsing and the host directory;
+**Phase 15 — The rest of the business (3–4 weeks).** ~~Reports with the tax
+rows;~~ **Done (reports):** `/host` → **Reports** (owner and manager) for any range up to a year, computed at read time (`App\Services\Hosts\Reports`): occupancy per listing (occupied room-nights over active units — or the room quantities sold, where there are no units — times the nights), room revenue and the average nightly rate per currency, revenue by source and by audience, Rihla's commission, and Green Tax from each tourist stay's own snapshot. A stay crossing the edge of the range counts only for its nights inside it and its money is shared out by those nights, so two months' reports add up to the stay rather than twice it; cancelled, declined and lapsed stays take no nights. T-GST and GST are divided out of the tax-inclusive revenue **only** when `STAYS_TGST_PCT` / `STAYS_GST_PCT` are set; otherwise the row says *nobody has stated the rate*. **Guest register (CSV)** on Bookings for a date range: identifiers whole for owner and manager, masked for reception, every export written to the audit log as a download (`HostReportsTest`, planted: a whole stay counted inside a range, tax at a guessed rate, cancelled stays counted, the register never masked, an export not logged — each caught). Monthly statements as PDFs; atoll browsing and the host directory;
 host add-ons (extras a guest picks at booking, priced per stay or per person)
 and `packages.audience` with a tourist price for island holidays; *Packages
 at this guesthouse* on the storefront; homepage card *List your property*.
