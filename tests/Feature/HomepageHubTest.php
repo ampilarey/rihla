@@ -38,6 +38,28 @@ class HomepageHubTest extends TestCase
         $this->assertStringContainsString(route('stays.island-holidays'), $html);
     }
 
+    /** §16 Phase 15: the smaller third card, and where it goes. */
+    public function test_list_your_property_appears_with_a_listing_door_and_goes_somewhere_real(): void
+    {
+        $this->get('/en')->assertOk()->assertDontSee('List your property');
+
+        // Island holidays sell no listings: no card for them alone.
+        Services::save(['stays_island_holidays' => Services::ON]);
+        $this->get('/en')->assertOk()->assertDontSee('List your property');
+
+        Services::save(['stays_guesthouses' => Services::COMING_SOON]);
+        $closed = $this->get('/en')->assertOk()->assertSee('List your property')->getContent();
+        $this->assertStringContainsString('https://wa.me/', $closed);
+        $this->assertStringNotContainsString(route('filament.host.auth.register'), $closed, 'Sign-up answers 404 while closed.');
+
+        config([
+            'marketplace.host_registration.enabled' => true,
+            'marketplace.host_terms.version' => '2026-10',
+            'marketplace.host_terms.url' => 'https://example.test/host-terms',
+        ]);
+        $this->get('/en')->assertOk()->assertSee(route('filament.host.auth.register'), false);
+    }
+
     public function test_the_footer_carries_no_stays_column_while_every_service_is_off(): void
     {
         $html = $this->get('/en')->assertOk()->getContent();
