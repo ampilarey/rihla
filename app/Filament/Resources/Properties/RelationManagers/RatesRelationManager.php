@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Properties\RelationManagers;
 
 use App\Models\Property;
+use App\Support\Audience;
 use App\Support\Money;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -44,13 +45,23 @@ class RatesRelationManager extends RelationManager
                     ->required()
                     ->searchable(),
 
+                // §16.3 decision 6. A season is for one audience: the
+                // December tourist price and the December local price are
+                // two rows, in two currencies.
+                Select::make('audience')
+                    ->label('For')
+                    ->options([Audience::TOURIST => 'Tourists', Audience::LOCAL => 'Locals (Maldivian citizens)'])
+                    ->default(Audience::TOURIST)
+                    ->required()
+                    ->live(),
+
                 TextInput::make('rate_minor')
-                    ->label(fn (): string => 'Rate per night ('.$this->currency().')')
+                    ->label(fn ($get): string => 'Rate per night ('.$this->currencyFor($get('audience')).')')
                     ->numeric()
                     ->minValue(0)
                     ->required()
-                    ->formatStateUsing(fn (?int $state): int => Money::ofMinor((int) $state, $this->currency())->major())
-                    ->dehydrateStateUsing(fn (?int $state): int => Money::ofMajor((int) $state, $this->currency())->minor),
+                    ->formatStateUsing(fn (?int $state, $get): int => Money::ofMinor((int) $state, $this->currencyFor($get('audience')))->major())
+                    ->dehydrateStateUsing(fn (?int $state, $get): int => Money::ofMajor((int) $state, $this->currencyFor($get('audience')))->minor),
 
                 DatePicker::make('starts_on')
                     ->label('From')
@@ -84,9 +95,14 @@ class RatesRelationManager extends RelationManager
 
                 TextColumn::make('ends_on')->label('To')->date('j M Y')->sortable(),
 
+                TextColumn::make('audience')
+                    ->label('For')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => Audience::label($state)),
+
                 TextColumn::make('rate_minor')
                     ->label('Per night')
-                    ->formatStateUsing(fn (?int $state): string => Money::ofMinor((int) $state, $this->currency())->format()),
+                    ->state(fn ($record): string => Money::ofMinor((int) $record->rate_minor, $this->currencyFor($record->audience))->format()),
 
                 TextColumn::make('min_nights')->label('Min nights')->alignCenter()->placeholder('—'),
             ])
@@ -127,5 +143,15 @@ class RatesRelationManager extends RelationManager
         $property = $this->getOwnerRecord();
 
         return $property instanceof Property ? $property->currency : 'USD';
+    }
+
+    /** The currency a season for this audience is priced in. */
+    private function currencyFor(?string $audience): string
+    {
+        $property = $this->getOwnerRecord();
+
+        return $property instanceof Property
+            ? Audience::currencyAt($property, $audience ?? Audience::TOURIST)
+            : $this->currency();
     }
 }

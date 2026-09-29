@@ -31,7 +31,7 @@ class RoomType extends Model
     protected $fillable = [
         'property_id', 'name', 'description',
         'sleeps', 'beds', 'size_m2', 'amenities',
-        'quantity', 'base_rate_minor', 'sort_order',
+        'quantity', 'base_rate_minor', 'local_rate_minor', 'sort_order',
     ];
 
     /** @var array<int, string> */
@@ -44,6 +44,7 @@ class RoomType extends Model
         'size_m2' => 'integer',
         'quantity' => 'integer',
         'base_rate_minor' => 'integer',
+        'local_rate_minor' => 'integer',
         'sort_order' => 'integer',
     ];
 

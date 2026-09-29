@@ -33,7 +33,7 @@ class Stay extends Model implements TakesPayments
     use HasFactory, HasNotices;
 
     protected $fillable = [
-        'customer_id', 'property_id', 'room_type_id',
+        'customer_id', 'property_id', 'room_type_id', 'audience',
         'check_in', 'check_out', 'nights', 'adults', 'children',
         'currency', 'rate_snapshot', 'total_minor', 'deposit_minor', 'paid_minor',
         'status', 'requested_at', 'partner_confirmed_at', 'deposit_due_at', 'expires_at',
@@ -133,6 +133,7 @@ class Stay extends Model implements TakesPayments
     protected $attributes = [
         'status' => self::REQUESTED,
         'currency' => 'USD',
+        'audience' => 'tourist',
     ];
 
     protected static function booted(): void

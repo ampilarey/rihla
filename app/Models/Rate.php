@@ -24,7 +24,12 @@ class Rate extends Model
     use HasFactory;
 
     protected $fillable = [
-        'room_type_id', 'starts_on', 'ends_on', 'rate_minor', 'min_nights',
+        'room_type_id', 'audience', 'starts_on', 'ends_on', 'rate_minor', 'min_nights',
+    ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'audience' => 'tourist',
     ];
 
     /** @var array<string, string> */
