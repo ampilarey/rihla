@@ -6,13 +6,17 @@ use App\Exceptions\LastSuperAdmin;
 use App\Support\Access;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -32,7 +36,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property ?Carbon $mfa_confirmed_at
  * @property ?list<string> $mfa_recovery_codes
  */
-class User extends Authenticatable implements FilamentUser, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasTenants, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
@@ -62,7 +66,59 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->can('admin.access');
+        // §16.6: a host is let into `/host` by an accepted membership, and
+        // into nothing else — a host user holds no spatie role and no
+        // `admin.access`, so `/staff` stays closed to them. A member of
+        // staff who also runs a guesthouse simply has both.
+        return match ($panel->getId()) {
+            'host' => $this->hosts()->exists(),
+            default => $this->can('admin.access'),
+        };
+    }
+
+    /**
+     * The hosts this person works for, accepted memberships only — §16.6.
+     *
+     * @return BelongsToMany<Partner, $this>
+     */
+    public function hosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Partner::class, 'host_memberships')
+            ->withPivot(['role', 'accepted_at'])
+            ->withTimestamps()
+            ->wherePivotNotNull('accepted_at');
+    }
+
+    /** @return Collection<int, Partner> */
+    public function getTenants(Panel $panel): Collection
+    {
+        return $this->hosts()
+            ->where('status', '!=', Partner::STATUS_SUSPENDED)
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * An accepted membership of a host that is not suspended. Checked on
+     * every request to a tenant's URL, so a suspended host's team is shut
+     * out at once rather than at their next sign-in.
+     */
+    public function canAccessTenant(Model $tenant): bool
+    {
+        return $tenant instanceof Partner
+            && ! $tenant->isSuspended()
+            && $this->hosts()->whereKey($tenant->getKey())->exists();
+    }
+
+    /** This person's role at a host, or null when they have none there. */
+    public function roleAt(Partner $host): ?string
+    {
+        $membership = HostMembership::where('partner_id', $host->getKey())
+            ->where('user_id', $this->getKey())
+            ->whereNotNull('accepted_at')
+            ->first();
+
+        return $membership?->role;
     }
 
     /**

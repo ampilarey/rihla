@@ -41,4 +41,21 @@ return [
     */
     'require_registration' => (bool) env('MARKETPLACE_REQUIRE_REGISTRATION', true),
 
+    /*
+    | Hosts signing themselves up at /host/register — §16.6, §16.12. Off
+    | until the owner opens it, which waits on a media disk for their
+    | photographs, mail for their invitations, and host terms to agree to.
+    | The page stays closed while either terms value is empty: a checkbox
+    | agreeing to a document that does not exist records nothing.
+    */
+    'host_registration' => [
+        'enabled' => (bool) env('HOST_REGISTRATION_OPEN', false),
+        'per_hour' => (int) env('HOST_REGISTRATION_PER_HOUR', 5),
+    ],
+
+    'host_terms' => [
+        'version' => env('HOST_TERMS_VERSION'),
+        'url' => env('HOST_TERMS_URL'),
+    ],
+
 ];

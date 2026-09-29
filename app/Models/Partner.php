@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
 
 /**
@@ -195,6 +197,46 @@ class Partner extends Model
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /**
+     * The people who run this host, with their role — §16.6.
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'host_memberships')
+            ->withPivot(['role', 'accepted_at'])
+            ->withTimestamps();
+    }
+
+    /** @return HasMany<HostMembership, $this> */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(HostMembership::class);
+    }
+
+    /** @return HasMany<HostInvitation, $this> */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(HostInvitation::class);
+    }
+
+    /**
+     * Every stay in this host's buildings — the host panel's bookings are
+     * scoped through this (§16.6), because a stay has no `partner_id`.
+     *
+     * @return HasManyThrough<Stay, Property, $this>
+     */
+    public function stays(): HasManyThrough
+    {
+        return $this->hasManyThrough(Stay::class, Property::class);
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === self::STATUS_SUSPENDED;
     }
 
     /** @return HasMany<Payment, $this> */
