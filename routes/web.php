@@ -14,6 +14,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HostJoinController;
 use App\Http\Controllers\HostPageController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\KnowledgeController;
@@ -287,6 +288,14 @@ Route::get('trips/{slug}', fn (string $slug) => redirect()->route('trips.show', 
 // alternates so the two locales are read as one page in two languages rather
 // than as duplicate content competing with each other.
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// Accepting an invitation to a host's team — §16.10. Outside `/host`, so
+// Filament's `/host/{tenant}/…` routes can never answer for it.
+Route::get('/join/host/{token}', [HostJoinController::class, 'show'])->name('host.join');
+Route::post('/join/host/{token}', [HostJoinController::class, 'accept'])
+    ->middleware(['auth', 'throttle:stay-book'])->name('host.join.accept');
+Route::post('/join/host/{token}/account', [HostJoinController::class, 'register'])
+    ->middleware(['guest', 'throttle:stay-book'])->name('host.join.register');
 
 // Not localised in the path: the caller states the language it wants with
 // ?locale=, and the response is JSON rather than a page to be indexed.
