@@ -201,8 +201,10 @@ class SecurityHeaders
             'font-src' => ["'self'", 'data:', 'https://fonts.bunny.net', 'https://fonts.gstatic.com'],
 
             // data: is here for the inline SVG and the PWA icons; the YouTube
-            // hosts serve video thumbnails on the gallery.
-            'img-src' => ["'self'", 'data:', 'https://img.youtube.com', 'https://i.ytimg.com'],
+            // hosts serve video thumbnails on the gallery; OpenStreetMap
+            // serves the tiles of a listing's map (§16.7). Leaflet itself is
+            // bundled, so script-src does not change.
+            'img-src' => ["'self'", 'data:', 'https://img.youtube.com', 'https://i.ytimg.com', 'https://tile.openstreetmap.org'],
 
             'media-src' => ["'self'"],
             'frame-src' => ['https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://player.vimeo.com'],

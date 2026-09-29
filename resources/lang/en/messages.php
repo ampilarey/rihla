@@ -815,4 +815,16 @@ return [
     'Whole home' => 'Whole home',
     'Apartment' => 'Apartment',
     'Private room' => 'Private room',
+
+    // The listing page — §16.7 (Phase 13.2)
+    'Open photo :number of :count' => 'Open photo :number of :count',
+    'Previous' => 'Previous',
+    'Close' => 'Close',
+    'Next' => 'Next',
+    'Check prices' => 'Check prices',
+    'Not offered at local prices' => 'Not offered at local prices',
+    'Choose your dates for a price' => 'Choose your dates for a price',
+    'Where it is' => 'Where it is',
+    'Map' => 'Map',
+    'Open the map in a new tab' => 'Open the map in a new tab',
 ];
