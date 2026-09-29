@@ -232,6 +232,9 @@
                                     </p>
                                 @elseif($entry['quote'] && $entry['available'])
                                     <p dir="auto" class="text-lg font-bold text-ink">{{ $entry['quote']->total()->format() }}</p>
+                                    @if($entry['quote']->discount)
+                                        <p dir="auto" class="text-sm text-success-dark">{{ __('messages.Includes :name — :percent% off', ['name' => $entry['quote']->discount['name'], 'percent' => $entry['quote']->discount['percent']]) }}</p>
+                                    @endif
                                     <p dir="auto" class="text-xs text-ink-muted">
                                         {{ __('messages.for :nights night(s)', ['nights' => $entry['quote']->nights()]) }}
                                     </p>

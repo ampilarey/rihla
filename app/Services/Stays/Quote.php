@@ -27,6 +27,8 @@ final class Quote
         public readonly string $currency,
         public readonly int $minimumNights,
         public readonly string $audience,
+        /** @var array{name: string, percent: int, minor: int}|null */
+        public readonly ?array $discount = null,
     ) {}
 
     /**
@@ -41,6 +43,34 @@ final class Quote
         return new self($nightly, strtoupper($currency), max(1, $minimumNights), $audience);
     }
 
+    /**
+     * The same quote with a percentage off the room — §16 Phase 16.
+     *
+     * The amount off is rounded **down** to the minor unit, so the guest is
+     * never promised a cent more off than the percentage printed.
+     */
+    public function withDiscount(string $name, int $percent): self
+    {
+        $percent = max(0, min(100, $percent));
+
+        return new self($this->nightly, $this->currency, $this->minimumNights, $this->audience, [
+            'name' => $name,
+            'percent' => $percent,
+            'minor' => intdiv($this->subtotal()->minor * $percent, 100),
+        ]);
+    }
+
+    /** The nights at their rates, before any discount. */
+    public function subtotal(): Money
+    {
+        return Money::ofMinor(array_sum($this->nightly), $this->currency);
+    }
+
+    public function discountAmount(): ?Money
+    {
+        return $this->discount === null ? null : Money::ofMinor($this->discount['minor'], $this->currency);
+    }
+
     public function nights(): int
     {
         return count($this->nightly);
@@ -48,7 +78,7 @@ final class Quote
 
     public function total(): Money
     {
-        return Money::ofMinor(array_sum($this->nightly), $this->currency);
+        return Money::ofMinor(array_sum($this->nightly) - ($this->discount['minor'] ?? 0), $this->currency);
     }
 
     /**
@@ -80,6 +110,9 @@ final class Quote
             'audience' => $this->audience,
             'nightly' => $this->nightly,
             'total_minor' => $this->total()->minor,
+            // §16 Phase 16: the discount it was sold with, frozen with it.
+            'subtotal_minor' => $this->subtotal()->minor,
+            'discount' => $this->discount,
             'minimum_nights' => $this->minimumNights,
             // The day the quote was made, so a dispute can be read without
             // guessing which season was live at the time.

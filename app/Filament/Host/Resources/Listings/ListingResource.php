@@ -8,6 +8,7 @@ use App\Filament\Host\Resources\Listings\Pages\ListListings;
 use App\Filament\Resources\Properties\RelationManagers\AddonsRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\CalendarFeedsRelationManager;
+use App\Filament\Resources\Properties\RelationManagers\DiscountsRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\PhotosRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RoomTypesRelationManager;
@@ -99,6 +100,7 @@ class ListingResource extends Resource
             BlockedDatesRelationManager::class,
             AddonsRelationManager::class,
             CalendarFeedsRelationManager::class,
+            DiscountsRelationManager::class,
         ];
     }
 

@@ -57,6 +57,8 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `stay_discounts` hangs off `properties` and `room_types` (§16 Phase 16).
+        __DIR__.'/../../database/migrations/2026_09_30_180000_create_stay_discounts.php',
         // Newest of all: `calendar_feeds` hangs off `room_types` (§16 Phase 16).
         __DIR__.'/../../database/migrations/2026_09_30_170000_create_calendar_feeds.php',
         // Newest of all: `packages.sold_to` and `price_tiers.audience`

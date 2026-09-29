@@ -39,7 +39,10 @@ final class StayBill
                 $stay->check_out->format('j M Y'),
                 $stay->nights,
                 $stay->nights === 1 ? '' : 's',
-            ),
+            ).(isset($stay->rate_snapshot['discount']['name'], $stay->rate_snapshot['discount']['percent'])
+                // §16 Phase 16: the discount it was sold with, named on the bill.
+                ? sprintf(' · %s, %d%% off', $stay->rate_snapshot['discount']['name'], $stay->rate_snapshot['discount']['percent'])
+                : ''),
             'kind' => StayCharge::ROOM,
             'total' => $stay->total(),
         ];

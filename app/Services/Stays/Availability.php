@@ -8,6 +8,7 @@ use App\Models\BlockedDate;
 use App\Models\Rate;
 use App\Models\RoomType;
 use App\Models\Stay;
+use App\Models\StayDiscount;
 use App\Support\Audience;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -115,7 +116,14 @@ class Availability
             $nightly[$night->toDateString()] = (int) $rate;
         }
 
-        return Quote::of($nightly, $currency, $this->minimumNights($room, $seasons), $audience);
+        $quote = Quote::of($nightly, $currency, $this->minimumNights($room, $seasons), $audience);
+
+        // §16 Phase 16: the one discount this stay qualifies for, if any.
+        $discount = StayDiscount::bestFor($room, CarbonImmutable::parse($checkIn), count($nightly), $audience);
+
+        return $discount === null
+            ? $quote
+            : $quote->withDiscount($discount->name, min(StayDiscount::MAX_PERCENT, (int) $discount->percent));
     }
 
     /**
