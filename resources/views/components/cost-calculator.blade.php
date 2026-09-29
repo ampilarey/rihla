@@ -63,7 +63,7 @@
                 </label>
                 <select id="occupancy-{{ $departure->id }}"
                         x-model="occupancy"
-                        class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                        class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                     @foreach($tiers as $tier)
                         <option value="{{ $tier->occupancy }}">
                             {{ __('messages.'.ucfirst($tier->occupancy).' room') }} — {{ $tier->formatted }}
@@ -79,7 +79,7 @@
                 <input id="travellers-{{ $departure->id }}"
                        type="number" min="1" max="20" step="1"
                        x-model.number="travellers"
-                       class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500"
+                       class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500"
                        value="1">
             </div>
 

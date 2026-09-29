@@ -52,7 +52,7 @@
 
                     <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
                            required maxlength="6" pattern="[0-9]{6}" autofocus
-                           class="w-full rounded-lg border-cream-deep font-mono text-lg tracking-widest text-ink focus:border-wine-500 focus:ring-wine-500">
+                           class="w-full rounded-lg border border-gray-500 px-3 py-2 font-mono text-lg tracking-widest text-ink focus:border-wine-500 focus:ring-wine-500">
 
                     @error('code')
                         <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>

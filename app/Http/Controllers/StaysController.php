@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Services\Stays\Availability;
 use App\Services\Stays\GreenTax;
 use App\Services\Stays\ShareCard;
+use App\Support\Audience;
 use App\Support\Contact;
 use App\Support\Services as ServiceRegistry;
 use App\Support\StayFilters;
@@ -18,6 +19,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -52,14 +55,34 @@ class StaysController extends Controller
         private readonly GreenTax $greenTax,
     ) {}
 
+    /** A page of search results — §16.7. */
+    public const PER_PAGE = 24;
+
+    /** Which door sells each kind of building. Island holidays are packages, not properties. */
+    private const DOORS = [
+        Property::GUESTHOUSE => 'stays_guesthouses',
+        Property::RENTAL => 'stays_rooms',
+    ];
+
     /**
-     * The Stays hub.
+     * The Stays hub, and since §16 the search over every listing.
      *
-     * 404s when every strand is off, rather than rendering a page whose
-     * every link is missing. Not gated by the `service` middleware, because
-     * no single service owns it.
+     * The strand cards stay at the top — they are still the three doors —
+     * and every listing behind a door that is not off is searchable below
+     * them. 404s when every strand is off, rather than rendering a page
+     * whose every link is missing. Not gated by the `service` middleware,
+     * because no single service owns it.
+     *
+     * ## One list, filtered in PHP
+     *
+     * Dates are checked through {@see Availability}, as on the strand
+     * pages, and a price is compared in the audience's own currency, so
+     * both run over the loaded rows and the page is cut after. At the
+     * size this marketplace will be for years — dozens of listings, not
+     * tens of thousands — that is one query with its eager loads, and it
+     * is the only way the count on the page and the rows on it agree.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $strands = collect(ServiceRegistry::catalogue())
             ->reject(fn (array $meta, string $key): bool => ServiceRegistry::isOff($key));
@@ -68,10 +91,100 @@ class StaysController extends Controller
             throw new NotFoundHttpException;
         }
 
+        $filters = StayFilters::fromRequest($request);
+
+        $types = array_keys(array_filter(
+            self::DOORS,
+            fn (string $service): bool => ! ServiceRegistry::isOff($service),
+        ));
+
+        $listable = $types === []
+            ? (new Property)->newCollection()
+            : Property::listable()->ofType($types)->offering($filters->audience)
+                ->with(['roomTypes', 'partner'])
+                ->get();
+
+        $found = $filters->apply(
+            Property::query()->whereIn('id', $listable->modelKeys())
+        )->with(['roomTypes', 'partner'])->get();
+
+        if ($filters->hasDates()) {
+            $found = $found->filter(fn (Property $property): bool => $this->hasAnythingFree($property, $filters));
+        }
+
+        if ($filters->hasPriceRange()) {
+            $found = $found->filter(fn (Property $property): bool => $this->withinPrice($property, $filters));
+        }
+
+        $found = $this->sorted($found, $filters)->values();
+
+        $page = LengthAwarePaginator::resolveCurrentPage();
+
+        $results = (new LengthAwarePaginator(
+            $found->forPage($page, self::PER_PAGE)->values(),
+            $found->count(),
+            self::PER_PAGE,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()],
+        ));
+
         return view('stays.index', [
             'strands' => $strands,
+            'filters' => $filters,
+            'results' => $results,
+            'hasListings' => $listable->isNotEmpty(),
+            'islands' => $listable->pluck('island')->filter()->unique()->sort()->values(),
+            'atolls' => $listable->pluck('atoll')->filter()->unique()->sort()->values(),
+            'kinds' => $listable->pluck('kind')->filter()->unique()->values(),
+            'priceCurrency' => $this->priceCurrency($filters->audience),
             'socialSettings' => Setting::getSocialSettings(),
         ]);
+    }
+
+    /**
+     * The currency a price range is typed in.
+     *
+     * A local's is rufiyaa everywhere. A tourist's is whatever the guest
+     * house quotes in, which differs between a guesthouse (dollars) and a
+     * Malé room (rufiyaa) — nothing is converted (§16.2 rule 5) — so the
+     * range is read in the currency most tourist listings use, and a
+     * listing priced in another is left out of a priced search rather than
+     * compared across currencies.
+     */
+    private function priceCurrency(string $audience): string
+    {
+        return $audience === Audience::LOCAL
+            ? strtoupper((string) config('marketplace.currencies.local', 'MVR'))
+            : strtoupper((string) config('marketplace.currencies.tourist', 'USD'));
+    }
+
+    private function withinPrice(Property $property, StayFilters $filters): bool
+    {
+        $from = $property->cheapestRateFor($filters->audience);
+
+        if ($from === null || $from->currency !== $this->priceCurrency($filters->audience)) {
+            return false;
+        }
+
+        $whole = intdiv($from->minor, 100);
+
+        return ($filters->priceMin === null || $whole >= $filters->priceMin)
+            && ($filters->priceMax === null || $whole <= $filters->priceMax);
+    }
+
+    /**
+     * @param  Collection<int, Property>  $found
+     * @return Collection<int, Property>
+     */
+    private function sorted(Collection $found, StayFilters $filters): Collection
+    {
+        return match ($filters->sort) {
+            // Unpriced listings last, not first: "cheapest" that opens on a
+            // card with no price is not an answer to the question.
+            'price' => $found->sortBy(fn (Property $property): int => $property->cheapestRateFor($filters->audience)->minor ?? PHP_INT_MAX),
+            'newest' => $found->sortByDesc(fn (Property $property): int => (int) $property->created_at?->getTimestamp()),
+            default => $found->sortBy([['sort_order', 'asc'], ['id', 'asc']]),
+        };
     }
 
     public function guesthouses(Request $request): View
@@ -127,7 +240,9 @@ class StaysController extends Controller
      */
     public function show(Request $request, Property $property): View
     {
-        abort_unless($property->is_published, 404);
+        // The same rule as search — §16.7. A listing waiting for approval,
+        // or from a suspended host, is not readable by guessing its name.
+        abort_unless($property->isListable(), 404);
 
         $service = $property->type === Property::RENTAL ? 'stays_rooms' : 'stays_guesthouses';
 
@@ -196,7 +311,7 @@ class StaysController extends Controller
      */
     public function shareCard(Property $property, ShareCard $cards): Response|RedirectResponse
     {
-        abort_unless($property->is_published, 404);
+        abort_unless($property->isListable(), 404);
 
         $png = $cards->bytes($property);
 
@@ -242,7 +357,7 @@ class StaysController extends Controller
      */
     public function factSheet(Property $property): \Symfony\Component\HttpFoundation\Response
     {
-        abort_unless($property->is_published, 404);
+        abort_unless($property->isListable(), 404);
 
         $service = $property->type === Property::RENTAL ? 'stays_rooms' : 'stays_guesthouses';
 
@@ -309,7 +424,7 @@ class StaysController extends Controller
     {
         $filters = StayFilters::fromRequest($request);
 
-        $properties = Property::published()
+        $properties = Property::listable()
             ->ofType([$type])
             ->with(['roomTypes'])
             ->orderBy('sort_order')
@@ -321,7 +436,7 @@ class StaysController extends Controller
         }
 
         $shown = $filters->apply(
-            Property::published()->ofType([$type])->with(['roomTypes'])
+            Property::listable()->ofType([$type])->with(['roomTypes'])
         )->orderBy('sort_order')->orderBy('id')->get();
 
         if ($filters->hasDates()) {

@@ -148,7 +148,7 @@
                         <label dir="auto" for="enquiry-name" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Your name') }}</label>
                         <input id="enquiry-name" name="name" type="text" required maxlength="255"
                                value="{{ old('name') }}" dir="auto"
-                               class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                               class="w-full rounded-xl border border-gray-500 px-3 py-2">
                         <x-input-error :messages="$errors->get('name')" class="mt-1" />
                     </div>
 
@@ -156,7 +156,7 @@
                         <label dir="auto" for="enquiry-phone" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Phone') }}</label>
                         <input id="enquiry-phone" name="phone" type="tel" maxlength="40" inputmode="tel"
                                value="{{ old('phone') }}" dir="ltr"
-                               class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                               class="w-full rounded-xl border border-gray-500 px-3 py-2">
                         <x-input-error :messages="$errors->get('phone')" class="mt-1" />
                     </div>
 
@@ -164,7 +164,7 @@
                         <label dir="auto" for="enquiry-email" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Email') }}</label>
                         <input id="enquiry-email" name="email" type="email" maxlength="255"
                                value="{{ old('email') }}" dir="ltr"
-                               class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                               class="w-full rounded-xl border border-gray-500 px-3 py-2">
                         <x-input-error :messages="$errors->get('email')" class="mt-1" />
                     </div>
 
@@ -172,7 +172,7 @@
                         <div>
                             <label dir="auto" for="enquiry-package" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Which package?') }}</label>
                             <select id="enquiry-package" name="package_id" dir="auto"
-                                    class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                                    class="w-full rounded-xl border border-gray-500 px-3 py-2">
                                 <option value="">{{ __('messages.Not sure yet') }}</option>
                                 @foreach($packages as $package)
                                     <option value="{{ $package->id }}" @selected(old('package_id') == $package->id)>
@@ -187,14 +187,14 @@
                         <label dir="auto" for="enquiry-party" class="mb-1 block text-sm text-ink-muted">{{ __('messages.How many of you?') }}</label>
                         <input id="enquiry-party" name="party_size" type="number" min="1" max="60" inputmode="numeric"
                                value="{{ old('party_size') }}" dir="ltr"
-                               class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                               class="w-full rounded-xl border border-gray-500 px-3 py-2">
                         <x-input-error :messages="$errors->get('party_size')" class="mt-1" />
                     </div>
 
                     <div>
                         <label dir="auto" for="enquiry-message" class="mb-1 block text-sm text-ink-muted">{{ __('messages.Anything else?') }}</label>
                         <textarea id="enquiry-message" name="message" rows="3" maxlength="2000" dir="auto"
-                                  class="w-full rounded-xl border border-cream-deep px-3 py-2">{{ old('message') }}</textarea>
+                                  class="w-full rounded-xl border border-gray-500 px-3 py-2">{{ old('message') }}</textarea>
                         <x-input-error :messages="$errors->get('message')" class="mt-1" />
                     </div>
 

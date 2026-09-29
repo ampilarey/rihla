@@ -34,7 +34,7 @@
 
                     <label for="password" class="mb-1 block text-sm text-ink">{{ __('messages.Your password') }}</label>
                     <input id="password" name="password" type="password" required autocomplete="current-password"
-                           class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                           class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
 
                     @error('password')
                         <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>

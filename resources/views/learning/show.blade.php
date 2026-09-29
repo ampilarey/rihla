@@ -110,7 +110,7 @@
                                                    name="answers[{{ $question->getKey() }}][]"
                                                    value="{{ $option->getKey() }}"
                                                    @checked($outcome && in_array($option->getKey(), $outcome->chosen, true))
-                                                   class="mt-1 rounded border-cream-deep text-wine-600 focus:ring-wine-500">
+                                                   class="mt-1 rounded border border-gray-500 text-wine-600 focus:ring-wine-500">
                                             <span>{{ $option->text }}</span>
                                         </label>
                                     @endforeach

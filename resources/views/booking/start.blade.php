@@ -73,7 +73,7 @@
                             {{ __('messages.Room type') }}
                         </label>
                         <select id="occupancy" name="occupancy"
-                                class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                             {{-- Every occupancy any departure of this package
                                  prices. The chosen departure is re-checked on
                                  submit, so a room this particular date does not
@@ -95,7 +95,7 @@
                         <input id="seats" name="seats" type="number" inputmode="numeric"
                                min="1" max="{{ config('booking.party.max') }}"
                                value="{{ old('seats', 1) }}"
-                               class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                               class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                         <x-input-error :messages="$errors->get('seats')" class="mt-2" />
                         <p dir="auto" class="mt-1 text-xs text-ink-muted">
                             {{ __('messages.Booking for a larger group? Message us and we will arrange it.') }}

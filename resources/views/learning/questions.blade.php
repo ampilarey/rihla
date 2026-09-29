@@ -48,7 +48,7 @@
 
             <textarea id="guide-question" name="question" rows="3" required minlength="10" maxlength="4000"
                       dir="auto"
-                      class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('question') }}</textarea>
+                      class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('question') }}</textarea>
 
             @error('question')
                 <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>
@@ -106,7 +106,7 @@
 
             <textarea id="question-body" name="body" rows="6" required minlength="10" maxlength="4000"
                       dir="auto"
-                      class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('body', session('assistant_question')) }}</textarea>
+                      class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('body', session('assistant_question')) }}</textarea>
 
             @error('body')
                 <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>
@@ -119,7 +119,7 @@
             --}}
             <label class="mt-4 flex items-start gap-2 text-ink">
                 <input type="checkbox" name="may_publish" value="1" @checked(old('may_publish'))
-                       class="mt-1 rounded border-cream-deep text-wine-600 focus:ring-wine-500">
+                       class="mt-1 rounded border border-gray-500 text-wine-600 focus:ring-wine-500">
                 <span>
                     {{ __('messages.Other pilgrims may find this useful. You can put my question and the answer on the website — without my name.') }}
                 </span>

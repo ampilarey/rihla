@@ -22,11 +22,24 @@ use Illuminate\Http\Request;
  */
 final class StayFilters
 {
+    /** The orders a search can be put in — §16.7. By rating arrives with reviews (Phase 14). */
+    public const SORTS = ['recommended', 'price', 'newest'];
+
+    /**
+     * @param  list<string>  $kinds
+     */
     private function __construct(
         public readonly ?string $island,
         public readonly ?CarbonImmutable $checkIn,
         public readonly ?CarbonImmutable $checkOut,
         public readonly ?int $guests,
+        public readonly ?string $atoll = null,
+        public readonly array $kinds = [],
+        public readonly ?int $priceMin = null,
+        public readonly ?int $priceMax = null,
+        public readonly string $sort = 'recommended',
+        public readonly string $audience = Audience::TOURIST,
+        public readonly bool $audienceChosen = false,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -43,14 +56,52 @@ final class StayFilters
         }
 
         $island = $request->query('island');
+        $atoll = $request->query('atoll');
         $guests = $request->query('guests');
+        $sort = $request->query('sort');
+        $audience = $request->query('audience');
+
+        // A visitor who has said which they are is believed; otherwise the
+        // language they are reading in is the best guess there is — §16.7.
+        $chosen = is_string($audience) && Audience::isValid($audience);
+
+        $kinds = array_values(array_intersect(
+            Property::KINDS,
+            array_filter((array) $request->query('kind', []), 'is_string'),
+        ));
+
+        $min = self::wholeAmount($request->query('price_min'));
+        $max = self::wholeAmount($request->query('price_max'));
+
+        // Swapped rather than dropped: "500 to 100" means "100 to 500"
+        // to anybody who typed it.
+        if ($min !== null && $max !== null && $min > $max) {
+            [$min, $max] = [$max, $min];
+        }
 
         return new self(
             island: is_string($island) && trim($island) !== '' ? trim($island) : null,
             checkIn: $checkIn,
             checkOut: $checkOut,
             guests: is_numeric($guests) && (int) $guests >= 1 ? min(30, (int) $guests) : null,
+            atoll: is_string($atoll) && trim($atoll) !== '' ? trim($atoll) : null,
+            kinds: $kinds,
+            priceMin: $min,
+            priceMax: $max,
+            sort: is_string($sort) && in_array($sort, self::SORTS, true) ? $sort : 'recommended',
+            audience: $chosen ? $audience : Audience::fromLocale(app()->getLocale()),
+            audienceChosen: $chosen,
         );
+    }
+
+    private static function wholeAmount(mixed $value): ?int
+    {
+        return is_numeric($value) && (int) $value >= 0 ? min(10_000_000, (int) $value) : null;
+    }
+
+    public function hasPriceRange(): bool
+    {
+        return $this->priceMin !== null || $this->priceMax !== null;
     }
 
     /** Nothing asked for at all — the page says so instead of "0 results". */
@@ -58,7 +109,10 @@ final class StayFilters
     {
         return $this->island === null
             && $this->checkIn === null
-            && $this->guests === null;
+            && $this->guests === null
+            && $this->atoll === null
+            && $this->kinds === []
+            && ! $this->hasPriceRange();
     }
 
     public function hasDates(): bool
@@ -95,6 +149,14 @@ final class StayFilters
             $query->whereHas('roomTypes', fn (Builder $rooms) => $rooms->where('sleeps', '>=', $this->guests));
         }
 
+        if ($this->atoll !== null) {
+            $query->where('atoll', $this->atoll);
+        }
+
+        if ($this->kinds !== []) {
+            $query->whereIn('kind', $this->kinds);
+        }
+
         return $query;
     }
 
@@ -106,6 +168,9 @@ final class StayFilters
             'from' => $this->checkIn?->toDateString(),
             'to' => $this->checkOut?->toDateString(),
             'guests' => $this->guests,
+            // Carried only when the visitor chose it, so a link shared from
+            // a Dhivehi page does not pin an English reader to local prices.
+            'audience' => $this->audienceChosen ? $this->audience : null,
         ], fn ($value): bool => $value !== null);
     }
 

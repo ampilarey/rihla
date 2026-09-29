@@ -48,6 +48,13 @@ class StaysShowcaseSeeder extends Seeder
             ],
         );
 
+        // Not fillable, so set here: a showcase partner the site will not
+        // list (§16.7 lists only verified, active hosts) audits nothing.
+        $partner->forceFill([
+            'verification' => Partner::VERIFIED,
+            'status' => Partner::STATUS_ACTIVE,
+        ])->save();
+
         $property = Property::firstOrCreate(
             ['slug' => 'maafushi-view'],
             [
@@ -67,6 +74,12 @@ class StaysShowcaseSeeder extends Seeder
                 'is_published' => true,
             ],
         );
+
+        $property->forceFill([
+            'approval' => Property::APPROVED,
+            'kind' => Property::KIND_GUESTHOUSE,
+            'atoll' => 'Kaafu',
+        ])->save();
 
         RoomType::firstOrCreate(
             ['property_id' => $property->getKey(), 'sort_order' => 0],

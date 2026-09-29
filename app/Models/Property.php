@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Stays\Availability;
+use App\Support\Audience;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -68,6 +70,23 @@ class Property extends Model
 
     /** @var list<string> */
     public const KINDS = [self::KIND_GUESTHOUSE, self::KIND_WHOLE_HOME, self::KIND_APARTMENT, self::KIND_PRIVATE_ROOM];
+
+    /**
+     * What a guest reads for a kind, in their language.
+     *
+     * Each key written out whole rather than built from the value, so the
+     * translation guard can see every one of them — a key assembled at
+     * runtime is a key nothing checks.
+     */
+    public static function kindLabel(string $kind): string
+    {
+        return match ($kind) {
+            self::KIND_WHOLE_HOME => __('messages.Whole home'),
+            self::KIND_APARTMENT => __('messages.Apartment'),
+            self::KIND_PRIVATE_ROOM => __('messages.Private room'),
+            default => __('messages.Guesthouse'),
+        };
+    }
 
     // ── Whether Rihla has approved the listing — §16.6 ───────────────────
     //
@@ -281,6 +300,65 @@ class Property extends Model
     }
 
     /**
+     * What a guest may see — §16.7.
+     *
+     * Published **and** approved, from a host who is active **and**
+     * verified. One scope, read by the search, the strand lists and the
+     * listing page alike: a listing hidden from search but reachable on a
+     * strand, or the other way round, is a listing that is half-suspended,
+     * which is not a state anybody chose.
+     *
+     * Every row that existed before §16 was backfilled approved and every
+     * partner verified and active, so nothing that was visible stops being.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeListable($query)
+    {
+        return $query
+            ->where('is_published', true)
+            ->where('approval', self::APPROVED)
+            ->whereHas('partner', fn (Builder $partner) => $partner
+                ->where('status', Partner::STATUS_ACTIVE)
+                ->where('verification', Partner::VERIFIED));
+    }
+
+    /**
+     * At least one room this audience can buy — the SQL form of
+     * {@see Availability::offers()}, which the two
+     * must keep agreeing with.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeOffering($query, string $audience)
+    {
+        return $query->whereHas('roomTypes', function (Builder $rooms) use ($audience): void {
+            if ($audience !== Audience::LOCAL) {
+                return;
+            }
+
+            $rooms->where(fn (Builder $room) => $room
+                ->whereNotNull('local_rate_minor')
+                ->orWhereHas('rates', fn (Builder $rates) => $rates->where('audience', Audience::LOCAL)));
+        });
+    }
+
+    /**
+     * Would a guest of this audience see it at all?
+     *
+     * The same rule as {@see scopeListable()}, asked of one row that is
+     * already loaded — the listing page has the model, not a query.
+     */
+    public function isListable(): bool
+    {
+        return $this->is_published
+            && $this->approval === self::APPROVED
+            && $this->partner !== null
+            && $this->partner->status === Partner::STATUS_ACTIVE
+            && $this->partner->verification === Partner::VERIFIED;
+    }
+
+    /**
      * @param  Builder<$this>  $query
      * @param  list<string>  $types
      */
@@ -310,6 +388,27 @@ class Property extends Model
             ->min('base_rate_minor');
 
         return $minor === null ? null : Money::ofMinor((int) $minor, $this->currency);
+    }
+
+    /**
+     * The "from" price for one audience — §16.7.
+     *
+     * A tourist's is {@see cheapestRate()}, unchanged. A local's is the
+     * cheapest local base rate in rufiyaa, and null when the only local
+     * prices are seasons: a season is a price for some nights, and a card
+     * reading "from" one would be quoting a number most dates do not have.
+     */
+    public function cheapestRateFor(string $audience): ?Money
+    {
+        if ($audience !== Audience::LOCAL) {
+            return $this->cheapestRate();
+        }
+
+        $minor = $this->roomTypes
+            ->filter(fn (RoomType $room): bool => $room->local_rate_minor !== null && $room->local_rate_minor > 0)
+            ->min('local_rate_minor');
+
+        return $minor === null ? null : Money::ofMinor((int) $minor, Audience::currencyAt($this, Audience::LOCAL));
     }
 
     /**

@@ -24,7 +24,7 @@
                         </label>
                         <input id="contact_name" name="contact_name" type="text" autocomplete="name"
                                value="{{ old('contact_name') }}" required dir="auto"
-                               class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                               class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                         <x-input-error :messages="$errors->get('contact_name')" class="mt-2" />
                     </div>
 
@@ -34,7 +34,7 @@
                         </label>
                         <input id="contact_phone" name="contact_phone" type="tel" autocomplete="tel" dir="ltr"
                                value="{{ old('contact_phone') }}" required
-                               class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                               class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                         <x-input-error :messages="$errors->get('contact_phone')" class="mt-2" />
                     </div>
 
@@ -44,7 +44,7 @@
                         </label>
                         <input id="contact_email" name="contact_email" type="email" autocomplete="email" dir="ltr"
                                value="{{ old('contact_email') }}"
-                               class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                               class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                         <x-input-error :messages="$errors->get('contact_email')" class="mt-2" />
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                             </label>
                             <input id="traveller-{{ $i }}-name" name="travellers[{{ $i }}][full_name]" type="text"
                                    value="{{ old("travellers.{$i}.full_name") }}" required dir="auto"
-                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                             <x-input-error :messages="$errors->get('travellers.'.$i.'.full_name')" class="mt-2" />
                         </div>
 
@@ -75,7 +75,7 @@
                             </label>
                             <input id="traveller-{{ $i }}-dob" name="travellers[{{ $i }}][date_of_birth]" type="date"
                                    value="{{ old("travellers.{$i}.date_of_birth") }}" dir="ltr"
-                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                             <x-input-error :messages="$errors->get('travellers.'.$i.'.date_of_birth')" class="mt-2" />
                         </div>
 
@@ -86,7 +86,7 @@
                             {{-- Asked because the rules need it — rooms are
                                  allocated single-sex — not for demographics. --}}
                             <select id="traveller-{{ $i }}-gender" name="travellers[{{ $i }}][gender]"
-                                    class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                    class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                                 <option value="">{{ __('messages.Prefer not to say') }}</option>
                                 <option value="male" @selected(old("travellers.{$i}.gender") === 'male')>{{ __('messages.Male') }}</option>
                                 <option value="female" @selected(old("travellers.{$i}.gender") === 'female')>{{ __('messages.Female') }}</option>
@@ -99,7 +99,7 @@
                             </label>
                             <input id="traveller-{{ $i }}-passport" name="travellers[{{ $i }}][passport_number]" type="text"
                                    value="{{ old("travellers.{$i}.passport_number") }}" dir="ltr"
-                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                         </div>
 
                         <div>
@@ -108,7 +108,7 @@
                             </label>
                             <input id="traveller-{{ $i }}-expiry" name="travellers[{{ $i }}][passport_expiry]" type="date"
                                    value="{{ old("travellers.{$i}.passport_expiry") }}" dir="ltr"
-                                   class="w-full rounded-lg border-cream-deep text-ink focus:border-wine-500 focus:ring-wine-500">
+                                   class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                         </div>
                     </div>
                 </section>

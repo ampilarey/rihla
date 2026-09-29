@@ -80,7 +80,7 @@
                             {{ __('messages.Whose passport is this?') }}
                         </label>
                         <select id="portal-traveller" name="traveller_id" required
-                                class="w-full rounded-xl border border-cream-deep px-3 py-2" dir="auto">
+                                class="w-full rounded-xl border border-gray-500 px-3 py-2" dir="auto">
                             @foreach($travellers as $line)
                                 <option value="{{ $line->traveller_id }}">{{ $line->traveller->full_name }}</option>
                             @endforeach
@@ -94,7 +94,7 @@
                         </label>
                         <input id="portal-expires" name="expires_at" type="date"
                                value="{{ old('expires_at') }}"
-                               class="w-full rounded-xl border border-cream-deep px-3 py-2" dir="ltr">
+                               class="w-full rounded-xl border border-gray-500 px-3 py-2" dir="ltr">
                         {{-- Said plainly rather than enforced in the form: the
                              rule is Saudi Arabia's, it is in configuration
                              because it changes, and a checkout that silently
@@ -113,7 +113,7 @@
                         </label>
                         <input id="portal-file" name="file" type="file" required
                                accept="{{ implode(',', (array) config('documents.mime_types')) }}"
-                               class="w-full rounded-xl border border-cream-deep px-3 py-2">
+                               class="w-full rounded-xl border border-gray-500 px-3 py-2">
                         <x-input-error :messages="$errors->get('file')" class="mt-1" />
                     </div>
 
