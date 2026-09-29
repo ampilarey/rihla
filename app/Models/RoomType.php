@@ -48,6 +48,15 @@ class RoomType extends Model
         'sort_order' => 'integer',
     ];
 
+    protected static function booted(): void
+    {
+        // A room type's own photographs cascade in the database; the files
+        // need the model — the same reason Property does this.
+        static::deleting(function (self $room): void {
+            $room->photos()->get()->each->delete();
+        });
+    }
+
     /** @return BelongsTo<Property, $this> */
     public function property(): BelongsTo
     {
@@ -64,6 +73,18 @@ class RoomType extends Model
     public function blockedDates(): HasMany
     {
         return $this->hasMany(BlockedDate::class)->orderBy('date');
+    }
+
+    /** @return HasMany<PropertyPhoto, $this> */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(PropertyPhoto::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** @return HasMany<PropertyUnit, $this> */
+    public function units(): HasMany
+    {
+        return $this->hasMany(PropertyUnit::class)->orderBy('sort_order')->orderBy('label');
     }
 
     /** @return HasMany<Stay, $this> */

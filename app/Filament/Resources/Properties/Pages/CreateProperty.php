@@ -26,4 +26,21 @@ class CreateProperty extends CreateRecord
     {
         return self::withoutEmptyLocales($data, (new Property)->translatable);
     }
+
+    /**
+     * Staff are the approvers, so a listing they write is approved as it is
+     * written — as every property before §16 was. A host's listing (Phase
+     * 14) starts as a draft and waits for one of them.
+     */
+    protected function afterCreate(): void
+    {
+        /** @var Property $property */
+        $property = $this->record;
+
+        $property->forceFill([
+            'approval' => Property::APPROVED,
+            'approved_at' => now(),
+            'approved_by' => auth()->id(),
+        ])->save();
+    }
 }

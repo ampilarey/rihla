@@ -48,7 +48,22 @@ class Payment extends Model
     ];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['status' => self::PENDING];
+    protected $attributes = ['status' => self::PENDING, 'collected_by' => self::COLLECTED_BY_RIHLA];
+
+    // ── Whose hands the money is in — §16.5 ──────────────────────────────
+    //
+    // Not fillable: a host recording their own cash is one action, and a
+    // form that could set this could move money between the two columns of
+    // every report.
+
+    /** Rihla holds it — every online payment, and everything before §16. */
+    public const COLLECTED_BY_RIHLA = 'rihla';
+
+    /** The host took it at the property; `partner_id` says which host. */
+    public const COLLECTED_BY_HOST = 'host';
+
+    /** @var list<string> */
+    public const COLLECTORS = [self::COLLECTED_BY_RIHLA, self::COLLECTED_BY_HOST];
 
     // ── How the money arrived ────────────────────────────────────────────
 
@@ -171,6 +186,16 @@ class Payment extends Model
     public function bookingKey(): ?int
     {
         return $this->payable_type === Booking::class ? (int) $this->payable_id : null;
+    }
+
+    /**
+     * The host who took this money at the property, when one did.
+     *
+     * @return BelongsTo<Partner, $this>
+     */
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
     }
 
     /** @return BelongsTo<Payment, $this> */

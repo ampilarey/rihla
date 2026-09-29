@@ -37,8 +37,26 @@ class Stay extends Model implements TakesPayments
         'check_in', 'check_out', 'nights', 'adults', 'children',
         'currency', 'rate_snapshot', 'total_minor', 'deposit_minor', 'paid_minor',
         'status', 'requested_at', 'partner_confirmed_at', 'deposit_due_at', 'expires_at',
-        'special_requests', 'source',
+        'special_requests', 'source', 'unit_id', 'created_via', 'created_by',
     ];
+
+    // ── Who made it — §16.5 ──────────────────────────────────────────────
+    //
+    // The commission and settlement snapshots, and the arrival and
+    // departure times, are deliberately not fillable: each is written by
+    // the one action that owns it, never by a form.
+
+    /** A guest, through the site. Every stay before §16 was one of these. */
+    public const VIA_GUEST = 'guest';
+
+    /** The host, from their own panel — a phone call, a walk-in. */
+    public const VIA_HOST = 'host';
+
+    /** Rihla's staff, taking a phone booking. */
+    public const VIA_STAFF = 'staff';
+
+    /** @var list<string> */
+    public const CREATED_VIA = [self::VIA_GUEST, self::VIA_HOST, self::VIA_STAFF];
 
     // ── The status machine ───────────────────────────────────────────────
 
@@ -127,6 +145,11 @@ class Stay extends Model implements TakesPayments
         'expires_at' => 'datetime',
         'confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'checked_in_at' => 'datetime',
+        'checked_out_at' => 'datetime',
+        'commission_pct_snapshot' => 'integer',
+        'commission_minor' => 'integer',
+        'host_net_minor' => 'integer',
     ];
 
     /** @var array<string, mixed> */
@@ -134,6 +157,7 @@ class Stay extends Model implements TakesPayments
         'status' => self::REQUESTED,
         'currency' => 'USD',
         'audience' => 'tourist',
+        'created_via' => self::VIA_GUEST,
     ];
 
     protected static function booted(): void
@@ -180,6 +204,28 @@ class Stay extends Model implements TakesPayments
     public function roomType(): BelongsTo
     {
         return $this->belongsTo(RoomType::class);
+    }
+
+    /**
+     * The physical room, once reception has put them in one.
+     *
+     * @return BelongsTo<PropertyUnit, $this>
+     */
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(PropertyUnit::class, 'unit_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** @return HasMany<StayCharge, $this> */
+    public function charges(): HasMany
+    {
+        return $this->hasMany(StayCharge::class)->orderBy('id');
     }
 
     /**
