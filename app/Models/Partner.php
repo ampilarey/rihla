@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\EncryptedIdentifier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -130,6 +131,9 @@ class Partner extends Model
         'verified_at' => 'datetime',
         'terms_accepted_at' => 'datetime',
         'recommended_at' => 'datetime',
+        // Where Rihla sends the host's money — §16 Phase 16. Ciphertext at
+        // rest; a scrubbed stand-in reads back as itself.
+        'payout_account_number' => EncryptedIdentifier::class,
     ];
 
     /**
@@ -201,6 +205,30 @@ class Partner extends Model
         return $count > 0
             ? ['average' => round((float) $this->reviews()->visible()->avg('rating'), 1), 'count' => $count]
             : null;
+    }
+
+    /**
+     * Bank transfers Rihla has made to this host — §16 Phase 16.
+     *
+     * @return HasMany<Payout, $this>
+     */
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(Payout::class);
+    }
+
+    /** Enough to send a bank transfer to: a bank, a name and a number. */
+    public function hasPayoutDetails(): bool
+    {
+        return filled($this->payout_bank_name) && filled($this->payout_account_name) && filled($this->payout_account_number);
+    }
+
+    /** The account number with all but the last four hidden, for screens that only need to recognise it. */
+    public function maskedPayoutAccount(): ?string
+    {
+        $number = (string) $this->payout_account_number;
+
+        return $number === '' ? null : str_repeat('•', max(0, strlen($number) - 4)).substr($number, -4);
     }
 
     /**

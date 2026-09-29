@@ -35,7 +35,7 @@
         @forelse ($statements as $statement)
             <x-filament::callout color="gray" icon="heroicon-o-document-text"
                 :heading="$statement->label()"
-                :description="'Yours ' . $statement->money('net_minor')->format() . ' · Rihla holds ' . $statement->money('rihla_holds_minor')->format() . ' · ' . $statement->reference">
+                :description="'Yours ' . $statement->money('net_minor')->format() . ' · Rihla holds ' . $statement->money('rihla_holds_minor')->format() . ' · Paid to you ' . $statement->paidOut()->format() . ' · Still owed ' . $statement->stillOwed()->format() . ' · ' . $statement->reference">
                 <x-slot name="footer">
                     <x-filament::button size="sm" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadStatement({{ $statement->id }})">Download PDF</x-filament::button>
                 </x-slot>
