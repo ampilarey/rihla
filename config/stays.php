@@ -63,6 +63,17 @@ return [
     ],
 
     /*
+    | Tourism GST and GST, in whole percent, for a host's reports — §16.10.
+    | Null until the owner states them: a report computing tax at a rate
+    | this code guessed is a number somebody files with MIRA. Prices
+    | include the tax, so the report divides it out rather than adding it.
+    */
+    'tax' => [
+        'tgst_pct' => env('STAYS_TGST_PCT') === null ? null : (float) env('STAYS_TGST_PCT'),
+        'gst_pct' => env('STAYS_GST_PCT') === null ? null : (float) env('STAYS_GST_PCT'),
+    ],
+
+    /*
     | Guests' reviews — §16.11. A review goes public by itself this long
     | after it is written, so a person at Rihla has time to hide one that
     | should not be shown; and the invitation is raised this long after
