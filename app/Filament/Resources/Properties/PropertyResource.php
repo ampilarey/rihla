@@ -6,8 +6,10 @@ use App\Filament\Resources\Properties\Pages\CreateProperty;
 use App\Filament\Resources\Properties\Pages\EditProperty;
 use App\Filament\Resources\Properties\Pages\ListProperties;
 use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
+use App\Filament\Resources\Properties\RelationManagers\PhotosRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RoomTypesRelationManager;
+use App\Filament\Resources\Properties\RelationManagers\UnitsRelationManager;
 use App\Filament\Resources\Properties\Schemas\PropertyForm;
 use App\Filament\Resources\Properties\Tables\PropertiesTable;
 use App\Models\Property;
@@ -56,6 +58,8 @@ class PropertyResource extends Resource
             RoomTypesRelationManager::class,
             RatesRelationManager::class,
             BlockedDatesRelationManager::class,
+            UnitsRelationManager::class,
+            PhotosRelationManager::class,
         ];
     }
 

@@ -47,7 +47,12 @@ class PropertyForm
      */
     public const LOCALES = ['en' => 'English', 'ar' => 'Arabic', 'dv' => 'Dhivehi'];
 
-    public static function configure(Schema $schema): Schema
+    /**
+     * @param  bool  $forHost  the host panel's version (§16.6): no partner
+     *                         picker — the tenant is the partner — and no
+     *                         sort order, which is Rihla's to set.
+     */
+    public static function configure(Schema $schema, bool $forHost = false): Schema
     {
         return $schema->components([
             Section::make('Content')
@@ -64,7 +69,8 @@ class PropertyForm
                     ->relationship('partner', 'name')
                     ->searchable()
                     ->preload()
-                    ->required()
+                    ->required(! $forHost)
+                    ->hidden($forHost)
                     ->helperText('Whose guesthouse this is. Rihla does not own it.'),
 
                 Select::make('type')
@@ -90,6 +96,26 @@ class PropertyForm
                 TextInput::make('island')
                     ->maxLength(120)
                     ->helperText('The island filter on the Stays page reads this.'),
+
+                // §16.5: what a guest is actually renting, and where.
+                Select::make('kind')
+                    ->label('What a guest rents')
+                    ->options([
+                        Property::KIND_GUESTHOUSE => 'Rooms in a guesthouse',
+                        Property::KIND_WHOLE_HOME => 'A whole home',
+                        Property::KIND_APARTMENT => 'An apartment',
+                        Property::KIND_PRIVATE_ROOM => 'A private room',
+                    ]),
+
+                TextInput::make('atoll')->maxLength(60),
+
+                TextInput::make('latitude')
+                    ->numeric()
+                    ->minValue(-90)
+                    ->maxValue(90)
+                    ->helperText('For the map. Leave empty and the listing shows no map rather than a guessed one.'),
+
+                TextInput::make('longitude')->numeric()->minValue(-180)->maxValue(180),
 
                 TimePicker::make('check_in_time')->seconds(false),
                 TimePicker::make('check_out_time')->seconds(false),
@@ -125,6 +151,7 @@ class PropertyForm
                 TextInput::make('sort_order')
                     ->numeric()
                     ->default(0)
+                    ->hidden($forHost)
                     ->helperText('Lower numbers come first.'),
             ]),
 

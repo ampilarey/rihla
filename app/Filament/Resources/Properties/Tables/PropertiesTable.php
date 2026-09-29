@@ -19,6 +19,14 @@ class PropertiesTable
     {
         return $table
             ->columns([
+                TextColumn::make('approval')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        Property::APPROVED => 'success',
+                        Property::PENDING => 'warning',
+                        Property::CHANGES_REQUESTED, Property::WITHDRAWN => 'danger',
+                        default => 'gray',
+                    }),
                 TextColumn::make('name')
                     ->label('Property')
                     ->searchable(query: fn ($query, string $search) => $query->where('name', 'like', "%{$search}%"))
@@ -50,6 +58,14 @@ class PropertiesTable
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->filters([
+                // §16.6: the listings waiting for Rihla's check.
+                SelectFilter::make('approval')->label('Approval')->options([
+                    Property::PENDING => 'Waiting for approval',
+                    Property::CHANGES_REQUESTED => 'Changes requested',
+                    Property::APPROVED => 'Approved',
+                    Property::DRAFT => 'Draft',
+                    Property::WITHDRAWN => 'Withdrawn',
+                ]),
                 SelectFilter::make('type')->options([
                     Property::GUESTHOUSE => 'Guesthouse',
                     Property::RENTAL => 'Rental',
@@ -59,6 +75,7 @@ class PropertiesTable
             ])
             ->recordActions([
                 EditAction::make(),
+                ApprovalActions::group(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
