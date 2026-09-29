@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `packages.partner_id` and `submitted_at` (§16 Phase
+        // 16). No foreign key, but left recorded while `packages` is dropped
+        // and re-created below, the table would come back without them.
+        __DIR__.'/../../database/migrations/2026_09_30_190000_let_hosts_build_packages.php',
         // Newest of all: `stay_discounts` hangs off `properties` and `room_types` (§16 Phase 16).
         __DIR__.'/../../database/migrations/2026_09_30_180000_create_stay_discounts.php',
         // Newest of all: `calendar_feeds` hangs off `room_types` (§16 Phase 16).

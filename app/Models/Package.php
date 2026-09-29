@@ -113,6 +113,7 @@ class Package extends Model
         'flexible_dates' => 'boolean',
         'min_nights' => 'integer',
         'extension_nights' => 'integer',
+        'submitted_at' => 'datetime',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
         'inclusions' => 'array',
@@ -284,6 +285,28 @@ class Package extends Model
     public function needsTravelDocuments(): bool
     {
         return $this->type !== self::ISLAND_HOLIDAY;
+    }
+
+    /**
+     * The host who wrote it — §16 Phase 16. Null is Rihla's own package.
+     * Not fillable: the host panel sets it through its tenant, and no form
+     * can hand a package to another host.
+     *
+     * @return BelongsTo<Partner, $this>
+     */
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
+    }
+
+    /** Where a host's package stands, in words the host reads. */
+    public function hostStatus(): string
+    {
+        return match (true) {
+            $this->is_published => 'Live',
+            $this->submitted_at !== null => 'With Rihla for pricing',
+            default => 'Draft',
+        };
     }
 
     /** @return BelongsTo<Property, $this> */

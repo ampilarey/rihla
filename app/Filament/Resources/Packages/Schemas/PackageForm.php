@@ -39,10 +39,7 @@ class PackageForm
             Section::make('Content')
                 ->description('What this package is. Written once, however many times it runs.')
                 ->schema([
-                    Tabs::make('Translations')->tabs([
-                        self::localeTab('en'),
-                        self::localeTab('dv'),
-                    ])->columnSpanFull(),
+                    self::contentTabs(),
                 ]),
 
             Section::make('Details')->columns(2)->schema([
@@ -171,6 +168,15 @@ class PackageForm
                     ->helperText('Lower numbers come first.'),
             ]),
         ]);
+    }
+
+    /** The package's words in each language — shared with the host panel (§16 Phase 16). */
+    public static function contentTabs(): Tabs
+    {
+        return Tabs::make('Translations')->tabs([
+            self::localeTab('en'),
+            self::localeTab('dv'),
+        ])->columnSpanFull();
     }
 
     private static function localeTab(string $locale): Tab

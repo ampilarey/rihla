@@ -38,6 +38,18 @@ class PackageResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
+    /** Hosts' packages waiting for Rihla to price them — §16 Phase 16. */
+    public static function getNavigationBadge(): ?string
+    {
+        $waiting = Package::query()
+            ->whereNotNull('partner_id')
+            ->whereNotNull('submitted_at')
+            ->where('is_published', false)
+            ->count();
+
+        return $waiting > 0 ? (string) $waiting : null;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return PackageForm::configure($schema);

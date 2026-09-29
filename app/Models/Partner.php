@@ -154,6 +154,13 @@ class Partner extends Model
 
     protected static function booted(): void
     {
+        // `packages.partner_id` carries no database constraint (see its
+        // migration), so the null-on-delete it would have done is done here:
+        // a deleted host's packages become Rihla's rather than point at nobody.
+        static::deleting(function (self $partner): void {
+            Package::query()->where('partner_id', $partner->getKey())->update(['partner_id' => null]);
+        });
+
         static::creating(function (self $partner): void {
             if (blank($partner->slug)) {
                 $partner->slug = self::mintSlug((string) $partner->name);
@@ -184,6 +191,17 @@ class Partner extends Model
     public function properties(): HasMany
     {
         return $this->hasMany(Property::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Packages this host wrote — §16 Phase 16; the host panel's tenant
+     * relationship for them.
+     *
+     * @return HasMany<Package, $this>
+     */
+    public function packages(): HasMany
+    {
+        return $this->hasMany(Package::class);
     }
 
     /** @return HasMany<Review, $this> */
