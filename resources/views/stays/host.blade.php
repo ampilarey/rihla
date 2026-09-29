@@ -24,8 +24,8 @@
 @section('content')
 @php($primary = $page->primary())
 @php($order = $page->layout === \App\Models\HostPage::GRID
-    ? ['listings', 'about', 'reviews', 'gallery', 'map', 'faq', 'contact']
-    : ['about', 'listings', 'reviews', 'gallery', 'map', 'faq', 'contact'])
+    ? ['listings', 'packages', 'about', 'reviews', 'gallery', 'map', 'faq', 'contact']
+    : ['about', 'listings', 'packages', 'reviews', 'gallery', 'map', 'faq', 'contact'])
 
 <div style="font-family: {{ $page->fontStack() }};">
 
@@ -135,6 +135,33 @@
                             </div>
                         @endif
                     </section>
+                    @break
+
+                {{-- Rihla's island holidays built on this host's places — §16 Phase 15. --}}
+                @case('packages')
+                    @if($packages->isNotEmpty())
+                        <section class="mb-12" aria-labelledby="host-packages">
+                            <h2 id="host-packages" dir="auto" class="mb-4 text-2xl font-bold" style="color: {{ $primary }};">{{ __('messages.Packages at this guesthouse') }}</h2>
+                            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                @foreach($packages as $holiday)
+                                    @php($from = $holiday->publishedDepartures->map(fn ($departure) => $departure->leadPriceFor($holiday->audienceFor($audience)))->filter()->sortBy('minor')->first())
+                                    <article class="card flex flex-col">
+                                        <h3 dir="auto" class="text-lg font-bold text-ink">
+                                            <a href="{{ route('packages.show', $holiday->slug) }}" class="hover:underline">{{ $holiday->title }}</a>
+                                        </h3>
+                                        <p dir="auto" class="mt-2 grow text-sm text-ink-muted">{{ $holiday->summary }}</p>
+                                        @if($from)
+                                            <p dir="auto" class="mt-4 text-sm font-medium text-ink">{{ __('messages.From') }} {{ $from->format() }}</p>
+                                        @endif
+                                        <a href="{{ route('packages.show', $holiday->slug) }}" class="mt-4 inline-block rounded-lg px-4 py-2 text-center font-semibold"
+                                           style="background: {{ $page->accent() }}; color: {{ $page->onAccent() }};">
+                                            {{ __('messages.See the package') }}
+                                        </a>
+                                    </article>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endif
                     @break
 
                 @case('gallery')

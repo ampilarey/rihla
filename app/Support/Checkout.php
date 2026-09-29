@@ -26,6 +26,9 @@ final class Checkout
 
     private const BOOKING = 'checkout.booking';
 
+    /** Which price list the seats were held at — §16 Phase 15. */
+    private const AUDIENCE = 'checkout.audience';
+
     /**
      * Set when the checkout was entered from a waiting-list offer, so the
      * entry can be marked converted once the booking exists. Without it a
@@ -33,10 +36,11 @@ final class Checkout
      */
     private const WAITLIST = 'checkout.waitlist';
 
-    public static function remember(SeatHold $hold, string $occupancy): void
+    public static function remember(SeatHold $hold, string $occupancy, string $audience = Audience::LOCAL): void
     {
         Session::put(self::HOLD, $hold->getKey());
         Session::put(self::OCCUPANCY, $occupancy);
+        Session::put(self::AUDIENCE, $audience);
         Session::forget([self::BOOKING, self::WAITLIST]);
     }
 
@@ -70,6 +74,14 @@ final class Checkout
         $value = Session::get(self::OCCUPANCY);
 
         return is_string($value) ? $value : null;
+    }
+
+    /** The price list, `local` for a checkout begun before there was a choice. */
+    public static function audience(): string
+    {
+        $value = Session::get(self::AUDIENCE);
+
+        return is_string($value) && Audience::isValid($value) ? $value : Audience::LOCAL;
     }
 
     public static function booking(): ?Booking

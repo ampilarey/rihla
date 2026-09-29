@@ -105,8 +105,21 @@ class DeparturesRelationManager extends RelationManager
                     Repeater::make('priceTiers')
                         ->relationship()
                         ->hiddenLabel()
-                        ->columns(3)
+                        ->columns(4)
                         ->schema([
+                            // §16 Phase 15. A visitor's price is its own
+                            // tier, saved in the visitor's currency by the
+                            // model; `local` is every price before it.
+                            Select::make('audience')
+                                ->label('Price list')
+                                ->options(['local' => 'Maldivians (MVR)', 'tourist' => 'Visitors ('.strtoupper((string) config('marketplace.currencies.tourist', 'USD')).')'])
+                                ->default('local')
+                                ->selectablePlaceholder(false)
+                                // Never required: a tier entered without
+                                // naming a list is a local price, as every
+                                // tier before Phase 15 was.
+                                ->dehydrateStateUsing(fn (?string $state): string => $state === 'tourist' ? 'tourist' : 'local')
+                                ->live(),
                             Select::make('occupancy')
                                 ->options(array_combine(PriceTier::OCCUPANCIES, array_map('ucfirst', PriceTier::OCCUPANCIES)))
                                 ->required(),
@@ -122,8 +135,8 @@ class DeparturesRelationManager extends RelationManager
                                 ->label('Price')
                                 ->numeric()
                                 ->required()
-                                ->prefix('MVR')
-                                ->helperText('Whole rufiyaa.')
+                                ->prefix(fn ($get): string => $get('audience') === 'tourist' ? strtoupper((string) config('marketplace.currencies.tourist', 'USD')) : 'MVR')
+                                ->helperText('Whole units — rufiyaa or dollars, per the price list.')
                                 ->formatStateUsing(fn (?int $state): ?int => $state === null ? null : intdiv($state, 100))
                                 ->dehydrateStateUsing(fn ($state): int => Money::ofMajor((int) $state)->minor),
                         ])

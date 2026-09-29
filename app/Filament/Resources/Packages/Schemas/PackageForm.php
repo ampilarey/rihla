@@ -91,7 +91,20 @@ class PackageForm
                         ->relationship('property', 'name')
                         ->searchable()
                         ->preload()
-                        ->helperText('Optional. Linking it means the island and the guesthouse\'s own details show on the page.'),
+                        ->helperText('Optional. Linking it means the island and the guesthouse\'s own details show on the page, and the package shows on the host\'s own page.'),
+
+                    // §16 Phase 15. Which price lists; each departure then
+                    // carries a price per list, in that list's currency.
+                    Select::make('sold_to')
+                        ->label('Sold to')
+                        ->options([
+                            'local' => 'Maldivians only — rufiyaa',
+                            'tourist' => 'Visitors only — dollars',
+                            Package::SOLD_TO_BOTH => 'Both — a price for each',
+                        ])
+                        ->default('local')
+                        ->required()
+                        ->helperText('Each departure needs a price on every list chosen here, or that guest is told the room is not offered.'),
 
                     Toggle::make('flexible_dates')
                         ->label('Any dates the family chooses')

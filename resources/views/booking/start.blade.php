@@ -67,6 +67,41 @@
                     <x-input-error :messages="$errors->get('departure')" class="mt-2" />
                 </fieldset>
 
+                {{-- Which price list — §16 Phase 15. Only a package sold at
+                     both asks; the price is fixed by the answer, and the
+                     guesthouse checks it against the ID at check-in. --}}
+                @if(count($package->audiencesSold()) > 1)
+                    <fieldset>
+                        <legend dir="auto" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Are you a Maldivian citizen?') }}</legend>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="inline-flex items-center gap-2 text-sm text-ink">
+                                <input type="radio" name="audience" value="local" @checked(old('audience', $audience) === 'local')>
+                                {{ __('messages.Yes') }}
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-sm text-ink">
+                                <input type="radio" name="audience" value="tourist" @checked(old('audience', $audience) === 'tourist')>
+                                {{ __('messages.No, I am visiting') }}
+                            </label>
+                        </div>
+                        <ul dir="auto" class="mt-2 space-y-1 text-sm text-ink-muted">
+                            @foreach($departures as $departure)
+                                @php($local = $departure->leadPriceFor('local'))
+                                @php($visitor = $departure->leadPriceFor('tourist'))
+                                @if($local || $visitor)
+                                    <li>
+                                        <x-local-date :date="$departure->date_start" />:
+                                        @if($local){{ __('messages.Maldivians from :price', ['price' => $local->format()]) }}@endif
+                                        @if($local && $visitor) · @endif
+                                        @if($visitor){{ __('messages.Visitors from :price', ['price' => $visitor->format()]) }}@endif
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    </fieldset>
+                @elseif($package->sold_to === 'tourist')
+                    <input type="hidden" name="audience" value="tourist">
+                @endif
+
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label dir="auto" for="occupancy" class="mb-1 block text-sm font-medium text-ink">
