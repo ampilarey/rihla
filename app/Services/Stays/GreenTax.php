@@ -4,6 +4,7 @@ namespace App\Services\Stays;
 
 use App\Models\Partner;
 use App\Models\Property;
+use App\Support\Audience;
 use App\Support\Money;
 
 /**
@@ -100,12 +101,41 @@ final class GreenTax
      *
      * @return array<string, mixed>
      */
-    public function snapshotFor(Property $property, int $guests, int $nights): array
+    /**
+     * Whether a stay sold to this audience owes Green Tax at all.
+     *
+     * Tourists always. Locals only if the owner says so — whether Maldivian
+     * citizens pay it at a guesthouse is MIRA's rule, and a config value
+     * (`stays.green_tax.applies_to_locals`, default off) rather than this
+     * code's guess (§16.3 decision 6).
+     */
+    public function appliesTo(string $audience): bool
     {
+        return $audience !== Audience::LOCAL
+            || (bool) config('stays.green_tax.applies_to_locals', false);
+    }
+
+    public function snapshotFor(Property $property, int $guests, int $nights, string $audience = Audience::TOURIST): array
+    {
+        if (! $this->appliesTo($audience)) {
+            // Said outright rather than left as nulls: null already means
+            // "nobody has stated the amount", and a local stay is not that.
+            return [
+                'applies' => false,
+                'mode' => null,
+                'guests' => $guests,
+                'nights' => $nights,
+                'per_guest_per_night_minor' => null,
+                'currency' => null,
+                'total_minor' => null,
+            ];
+        }
+
         $rate = $this->perGuestPerNight();
         $total = $this->forParty($guests, $nights);
 
         return [
+            'applies' => true,
             'mode' => $property->partner->green_tax_mode ?? Partner::GREEN_TAX_AT_PROPERTY,
             'guests' => $guests,
             'nights' => $nights,

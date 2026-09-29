@@ -2,6 +2,7 @@
 
 namespace App\Services\Stays;
 
+use App\Exceptions\NotSoldToAudience;
 use App\Exceptions\RoomNotAvailable;
 use App\Models\Customer;
 use App\Models\Payment;
@@ -9,6 +10,7 @@ use App\Models\RoomType;
 use App\Models\Stay;
 use App\Services\Payments\Gateways;
 use App\Services\Payments\Ledger;
+use App\Support\Audience;
 use App\Support\Money;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -66,9 +68,13 @@ class StayBooking
      * nothing until a real room is theirs, so it cannot take the room away
      * from anybody else either.
      *
+     * The audience (§16.3 decision 6) decides the price, the currency and
+     * whether Green Tax is owed, and is frozen onto the stay with them.
+     *
      * @param  array<string, mixed>  $details
      *
      * @throws RoomNotAvailable
+     * @throws NotSoldToAudience when the room has no price for this audience
      */
     public function request(
         Customer $customer,
@@ -78,23 +84,29 @@ class StayBooking
         int $adults = 1,
         int $children = 0,
         array $details = [],
+        string $audience = Audience::TOURIST,
     ): Stay {
+        if (! Audience::isValid($audience)) {
+            throw new \InvalidArgumentException("Unknown audience [{$audience}].");
+        }
+
         $this->availability->assertAvailable($room, $checkIn, $checkOut);
 
         $property = $room->property;
-        $quote = $this->availability->quote($room, $checkIn, $checkOut);
+        $quote = $this->availability->quote($room, $checkIn, $checkOut, $audience);
 
         $stay = DB::transaction(fn (): Stay => Stay::create([
             'customer_id' => $customer->getKey(),
             'property_id' => $property->getKey(),
             'room_type_id' => $room->getKey(),
+            'audience' => $audience,
             'check_in' => $checkIn->toDateString(),
             'check_out' => $checkOut->toDateString(),
             'nights' => $quote->nights(),
             'adults' => $adults,
             'children' => $children,
             'currency' => $quote->currency,
-            'rate_snapshot' => $this->snapshotWithPolicy($quote, $property, $adults + $children),
+            'rate_snapshot' => $this->snapshotWithPolicy($quote, $property, $adults + $children, $audience),
             'total_minor' => $quote->total()->minor,
             'deposit_minor' => $quote->deposit($property->deposit_pct)->minor,
             'status' => Stay::REQUESTED,
@@ -238,7 +250,7 @@ class StayBooking
      *
      * @return array<string, mixed>
      */
-    private function snapshotWithPolicy(Quote $quote, $property, int $guests = 1): array
+    private function snapshotWithPolicy(Quote $quote, $property, int $guests = 1, string $audience = Audience::TOURIST): array
     {
         return [
             ...$quote->snapshot(),
@@ -251,7 +263,7 @@ class StayBooking
             // decision 5. The amount is a config value a government moves,
             // and a customer is owed the figure they were shown on the day
             // rather than whatever it says next season.
-            'green_tax' => $this->greenTax->snapshotFor($property, $guests, $quote->nights()),
+            'green_tax' => $this->greenTax->snapshotFor($property, $guests, $quote->nights(), $audience),
         ];
     }
 

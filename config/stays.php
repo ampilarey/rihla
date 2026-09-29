@@ -53,6 +53,9 @@ return [
 
         // The tax is levied in dollars whatever the room is priced in.
         'currency' => env('STAYS_GREEN_TAX_CURRENCY', 'USD'),
+        // Whether a stay sold to a Maldivian owes it (§16.3 decision 6). Off
+        // until the owner confirms the rule with MIRA.
+        'applies_to_locals' => (bool) env('STAYS_GREEN_TAX_APPLIES_TO_LOCALS', false),
     ],
 
     'holds' => [

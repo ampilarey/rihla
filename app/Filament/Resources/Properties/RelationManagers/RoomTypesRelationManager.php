@@ -90,6 +90,16 @@ class RoomTypesRelationManager extends RelationManager
                     ->dehydrateStateUsing(fn (?int $state): int => Money::ofMajor((int) $state, $this->currency())->minor)
                     ->helperText('Before any seasonal rate. In the property\'s currency — a room cannot be quoted in another, because a stay is one payment.'),
 
+                // §16.3 decision 6. Optional: blank means this room is not
+                // sold to Maldivians at all, never that it is free for them.
+                TextInput::make('local_rate_minor')
+                    ->label(fn (): string => 'Local rate per night ('.$this->localCurrency().')')
+                    ->numeric()
+                    ->minValue(0)
+                    ->formatStateUsing(fn (?int $state): ?int => $state === null ? null : Money::ofMinor($state, $this->localCurrency())->major())
+                    ->dehydrateStateUsing(fn ($state): ?int => blank($state) ? null : Money::ofMajor((int) $state, $this->localCurrency())->minor)
+                    ->helperText('What a Maldivian citizen pays, before any local season. Leave blank if this room is not offered to locals.'),
+
                 TextInput::make('sort_order')
                     ->numeric()
                     ->default(0)
@@ -111,6 +121,11 @@ class RoomTypesRelationManager extends RelationManager
                 TextColumn::make('base_rate_minor')
                     ->label('Per night')
                     ->formatStateUsing(fn (?int $state): string => Money::ofMinor((int) $state, $this->currency())->format()),
+
+                TextColumn::make('local_rate_minor')
+                    ->label('Local, per night')
+                    ->placeholder('Not offered')
+                    ->formatStateUsing(fn (?int $state): string => $state === null ? 'Not offered' : Money::ofMinor($state, $this->localCurrency())->format()),
 
                 TextColumn::make('beds')->placeholder('—')->toggleable(),
             ])
@@ -144,6 +159,11 @@ class RoomTypesRelationManager extends RelationManager
         $property = $this->getOwnerRecord();
 
         return $property instanceof Property ? $property->currency : 'USD';
+    }
+
+    private function localCurrency(): string
+    {
+        return strtoupper((string) config('marketplace.currencies.local', 'MVR'));
     }
 
     private function localeTab(string $locale): Tab

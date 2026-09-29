@@ -2,11 +2,13 @@
 
 namespace App\Services\Stays;
 
+use App\Exceptions\NotSoldToAudience;
 use App\Exceptions\RoomNotAvailable;
 use App\Models\BlockedDate;
 use App\Models\Rate;
 use App\Models\RoomType;
 use App\Models\Stay;
+use App\Support\Audience;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -68,24 +70,29 @@ class Availability
      * it is deterministic — where "whichever the database returned first"
      * would quietly change with an index.
      */
-    public function quote(RoomType $room, CarbonInterface $checkIn, CarbonInterface $checkOut): Quote
-    {
+    public function quote(
+        RoomType $room,
+        CarbonInterface $checkIn,
+        CarbonInterface $checkOut,
+        string $audience = Audience::TOURIST,
+    ): Quote {
+        $currency = Audience::currencyAt($room->property, $audience);
         $nights = $this->nights($checkIn, $checkOut);
 
         if ($nights === []) {
-            return Quote::of([], $this->currencyFor($room), $this->minimumNights($room, collect()));
+            return Quote::of([], $currency, $this->minimumNights($room, collect()), $audience);
         }
 
-        $seasons = Rate::query()
-            ->where('room_type_id', $room->getKey())
-            ->covering($nights[0], $nights[count($nights) - 1]->addDay())
-            ->orderBy('starts_on')
-            ->get();
+        $seasons = $this->seasonsFor($room, $checkIn, $checkOut, $audience);
+
+        // §16.3 decision 6. A tourist's base is the room's own rate, as it
+        // always was; a local's is `local_rate_minor`, which may be null.
+        $base = $audience === Audience::LOCAL ? $room->local_rate_minor : $room->base_rate_minor;
 
         $nightly = [];
 
         foreach ($nights as $night) {
-            $rate = $room->base_rate_minor;
+            $rate = $base;
 
             foreach ($seasons as $season) {
                 if ($season->covers($night)) {
@@ -93,10 +100,38 @@ class Availability
                 }
             }
 
+            // A night nobody has priced for this audience is not for sale to
+            // it. Zero would sell it free; the other audience's price would
+            // be in the wrong currency.
+            if ($rate === null) {
+                throw new NotSoldToAudience(sprintf(
+                    '%s is not offered to %s guests on %s.',
+                    $room->name,
+                    strtolower(Audience::label($audience)),
+                    $night->toDateString(),
+                ));
+            }
+
             $nightly[$night->toDateString()] = (int) $rate;
         }
 
-        return Quote::of($nightly, $this->currencyFor($room), $this->minimumNights($room, $seasons));
+        return Quote::of($nightly, $currency, $this->minimumNights($room, $seasons), $audience);
+    }
+
+    /**
+     * Whether this room has any price for this audience at all.
+     *
+     * Every room is offered to tourists — `base_rate_minor` is required. A
+     * room is offered to locals when it has a local rate or a local season.
+     */
+    public function offers(RoomType $room, string $audience): bool
+    {
+        if ($audience !== Audience::LOCAL) {
+            return true;
+        }
+
+        return $room->local_rate_minor !== null
+            || $room->rates()->where('audience', Audience::LOCAL)->exists();
     }
 
     /**
@@ -263,8 +298,12 @@ class Availability
     }
 
     /** @return Collection<int, Rate> */
-    private function seasonsFor(RoomType $room, CarbonInterface $checkIn, CarbonInterface $checkOut): Collection
-    {
+    private function seasonsFor(
+        RoomType $room,
+        CarbonInterface $checkIn,
+        CarbonInterface $checkOut,
+        string $audience = Audience::TOURIST,
+    ): Collection {
         $nights = $this->nights($checkIn, $checkOut);
 
         if ($nights === []) {
@@ -273,6 +312,7 @@ class Availability
 
         return Rate::query()
             ->where('room_type_id', $room->getKey())
+            ->where('audience', $audience)
             ->covering($nights[0], $nights[count($nights) - 1]->addDay())
             ->orderBy('starts_on')
             ->get();
@@ -300,16 +340,5 @@ class Availability
             (int) $room->property->min_nights,
             $fromSeasons->isEmpty() ? 1 : (int) $fromSeasons->max(),
         );
-    }
-
-    /**
-     * The currency belongs to the building. No `?->` fallback: a room type
-     * that cannot reach its property is a broken row, and quietly quoting
-     * it in USD would put a dollar sign on a Malé rental priced in rufiyaa.
-     * `properties.id` is NOT NULL and constrained, so the building is there.
-     */
-    private function currencyFor(RoomType $room): string
-    {
-        return $room->property->currency;
     }
 }

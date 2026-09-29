@@ -2,6 +2,7 @@
 
 namespace App\Services\Stays;
 
+use App\Support\Audience;
 use App\Support\Money;
 use Carbon\CarbonImmutable;
 
@@ -25,14 +26,19 @@ final class Quote
         public readonly array $nightly,
         public readonly string $currency,
         public readonly int $minimumNights,
+        public readonly string $audience,
     ) {}
 
     /**
      * @param  array<string, int>  $nightly
      */
-    public static function of(array $nightly, string $currency, int $minimumNights = 1): self
-    {
-        return new self($nightly, strtoupper($currency), max(1, $minimumNights));
+    public static function of(
+        array $nightly,
+        string $currency,
+        int $minimumNights = 1,
+        string $audience = Audience::TOURIST,
+    ): self {
+        return new self($nightly, strtoupper($currency), max(1, $minimumNights), $audience);
     }
 
     public function nights(): int
@@ -70,6 +76,8 @@ final class Quote
     {
         return [
             'currency' => $this->currency,
+            // §16.3 decision 6: who it was priced for, frozen with the price.
+            'audience' => $this->audience,
             'nightly' => $this->nightly,
             'total_minor' => $this->total()->minor,
             'minimum_nights' => $this->minimumNights,

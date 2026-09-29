@@ -2341,11 +2341,9 @@ BML proof.
 
 **Phase 12 — Foundations for the marketplace (2–3 weeks).** No public change.
 1. ~~The scheduler wired and preflight-checked.~~ **Done:** `routes/console.php` schedules the two hold expiries every ten minutes and the notice sweep hourly, each with a ten-minute overlap lock; a heartbeat every minute feeds a `rihla:preflight` warning; `scripts/install-scheduler-cron.sh` installs the cron line for whichever site it is run in (`SchedulerTest`).
-2. `config/marketplace.php`; `Audience`; dual rates on `room_types` and
+2. ~~`config/marketplace.php`; `Audience`; dual rates on `room_types` and
    `rates`; `Availability::quote()` by audience; `GreenTax` by audience; the
-   stay's `audience`, currency and snapshot. `StayAvailabilityTest` and
-   `StayBookingTest` gain the local cases; a room with no local rate is not
-   sold to a local.
+   stay's `audience`, currency and snapshot.~~ **Done:** a tourist pays the property's own currency (unchanged, so every existing price stands) and a local pays `marketplace.currencies.local`; a night with no price for the audience raises `NotSoldToAudience` rather than quoting zero; seasons carry an audience; Green Tax is skipped for locals unless `stays.green_tax.applies_to_locals`; the admin forms take a local rate and a season audience (`StayAudienceTest`).
 3. `property_units`, `properties.kind / atoll / latitude / longitude / approval`,
    `property_photos` with variants generated and forgotten; `partners`'
    verification, status, settlement and slug columns; `stays`' commission and
