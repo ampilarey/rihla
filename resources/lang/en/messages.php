@@ -949,4 +949,7 @@ return [
     'Visitors from :price' => 'Visitors from :price',
     'Packages at this guesthouse' => 'Packages at this guesthouse',
     'See the package' => 'See the package',
+    'List your property' => 'List your property',
+    'Own a guesthouse or a flat? Take bookings from our guests and run your whole business here.' => 'Own a guesthouse or a flat? Take bookings from our guests and run your whole business here.',
+    'I would like to list my property on Rihla.' => 'I would like to list my property on Rihla.',
 ];

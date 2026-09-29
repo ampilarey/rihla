@@ -31,6 +31,25 @@
                     <p class="mt-2 text-brand-body" dir="auto">{{ __('messages.Guesthouses, island holidays and rooms in Malé.') }}</p>
                 </a>
             @endif
+
+            {{-- "List your property" — §16 Phase 15. Smaller than the two
+                 above, and only while a door that sells listings is open.
+                 It goes to host sign-up when that is open, and to a person
+                 on WhatsApp until then: a link to a page that answers 404
+                 is the one thing this strip is written never to show. --}}
+            @if (\App\Http\Controllers\StaysController::openTypes() !== [])
+                @php($listYours = \App\Filament\Host\Pages\RegisterHost::isOpen()
+                    ? route('filament.host.auth.register')
+                    : \App\Support\Contact::whatsappUrl(__('messages.I would like to list my property on Rihla.')))
+                <a href="{{ $listYours }}" @unless(\App\Filament\Host\Pages\RegisterHost::isOpen()) target="_blank" rel="noopener noreferrer" @endunless
+                   class="card flex items-center gap-4 p-4 text-start transition-shadow hover:shadow-lg sm:col-span-2">
+                    <span class="text-2xl" aria-hidden="true">🔑</span>
+                    <span>
+                        <span class="block font-bold text-ink" dir="auto">{{ __('messages.List your property') }}</span>
+                        <span class="block text-sm text-brand-body" dir="auto">{{ __('messages.Own a guesthouse or a flat? Take bookings from our guests and run your whole business here.') }}</span>
+                    </span>
+                </a>
+            @endif
         </div>
     </div>
 </section>
