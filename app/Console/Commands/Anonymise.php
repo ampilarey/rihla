@@ -208,6 +208,8 @@ class Anonymise extends Command
             'gone' => '(file deleted)',
             // Unique per row, for a unique column minted from a name.
             'slug' => 'placeholder-'.$id,
+            // A link that can never be fetched: .invalid never resolves.
+            'url' => 'https://calendar.invalid/'.$id.'.ics',
             default => null,
         };
     }

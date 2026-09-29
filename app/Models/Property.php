@@ -285,6 +285,16 @@ class Property extends Model
         return $this->hasMany(PropertyAddon::class)->orderBy('sort_order')->orderBy('id');
     }
 
+    /**
+     * Other sites' calendars for this building's rooms — §16 Phase 16.
+     *
+     * @return HasManyThrough<CalendarFeed, RoomType, $this>
+     */
+    public function calendarFeeds(): HasManyThrough
+    {
+        return $this->hasManyThrough(CalendarFeed::class, RoomType::class);
+    }
+
     /** @return HasMany<PropertyUnit, $this> */
     public function units(): HasMany
     {

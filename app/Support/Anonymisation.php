@@ -120,6 +120,9 @@ final class Anonymisation
         // and a public paragraph of placeholder text is worse than none.
         // The stars stay — a number identifies nobody.
         'reviews' => ['body' => 'null', 'host_reply' => 'null', 'hidden_reason' => 'null'],
+        // §16 Phase 16: the link reads a host's calendar on another site —
+        // a credential. Replaced with one that can never be fetched.
+        'calendar_feeds' => ['url' => 'url'],
         // An invitation to review — the token is a credential.
         'review_invitations' => ['token_hash' => 'token'],
         // The conversation about a stay — §16.11. Private, so a stand-in

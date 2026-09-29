@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\BlockedDate;
+use App\Models\CalendarFeed;
 use App\Models\Partner;
 use App\Models\Property;
 use App\Models\PropertyAddon;
@@ -59,7 +60,7 @@ final class HostContext
             $record instanceof Property, $record instanceof Review => $record->partner_id,
             $record instanceof RoomType, $record instanceof PropertyPhoto, $record instanceof PropertyAddon,
             $record instanceof PropertyUnit, $record instanceof Stay => $record->property?->partner_id,
-            $record instanceof Rate, $record instanceof BlockedDate => $record->roomType?->property?->partner_id,
+            $record instanceof Rate, $record instanceof BlockedDate, $record instanceof CalendarFeed => $record->roomType?->property?->partner_id,
             default => null,
         };
 
