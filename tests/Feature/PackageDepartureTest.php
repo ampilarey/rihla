@@ -57,6 +57,8 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `stay_accesses` hangs off `stays` (§16.7).
+        __DIR__.'/../../database/migrations/2026_09_29_130000_create_stay_accesses.php',
         // Newest of all: §16's marketplace columns put foreign keys on
         // `stays` (into `property_units` and `users`) and on `payments`
         // (into `partners`), and `stay_charges` hangs off `stays`.

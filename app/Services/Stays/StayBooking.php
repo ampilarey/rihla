@@ -54,6 +54,7 @@ class StayBooking
         private readonly Gateways $gateways,
         private readonly Ledger $ledger,
         private readonly GreenTax $greenTax,
+        private readonly Commission $commission,
     ) {}
 
     /**
@@ -95,6 +96,15 @@ class StayBooking
         $property = $room->property;
         $quote = $this->availability->quote($room, $checkIn, $checkOut, $audience);
 
+        // §16.9: a stay the marketplace brought carries Rihla's commission,
+        // and one whose rate nobody has stated is refused before anything
+        // is written — never recorded as though it earned nothing.
+        $fromMarketplace = ($details['source'] ?? null) === Commission::MARKETPLACE;
+
+        if ($fromMarketplace) {
+            $this->commission->assertSet($property->partner);
+        }
+
         $stay = DB::transaction(fn (): Stay => Stay::create([
             'customer_id' => $customer->getKey(),
             'property_id' => $property->getKey(),
@@ -113,7 +123,12 @@ class StayBooking
             'requested_at' => now(),
             'special_requests' => $details['special_requests'] ?? null,
             'source' => $details['source'] ?? null,
+            'created_via' => $details['created_via'] ?? Stay::VIA_GUEST,
         ]));
+
+        if ($fromMarketplace) {
+            $this->commission->snapshot($stay, $property->partner);
+        }
 
         // §15.6 (Phase 11): a Malé room is the owner's own, so there is no
         // partner to ring and nothing to wait for. The dates are taken now

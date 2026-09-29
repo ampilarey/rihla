@@ -5,6 +5,7 @@ use App\Http\Middleware\FamilySession;
 use App\Http\Middleware\PortalSession;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\StaySession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,6 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'portal' => PortalSession::class,
             'family' => FamilySession::class,
+            // A guest's own stay — §16.7. Its own session, never the portal's.
+            'my-stay' => StaySession::class,
             // The service registry's gate — §15.3 (Phase 8.1). A route
             // names the service it belongs to: 'service:stays_guesthouses'.
             'service' => EnsureServiceEnabled::class,
