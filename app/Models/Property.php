@@ -295,6 +295,16 @@ class Property extends Model
         return $this->hasManyThrough(CalendarFeed::class, RoomType::class);
     }
 
+    /**
+     * Promotions and long-stay discounts — §16 Phase 16.
+     *
+     * @return HasMany<StayDiscount, $this>
+     */
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(StayDiscount::class);
+    }
+
     /** @return HasMany<PropertyUnit, $this> */
     public function units(): HasMany
     {

@@ -263,6 +263,8 @@ final class Anonymisation
         // A listing's add-ons and their prices — §16 Phase 15. Product
         // content; what a guest picked lives on their stay's bill.
         'property_addons',
+        // A listing's promotions and long-stay discounts — §16 Phase 16.
+        'stay_discounts',
         // Who works for which host, and in which role — §16.13. The people
         // are `users`, scrubbed above; the join names nobody.
         'host_memberships',

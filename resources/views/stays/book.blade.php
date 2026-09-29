@@ -39,6 +39,16 @@
                 <dt class="text-ink-muted">{{ __('messages.Prices for') }}</dt>
                 <dd class="text-end">{{ $filters->audience === 'local' ? __('messages.A Maldivian citizen or resident') : __('messages.A visitor to the Maldives') }}</dd>
             </div>
+            @if($quote->discount)
+                <div class="flex justify-between gap-4">
+                    <dt class="text-ink-muted">{{ trans_choice('messages.:count night|:count nights', $quote->nights(), ['count' => $quote->nights()]) }}</dt>
+                    <dd class="text-end">{{ $quote->subtotal()->format() }}</dd>
+                </div>
+                <div class="flex justify-between gap-4 text-success-dark">
+                    <dt>{{ __('messages.Includes :name — :percent% off', ['name' => $quote->discount['name'], 'percent' => $quote->discount['percent']]) }}</dt>
+                    <dd class="text-end">−{{ $quote->discountAmount()->format() }}</dd>
+                </div>
+            @endif
             <div class="flex justify-between gap-4 border-t border-gray-200 pt-2 text-base font-bold">
                 <dt>{{ __('messages.Total') }}</dt>
                 <dd class="text-end">{{ $quote->total()->format() }}</dd>
