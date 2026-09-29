@@ -7,6 +7,7 @@ use App\Filament\Resources\Properties\Pages\EditProperty;
 use App\Filament\Resources\Properties\Pages\ListProperties;
 use App\Filament\Resources\Properties\RelationManagers\AddonsRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
+use App\Filament\Resources\Properties\RelationManagers\CalendarFeedsRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\PhotosRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RoomTypesRelationManager;
@@ -62,6 +63,7 @@ class PropertyResource extends Resource
             UnitsRelationManager::class,
             PhotosRelationManager::class,
             AddonsRelationManager::class,
+            CalendarFeedsRelationManager::class,
         ];
     }
 

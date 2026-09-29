@@ -138,6 +138,7 @@ final class Forgetting
         'operations_log_entries' => 'Written about a departure and read by the whole group; scrubbing one for one person destroys the record for the rest.',
         'announcements' => 'Sent to a whole departure.',
         'host_invitations' => 'An invitation to work for a guesthouse — a supplier\'s staff, not a customer.',
+        'calendar_feeds' => 'A guesthouse\'s link to its own calendar on another site — a business\'s, not a customer\'s.',
         'host_pages' => 'A guesthouse\'s own page — a business\'s words and contact links, not a customer\'s.',
         'departure_flights' => 'The flights a whole departure takes. Nothing in a row is about one customer.',
         'departure_checklist_items' => 'What the office has to do before a whole departure leaves.',

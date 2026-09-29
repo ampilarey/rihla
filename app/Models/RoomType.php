@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Translatable\HasTranslations;
 
 /**
@@ -61,6 +62,16 @@ class RoomType extends Model
     public function property(): BelongsTo
     {
         return $this->belongsTo(Property::class);
+    }
+
+    /**
+     * Another site's calendar for this room — §16 Phase 16.
+     *
+     * @return HasOne<CalendarFeed, $this>
+     */
+    public function calendarFeed(): HasOne
+    {
+        return $this->hasOne(CalendarFeed::class);
     }
 
     /** @return HasMany<Rate, $this> */
