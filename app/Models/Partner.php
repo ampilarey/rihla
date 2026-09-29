@@ -182,6 +182,27 @@ class Partner extends Model
         return $this->hasMany(Property::class)->orderBy('sort_order');
     }
 
+    /** @return HasMany<Review, $this> */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
+     * The host's rating across every listing, or null before the first
+     * visible review — §16.11.
+     *
+     * @return array{average: float, count: int}|null
+     */
+    public function rating(): ?array
+    {
+        $count = $this->reviews()->visible()->count();
+
+        return $count > 0
+            ? ['average' => round((float) $this->reviews()->visible()->avg('rating'), 1), 'count' => $count]
+            : null;
+    }
+
     /**
      * The host's own page — §16.8.
      *

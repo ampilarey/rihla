@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Package;
 use App\Models\Property;
+use App\Models\Review;
 use App\Models\RoomType;
+use App\Models\Stay;
 use App\Support\Services;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -193,17 +195,42 @@ class StaysSeoTest extends TestCase
     // ── What it deliberately does not say ────────────────────────────────
 
     /**
-     * There is no review system anywhere on this site, so there is nothing
-     * to aggregate. Stars in the markup that the page does not show is the
-     * exact policy violation the whole class is written around.
+     * No rating until a guest's review is actually public — §16.11. Stars
+     * in the markup that the page does not show is the exact policy
+     * violation the whole class is written around. `starRating` is an
+     * official classification, which a guesthouse does not have.
      */
     public function test_no_rating_is_invented(): void
     {
-        $schema = $this->schema($this->property());
+        $property = $this->property();
 
+        // Nothing written; one waiting to be published; one hidden.
+        $this->assertArrayNotHasKey('aggregateRating', $this->schema($property));
+
+        $stay = fn () => Stay::factory()->create(['property_id' => $property->id, 'room_type_id' => RoomType::factory()->create(['property_id' => $property->id])->id, 'status' => Stay::COMPLETED]);
+        Review::factory()->waiting()->create(['stay_id' => $stay()->id, 'rating' => 5]);
+        Review::factory()->hidden()->create(['stay_id' => $stay()->id, 'rating' => 1]);
+
+        $schema = $this->schema($property);
         $this->assertArrayNotHasKey('aggregateRating', $schema);
         $this->assertArrayNotHasKey('review', $schema);
         $this->assertArrayNotHasKey('starRating', $schema);
+    }
+
+    /** And present, from the same visible reviews the page shows, once one is. */
+    public function test_the_rating_is_the_visible_reviews(): void
+    {
+        $property = $this->property();
+        $stay = fn () => Stay::factory()->create(['property_id' => $property->id, 'room_type_id' => RoomType::factory()->create(['property_id' => $property->id])->id, 'status' => Stay::COMPLETED]);
+
+        Review::factory()->create(['stay_id' => $stay()->id, 'rating' => 5]);
+        Review::factory()->create(['stay_id' => $stay()->id, 'rating' => 4]);
+        Review::factory()->hidden()->create(['stay_id' => $stay()->id, 'rating' => 1]);
+
+        $rating = $this->schema($property)['aggregateRating'];
+
+        $this->assertSame('4.5', $rating['ratingValue']);
+        $this->assertSame(2, $rating['reviewCount'], 'A hidden review counts for nothing.');
     }
 
     /**

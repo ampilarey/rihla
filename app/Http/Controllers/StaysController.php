@@ -109,7 +109,7 @@ class StaysController extends Controller
 
         $found = $filters->apply(
             Property::query()->whereIn('id', $listable->modelKeys())
-        )->with(['roomTypes', 'partner.page'])->get();
+        )->with(['roomTypes', 'partner.page'])->withRating()->get();
 
         if ($filters->hasDates()) {
             $found = $found->filter(fn (Property $property): bool => $this->hasAnythingFree($property, $filters));
@@ -186,6 +186,12 @@ class StaysController extends Controller
             // card with no price is not an answer to the question.
             'price' => $found->sortBy(fn (Property $property): int => $property->cheapestRateFor($filters->audience)->minor ?? PHP_INT_MAX),
             'newest' => $found->sortByDesc(fn (Property $property): int => (int) $property->created_at?->getTimestamp()),
+            // §16.11: best rated first; a listing nobody has reviewed yet
+            // after every one somebody has, rather than scored as zero.
+            'rating' => $found->sortBy([
+                fn (Property $a, Property $b): int => ($b->rating()['average'] ?? -1) <=> ($a->rating()['average'] ?? -1),
+                fn (Property $a, Property $b): int => ($b->rating()['count'] ?? 0) <=> ($a->rating()['count'] ?? 0),
+            ]),
             default => $found->sortBy([['sort_order', 'asc'], ['id', 'asc']]),
         };
     }
@@ -285,6 +291,9 @@ class StaysController extends Controller
             'shareCard' => $this->shareCardUrl($property),
             'hasFactSheet' => in_array(app()->getLocale(), self::SHEET_LOCALES, true),
             'socialSettings' => Setting::getSocialSettings(),
+            // §16.11: visible reviews only, newest first.
+            'rating' => $property->rating(),
+            'reviews' => $property->reviews()->visible()->with('customer')->latest('submitted_at')->paginate(10, ['*'], 'reviews'),
         ]);
     }
 

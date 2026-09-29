@@ -61,6 +61,15 @@
         </p>
     </section>
 
+    @if(session('status'))
+        <p role="status" dir="auto" class="mb-6 rounded-xl border-s-4 border-s-success bg-cream-deep px-4 py-3 text-sm text-ink">{{ session('status') }}</p>
+    @endif
+
+    {{-- §16.11: once the stay is over, the review — or the one they wrote. --}}
+    @if($stay->status === \App\Models\Stay::COMPLETED)
+        @include('stays._review', ['stay' => $stay, 'action' => route('my-stay.review')])
+    @endif
+
     <section class="card mb-6" aria-labelledby="my-stay-bill-heading">
         <h2 id="my-stay-bill-heading" dir="auto" class="mb-3 text-lg font-bold text-ink">{{ __('messages.The bill') }}</h2>
         <dl dir="auto" class="space-y-2 text-sm text-ink">

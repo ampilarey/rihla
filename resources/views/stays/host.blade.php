@@ -24,8 +24,8 @@
 @section('content')
 @php($primary = $page->primary())
 @php($order = $page->layout === \App\Models\HostPage::GRID
-    ? ['listings', 'about', 'gallery', 'map', 'faq', 'contact']
-    : ['about', 'listings', 'gallery', 'map', 'faq', 'contact'])
+    ? ['listings', 'about', 'reviews', 'gallery', 'map', 'faq', 'contact']
+    : ['about', 'listings', 'reviews', 'gallery', 'map', 'faq', 'contact'])
 
 <div style="font-family: {{ $page->fontStack() }};">
 
@@ -63,6 +63,12 @@
                                 · <span class="ltr ms-1" dir="ltr">{{ $partner->registration_number }}</span>
                             @endif
                         </span>
+                        @if($rating)
+                            <span dir="auto" class="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-1 font-medium text-ink">
+                                <span aria-hidden="true" class="me-1 text-gold-600">★</span>
+                                {{ number_format($rating['average'], 1) }} · {{ trans_choice('messages.:count review|:count reviews', $rating['count'], ['count' => $rating['count']]) }}
+                            </span>
+                        @endif
                         @if($partner->recommended_at)
                             <span dir="auto" class="inline-flex items-center rounded-full bg-cream-deep px-3 py-1 font-medium text-ink">
                                 {{ __('messages.Rihla recommends') }}
@@ -154,6 +160,10 @@
                                  role="region" aria-label="{{ __('messages.Map') }}"></div>
                         </section>
                     @endif
+                    @break
+
+                @case('reviews')
+                    @include('stays._reviews', ['reviews' => $reviews, 'rating' => $rating, 'headingColour' => $primary])
                     @break
 
                 @case('faq')

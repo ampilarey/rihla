@@ -481,6 +481,22 @@ class Seo
             $schema['numberOfRooms'] = $count;
         }
 
+        // §16.11: only once a guest's review is actually public, and from
+        // the same query the page shows — a hidden review counts for
+        // nothing here either. Structured data claiming a rating the page
+        // does not show is the kind of markup search engines penalise.
+        $rating = $property->rating();
+
+        if ($rating !== null) {
+            $schema['aggregateRating'] = [
+                '@type' => 'AggregateRating',
+                'ratingValue' => (string) $rating['average'],
+                'reviewCount' => $rating['count'],
+                'bestRating' => '5',
+                'worstRating' => '1',
+            ];
+        }
+
         foreach ($rooms as $room) {
             $offer = self::roomOffer($room, $url);
 

@@ -148,6 +148,7 @@
                         <option value="recommended" @selected($filters->sort === 'recommended')>{{ __('messages.Recommended') }}</option>
                         <option value="price" @selected($filters->sort === 'price')>{{ __('messages.Lowest price') }}</option>
                         <option value="newest" @selected($filters->sort === 'newest')>{{ __('messages.Newest') }}</option>
+                        <option value="rating" @selected($filters->sort === 'rating')>{{ __('messages.Best rated') }}</option>
                     </select>
                 </div>
 
@@ -207,6 +208,13 @@
                             </p>
 
                             <p dir="auto" class="mt-2 grow text-sm text-ink-muted">{{ $property->summary }}</p>
+
+                            @if($stars = $property->rating())
+                                <p dir="auto" class="mt-2 text-sm text-ink">
+                                    <span aria-hidden="true" class="text-gold-600">★</span>
+                                    {{ number_format($stars['average'], 1) }} · {{ trans_choice('messages.:count review|:count reviews', $stars['count'], ['count' => $stars['count']]) }}
+                                </p>
+                            @endif
 
                             @php($from = $property->cheapestRateFor($filters->audience))
                             @if($from)

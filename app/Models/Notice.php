@@ -77,6 +77,14 @@ class Notice extends Model
     public const STAY_REQUESTED = 'stay_requested';
 
     /**
+     * The stay is over and the guest has not reviewed it — §16.11. Raised
+     * a day after check-out, once. The staff line mints the invitation
+     * link on the stay itself (it is a credential and is never stored in a
+     * notice), and the guest's own stay page carries the form meanwhile.
+     */
+    public const REVIEW_REQUESTED = 'review_requested';
+
+    /**
      * A closed list, because every one of these is raised from a record
      * that already exists. There is no notice for anything this system
      * cannot observe — which is what stops it inventing news.
@@ -88,7 +96,7 @@ class Notice extends Model
         self::DOCUMENT_NEEDED, self::DOCUMENT_REJECTED,
         self::VISA_ISSUED, self::PERMIT_ISSUED, self::DEPARTURE_SOON,
         self::STAY_CONFIRMED, self::DEPOSIT_DUE, self::BALANCE_DUE, self::CHECK_IN_SOON,
-        self::STAY_REQUESTED,
+        self::STAY_REQUESTED, self::REVIEW_REQUESTED,
     ];
 
     /**
@@ -100,7 +108,7 @@ class Notice extends Model
      *
      * @var list<string>
      */
-    public const ONCE = [self::STAY_REQUESTED];
+    public const ONCE = [self::STAY_REQUESTED, self::REVIEW_REQUESTED];
 
     /**
      * The ones a customer must act on, as opposed to be pleased about.
@@ -303,6 +311,7 @@ class Notice extends Model
             self::BALANCE_DUE => 'Balance due',
             self::CHECK_IN_SOON => 'Check-in coming up',
             self::STAY_REQUESTED => 'Stay requested',
+            self::REVIEW_REQUESTED => 'Ask for a review',
             default => 'Unknown',
         };
     }

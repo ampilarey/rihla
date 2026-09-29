@@ -63,6 +63,17 @@ return [
     ],
 
     /*
+    | Guests' reviews — §16.11. A review goes public by itself this long
+    | after it is written, so a person at Rihla has time to hide one that
+    | should not be shown; and the invitation is raised this long after
+    | check-out, when the guest is home but still remembers.
+    */
+    'reviews' => [
+        'publish_after_hours' => (int) env('STAYS_REVIEW_PUBLISH_AFTER_HOURS', 48),
+        'ask_after_days' => (int) env('STAYS_REVIEW_ASK_AFTER_DAYS', 1),
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Stay references
     |--------------------------------------------------------------------------

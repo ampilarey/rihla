@@ -67,6 +67,12 @@
                     <span aria-hidden="true">·</span> {{ \App\Models\Property::kindLabel($property->kind) }}
                 @endif
             </p>
+            @if($rating)
+                <p dir="auto" class="mt-1 text-sm text-ink">
+                    <span aria-hidden="true" class="text-gold-600">★</span>
+                    <a href="#stay-reviews-heading" class="underline hover:no-underline">{{ number_format($rating['average'], 1) }} · {{ trans_choice('messages.:count review|:count reviews', $rating['count'], ['count' => $rating['count']]) }}</a>
+                </p>
+            @endif
             {{-- §16.8: the host's own page, when they have published one. --}}
             @if($hostPage = $property->hostPageUrl())
                 <p dir="auto" class="mt-1 text-sm text-ink-muted">
@@ -318,6 +324,8 @@
                 @endif
             </ul>
         </section>
+
+        @include('stays._reviews', ['reviews' => $reviews, 'rating' => $rating])
 
         {{-- Where it is — §16.7. Only when somebody has placed it; the map
              loads when scrolled near, and the link works without it. --}}

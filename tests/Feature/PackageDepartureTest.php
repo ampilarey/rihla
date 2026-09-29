@@ -57,6 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `reviews` and `review_invitations` hang off `stays`
+        // (§16.11), and `reviews` off `customers` too.
+        __DIR__.'/../../database/migrations/2026_09_30_110000_create_reviews.php',
         // Newest of all: `stay_accesses` hangs off `stays` (§16.7).
         __DIR__.'/../../database/migrations/2026_09_29_130000_create_stay_accesses.php',
         // Newest of all: §16's marketplace columns put foreign keys on

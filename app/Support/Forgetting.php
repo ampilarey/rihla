@@ -102,6 +102,11 @@ final class Forgetting
         // the register is.
         'stay_charges' => 'stay',
         'stay_accesses' => 'stay',
+        // A guest's review of their stay, and the link that asked for it —
+        // §16.11. Reached through the stay; the stars survive, the words
+        // do not.
+        'reviews' => 'stay',
+        'review_invitations' => 'stay',
 
         'enquiry_notes' => 'enquiry',
         'document_versions' => 'document',
