@@ -40,6 +40,8 @@ class PropertyFactory extends Factory
             'min_nights' => 2,
             'currency' => 'USD',
             'is_published' => true,
+            // Live, as every property entered before §16 was.
+            'approval' => Property::APPROVED,
         ];
     }
 

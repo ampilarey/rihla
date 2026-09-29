@@ -27,7 +27,20 @@ class PartnerFactory extends Factory
             'pricing_model' => Partner::NET_RATE,
             'green_tax_mode' => Partner::GREEN_TAX_AT_PROPERTY,
             'is_active' => true,
+            // A factory partner is a live one, as every partner entered
+            // before §16 was. Not fillable, and factories run unguarded.
+            'verification' => Partner::VERIFIED,
+            'status' => Partner::STATUS_ACTIVE,
         ];
+    }
+
+    /** A host who has signed up and nobody at Rihla has checked. */
+    public function unverified(): static
+    {
+        return $this->state(fn (): array => [
+            'verification' => Partner::UNVERIFIED,
+            'status' => Partner::STATUS_PENDING,
+        ]);
     }
 
     public function commissionBased(int $pct = 15): static

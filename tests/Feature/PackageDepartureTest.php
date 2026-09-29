@@ -57,6 +57,15 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: §16's marketplace columns put foreign keys on
+        // `stays` (into `property_units` and `users`) and on `payments`
+        // (into `partners`), and `stay_charges` hangs off `stays`.
+        __DIR__.'/../../database/migrations/2026_09_29_110000_prepare_stays_for_many_hosts.php',
+        // Then: the audience columns on `stays` and `rates`. No foreign key,
+        // but left recorded while `stays` is dropped and re-created below,
+        // the re-created table would come back without `audience` and the
+        // migration would never run again to add it.
+        __DIR__.'/../../database/migrations/2026_09_29_100000_give_stays_two_audiences.php',
         // Newest of all: `departure_checklist_items` hangs off `departures`
         // (§8.3), so it goes before the departures can.
         __DIR__.'/../../database/migrations/2026_09_25_110000_create_departure_checklists.php',

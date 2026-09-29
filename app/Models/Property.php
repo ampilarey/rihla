@@ -33,7 +33,7 @@ class Property extends Model
     use HasFactory, HasTranslations;
 
     protected $fillable = [
-        'partner_id', 'type', 'slug', 'island',
+        'partner_id', 'type', 'kind', 'slug', 'island', 'atoll', 'latitude', 'longitude',
         'name', 'summary', 'description', 'house_rules', 'check_in_instructions',
         'amenities', 'check_in_time', 'check_out_time', 'cover_image',
         'instant_book', 'min_nights', 'currency',
@@ -51,6 +51,41 @@ class Property extends Model
 
     /** @var list<string> */
     public const TYPES = [self::GUESTHOUSE, self::RENTAL];
+
+    // ── What a guest is actually renting — §16.5 ─────────────────────────
+    //
+    // `type` picks the door the property is sold through; `kind` says what
+    // is behind it. A Malé rental may be one room or a whole flat, and a
+    // guest choosing between them needs to know which.
+
+    public const KIND_GUESTHOUSE = 'guesthouse';
+
+    public const KIND_WHOLE_HOME = 'whole_home';
+
+    public const KIND_APARTMENT = 'apartment';
+
+    public const KIND_PRIVATE_ROOM = 'private_room';
+
+    /** @var list<string> */
+    public const KINDS = [self::KIND_GUESTHOUSE, self::KIND_WHOLE_HOME, self::KIND_APARTMENT, self::KIND_PRIVATE_ROOM];
+
+    // ── Whether Rihla has approved the listing — §16.6 ───────────────────
+    //
+    // Not fillable. A host edits their listing; only Rihla approves it, and
+    // a form that forgot to strip this would let a host publish themselves.
+
+    public const DRAFT = 'draft';
+
+    public const PENDING = 'pending';
+
+    public const APPROVED = 'approved';
+
+    public const CHANGES_REQUESTED = 'changes_requested';
+
+    public const WITHDRAWN = 'withdrawn';
+
+    /** @var list<string> */
+    public const APPROVALS = [self::DRAFT, self::PENDING, self::APPROVED, self::CHANGES_REQUESTED, self::WITHDRAWN];
 
     /**
      * Slugs a property may never take — §15.4 (Phase 9.4).
@@ -102,6 +137,10 @@ class Property extends Model
         'free_cancel_days' => 'integer',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     // ── The house booking policy — §15.2 decision 2 ──────────────────────
@@ -133,6 +172,7 @@ class Property extends Model
         'deposit_pct' => self::DEFAULT_DEPOSIT_PCT,
         'balance_days_before' => self::DEFAULT_BALANCE_DAYS_BEFORE,
         'free_cancel_days' => self::DEFAULT_FREE_CANCEL_DAYS,
+        'approval' => self::DRAFT,
     ];
 
     protected static function booted(): void
@@ -150,6 +190,13 @@ class Property extends Model
             if (in_array($property->slug, self::RESERVED_SLUGS, true)) {
                 $property->slug .= '-stay';
             }
+        });
+
+        // The database cascades the rows; only the model can take the
+        // files. A property deleted with its photographs still on disk is
+        // the leak AGENTS.md records under "a generator with no counterpart".
+        static::deleting(function (self $property): void {
+            $property->photos()->get()->each->delete();
         });
     }
 
@@ -194,6 +241,24 @@ class Property extends Model
     public function blockedDates(): HasManyThrough
     {
         return $this->hasManyThrough(BlockedDate::class, RoomType::class)->orderBy('date');
+    }
+
+    /** @return HasMany<PropertyPhoto, $this> */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(PropertyPhoto::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** @return HasMany<PropertyUnit, $this> */
+    public function units(): HasMany
+    {
+        return $this->hasMany(PropertyUnit::class)->orderBy('sort_order')->orderBy('label');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     /** @return HasMany<Stay, $this> */

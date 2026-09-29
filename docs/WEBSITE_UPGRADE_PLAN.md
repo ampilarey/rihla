@@ -2344,17 +2344,17 @@ BML proof.
 2. ~~`config/marketplace.php`; `Audience`; dual rates on `room_types` and
    `rates`; `Availability::quote()` by audience; `GreenTax` by audience; the
    stay's `audience`, currency and snapshot.~~ **Done:** a tourist pays the property's own currency (unchanged, so every existing price stands) and a local pays `marketplace.currencies.local`; a night with no price for the audience raises `NotSoldToAudience` rather than quoting zero; seasons carry an audience; Green Tax is skipped for locals unless `stays.green_tax.applies_to_locals`; the admin forms take a local rate and a season audience (`StayAudienceTest`).
-3. `property_units`, `properties.kind / atoll / latitude / longitude / approval`,
+3. ~~`property_units`, `properties.kind / atoll / latitude / longitude / approval`,
    `property_photos` with variants generated and forgotten; `partners`'
    verification, status, settlement and slug columns; `stays`' commission and
-   source columns; `payments.collected_by`; `stay_charges`.
+   source columns; `payments.collected_by`; `stay_charges`.~~ **Done:** one migration (`2026_09_29_110000_prepare_stays_for_many_hosts`) backfills every existing partner as verified and active with a unique slug and every existing property as approved — they were all entered by staff after a phone call — with literals, never constants; a partner or property entered through `/staff` is verified or approved as it is saved, and anything else starts at `unverified`/`draft`. Verification, status, settlement, `is_rihla`, approval, the commission snapshots and `payments.collected_by` are not fillable. A photo's original and variants go when it is replaced or deleted, including through a deleted listing or room type, whose database cascade fires no model event. A Malé rental's `kind` is left null rather than guessed (`MarketplaceFoundationTest`).
 4. `RESERVED_SLUGS` gains `hosts`, `book`, `search`; the route order test
    (`StaysPublicPagesTest::test_the_strand_routes_are_not_shadowed`) extended.
 5. Rihla's own host record (`is_rihla`, `full_collection`, commission 0),
    created by a migration that finds-or-creates by a fixed slug — data written
    as literals, never `Brand::`-style constants (D95).
-6. Both privacy lists and `DEPENDENT_MIGRATIONS` updated; `Anonymisation::unclassified()`
-   and `Forgetting::unreached()` both empty.
+6. ~~Both privacy lists and `DEPENDENT_MIGRATIONS` updated; `Anonymisation::unclassified()`
+   and `Forgetting::unreached()` both empty.~~ **Done** with item 3: `stay_charges` is scrubbed and reached through its stay; photos and units are kept; a partner's slug is scrubbed with its name (a new `slug` stand-in), as are the verification note, suspension reason and registration document. Both §16 migrations are in `DEPENDENT_MIGRATIONS` — the audience one too, because leaving it recorded while `stays` is dropped and re-created brings the table back without `audience`.
 *Tested by planting:* a second `hold()` on the last unit-night fails on MySQL
 with the lock named (`StayLockTest` extended for the audience path); a
 marketplace stay with a null commission is refused.

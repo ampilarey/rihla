@@ -206,6 +206,8 @@ class Anonymise extends Command
             // pointer is dead either way; this says so instead of failing
             // the whole run on a NOT NULL constraint.
             'gone' => '(file deleted)',
+            // Unique per row, for a unique column minted from a name.
+            'slug' => 'placeholder-'.$id,
             default => null,
         };
     }

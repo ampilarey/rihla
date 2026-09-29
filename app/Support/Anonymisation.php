@@ -42,6 +42,8 @@ final class Anonymisation
      * - `text`    — "Placeholder text, scrubbed for the test server."
      * - `token`   — 64 random hex characters, so old links stop working
      * - `gone`    — "(file deleted)", for a file pointer that cannot be null
+     * - `slug`    — "placeholder-41", unique per row, for a URL minted
+     *               from a name the same row scrubs
      * - `null`    — emptied outright, which the column must allow
      *
      * @var array<string, array<string, string>>
@@ -67,6 +69,13 @@ final class Anonymisation
             'name' => 'name', 'contact_name' => 'name', 'email' => 'email',
             'phone' => 'phone', 'whatsapp' => 'phone',
             'allotment_notes' => 'text', 'contract_notes' => 'text',
+            // The storefront slug is minted from the real name, so it
+            // would carry the business straight through the scrub above.
+            'slug' => 'slug',
+            // §16.5: why Rihla verified, refused or suspended a host is a
+            // judgement about a named business owner.
+            'registration_document_path' => 'null',
+            'verification_note' => 'text', 'suspended_reason' => 'text',
         ],
         // Every account, the administrators included. The password hash is
         // left alone rather than set to something known: nobody should be
@@ -85,6 +94,10 @@ final class Anonymisation
         // test server with no stays on it cannot be used to reproduce
         // anything about stays.
         'stays' => ['special_requests' => 'text', 'cancellation_reason' => 'text'],
+        // A line on a stay's bill — §16.5. The amount is money and stays;
+        // the description is typed by a host at the desk and can say
+        // anything about the guest ("birthday cake for Aishath").
+        'stay_charges' => ['description' => 'text'],
         // The guest register — §15.6. Names and government identifiers for
         // people who are not even Rihla's customers: one person books a
         // room for four, and the other three never agreed to anything.
@@ -213,6 +226,10 @@ final class Anonymisation
         // calendar. Nobody is named in either.
         'rates',
         'blocked_dates',
+        // A listing's photographs and its physical rooms — §16.5. Pictures
+        // of a building and "Room 4, first floor"; nobody is named.
+        'property_photos',
+        'property_units',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',

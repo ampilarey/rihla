@@ -97,6 +97,11 @@ final class Forgetting
         // way a traveller's records are reached through the traveller.
         'stay_guests' => 'stay',
 
+        // A stay's bill — §16.5. The host may have written the guest into
+        // a line ("cake for Aishath"); reached through the stay, the way
+        // the register is.
+        'stay_charges' => 'stay',
+
         'enquiry_notes' => 'enquiry',
         'document_versions' => 'document',
         'incident_notes' => 'incident',
