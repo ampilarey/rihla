@@ -106,6 +106,10 @@ final class Anonymisation
         // An invitation to work for a host — §16.13. The address is a
         // person's and the token a credential.
         'host_invitations' => ['email' => 'email', 'token_hash' => 'token'],
+        // A host's own page — §16.8. The words are a business's and stay;
+        // the WhatsApp number and the social handles may well be the
+        // owner's own, as the partner row's are.
+        'host_pages' => ['whatsapp' => 'phone', 'instagram' => 'null', 'facebook' => 'null'],
         // The guest register — §15.6. Names and government identifiers for
         // people who are not even Rihla's customers: one person books a
         // room for four, and the other three never agreed to anything.

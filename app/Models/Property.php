@@ -398,6 +398,19 @@ class Property extends Model
      * prices are seasons: a season is a price for some nights, and a card
      * reading "from" one would be quoting a number most dates do not have.
      */
+    /**
+     * The host's own page, when there is one a guest may open — §16.8.
+     * Eager-load `partner.page` where this is asked of many.
+     */
+    public function hostPageUrl(): ?string
+    {
+        $partner = $this->partner;
+
+        return $partner !== null && $partner->isListed() && $partner->page?->isPublished()
+            ? route('stays.host', ['partner' => $partner->slug])
+            : null;
+    }
+
     public function cheapestRateFor(string $audience): ?Money
     {
         if ($audience !== Audience::LOCAL) {

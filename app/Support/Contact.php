@@ -36,6 +36,18 @@ final class Contact
         return $configured !== '' ? $configured : self::FALLBACK;
     }
 
+    /**
+     * A WhatsApp link for somebody else's number — a host's, on their own
+     * page (§16.8). Built here with Rihla's so every `wa.me` link on the
+     * site is written in one place. Null when there are no digits to dial.
+     */
+    public static function whatsappUrlFor(?string $number): ?string
+    {
+        $digits = self::digits($number);
+
+        return $digits === '' ? null : 'https://wa.me/'.$digits;
+    }
+
     public static function whatsappUrl(?string $message = null): string
     {
         $url = 'https://wa.me/'.self::whatsappNumber();

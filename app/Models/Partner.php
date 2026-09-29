@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 /**
@@ -179,6 +180,26 @@ class Partner extends Model
     public function properties(): HasMany
     {
         return $this->hasMany(Property::class)->orderBy('sort_order');
+    }
+
+    /**
+     * The host's own page — §16.8.
+     *
+     * @return HasOne<HostPage, $this>
+     */
+    public function page(): HasOne
+    {
+        return $this->hasOne(HostPage::class);
+    }
+
+    /**
+     * May guests see this host at all? The host half of
+     * {@see Property::scopeListable()}: active and checked by a person at
+     * Rihla. A suspended or unverified host has no page, published or not.
+     */
+    public function isListed(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE && $this->verification === self::VERIFIED;
     }
 
     /**

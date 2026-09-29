@@ -57,17 +57,26 @@ class ShareCard
      */
     public function bytes(Property $property): ?string
     {
-        if (! $this->isSupported() || ! $this->hasCover($property)) {
+        return $this->bytesFor($property->cover_image, $property->slug);
+    }
+
+    /**
+     * The same card from any cover on the public disk, cached under a key
+     * — a host's page uses its own cover (§16.8).
+     */
+    public function bytesFor(?string $cover, string $key): ?string
+    {
+        if (! $this->isSupported() || ! $this->exists($cover)) {
             return null;
         }
 
-        $cached = $this->path($property);
+        $cached = $this->pathFor($cover, $key);
 
         if ($cached !== null && Storage::disk(self::DISK)->exists($cached)) {
             return Storage::disk(self::DISK)->get($cached);
         }
 
-        $png = $this->render($property);
+        $png = $this->render((string) $cover);
 
         if ($png === null) {
             return null;
@@ -90,14 +99,18 @@ class ShareCard
      */
     public function version(Property $property): ?string
     {
-        if (! $this->hasCover($property)) {
+        return $this->versionFor($property->cover_image);
+    }
+
+    public function versionFor(?string $cover): ?string
+    {
+        if (! $this->exists($cover)) {
             return null;
         }
 
         $disk = Storage::disk(self::DISK);
-        $cover = (string) $property->cover_image;
 
-        return substr(hash('xxh128', $cover.'|'.$disk->size($cover)), 0, 12);
+        return substr(hash('xxh128', $cover.'|'.$disk->size((string) $cover)), 0, 12);
     }
 
     public function isSupported(): bool
@@ -107,17 +120,21 @@ class ShareCard
 
     public function hasCover(Property $property): bool
     {
-        return filled($property->cover_image)
-            && Storage::disk(self::DISK)->exists((string) $property->cover_image);
+        return $this->exists($property->cover_image);
     }
 
-    private function path(Property $property): ?string
+    private function exists(?string $cover): bool
     {
-        $version = $this->version($property);
+        return filled($cover) && Storage::disk(self::DISK)->exists((string) $cover);
+    }
+
+    private function pathFor(?string $cover, string $key): ?string
+    {
+        $version = $this->versionFor($cover);
 
         return $version === null
             ? null
-            : self::DIRECTORY.'/'.$property->slug.'-'.$version.'.png';
+            : self::DIRECTORY.'/'.$key.'-'.$version.'.png';
     }
 
     /**
@@ -127,10 +144,10 @@ class ShareCard
      * reads whatever the upload actually was, which is not always what its
      * extension claimed.
      */
-    private function render(Property $property): ?string
+    private function render(string $cover): ?string
     {
         $source = @imagecreatefromstring(
-            Storage::disk(self::DISK)->get((string) $property->cover_image) ?? '',
+            Storage::disk(self::DISK)->get($cover) ?? '',
         );
 
         if ($source === false) {
