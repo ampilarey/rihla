@@ -76,6 +76,10 @@ final class Anonymisation
             // judgement about a named business owner.
             'registration_document_path' => 'null',
             'verification_note' => 'text', 'suspended_reason' => 'text',
+            // §16 Phase 16: where the owner's money goes. The number is
+            // cleared, not replaced — a stand-in account would look like
+            // somewhere a payout could be sent.
+            'payout_account_name' => 'name', 'payout_account_number' => 'null',
         ],
         // Every account, the administrators included. The password hash is
         // left alone rather than set to something known: nobody should be
@@ -262,6 +266,9 @@ final class Anonymisation
         // A host's month in figures — §16.9. A business's takings and
         // Rihla's commission; no guest is named in a row.
         'host_statements',
+        // Transfers Rihla made to a business — §16 Phase 16. An amount, a
+        // date and a bank reference; the account is on `partners`, above.
+        'payouts',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',

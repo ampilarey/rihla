@@ -516,6 +516,13 @@ final class Access
         'review.view',
         'review.update',
 
+        // Paying hosts — §16.9, Phase 16. Read what was sent, and record a
+        // bank transfer against a statement. No update and no delete: a
+        // transfer recorded in error is answered by Finance's bank, not by
+        // rewriting the ledger that says it happened.
+        'payout.viewAny',
+        'payout.create',
+
         'setting.view',
         'setting.update',
 
@@ -1003,6 +1010,8 @@ final class Access
                 ['profit.view', 'kpi.view'],
                 // Reads what was quoted, to reconcile against what came in.
                 $quotationsReadOnly,
+                // §16 Phase 16: the transfers to hosts are Finance's.
+                ['payout.viewAny', 'payout.create'],
             ),
 
             // Answers the phone. Needs to find a booking and read it back to

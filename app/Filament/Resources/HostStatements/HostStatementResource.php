@@ -2,11 +2,18 @@
 
 namespace App\Filament\Resources\HostStatements;
 
+use App\Exceptions\PayoutRefused;
 use App\Filament\Resources\HostStatements\Pages\ListHostStatements;
 use App\Models\HostStatement;
+use App\Services\Hosts\Payouts;
 use App\Services\Hosts\Statements;
+use App\Support\Money;
 use BackedEnum;
+use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -32,9 +39,12 @@ class HostStatementResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
+    /** Whoever runs hosts, and Finance, who pays them (§16 Phase 16). */
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('partner.viewAny') === true;
+        $user = auth()->user();
+
+        return $user?->can('partner.viewAny') === true || $user?->can('payout.viewAny') === true;
     }
 
     public static function canCreate(): bool
@@ -64,12 +74,15 @@ class HostStatementResource extends Resource
                 TextColumn::make('commission_minor')->label('Commission')->state(fn (HostStatement $record): string => $record->money('commission_minor')->format()),
                 TextColumn::make('rihla_holds_minor')->label('Rihla holds for them')->state(fn (HostStatement $record): string => $record->money('rihla_holds_minor')->format()),
                 TextColumn::make('commission_outstanding_minor')->label('Commission to settle')->state(fn (HostStatement $record): string => $record->money('commission_outstanding_minor')->format()),
+                TextColumn::make('paid_out')->label('Paid out')->state(fn (HostStatement $record): string => $record->paidOut()->format()),
+                TextColumn::make('still_owed')->label('Still owed to them')->state(fn (HostStatement $record): string => $record->stillOwed()->format()),
             ])
             ->defaultSort('period_start', 'desc')
             ->filters([
                 SelectFilter::make('partner')->relationship('partner', 'name')->searchable()->preload(),
             ])
             ->recordActions([
+                self::recordPayout(),
                 Action::make('download')
                     ->label('PDF')
                     ->icon('heroicon-o-arrow-down-tray')
@@ -79,6 +92,53 @@ class HostStatementResource extends Resource
                         return response()->streamDownload(fn () => print ($pdf), $record->reference.'.pdf', ['Content-Type' => 'application/pdf']);
                     }),
             ]);
+    }
+
+    /**
+     * Finance records a bank transfer it has already made — §16 Phase 16.
+     * The modal shows where to send it, in full, to the one role that
+     * sends it.
+     */
+    private static function recordPayout(): Action
+    {
+        return Action::make('recordPayout')
+            ->label('Record payout')
+            ->icon('heroicon-o-banknotes')
+            ->authorize(fn (): bool => auth()->user()?->can('payout.create') === true)
+            ->visible(fn (HostStatement $record): bool => $record->stillOwed()->minor > 0)
+            ->modalDescription(function (HostStatement $record): string {
+                $host = $record->partner;
+
+                return $host !== null && $host->hasPayoutDetails()
+                    ? sprintf('Pay into %s · %s · %s. Still owed: %s.', $host->payout_bank_name, $host->payout_account_name, $host->payout_account_number, $record->stillOwed()->format())
+                    : 'This host has not given a bank account yet, so nothing can be recorded. Ask them to add it under Payout details in their panel.';
+            })
+            ->schema(fn (HostStatement $record): array => [
+                TextInput::make('amount')
+                    ->label('Amount sent ('.$record->currency.')')
+                    ->numeric()
+                    ->minValue(1)
+                    ->required()
+                    ->default(fn (): int => intdiv($record->stillOwed()->minor, 100)),
+                DatePicker::make('paid_on')->label('Sent on')->required()->default(now())->maxDate(now()),
+                TextInput::make('reference')->label('Bank reference')->required()->maxLength(120),
+            ])
+            ->action(function (HostStatement $record, array $data, Action $action): void {
+                try {
+                    app(Payouts::class)->record(
+                        $record,
+                        Money::ofMajor((int) $data['amount'], $record->currency),
+                        CarbonImmutable::parse($data['paid_on']),
+                        (string) $data['reference'],
+                        auth()->user(),
+                    );
+                } catch (PayoutRefused $refusal) {
+                    Notification::make()->danger()->title($refusal->getMessage())->send();
+                    $action->halt();
+                }
+
+                Notification::make()->success()->title('Payout recorded')->send();
+            });
     }
 
     public static function getPages(): array

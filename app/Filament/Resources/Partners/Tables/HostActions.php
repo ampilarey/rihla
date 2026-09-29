@@ -6,6 +6,7 @@ use App\Models\Partner;
 use App\Support\EncryptedFile;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -29,10 +30,45 @@ final class HostActions
             self::suspend(),
             self::reinstate(),
             self::recommend(),
+            self::settlement(),
         ])
             ->label('Host')
             ->icon('heroicon-o-shield-check')
             ->visible(fn (): bool => auth()->user()?->can('partner.verify') === true);
+    }
+
+    /**
+     * Who collects the guest's money — §16.9, §16 Phase 16. Applies to
+     * stays requested from now on: each stay keeps the model it was booked
+     * under (`settlement_model_snapshot`), so nothing already agreed with a
+     * guest moves.
+     */
+    private static function settlement(): Action
+    {
+        return Action::make('settlementModel')
+            ->label('Settlement')
+            ->icon('heroicon-o-arrows-right-left')
+            ->visible(fn (Partner $record): bool => ! $record->is_rihla)
+            ->fillForm(fn (Partner $record): array => ['settlement_model' => $record->settlement_model])
+            ->schema([
+                Radio::make('settlement_model')
+                    ->label('Who collects the guest\'s money')
+                    ->options([
+                        Partner::COMMISSION_DEPOSIT => 'Commission deposit — the guest pays Rihla its commission online and the host the rest at the property',
+                        Partner::FULL_COLLECTION => 'Full collection — the guest pays Rihla everything; Rihla pays the host monthly against their statement',
+                    ])
+                    ->required(),
+            ])
+            ->modalDescription('Stays already booked keep the arrangement they were booked under.')
+            ->action(function (Partner $record, array $data): void {
+                $model = in_array($data['settlement_model'] ?? null, Partner::SETTLEMENT_MODELS, true)
+                    ? $data['settlement_model']
+                    : Partner::COMMISSION_DEPOSIT;
+
+                $record->forceFill(['settlement_model' => $model])->save();
+
+                Notification::make()->success()->title('Settlement changed for new stays')->send();
+            });
     }
 
     private static function scan(): Action
