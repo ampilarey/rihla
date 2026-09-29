@@ -129,7 +129,7 @@ class Property extends Model
      *
      * @var list<string>
      */
-    public const RESERVED_SLUGS = ['guesthouses', 'island-holidays', 'rooms', 'hosts', 'book', 'search'];
+    public const RESERVED_SLUGS = ['guesthouses', 'island-holidays', 'rooms', 'hosts', 'book', 'search', 'review'];
 
     /**
      * Per docs/adr/0001-how-content-is-translated.md. `amenities` holds a
@@ -398,6 +398,45 @@ class Property extends Model
      * prices are seasons: a season is a price for some nights, and a card
      * reading "from" one would be quoting a number most dates do not have.
      */
+    /** @return HasMany<Review, $this> */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
+     * The visible reviews' average and count, as two query columns —
+     * `review_average` and `review_count` — for a page listing many.
+     *
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
+     */
+    public function scopeWithRating(Builder $query): Builder
+    {
+        return $query
+            ->withCount(['reviews as review_count' => fn (Builder $reviews) => Review::onlyVisible($reviews)])
+            ->withAvg(['reviews as review_average' => fn (Builder $reviews) => Review::onlyVisible($reviews)], 'rating');
+    }
+
+    /**
+     * The rating a guest is shown, or null before the first visible review
+     * — §16.11. A hidden review counts for nothing.
+     *
+     * @return array{average: float, count: int}|null
+     */
+    public function rating(): ?array
+    {
+        if (array_key_exists('review_count', $this->attributes)) {
+            $count = (int) $this->attributes['review_count'];
+            $average = (float) ($this->attributes['review_average'] ?? 0);
+        } else {
+            $count = $this->reviews()->visible()->count();
+            $average = (float) $this->reviews()->visible()->avg('rating');
+        }
+
+        return $count > 0 ? ['average' => round($average, 1), 'count' => $count] : null;
+    }
+
     /**
      * The host's own page, when there is one a guest may open — §16.8.
      * Eager-load `partner.page` where this is asked of many.

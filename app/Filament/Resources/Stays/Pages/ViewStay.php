@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Stays\Pages;
 use App\Filament\Resources\Stays\StayResource;
 use App\Models\Stay;
 use App\Models\StayAccess;
+use App\Services\Stays\Reviews;
 use App\Services\Stays\StayGatekeeper;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -17,7 +18,7 @@ class ViewStay extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [$this->stayLinkAction()];
+        return [$this->stayLinkAction(), $this->reviewLinkAction()];
     }
 
     /**
@@ -74,6 +75,35 @@ class ViewStay extends ViewRecord
                             ->send();
                     }),
             ]);
+    }
+
+    /**
+     * A link that opens the review form for this stay — §16.11. For the
+     * "Ask for a review" line on the queue: minted when the modal opens,
+     * shown once, stored hashed, spent by the review it brings in.
+     */
+    private function reviewLinkAction(): Action
+    {
+        return Action::make('reviewLink')
+            ->label('Review link')
+            ->icon('heroicon-o-star')
+            ->visible(fn (): bool => auth()->user()?->can('stay.update') === true
+                && $this->stay()->status === Stay::COMPLETED
+                && ! $this->stay()->review()->exists())
+            ->modalHeading('A link to review this stay')
+            ->modalDescription('Good for '.Reviews::INVITATION_DAYS.' days and for one review. Send it on WhatsApp.')
+            ->schema([
+                Textarea::make('link')
+                    ->label('Copy this now — it is not shown again')
+                    ->rows(3)
+                    ->readOnly()
+                    ->default(fn (): string => route('stays.review', [
+                        'locale' => app()->getLocale(),
+                        'token' => app(Reviews::class)->invite($this->stay(), auth()->user()),
+                    ])),
+            ])
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Done');
     }
 
     private function stay(): Stay

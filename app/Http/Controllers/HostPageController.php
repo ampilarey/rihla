@@ -60,6 +60,8 @@ class HostPageController extends Controller
             'faq' => $page->shows('faq') ? $page->faqFor(app()->getLocale()) : [],
             'shareCard' => $this->shareCardUrl($partner, $page),
             'previewing' => $previewing && ! $page->isPublished(),
+            'rating' => $partner->rating(),
+            'reviews' => $partner->reviews()->visible()->with('customer')->latest('submitted_at')->paginate(10, ['*'], 'reviews'),
         ]);
 
         if ($previewing) {

@@ -32,6 +32,7 @@ use App\Http\Controllers\SecondFactorController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StaffInvoiceController;
 use App\Http\Controllers\StayCheckoutController;
+use App\Http\Controllers\StayReviewController;
 use App\Http\Controllers\StaysController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\WaitlistController;
@@ -207,6 +208,12 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // The share kit — §15.4 (Phase 9.5). Both declared *before* the
     // catch-all below, for the same ordering reason: `{property}` would
     // otherwise swallow `card.png` as a slug.
+    // A review invitation — §16.11. Before `{property}`: "review" is a
+    // reserved listing slug.
+    Route::get('/stays/review/{token}', [StayReviewController::class, 'show'])->name('stays.review');
+    Route::post('/stays/review/{token}', [StayReviewController::class, 'store'])
+        ->middleware('throttle:stay-book')->name('stays.review.store');
+
     // A host's own page — §16.8. Before `{property}` for the same reason:
     // "hosts" is a reserved listing slug, and these must be matched first.
     Route::get('/stays/hosts/{partner:slug}/card.png', [HostPageController::class, 'shareCard'])->name('stays.host.card');
@@ -236,6 +243,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         Route::post('/my-stay/cancel', [MyStayController::class, 'cancel'])->name('my-stay.cancel');
         Route::get('/my-stay/confirmation.pdf', [MyStayController::class, 'confirmation'])->name('my-stay.confirmation');
         Route::post('/my-stay/leave', [MyStayController::class, 'leave'])->name('my-stay.leave');
+        Route::post('/my-stay/review', [StayReviewController::class, 'storeFromStay'])
+            ->middleware('throttle:stay-book')->name('my-stay.review');
     });
 
     // The Ziyarah Guide (§7.2). The manifest is declared before {slug} or

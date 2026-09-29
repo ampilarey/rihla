@@ -509,6 +509,13 @@ final class Access
         // says who may start that flow on somebody else's behalf.
         'stay.book',
 
+        // Guests' reviews — §16.11. Read, and hide (with a reason the author
+        // is shown) or unhide. No create — a review is a guest's — and no
+        // delete: a hidden review is kept, the record of what was said.
+        'review.viewAny',
+        'review.view',
+        'review.update',
+
         'setting.view',
         'setting.update',
 
@@ -601,7 +608,7 @@ final class Access
             self::PERMISSIONS,
             fn (string $permission) => in_array(
                 strtok($permission, '.'),
-                ['partner', 'property', 'roomType', 'rate', 'blockedDate', 'stay'],
+                ['partner', 'property', 'roomType', 'rate', 'blockedDate', 'stay', 'review'],
                 true,
             ),
         ));

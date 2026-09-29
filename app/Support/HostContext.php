@@ -8,6 +8,7 @@ use App\Models\Property;
 use App\Models\PropertyPhoto;
 use App\Models\PropertyUnit;
 use App\Models\Rate;
+use App\Models\Review;
 use App\Models\RoomType;
 use App\Models\Stay;
 use App\Models\User;
@@ -54,7 +55,7 @@ final class HostContext
     public static function owns(Partner $host, Model $record): bool
     {
         $partnerId = match (true) {
-            $record instanceof Property => $record->partner_id,
+            $record instanceof Property, $record instanceof Review => $record->partner_id,
             $record instanceof RoomType, $record instanceof PropertyPhoto,
             $record instanceof PropertyUnit, $record instanceof Stay => $record->property?->partner_id,
             $record instanceof Rate, $record instanceof BlockedDate => $record->roomType?->property?->partner_id,

@@ -93,6 +93,36 @@ final class Sweep
             }
         }
 
+        // Stays that are over and not yet reviewed — §16.11. Asked once, a
+        // day after check-out, and not for a stay that ended so long ago
+        // the guest would not remember it.
+        $askAfter = (int) config('stays.reviews.ask_after_days', 1);
+
+        $finished = Stay::query()
+            ->where('status', Stay::COMPLETED)
+            ->whereNotNull('checked_out_at')
+            ->where('checked_out_at', '<=', now()->subDays($askAfter))
+            ->where('checked_out_at', '>=', now()->subDays(30))
+            ->whereDoesntHave('review')
+            ->with(['property', 'customer'])
+            ->get();
+
+        foreach ($finished as $stay) {
+            $house = $stay->property?->getTranslation('name', 'en') ?: 'the guesthouse';
+            $name = trim((string) strtok((string) $stay->customer?->name, ' '));
+
+            $notice = Notice::raise(
+                $stay,
+                Notice::REVIEW_REQUESTED,
+                'How was '.$house.($name !== '' ? ', '.$name : '').'?',
+                'A few words and a star rating help the next guest decide — and help '.$house.'. Your stay page has the form.',
+            );
+
+            if ($notice !== null) {
+                $raised[Notice::REVIEW_REQUESTED]++;
+            }
+        }
+
         return $raised;
     }
 

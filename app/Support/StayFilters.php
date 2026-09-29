@@ -23,7 +23,7 @@ use Illuminate\Http\Request;
 final class StayFilters
 {
     /** The orders a search can be put in — §16.7. By rating arrives with reviews (Phase 14). */
-    public const SORTS = ['recommended', 'price', 'newest'];
+    public const SORTS = ['recommended', 'price', 'newest', 'rating'];
 
     /**
      * @param  list<string>  $kinds
