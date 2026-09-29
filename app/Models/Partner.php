@@ -179,6 +179,18 @@ class Partner extends Model
         return $this->hasMany(Property::class)->orderBy('sort_order');
     }
 
+    /**
+     * Rihla's own host record, made by a migration — §16 Phase 12.5.
+     *
+     * Found by the flag, not the slug: `data:anonymise` rewrites every
+     * partner's slug on the test server, and the flag is the only thing
+     * that says which row is the company.
+     */
+    public static function rihla(): ?self
+    {
+        return self::where('is_rihla', true)->first();
+    }
+
     /** @return BelongsTo<User, $this> */
     public function verifiedBy(): BelongsTo
     {

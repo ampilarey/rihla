@@ -10,6 +10,7 @@ use App\Models\RoomType;
 use App\Models\Stay;
 use App\Support\Services;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
@@ -319,5 +320,32 @@ class StaysPublicPagesTest extends TestCase
         $this->guesthouseIsOn();
 
         $this->get('/en/stays/guesthouses')->assertOk();
+    }
+
+    /**
+     * Every word a route under `/stays/` takes is one no listing may.
+     *
+     * Read from the router rather than listed again here, so the day
+     * §16's `/stays/search` or `/stays/hosts/{host}` is added, this fails
+     * until the word is reserved — instead of a listing already slugged
+     * `search` quietly becoming unreachable. The marketplace's three are
+     * reserved ahead of their routes for the same reason.
+     */
+    public function test_every_literal_stays_route_is_a_reserved_slug(): void
+    {
+        $taken = [];
+
+        foreach (Route::getRoutes() as $route) {
+            if (preg_match('#^\{locale\}/stays/([^/{]+)#', $route->uri(), $match) === 1) {
+                $taken[] = $match[1];
+            }
+        }
+
+        $this->assertContains('guesthouses', $taken, 'The route table was not read.');
+        $this->assertSame([], array_values(array_diff(array_unique($taken), Property::RESERVED_SLUGS)));
+
+        foreach (['hosts', 'book', 'search'] as $marketplace) {
+            $this->assertContains($marketplace, Property::RESERVED_SLUGS);
+        }
     }
 }

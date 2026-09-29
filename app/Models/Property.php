@@ -99,11 +99,18 @@ class Property extends Model
      *
      * The short URL is deliberate. `rihla.mv/ar/stays/maafushi-view` is the
      * whole sales conversation over WhatsApp, which is what the owner asked
-     * the share kit for, and three reserved words is a small price.
+     * the share kit for, and a handful of reserved words is a small price.
+     *
+     * `hosts`, `book` and `search` are the marketplace's own pages — §16,
+     * Phase 12.4 — reserved now, before any route claims them, so that no
+     * listing minted in the meantime is sitting on the address one of them
+     * will need. `StaysPublicPagesTest` checks this list against every
+     * literal route under `/stays/`, so a new route cannot be added
+     * without it.
      *
      * @var list<string>
      */
-    public const RESERVED_SLUGS = ['guesthouses', 'island-holidays', 'rooms'];
+    public const RESERVED_SLUGS = ['guesthouses', 'island-holidays', 'rooms', 'hosts', 'book', 'search'];
 
     /**
      * Per docs/adr/0001-how-content-is-translated.md. `amenities` holds a
