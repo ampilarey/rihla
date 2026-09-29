@@ -58,4 +58,20 @@ return [
         'url' => env('HOST_TERMS_URL'),
     ],
 
+    /*
+    | Host subdomains — §16 Phase 16. `coral.rihla.mv` opens Coral's page.
+    | Off (null) until the owner adds a wildcard DNS record (`*.rihla.mv`)
+    | and a certificate that covers it; set the bare domain here then.
+    | The names below are never read as a host: they are the site's own, or
+    | the hosting panel's, and a host who took one would shadow it.
+    */
+    'host_subdomains' => [
+        'domain' => env('HOST_SUBDOMAIN_DOMAIN'),
+        'reserved' => [
+            'www', 'test', 'staging', 'stage', 'dev', 'demo', 'app', 'api', 'admin', 'staff', 'host', 'hosts',
+            'mail', 'webmail', 'smtp', 'imap', 'pop', 'ftp', 'cpanel', 'whm', 'webdisk', 'cpcalendars', 'cpcontacts',
+            'autodiscover', 'autoconfig', 'ns1', 'ns2', 'cdn', 'static', 'assets', 'status',
+        ],
+    ],
+
 ];

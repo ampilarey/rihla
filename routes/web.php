@@ -16,6 +16,7 @@ use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HostJoinController;
 use App\Http\Controllers\HostPageController;
+use App\Http\Controllers\HostSubdomainController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\LeaderController;
@@ -43,6 +44,18 @@ use App\Models\Media;
 use App\Models\Trip;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+
+// Host subdomains — §16 Phase 16. `{slug}.rihla.mv` opens the host's page.
+// Registered first, and only when a domain is configured: a route with no
+// domain matches every host name, so these must be found before the
+// catch-alls below or `coral.rihla.mv/` would serve the homepage.
+if (filled($hostSubdomainDomain = config('marketplace.host_subdomains.domain'))) {
+    Route::domain('{hostSlug}.'.$hostSubdomainDomain)
+        ->where(['hostSlug' => HostSubdomainController::pattern()])
+        ->group(function (): void {
+            Route::get('/{any?}', HostSubdomainController::class)->where('any', '.*')->name('host.subdomain');
+        });
+}
 
 // Public routes
 //
