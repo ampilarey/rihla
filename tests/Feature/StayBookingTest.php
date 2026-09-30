@@ -9,6 +9,8 @@ use App\Models\Property;
 use App\Models\Rate;
 use App\Models\RoomType;
 use App\Models\Stay;
+use App\Services\Payments\Ledger;
+use App\Services\Stays\StayAllocator;
 use App\Services\Stays\StayBooking;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -236,6 +238,41 @@ class StayBookingTest extends TestCase
         $this->assertSame(Stay::HELD, $still->status);
         $this->assertSame(2000, $still->paid_minor);
         $this->assertNotNull($still->expires_at);
+    }
+
+    /**
+     * A hold whose deposit is in is never expired by the clock.
+     *
+     * If the money was recorded by any path that did not also confirm —
+     * a reconcile that stopped short, a gateway callback that died half way
+     * — the lapsed-hold sweep used to expire the stay and put its dates back
+     * on sale with the deposit kept. The money decides, not the clock.
+     * Security review of §16.
+     */
+    public function test_a_paid_hold_is_confirmed_rather_than_expired(): void
+    {
+        $stay = $this->booking->confirmWithPartner($this->request());
+        $payment = $this->booking->requestDeposit($stay, 'bank_transfer');
+        app(Ledger::class)->reconcile($payment);
+        $stay->forceFill(['expires_at' => now()->subHour()])->save();
+
+        $expired = app(StayAllocator::class)->reclaim($this->room);
+
+        $this->assertSame(0, $expired);
+        $this->assertSame(Stay::CONFIRMED, $stay->fresh()->status);
+
+        $this->expectException(RoomNotAvailable::class);
+        $this->request();
+    }
+
+    /** And an unpaid one still is — the sweep did not stop working. */
+    public function test_an_unpaid_lapsed_hold_still_expires(): void
+    {
+        $stay = $this->booking->confirmWithPartner($this->request());
+        $stay->forceFill(['expires_at' => now()->subHour()])->save();
+
+        $this->assertSame(1, app(StayAllocator::class)->reclaim($this->room));
+        $this->assertSame(Stay::EXPIRED, $stay->fresh()->status);
     }
 
     /** The cached total is the Ledger's, and it is a sum rather than a counter. */

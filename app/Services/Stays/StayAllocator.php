@@ -211,14 +211,27 @@ class StayAllocator
             ->lapsed()
             ->get();
 
+        $expired = 0;
+
         foreach ($lapsed as $stay) {
+            $stay->forceFill(['expires_at' => null])->save();
+
+            // The deposit arrived and nobody confirmed the stay: the money
+            // decides, not the clock. Expiring it would keep the deposit and
+            // resell the dates (security review, §16).
+            if ($stay->depositIsPaid()) {
+                $stay->transitionTo(Stay::CONFIRMED);
+
+                continue;
+            }
+
             // Through the status machine rather than a bulk update: expiry
             // is a transition like any other, and a mass `update()` would
             // skip the one place that validates them.
-            $stay->forceFill(['expires_at' => null])->save();
             $stay->transitionTo(Stay::EXPIRED);
+            $expired++;
         }
 
-        return $lapsed->count();
+        return $expired;
     }
 }

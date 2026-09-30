@@ -155,7 +155,7 @@ class PackageForm
                     ->helperText('Nobody in this market publishes this. It is the question older pilgrims ask first.'),
 
                 FileUpload::make('cover_image')
-                    ->image()
+                    ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                     ->directory('packages')
                     ->imageEditor(),
 

@@ -56,7 +56,7 @@ class WhySectionForm
                 // controller did it by hand and this upload would not.
                 FileUpload::make('image_path')
                     ->label('Picture above the heading')
-                    ->image()
+                    ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                     ->disk('public')
                     ->directory('why')
                     ->maxSize(2048),

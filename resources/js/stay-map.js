@@ -30,7 +30,7 @@ export function startStayMap() {
     }
 
     points = points
-        .map((point) => ({ lat: Number(point.lat), lng: Number(point.lng), name: point.name || '' }))
+        .map((point) => ({ lat: Number(point.lat), lng: Number(point.lng), name: String(point.name || '') }))
         .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
 
     if (points.length === 0) {
@@ -53,13 +53,18 @@ export function startStayMap() {
         }).addTo(map);
 
         points.forEach((point) => {
+            // An element, never a string: Leaflet writes a string tooltip
+            // through innerHTML, and the name is whatever the host typed.
+            const label = document.createElement('span');
+            label.textContent = point.name;
+
             L.circleMarker([point.lat, point.lng], {
                 radius: 10,
                 color: '#2E2245',
                 weight: 2,
                 fillColor: '#5F498A',
                 fillOpacity: 0.9,
-            }).addTo(map).bindTooltip(point.name);
+            }).addTo(map).bindTooltip(label);
         });
 
         if (points.length > 1) {

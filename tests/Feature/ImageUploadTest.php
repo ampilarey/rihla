@@ -227,4 +227,40 @@ class ImageUploadTest extends TestCase
 
         $this->assertSame(0, GuideStep::count());
     }
+
+    /**
+     * Filament's `image()` accepts `image/*`, and `image/svg+xml` is in it —
+     * an SVG can carry a script, and the public disk serves it from our own
+     * origin. So every image field names the raster types it takes, and none
+     * of them names SVG. Security review of §16.
+     */
+    public function test_every_image_field_names_raster_types_and_never_svg(): void
+    {
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(app_path('Filament')));
+        $checked = 0;
+
+        foreach ($files as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $source = (string) file_get_contents($file->getPathname());
+            $this->assertStringNotContainsStringIgnoringCase('svg', $source, $file->getPathname().' mentions SVG.');
+
+            foreach (preg_split('/FileUpload::make\(/', $source) ?: [] as $i => $field) {
+                if ($i === 0 || ! str_contains(strtok($field, ';') ?: '', '->image()')) {
+                    continue;
+                }
+
+                $checked++;
+                $this->assertStringContainsString(
+                    '->acceptedFileTypes(',
+                    strtok($field, ';') ?: '',
+                    $file->getPathname().' has an image() upload that accepts any image/* — SVG included.',
+                );
+            }
+        }
+
+        $this->assertGreaterThan(10, $checked, 'The scan found the image fields.');
+    }
 }

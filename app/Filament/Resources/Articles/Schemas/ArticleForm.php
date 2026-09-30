@@ -44,7 +44,7 @@ class ArticleForm
                     ->native(false)
                     ->helperText('Blank is a draft. A future time schedules it — nobody has to remember to press anything.'),
 
-                FileUpload::make('cover_image')->image()->directory('articles')->imageEditor(),
+                FileUpload::make('cover_image')->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])->directory('articles')->imageEditor(),
             ]),
         ]);
     }

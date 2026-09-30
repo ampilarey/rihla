@@ -9,11 +9,16 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Payment;
+use App\Models\Property;
+use App\Models\RoomType;
+use App\Models\Stay;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\SlipVault;
+use App\Services\Stays\StayBooking;
 use App\Support\Access;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -134,6 +139,68 @@ class PaymentAdminTest extends TestCase
         $this->assertSame(Payment::SUCCEEDED, $payment->fresh()->status);
         $this->assertSame(1_000_000, $booking->fresh()->paid_minor);
         $this->assertSame($finance->getKey(), $payment->fresh()->reviewed_by);
+    }
+
+    /**
+     * A stay's deposit, reconciled from this screen, confirms the stay.
+     *
+     * It used to reconcile and stop: the money counted, the hold kept
+     * running, and when it lapsed the stay expired and its dates went back
+     * on sale — with the guest's deposit kept. Security review of §16.
+     */
+    public function test_reconciling_a_stay_deposit_confirms_the_stay(): void
+    {
+        [$stay, $payment] = $this->heldStayWithDeposit();
+
+        Livewire::actingAs($this->staff(Access::FINANCE))
+            ->test(ListPayments::class)
+            ->callTableAction('reconcile', $payment, ['note' => 'On the statement']);
+
+        $this->assertSame(Payment::SUCCEEDED, $payment->fresh()->status);
+        $this->assertSame(Stay::CONFIRMED, $stay->fresh()->status);
+        $this->assertNull($stay->fresh()->expires_at);
+    }
+
+    /**
+     * The hold lapsed and somebody else took the room before the money was
+     * matched. The money is still recorded — it is in the account — and
+     * finance is told plainly that the guest needs a refund or new dates.
+     */
+    public function test_a_deposit_for_dates_already_gone_is_recorded_and_says_so(): void
+    {
+        [$stay, $payment] = $this->heldStayWithDeposit();
+        $stay->forceFill(['expires_at' => now()->subHour()])->save();
+
+        $booking = app(StayBooking::class);
+        $booking->confirmWithPartner($booking->request(Customer::factory()->create(), $stay->roomType, $stay->check_in, $stay->check_out, adults: 2));
+
+        Livewire::actingAs($this->staff(Access::FINANCE))
+            ->test(ListPayments::class)
+            ->callTableAction('reconcile', $payment, ['note' => 'On the statement'])
+            ->assertNotified('Recorded as received — but the dates have gone');
+
+        $this->assertSame(Payment::SUCCEEDED, $payment->fresh()->status);
+        $this->assertSame(Stay::EXPIRED, $stay->fresh()->status);
+    }
+
+    /** @return array{Stay, Payment} */
+    private function heldStayWithDeposit(): array
+    {
+        $property = Property::factory()->create(['currency' => 'USD', 'min_nights' => 1, 'deposit_pct' => 30]);
+        $room = RoomType::factory()->create(['property_id' => $property->id, 'quantity' => 1, 'base_rate_minor' => 10000]);
+        $booking = app(StayBooking::class);
+
+        $stay = $booking->confirmWithPartner($booking->request(
+            Customer::factory()->create(),
+            $room,
+            CarbonImmutable::today()->addDays(40),
+            CarbonImmutable::today()->addDays(42),
+            adults: 2,
+        ));
+        $payment = $booking->requestDeposit($stay, 'bank_transfer');
+        $payment->forceFill(['status' => Payment::AWAITING_REVIEW])->save();
+
+        return [$stay, $payment];
     }
 
     public function test_refusing_needs_a_reason(): void

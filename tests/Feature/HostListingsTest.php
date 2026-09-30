@@ -7,7 +7,9 @@ use App\Filament\Host\Resources\Listings\Pages\CreateListing;
 use App\Filament\Host\Resources\Listings\Pages\EditListing;
 use App\Filament\Host\Resources\Listings\Pages\ListListings;
 use App\Filament\Resources\Properties\Pages\ListProperties;
+use App\Filament\Resources\Properties\RelationManagers\BlockedDatesRelationManager;
 use App\Filament\Resources\Properties\RelationManagers\RoomTypesRelationManager;
+use App\Models\BlockedDate;
 use App\Models\HostMembership;
 use App\Models\Partner;
 use App\Models\Property;
@@ -226,6 +228,31 @@ class HostListingsTest extends TestCase
             ->assertHasNoTableActionErrors();
 
         $this->assertSame(8500, RoomType::where('property_id', $listing->id)->sole()->base_rate_minor);
+    }
+
+    /**
+     * A night a host blocks is recorded as theirs, whatever the request says.
+     * The form offers "Rihla" and "an imported calendar" to staff; inside
+     * /host neither is the host's to claim — security review of §16.
+     */
+    public function test_a_host_blocks_a_night_as_themselves(): void
+    {
+        $listing = Property::factory()->create(['partner_id' => $this->host->id]);
+        $room = RoomType::factory()->create(['property_id' => $listing->id]);
+
+        $this->inPanel($this->host);
+
+        Livewire::actingAs($this->owner)
+            ->test(BlockedDatesRelationManager::class, ['ownerRecord' => $listing, 'pageClass' => EditListing::class])
+            ->callTableAction('create', data: [
+                'room_type_id' => $room->id,
+                'date' => '2027-12-24',
+                'source' => BlockedDate::ADMIN,
+                'note' => 'Family using it.',
+            ])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame(BlockedDate::PARTNER, BlockedDate::where('room_type_id', $room->id)->sole()->source);
     }
 
     /** Outside /host, the shared policies answer exactly as before. */

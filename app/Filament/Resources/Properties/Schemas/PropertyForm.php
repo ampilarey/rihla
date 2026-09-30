@@ -121,7 +121,7 @@ class PropertyForm
                 TimePicker::make('check_out_time')->seconds(false),
 
                 FileUpload::make('cover_image')
-                    ->image()
+                    ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                     ->directory('properties')
                     ->imageEditor()
                     ->columnSpanFull(),
