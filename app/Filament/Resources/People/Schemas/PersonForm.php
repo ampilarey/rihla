@@ -45,7 +45,7 @@ class PersonForm
 
                 FileUpload::make('photo_path')
                     ->label('Photograph')
-                    ->image()
+                    ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                     ->directory('people')
                     ->imageEditor()
                     ->helperText('Optional. Initials are drawn when there is none.'),

@@ -63,7 +63,7 @@ class FeaturesRelationManager extends RelationManager
 
             FileUpload::make('image_path')
                 ->label('Picture')
-                ->image()
+                ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                 ->disk('public')
                 ->directory('why/features')
                 ->maxSize(2048),

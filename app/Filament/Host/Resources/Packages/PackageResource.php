@@ -92,7 +92,7 @@ class PackageResource extends Resource
                     ->default('local')
                     ->required(),
 
-                FileUpload::make('cover_image')->image()->directory('packages')->maxSize(8192),
+                FileUpload::make('cover_image')->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])->directory('packages')->maxSize(8192),
             ]),
         ]);
     }

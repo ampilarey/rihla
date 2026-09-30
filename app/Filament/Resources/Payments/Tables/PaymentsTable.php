@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Payments\Tables;
 
+use App\Exceptions\RoomNotAvailable;
 use App\Models\Payment;
+use App\Models\Stay;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\SlipVault;
+use App\Services\Stays\StayBooking;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -197,6 +200,27 @@ class PaymentsTable
                     ->placeholder('Matched against the BML statement for 12 March'),
             ])
             ->action(function (Payment $record, array $data): void {
+                // A stay's deposit confirms the stay — through the one path
+                // that does both (security review, §16): reconciling alone
+                // left a paid hold to expire and its dates to be resold.
+                if ($record->payable instanceof Stay) {
+                    try {
+                        app(StayBooking::class)->settle($record, $data['note'] ?: null);
+                    } catch (RoomNotAvailable) {
+                        Notification::make()->warning()
+                            ->title('Recorded as received — but the dates have gone')
+                            ->body('The hold lapsed before the money arrived and the room was taken. Refund the guest or offer other dates.')
+                            ->persistent()
+                            ->send();
+
+                        return;
+                    }
+
+                    Notification::make()->success()->title('Recorded as received')->send();
+
+                    return;
+                }
+
                 app(Ledger::class)->reconcile($record, $data['note'] ?: null);
 
                 Notification::make()->success()->title('Recorded as received')->send();

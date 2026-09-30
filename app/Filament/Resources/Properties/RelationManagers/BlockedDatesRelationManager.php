@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Properties\RelationManagers;
 
 use App\Models\BlockedDate;
 use App\Models\Property;
+use App\Support\HostContext;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -57,6 +58,10 @@ class BlockedDatesRelationManager extends RelationManager
                         BlockedDate::ICAL => 'An imported calendar',
                     ])
                     ->default(BlockedDate::ADMIN)
+                    // A host's block is the host's. Inside /host they may
+                    // not sign it as Rihla or as an imported feed — the
+                    // import replaces its own rows, and "Rihla" is ours.
+                    ->hidden(fn (): bool => HostContext::current() !== null)
                     ->required(),
 
                 TextInput::make('note')
@@ -93,7 +98,11 @@ class BlockedDatesRelationManager extends RelationManager
                     BlockedDate::ICAL => 'An imported calendar',
                 ]),
             ])
-            ->headerActions([CreateAction::make()])
+            ->headerActions([
+                CreateAction::make()->mutateDataUsing(fn (array $data): array => HostContext::current() === null
+                    ? $data
+                    : [...$data, 'source' => BlockedDate::PARTNER]),
+            ])
             ->recordActions([EditAction::make(), DeleteAction::make()])
             ->toolbarActions([
                 BulkActionGroup::make([DeleteBulkAction::make()]),

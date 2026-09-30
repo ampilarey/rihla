@@ -21,6 +21,7 @@ use App\Observers\CoverImageObserver;
 use App\Observers\LostStayObserver;
 use App\Services\Stays\StayGatekeeper;
 use App\Support\InitialsAvatar;
+use App\Support\LivewireReturns;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -98,6 +99,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->defineRateLimits();
+
+        // No Livewire call returns a model to the browser — see the class.
+        \Livewire\on('call', fn () => fn (mixed $return): mixed => LivewireReturns::forBrowser($return));
 
         // `nonce="@cspNonce"` on an inline <script>. The middleware puts the
         // same value in the Content-Security-Policy header, and the browser

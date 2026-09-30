@@ -120,13 +120,13 @@ class MyPage extends Page
                             ->required(),
                         FileUpload::make('logo_path')
                             ->label('Logo')
-                            ->image()
+                            ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->disk('public')
                             ->directory('host-pages')
                             ->maxSize(2048),
                         FileUpload::make('cover_path')
                             ->label('Cover photograph')
-                            ->image()
+                            ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->disk('public')
                             ->directory('host-pages')
                             ->maxSize(5120)

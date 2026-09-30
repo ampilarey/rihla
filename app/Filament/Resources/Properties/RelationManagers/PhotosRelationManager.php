@@ -37,7 +37,7 @@ class PhotosRelationManager extends RelationManager
         return $schema->components([
             FileUpload::make('path')
                 ->label('Photo')
-                ->image()
+                ->image()->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                 ->disk('public')
                 ->directory('properties/photos')
                 ->maxSize(8192)

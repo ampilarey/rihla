@@ -252,6 +252,39 @@ class HostPageTest extends TestCase
         $this->assertNull($this->page->fresh()->colour_accent);
     }
 
+    /**
+     * An SVG is a document, not a picture: it can carry a script, and the
+     * public disk serves it from our own origin. A host's logo is the one
+     * upload a stranger to Rihla controls — security review of §16.
+     */
+    public function test_an_svg_logo_is_refused(): void
+    {
+        Storage::fake('public');
+        $owner = $this->member(HostRole::OWNER);
+        $this->inPanel($owner);
+
+        $svg = UploadedFile::fake()->createWithContent(
+            'logo.svg',
+            '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(document.cookie)</script></svg>',
+        );
+
+        Livewire::actingAs($owner)
+            ->test(MyPage::class)
+            ->fillForm(['logo_path' => $svg])
+            ->call('save')
+            ->assertHasFormErrors(['logo_path']);
+
+        $this->assertNull($this->page->fresh()->logo_path);
+
+        Livewire::actingAs($owner)
+            ->test(MyPage::class)
+            ->fillForm(['logo_path' => UploadedFile::fake()->image('logo.png', 400, 400)])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertNotNull($this->page->fresh()->logo_path, 'A PNG logo is still accepted.');
+    }
+
     public function test_publishing_and_taking_offline(): void
     {
         $this->page->forceFill(['published_at' => null])->save();
