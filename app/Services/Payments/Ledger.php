@@ -123,7 +123,23 @@ final class Ledger
             // operator is redundant there and static analysis says so. This
             // also reads as what it means — refund what was asked for, or
             // the whole payment.
-            $minor = $amount instanceof Money ? $amount->minor : $payment->amount_minor;
+            $minor = abs($amount instanceof Money ? $amount->minor : $payment->amount_minor);
+
+            // Under the lock, so two refunds of one payment cannot both
+            // read the same "left to refund" (security review, §16).
+            $payment->refresh();
+
+            if ($payment->status !== Payment::SUCCEEDED || $payment->isRefund()) {
+                throw new \InvalidArgumentException('Only money that was received can be refunded.');
+            }
+
+            $left = $payment->amount_minor + (int) $payment->refunds()
+                ->where('status', Payment::SUCCEEDED)
+                ->sum('amount_minor');
+
+            if ($minor === 0 || $minor > $left) {
+                throw new \InvalidArgumentException('Up to '.Money::ofMinor(max(0, $left), $payment->currency)->format().' of that payment is left to refund.');
+            }
 
             $refund = Payment::create([
                 'payable_type' => $payment->payable_type,
@@ -135,7 +151,7 @@ final class Ledger
                 // Negative whichever sign the caller passed: a refund of
                 // MVR 500 and a refund of MVR -500 mean the same thing to
                 // the person typing it.
-                'amount_minor' => -abs($minor),
+                'amount_minor' => -$minor,
                 'paid_at' => now(),
                 'notes' => $reason,
             ]);

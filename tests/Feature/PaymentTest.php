@@ -199,6 +199,44 @@ class PaymentTest extends TestCase
         $this->assertSame(-250_000, $refund->amount_minor);
     }
 
+    /**
+     * A refund can never give back more than came in — on one refund or
+     * across several. Before the security review of §16 a second click on
+     * "Refund", or a figure typed with an extra zero, took the paid total
+     * below zero and nothing said so.
+     */
+    public function test_a_payment_cannot_be_refunded_past_what_it_brought_in(): void
+    {
+        $booking = $this->booking();
+        $payment = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+        $this->ledger()->reconcile($payment);
+
+        $this->ledger()->refund($payment, Money::ofMajor(6_000));
+
+        try {
+            $this->ledger()->refund($payment, Money::ofMajor(5_000));
+            $this->fail('A refund past what is left went through.');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('left to refund', $e->getMessage());
+        }
+
+        $this->ledger()->refund($payment, Money::ofMajor(4_000));
+        $this->assertSame(0, $booking->fresh()->paid_minor);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->ledger()->refund($payment, null, 'Again');
+    }
+
+    /** Only money received: not a payment still waiting, and not a refund. */
+    public function test_only_received_money_is_refunded(): void
+    {
+        $booking = $this->booking();
+        $pending = Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->ledger()->refund($pending, null, 'Never arrived');
+    }
+
     // ── The state machine ────────────────────────────────────────────────
 
     /**

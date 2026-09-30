@@ -53,7 +53,7 @@ final class SlipVault
             // account and a name, which is the same class of thing as a
             // passport scan.
             $path = 'payment-slips/'.$payment->getKey()
-                .'/'.Str::random(40).'.'.($file->getClientOriginalExtension() ?: 'bin');
+                .'/'.Str::random(40).'.'.($file->extension() ?: 'bin');
 
             EncryptedFile::put($this->disk(), $path, (string) file_get_contents($file->getRealPath()));
 
@@ -61,7 +61,7 @@ final class SlipVault
                 'slip_disk' => $this->disk(),
                 'slip_path' => $path,
                 'slip_original_filename' => $file->getClientOriginalName(),
-                'slip_mime_type' => $file->getClientMimeType(),
+                'slip_mime_type' => $file->getMimeType() ?: 'application/octet-stream',
                 'slip_size_bytes' => $file->getSize() ?: 0,
                 'slip_checksum' => $checksum,
             ])->save();

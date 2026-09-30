@@ -6,6 +6,7 @@ use App\Models\Stay;
 use App\Models\StayAccess;
 use App\Models\User;
 use App\Services\Portal\Gatekeeper;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
@@ -28,6 +29,8 @@ final class StayGatekeeper
     public const SESSION_STAY = 'my_stay.stay';
 
     private const SESSION_UNTIL = 'my_stay.until';
+
+    private const SESSION_OPENED = 'my_stay.opened';
 
     public function issue(Stay $stay, ?User $actor = null): string
     {
@@ -66,8 +69,12 @@ final class StayGatekeeper
      */
     public function open(int $stayId): void
     {
+        // A new session id on the way in, so an id planted before the link
+        // was clicked is not the one that gets the stay (security review).
+        Session::regenerate();
         Session::put(self::SESSION_STAY, $stayId);
         Session::put(self::SESSION_UNTIL, now()->addHours((int) config('portal.session_hours', 12))->timestamp);
+        Session::put(self::SESSION_OPENED, now()->timestamp);
     }
 
     public function stay(): ?Stay
@@ -79,12 +86,23 @@ final class StayGatekeeper
             return null;
         }
 
+        // Cancelling the links ends the sessions they opened, not only the
+        // next click (security review, §16). Sessions from before this was
+        // recorded date from the start of their window.
+        $opened = (int) (Session::get(self::SESSION_OPENED) ?? $until - (int) config('portal.session_hours', 12) * 3600);
+
+        if (StayAccess::where('stay_id', $id)->where('revoked_at', '>=', Carbon::createFromTimestamp($opened))->exists()) {
+            $this->leave();
+
+            return null;
+        }
+
         return Stay::with(['property.partner', 'roomType', 'charges', 'payments'])->find($id);
     }
 
     public function leave(): void
     {
-        Session::forget([self::SESSION_STAY, self::SESSION_UNTIL]);
+        Session::forget([self::SESSION_STAY, self::SESSION_UNTIL, self::SESSION_OPENED]);
     }
 
     public function revokeAllFor(Stay $stay): int

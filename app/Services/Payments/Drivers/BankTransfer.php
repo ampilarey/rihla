@@ -25,6 +25,25 @@ use Illuminate\Support\Facades\Auth;
  */
 final class BankTransfer implements PaymentGateway
 {
+    /**
+     * Slips a customer may have waiting to be checked at once — security
+     * review of §16. Each is a file on a disk with a fixed allowance and a
+     * row in finance's queue; a link that can add them without limit is a
+     * way to fill both.
+     */
+    public const MAX_WAITING = 5;
+
+    /** Whether this payable already has as many unchecked slips as it may. */
+    public function hasTooManyWaiting(Model $payable): bool
+    {
+        return Payment::query()
+            ->where('payable_type', $payable->getMorphClass())
+            ->where('payable_id', $payable->getKey())
+            ->whereIn('status', [Payment::PENDING, Payment::AWAITING_REVIEW])
+            ->where('amount_minor', '>', 0)
+            ->count() >= self::MAX_WAITING;
+    }
+
     public function key(): string
     {
         return 'bank_transfer';

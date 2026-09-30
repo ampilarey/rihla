@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -341,12 +342,21 @@ class BookingController extends Controller
         $paxType = PriceTier::paxTypeForAge($traveller->ageOn($departure->date_start));
         $tier = $departure->tierFor($occupancy, $paxType, $audience) ?? $departure->tierFor($occupancy, audience: $audience);
 
+        // The price was there when the seats were held; if staff removed it
+        // since, the booking stops here rather than seating somebody at
+        // nothing (security review, §16). The transaction rolls back.
+        if ($tier === null) {
+            throw ValidationException::withMessages([
+                'travellers' => __('messages.That price is no longer offered. Please choose again.'),
+            ]);
+        }
+
         $line = $booking->travellers()->create([
             'traveller_id' => $traveller->getKey(),
             'occupancy' => $occupancy,
-            'pax_type' => $tier->pax_type ?? PriceTier::ADULT,
-            'price_tier_id' => $tier?->getKey(),
-            'amount_minor' => $tier->amount_minor ?? 0,
+            'pax_type' => $tier->pax_type,
+            'price_tier_id' => $tier->getKey(),
+            'amount_minor' => $tier->amount_minor,
             'is_lead' => $isLead,
         ]);
 

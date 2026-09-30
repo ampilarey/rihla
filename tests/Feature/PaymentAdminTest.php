@@ -203,6 +203,23 @@ class PaymentAdminTest extends TestCase
         return [$stay, $payment];
     }
 
+    /**
+     * The type a slip is stored and served with is read from its bytes,
+     * never from what the browser said — security review of §16. A JPEG
+     * that arrived claiming to be HTML is still a JPEG.
+     */
+    public function test_a_slip_is_stored_with_the_type_its_contents_have(): void
+    {
+        $payment = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $this->booking()->getKey()]);
+        $real = UploadedFile::fake()->image('slip.jpg');
+        $lying = new UploadedFile($real->getRealPath(), 'slip.html', 'text/html', null, true);
+
+        app(SlipVault::class)->attach($payment, $lying);
+
+        $this->assertSame('image/jpeg', $payment->fresh()->slip_mime_type);
+        $this->assertStringEndsWith('.jpg', (string) $payment->fresh()->slip_path);
+    }
+
     public function test_refusing_needs_a_reason(): void
     {
         $payment = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $this->booking()->getKey()]);

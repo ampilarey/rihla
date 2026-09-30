@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Http;
  *   name that resolves differently a moment later (DNS rebinding) is not
  *   followed there;
  * - **no redirects**, which would otherwise be a second, unchecked address;
- * - fifteen seconds and two megabytes at most.
+ * - fifteen seconds and two megabytes at most, the size checked while it
+ *   downloads rather than after.
  */
 class CalendarFetcher
 {
@@ -54,6 +55,7 @@ class CalendarFetcher
                 ->withOptions([
                     'allow_redirects' => false,
                     'curl' => [CURLOPT_RESOLVE => [$host.':443:'.$address]],
+                    'progress' => self::stopPast(self::MAX_BYTES),
                 ])
                 ->withHeaders(['Accept' => 'text/calendar'])
                 ->get($url);
@@ -80,6 +82,25 @@ class CalendarFetcher
         }
 
         return $body;
+    }
+
+    /**
+     * Stop the download the moment it passes the limit — security review
+     * of §16. Without it the whole body is buffered first and measured
+     * afterwards, so a feed that never ends is read to the timeout: 50 MB
+     * from a local test server was held in full before being refused.
+     * Guzzle ignores this callback's return value, so it throws, and
+     * curl abandons the transfer.
+     *
+     * @return Closure(int, int): void
+     */
+    public static function stopPast(int $maxBytes): Closure
+    {
+        return static function (int $expected, int $received) use ($maxBytes): void {
+            if ($expected > $maxBytes || $received > $maxBytes) {
+                throw new CalendarFeedRefused('The calendar is too large to import.');
+            }
+        };
     }
 
     /** The link's host, if the link is one this may fetch at all. */

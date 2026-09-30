@@ -271,13 +271,19 @@ class PaymentsTable
             ])
             ->modalDescription('The original payment is kept exactly as it is — its date, its reference and its slip are the record of what was actually received. This adds a negative row against it.')
             ->action(function (Payment $record, array $data): void {
-                $refund = app(Ledger::class)->refund(
-                    $record,
-                    filled($data['amount'] ?? null)
-                        ? Money::ofMajor((int) $data['amount'], $record->currency)
-                        : null,
-                    $data['reason'],
-                );
+                try {
+                    $refund = app(Ledger::class)->refund(
+                        $record,
+                        filled($data['amount'] ?? null)
+                            ? Money::ofMajor((int) $data['amount'], $record->currency)
+                            : null,
+                        $data['reason'],
+                    );
+                } catch (\InvalidArgumentException $e) {
+                    Notification::make()->danger()->title('Not refunded')->body($e->getMessage())->send();
+
+                    return;
+                }
 
                 Notification::make()
                     ->success()

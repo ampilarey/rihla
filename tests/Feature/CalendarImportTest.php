@@ -245,6 +245,36 @@ class CalendarImportTest extends TestCase
         app(CalendarFetcher::class)->fetch(self::URL);
     }
 
+    /**
+     * The size is checked while the feed downloads, not after it has all
+     * been held in memory — security review of §16. Measured against a
+     * local server streaming 50 MB: stopped at the limit with the guard,
+     * read in full without it.
+     */
+    public function test_a_feed_is_cut_off_as_soon_as_it_passes_the_limit(): void
+    {
+        Http::fake(function ($request, array $options) {
+            $this->assertIsCallable($options['progress'] ?? null, 'The fetch carries no size guard.');
+
+            return Http::response("BEGIN:VCALENDAR\nEND:VCALENDAR\n");
+        });
+
+        app(CalendarFetcher::class)->fetch(self::URL);
+
+        $guard = CalendarFetcher::stopPast(CalendarFetcher::MAX_BYTES);
+        $guard(0, CalendarFetcher::MAX_BYTES);           // at the limit: fine
+
+        $this->expectExceptionMessage('too large');
+        $guard(0, CalendarFetcher::MAX_BYTES + 1);
+    }
+
+    /** A declared length past the limit is refused before a byte is read. */
+    public function test_a_feed_declaring_too_much_is_refused_at_once(): void
+    {
+        $this->expectExceptionMessage('too large');
+        CalendarFetcher::stopPast(CalendarFetcher::MAX_BYTES)(CalendarFetcher::MAX_BYTES + 1, 0);
+    }
+
     // ── The host adds one ────────────────────────────────────────────────
 
     public function test_a_host_adds_a_calendar_and_it_is_read_at_once_and_removing_it_reopens_the_nights(): void
