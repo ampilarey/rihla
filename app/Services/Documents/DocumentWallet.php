@@ -93,7 +93,7 @@ final class DocumentWallet
                 'disk' => $this->disk(),
                 'path' => $path,
                 'original_filename' => $file->getClientOriginalName(),
-                'mime_type' => $file->getClientMimeType(),
+                'mime_type' => $file->getMimeType() ?: 'application/octet-stream',
                 'size_bytes' => $file->getSize() ?: 0,
                 'checksum' => $checksum,
                 'uploaded_by' => Auth::id(),

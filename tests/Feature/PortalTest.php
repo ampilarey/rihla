@@ -436,6 +436,21 @@ class PortalTest extends TestCase
         }
     }
 
+    /** And it ends a session one of them already opened — security review of §16. */
+    public function test_cancelling_closes_a_session_already_open(): void
+    {
+        $booking = $this->booking();
+        $token = $this->gate()->issue($booking);
+
+        $this->get("/en/portal/enter/{$token}")->assertRedirect('/en/portal');
+        $this->get('/en/portal')->assertOk();
+
+        $this->travel(1)->minutes();
+        $this->gate()->revokeAllFor($booking);
+
+        $this->get('/en/portal')->assertRedirect();
+    }
+
     /** Cancelling one booking's links must not touch another's. */
     public function test_cancelling_is_scoped_to_one_booking(): void
     {

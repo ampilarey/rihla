@@ -222,6 +222,23 @@ class BookingFlowTest extends TestCase
         $this->assertNotNull($booking->package_snapshot);
     }
 
+    /**
+     * The price was there when the seats were held and staff removed it
+     * before the travellers were sent. The booking stops there, not with a
+     * traveller seated at nothing — security review of §16.
+     */
+    public function test_a_price_removed_after_the_hold_stops_the_booking_rather_than_pricing_it_at_nothing(): void
+    {
+        $package = $this->package();
+        $this->holdSeats($package, 1);
+
+        PriceTier::query()->delete();
+
+        $this->post('/en/book/travellers', $this->party(1))->assertSessionHasErrors('travellers');
+
+        $this->assertSame(0, Booking::count());
+    }
+
     /** The hold stops being anonymous, so that expiry can expire the booking too. */
     public function test_the_hold_is_attached_to_the_booking(): void
     {

@@ -12,6 +12,8 @@ use App\Models\RoomType;
 use App\Models\Stay;
 use App\Models\StayAccess;
 use App\Models\User;
+use App\Services\Payments\Drivers\BankTransfer;
+use App\Services\Payments\Ledger;
 use App\Services\Stays\Commission;
 use App\Services\Stays\StayBooking;
 use App\Services\Stays\StayGatekeeper;
@@ -336,6 +338,32 @@ class StayCheckoutTest extends TestCase
             ->assertSessionHas('stay_problem', 'That link is not one of ours. Check it was copied in full.');
     }
 
+    /**
+     * Cancelling the links ends the session one of them already opened.
+     * "It went to the wrong number" is the reason staff press that button,
+     * and the wrong number has usually clicked it by then — security review
+     * of §16. A link issued afterwards opens the stay as usual.
+     */
+    public function test_cancelling_the_links_closes_a_session_already_open(): void
+    {
+        $stay = Stay::factory()->create(['property_id' => $this->property->id, 'room_type_id' => $this->room->id]);
+        $token = app(StayGatekeeper::class)->issue($stay);
+
+        $this->get(route('my-stay.enter', ['locale' => 'en', 'token' => $token]));
+        $this->get(route('my-stay.home', ['locale' => 'en']))->assertOk();
+
+        $this->travel(1)->minutes();
+        app(StayGatekeeper::class)->revokeAllFor($stay);
+
+        $this->get(route('my-stay.home', ['locale' => 'en']))->assertRedirect();
+        $this->get(route('my-stay.home', ['locale' => 'en']))->assertDontSee($stay->reference);
+
+        $this->travel(1)->minutes();
+        $fresh = app(StayGatekeeper::class)->issue($stay);
+        $this->get(route('my-stay.enter', ['locale' => 'en', 'token' => $fresh]));
+        $this->get(route('my-stay.home', ['locale' => 'en']))->assertOk()->assertSee($stay->reference);
+    }
+
     /** Only the hash is stored — a leaked table is not a set of working links. */
     public function test_only_the_hash_of_a_link_is_stored(): void
     {
@@ -367,6 +395,65 @@ class StayCheckoutTest extends TestCase
         $this->assertSame(Payment::AWAITING_REVIEW, $payment->status);
         $this->assertSame(0, $stay->fresh()->paid_minor, 'Nothing is paid until Finance says it arrived.');
         $this->assertSame(Stay::HELD, $stay->fresh()->status);
+    }
+
+    /**
+     * A slip for more than the whole stay costs is refused, and a link can
+     * queue only so many unchecked slips — each is a file on a disk with a
+     * fixed allowance. Security review of §16.
+     */
+    public function test_a_slip_cannot_claim_more_than_is_owed_or_pile_up(): void
+    {
+        Storage::fake('local');
+        Storage::fake(config('payments.slips.disk', 'local'));
+        $this->property->update(['instant_book' => true]);
+        $this->book();
+
+        $this->post(route('my-stay.payments.store', ['locale' => 'en']), [
+            'amount' => 201,
+            'slip' => UploadedFile::fake()->image('slip.jpg'),
+        ])->assertSessionHasErrors('amount');
+        $this->assertSame(0, Payment::count());
+
+        for ($i = 0; $i < BankTransfer::MAX_WAITING; $i++) {
+            $this->post(route('my-stay.payments.store', ['locale' => 'en']), [
+                'amount' => 10,
+                'slip' => UploadedFile::fake()->image('slip.jpg'),
+            ])->assertSessionHasNoErrors();
+        }
+
+        $this->post(route('my-stay.payments.store', ['locale' => 'en']), [
+            'amount' => 10,
+            'slip' => UploadedFile::fake()->image('slip.jpg'),
+        ])->assertSessionHasErrors('slip');
+
+        $this->assertSame(BankTransfer::MAX_WAITING, Payment::count());
+    }
+
+    /**
+     * Cash the host took does not meet the deposit — only money Rihla holds
+     * confirms a stay — so it must not shrink the deposit the guest is asked
+     * for either. Before the security review of §16 the page asked for the
+     * difference, the guest paid it, and the stay stayed held.
+     */
+    public function test_host_cash_does_not_shrink_the_deposit_asked_for(): void
+    {
+        $this->property->update(['instant_book' => true]);
+        $this->book();
+
+        $stay = Stay::sole();
+        $this->assertSame(Stay::HELD, $stay->status);
+
+        // Half the deposit, in cash at the property.
+        $cash = $stay->payments()->create(['method' => Payment::CASH, 'currency' => 'USD', 'amount_minor' => intdiv($stay->deposit_minor, 2), 'paid_at' => now()]);
+        $cash->forceFill(['collected_by' => Payment::COLLECTED_BY_HOST])->save();
+        app(Ledger::class)->reconcile($cash);
+
+        $this->assertFalse($stay->fresh()->depositIsPaid());
+
+        $this->get(route('my-stay.home', ['locale' => 'en']))
+            ->assertOk()
+            ->assertSee('To pay now: '.$stay->deposit()->format(), false);
     }
 
     /** Inside the window agreed on the day: cancelled, and the room goes back. */

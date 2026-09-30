@@ -114,7 +114,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         Route::get('/portal', [PortalController::class, 'home'])->name('portal.home');
         Route::get('/portal/documents', [PortalController::class, 'documents'])->name('portal.documents');
         Route::post('/portal/documents', [PortalController::class, 'storeDocument'])->name('portal.documents.store');
-        Route::post('/portal/payments', [PortalController::class, 'storePayment'])->name('portal.payments.store');
+        Route::post('/portal/payments', [PortalController::class, 'storePayment'])
+            ->middleware('throttle:slip')->name('portal.payments.store');
         Route::post('/portal/leave', [PortalController::class, 'leave'])->name('portal.leave');
 
         // §6.2 puts the family-sharing controls in the pilgrim's hands, so
@@ -257,7 +258,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
 
     Route::middleware('my-stay')->group(function () {
         Route::get('/my-stay', [MyStayController::class, 'home'])->name('my-stay.home');
-        Route::post('/my-stay/payments', [MyStayController::class, 'storePayment'])->name('my-stay.payments.store');
+        Route::post('/my-stay/payments', [MyStayController::class, 'storePayment'])
+            ->middleware('throttle:slip')->name('my-stay.payments.store');
         Route::post('/my-stay/cancel', [MyStayController::class, 'cancel'])->name('my-stay.cancel');
         Route::get('/my-stay/confirmation.pdf', [MyStayController::class, 'confirmation'])->name('my-stay.confirmation');
         Route::post('/my-stay/leave', [MyStayController::class, 'leave'])->name('my-stay.leave');

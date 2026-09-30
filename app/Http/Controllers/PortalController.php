@@ -21,6 +21,7 @@ use App\Support\TravelReadiness;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -332,9 +333,25 @@ class PortalController extends Controller
             ],
         ]);
 
+        $amount = Money::ofMajor((int) $validated['amount'], $booking->currency);
+        $owed = max(0, $booking->balance()->minor);
+
+        // Security review of §16 — the same two limits as /my-stay.
+        if ($amount->minor > $owed) {
+            throw ValidationException::withMessages([
+                'amount' => __('messages.That is more than is owed: :amount.', ['amount' => Money::ofMinor($owed, $booking->currency)->format()]),
+            ]);
+        }
+
+        if (app(BankTransfer::class)->hasTooManyWaiting($booking)) {
+            throw ValidationException::withMessages([
+                'slip' => __('messages.We already have slips waiting to be checked. We will be in touch once they are.'),
+            ]);
+        }
+
         $payment = app(BankTransfer::class)->start(
             $booking,
-            Money::ofMajor((int) $validated['amount'], $booking->currency),
+            $amount,
             [
                 'paid_at' => $validated['paid_at'] ?? null,
                 'payer_name' => $validated['payer_name'] ?? null,

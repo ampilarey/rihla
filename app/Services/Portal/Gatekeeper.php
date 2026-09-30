@@ -5,6 +5,7 @@ namespace App\Services\Portal;
 use App\Models\Booking;
 use App\Models\PortalAccess;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
@@ -34,9 +35,11 @@ use Illuminate\Support\Str;
  */
 final class Gatekeeper
 {
-    private const SESSION_BOOKING = 'portal.booking';
+    public const SESSION_BOOKING = 'portal.booking';
 
     private const SESSION_UNTIL = 'portal.until';
+
+    private const SESSION_OPENED = 'portal.opened';
 
     /**
      * Mint a link for this booking.
@@ -79,8 +82,12 @@ final class Gatekeeper
             'first_used_ip' => $access->first_used_ip ?? $ip,
         ])->save();
 
+        // A new session id on the way in, so an id planted before the link
+        // was clicked is not the one that gets the booking (security review).
+        Session::regenerate();
         Session::put(self::SESSION_BOOKING, $access->booking_id);
         Session::put(self::SESSION_UNTIL, now()->addHours((int) config('portal.session_hours', 12))->timestamp);
+        Session::put(self::SESSION_OPENED, now()->timestamp);
     }
 
     /**
@@ -99,12 +106,23 @@ final class Gatekeeper
             return null;
         }
 
+        // Revoking a link ends the sessions it opened, not only the next
+        // click (security review, §16). Sessions from before this was
+        // recorded date from the start of their window.
+        $opened = (int) (Session::get(self::SESSION_OPENED) ?? $until - (int) config('portal.session_hours', 12) * 3600);
+
+        if (PortalAccess::where('booking_id', $id)->where('revoked_at', '>=', Carbon::createFromTimestamp($opened))->exists()) {
+            $this->leave();
+
+            return null;
+        }
+
         return Booking::with(['departure.package', 'travellers.traveller', 'customer'])->find($id);
     }
 
     public function leave(): void
     {
-        Session::forget([self::SESSION_BOOKING, self::SESSION_UNTIL]);
+        Session::forget([self::SESSION_BOOKING, self::SESSION_UNTIL, self::SESSION_OPENED]);
     }
 
     /** Immediately, without waiting for the link to lapse. */

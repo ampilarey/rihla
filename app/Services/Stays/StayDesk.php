@@ -194,11 +194,15 @@ class StayDesk
             throw new DeskRefusal('This stay is '.str_replace('_', ' ', $stay->status).'; there is nothing to pay for.');
         }
 
-        if ($refund && $amount->minor > $stay->paidToHost()->minor) {
-            throw new DeskRefusal('You can only give back what was paid to you here: '.$stay->paidToHost()->format().'.');
-        }
-
         return DB::transaction(function () use ($stay, $host, $amount, $method, $note, $by, $refund): Payment {
+            // Read under a lock on the stay, so two refunds at once cannot
+            // both see the same cash in hand (security review, §16).
+            Stay::query()->whereKey($stay->getKey())->lockForUpdate()->first();
+
+            if ($refund && $amount->minor > $stay->paidToHost()->minor) {
+                throw new DeskRefusal('You can only give back what was paid to you here: '.$stay->paidToHost()->format().'.');
+            }
+
             $payment = $stay->payments()->create([
                 'method' => $method,
                 'provider' => null,

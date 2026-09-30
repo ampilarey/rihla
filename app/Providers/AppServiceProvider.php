@@ -19,6 +19,7 @@ use App\Models\WhySection;
 use App\Observers\AuditObserver;
 use App\Observers\CoverImageObserver;
 use App\Observers\LostStayObserver;
+use App\Services\Portal\Gatekeeper;
 use App\Services\Stays\StayGatekeeper;
 use App\Support\InitialsAvatar;
 use App\Support\LivewireReturns;
@@ -197,6 +198,15 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('stay-message', fn (Request $request) => Limit::perHour(30)->by(
             'stay-message:'.($request->session()->get(StayGatekeeper::SESSION_STAY) ?? $request->ip()),
         ));
+
+        // Security review of §16: a payment slip, from /my-stay or the
+        // portal. By the stay or booking the link opened rather than by
+        // address — many phones here share one carrier address.
+        RateLimiter::for('slip', fn (Request $request) => Limit::perHour(20)->by('slip:'.(
+            $request->session()->get(StayGatekeeper::SESSION_STAY)
+                ?? $request->session()->get(Gatekeeper::SESSION_BOOKING)
+                ?? $request->ip()
+        )));
 
         RateLimiter::for('password-reset', fn (Request $request) => [
             Limit::perHour(5)->by($request->ip()),

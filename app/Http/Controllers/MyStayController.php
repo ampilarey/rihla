@@ -17,6 +17,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -124,9 +125,12 @@ class MyStayController extends Controller
             ],
         ]);
 
+        $amount = Money::ofMajor((int) $validated['amount'], $stay->currency);
+        $this->refuseUnlikelySlip($stay, $amount, max(0, $stay->total_minor - $stay->paid_minor));
+
         // A claim, never money received: Finance decides whether it
         // arrived, and only then does the stay move (StayBooking::settle).
-        $payment = $this->bank->start($stay, Money::ofMajor((int) $validated['amount'], $stay->currency), [
+        $payment = $this->bank->start($stay, $amount, [
             'paid_at' => $validated['paid_at'] ?? null,
             'payer_name' => $validated['payer_name'] ?? null,
             'payer_reference' => $validated['payer_reference'] ?? null,
@@ -214,12 +218,35 @@ class MyStayController extends Controller
     private function amountDue(Stay $stay): ?Money
     {
         $owed = match ($stay->status) {
-            Stay::HELD => max(0, $stay->deposit_minor - $stay->paid_minor),
+            // Rihla's money only: cash the host took does not meet the
+            // deposit (Stay::depositIsPaid), so it must not shrink it here
+            // either, or the guest pays the figure shown and stays held.
+            Stay::HELD => max(0, $stay->deposit_minor - $stay->paidToRihla()->minor),
             Stay::CONFIRMED => max(0, $stay->total_minor - $stay->paid_minor),
             default => 0,
         };
 
         return $owed > 0 ? Money::ofMinor($owed, $stay->currency) : null;
+    }
+
+    /**
+     * A slip for more than the whole stay is owed is a typing mistake or
+     * worse, and a link that can queue slips without limit fills the disk
+     * — security review of §16.
+     */
+    private function refuseUnlikelySlip(Stay $stay, Money $amount, int $owedMinor): void
+    {
+        if ($amount->minor > $owedMinor) {
+            throw ValidationException::withMessages([
+                'amount' => __('messages.That is more than is owed: :amount.', ['amount' => Money::ofMinor($owedMinor, $stay->currency)->format()]),
+            ]);
+        }
+
+        if ($this->bank->hasTooManyWaiting($stay)) {
+            throw ValidationException::withMessages([
+                'slip' => __('messages.We already have slips waiting to be checked. We will be in touch once they are.'),
+            ]);
+        }
     }
 
     private function canCancel(Stay $stay): bool
