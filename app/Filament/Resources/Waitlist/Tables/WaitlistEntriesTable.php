@@ -93,6 +93,11 @@ class WaitlistEntriesTable
                         [WaitlistEntry::WAITING, WaitlistEntry::OFFERED],
                         true,
                     ))
+                    // Reaching this list needs only booking.viewAny, which
+                    // the read-only roles hold; removing somebody from the
+                    // queue and freeing their seats is a booking change
+                    // (site audit).
+                    ->authorize(fn (): bool => auth()->user()?->can('booking.update') === true)
                     ->requiresConfirmation()
                     ->modalDescription('Any seats held for this offer go back on the departure and are offered to whoever is next.')
                     ->schema([

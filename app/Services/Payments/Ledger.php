@@ -61,6 +61,12 @@ final class Ledger
             $payable = $this->payableFor($payment);
             $this->lock($payable::class, (int) $payable->getKey());
 
+            // The row as it is now, not as the screen loaded it (site
+            // audit): two reviewers acting on one slip within a minute
+            // otherwise wrote "failed" over "succeeded", a move the state
+            // machine forbids, and the total went back to nought.
+            $payment->refresh();
+
             $payment->transitionTo(Payment::SUCCEEDED, $note, $actor);
 
             $this->recompute($payable);
@@ -83,6 +89,7 @@ final class Ledger
         return DB::transaction(function () use ($payment, $reason, $actor): Payment {
             $payable = $this->payableFor($payment);
             $this->lock($payable::class, (int) $payable->getKey());
+            $payment->refresh();
 
             $payment->transitionTo(Payment::FAILED, $reason, $actor);
 

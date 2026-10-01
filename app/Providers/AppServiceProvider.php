@@ -2,18 +2,27 @@
 
 namespace App\Providers;
 
+use App\Models\Announcement;
 use App\Models\Article;
 use App\Models\Booking;
 use App\Models\Customer;
+use App\Models\Departure;
+use App\Models\EmergencyBroadcast;
 use App\Models\GuideStep;
 use App\Models\HeroBanner;
+use App\Models\KnowledgeArticle;
 use App\Models\Media;
 use App\Models\Package;
+use App\Models\Partner;
+use App\Models\PriceTier;
+use App\Models\Property;
+use App\Models\Review;
 use App\Models\Setting;
 use App\Models\Stay;
 use App\Models\Traveller;
 use App\Models\Trip;
 use App\Models\User;
+use App\Models\WaitlistEntry;
 use App\Models\WhyFeature;
 use App\Models\WhySection;
 use App\Observers\AuditObserver;
@@ -69,6 +78,19 @@ class AppServiceProvider extends ServiceProvider
         Booking::class,
         Customer::class,
         Traveller::class,
+
+        // Site audit: the decisions that move money or seats, which had
+        // no trail of their own — a commission typed, a departure's seat
+        // count, a host verified, a live page approved, a review hidden.
+        Departure::class,
+        PriceTier::class,
+        Partner::class,
+        Property::class,
+        Announcement::class,
+        EmergencyBroadcast::class,
+        Review::class,
+        KnowledgeArticle::class,
+        WaitlistEntry::class,
 
         Trip::class,
         Media::class,

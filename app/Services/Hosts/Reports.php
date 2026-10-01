@@ -164,9 +164,11 @@ class Reports
             return null;
         }
 
-        $rate = (float) $pct / 100;
+        // Integer arithmetic, the percentage carried to two places: the
+        // one float on a money figure in the tree (site audit).
+        $hundredths = (int) round((float) $pct * 100);
 
-        return Money::ofMinor((int) round($revenue / (1 + $rate) * $rate), $currency);
+        return Money::ofMinor(intdiv($revenue * $hundredths, 10000 + $hundredths), $currency);
     }
 
     /**

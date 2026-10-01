@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Bookings\Pages;
 
+use App\Exceptions\IllegalBookingTransition;
 use App\Exceptions\NoSeatsAvailable;
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
@@ -24,6 +25,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\DB;
 
 /**
  * One booking, and the eight things staff can do to it.
@@ -258,6 +260,8 @@ class EditBooking extends EditRecord
                 TextInput::make('amount')
                     ->label('Amount')
                     ->numeric()
+                    // Whole rufiyaa: "285.50" was silently 285 (site audit).
+                    ->integer()
                     ->required()
                     ->prefix(fn (): string => $this->booking()->currency)
                     ->helperText(fn (): string => 'Whole rufiyaa. The balance is '
@@ -359,7 +363,8 @@ class EditBooking extends EditRecord
             ->label('Confirm (payment received)')
             ->icon('heroicon-o-check-circle')
             ->color('success')
-            ->visible(fn (): bool => in_array($this->booking()->status, [Booking::DRAFT, Booking::HELD], true))
+            ->visible(fn (): bool => in_array($this->booking()->status, [Booking::DRAFT, Booking::HELD], true)
+                && $this->mayConfirm())
             ->requiresConfirmation()
             ->modalDescription('This moves the seats from held to confirmed. Only do it once the money is actually in.')
             ->schema([
@@ -370,18 +375,50 @@ class EditBooking extends EditRecord
             ])
             ->action(function (array $data): void {
                 $booking = $this->booking();
-                $hold = $booking->seatHolds()->latest('id')->first();
 
                 try {
-                    // Confirm the seats first. If they cannot be had — the
-                    // hold lapsed and somebody else took them — the booking
-                    // must not be marked confirmed, because that would be a
-                    // promise the departure cannot keep.
-                    if ($hold instanceof SeatHold) {
-                        app(SeatAllocator::class)->confirm($hold);
-                    }
+                    // One transaction for the seats and the status, with the
+                    // status re-read inside it (site audit). Before, the seats
+                    // were committed first and the status checked afterwards
+                    // against a page loaded minutes ago — so a booking the
+                    // sweep had expired meanwhile took the seats again and
+                    // then threw, leaving confirmed seats nobody held.
+                    DB::transaction(function () use ($booking, $data): void {
+                        $booking->refresh();
 
-                    $booking->transitionTo(Booking::CONFIRMED, $data['reason'] ?: null);
+                        if (! in_array($booking->status, [Booking::DRAFT, Booking::HELD], true)) {
+                            throw IllegalBookingTransition::from($booking, Booking::CONFIRMED);
+                        }
+
+                        $allocator = app(SeatAllocator::class);
+                        $hold = $booking->seatHolds()->latest('id')->first();
+
+                        // A booking with no hold at all (a double-submitted
+                        // checkout) asks for its seats now, under the lock,
+                        // rather than being confirmed without any.
+                        if (! $hold instanceof SeatHold) {
+                            $hold = $allocator->hold($booking->departure, $booking->seats, $booking, now()->addMinute());
+                        }
+
+                        // A draft passes through held on its way: that is the
+                        // only road the status machine knows.
+                        if ($booking->status === Booking::DRAFT) {
+                            $booking->transitionTo(Booking::HELD);
+                        }
+
+                        // Confirm the seats first. If they cannot be had — the
+                        // hold lapsed and somebody else took them — the booking
+                        // must not be marked confirmed, because that would be a
+                        // promise the departure cannot keep.
+                        $allocator->confirm($hold);
+
+                        $booking->transitionTo(Booking::CONFIRMED, $data['reason'] ?: null);
+                    });
+                } catch (IllegalBookingTransition $e) {
+                    Notification::make()->warning()->title('This booking has moved on')->body($e->getMessage())->send();
+                    $this->refreshFormData(['status']);
+
+                    return;
                 } catch (NoSeatsAvailable $e) {
                     Notification::make()
                         ->danger()
@@ -422,12 +459,12 @@ class EditBooking extends EditRecord
                 $existing = $booking->seatHolds()->latest('id')->first();
 
                 try {
-                    $hold = $allocator->hold(
-                        $booking->departure,
-                        $booking->seats,
-                        $booking,
-                        now()->addMinutes($minutes),
-                    );
+                    // A hold that exists gets more time, lapsed or not (see
+                    // SeatAllocator::extend); only a booking with none takes
+                    // a fresh one.
+                    $hold = $existing instanceof SeatHold && $existing->confirmed_at === null
+                        ? $allocator->extend($existing, now()->addMinutes($minutes))
+                        : $allocator->hold($booking->departure, $booking->seats, $booking, now()->addMinutes($minutes));
                 } catch (NoSeatsAvailable $e) {
                     Notification::make()
                         ->danger()
@@ -439,11 +476,7 @@ class EditBooking extends EditRecord
                     return;
                 }
 
-                // The new hold is in place before the old one goes back, so
-                // the seats are never briefly available to somebody else.
-                if ($existing instanceof SeatHold && $existing->isNot($hold)) {
-                    $allocator->release($existing, SeatHold::CANCELLED);
-                }
+                $booking->refresh();
 
                 $booking->transitions()->create([
                     'from_status' => $booking->status,
@@ -477,24 +510,56 @@ class EditBooking extends EditRecord
                 $booking = $this->booking();
                 $allocator = app(SeatAllocator::class);
 
-                // Confirmed seats and held seats live in different counters,
-                // and subtracting one from the other would leave the
-                // departure permanently, invisibly full.
-                if ($booking->status === Booking::CONFIRMED) {
-                    $allocator->releaseConfirmed($booking);
-                } else {
-                    $hold = $booking->seatHolds()->whereNull('released_at')->latest('id')->first();
+                try {
+                    // Seats and status in one transaction, the status re-read
+                    // first (site audit): two cancellations at once must give
+                    // the seats back once.
+                    DB::transaction(function () use ($booking, $allocator, $data): void {
+                        $booking->refresh();
 
-                    if ($hold instanceof SeatHold) {
-                        $allocator->release($hold, SeatHold::CANCELLED);
-                    }
+                        // Confirmed seats and held seats live in different counters,
+                        // and subtracting one from the other would leave the
+                        // departure permanently, invisibly full.
+                        if ($booking->status === Booking::CONFIRMED) {
+                            $allocator->releaseConfirmed($booking);
+                        } else {
+                            $hold = $booking->seatHolds()->whereNull('released_at')->latest('id')->first();
+
+                            if ($hold instanceof SeatHold) {
+                                $allocator->release($hold, SeatHold::CANCELLED);
+                            }
+                        }
+
+                        $booking->transitionTo(Booking::CANCELLED, $data['reason']);
+                    });
+                } catch (IllegalBookingTransition $e) {
+                    Notification::make()->warning()->title('This booking has moved on')->body($e->getMessage())->send();
+                    $this->refreshFormData(['status']);
+
+                    return;
                 }
-
-                $booking->transitionTo(Booking::CANCELLED, $data['reason']);
 
                 Notification::make()->success()->title('Booking cancelled')->send();
 
                 $this->refreshFormData(['status']);
             });
+    }
+
+    /**
+     * "Confirm (payment received)" is the money decision, so it takes the
+     * permission for it — or money Finance has already recorded against
+     * this booking, at least the deposit (site audit). Booking Staff are
+     * deliberately denied `payment.reconcile`; this button used to let
+     * them make the same decision at the booking level.
+     */
+    private function mayConfirm(): bool
+    {
+        $booking = $this->booking();
+
+        if (auth()->user()?->can('payment.reconcile') === true) {
+            return true;
+        }
+
+        return $booking->paid_minor > 0 && $booking->paid_minor >= $booking->deposit_minor;
     }
 }

@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Common misconceptions — the part of §7.2 that earns the feature.
@@ -127,5 +128,23 @@ class MisconceptionsRelationManager extends RelationManager
             ->recordActions([EditAction::make(), DeleteAction::make()])
             ->emptyStateHeading('None recorded')
             ->emptyStateDescription('Only where one exists. §7.2 asks for the things pilgrims are wrongly told about a place, not for one per place.');
+    }
+
+    // No policy of their own: the children are part of the parent, so the
+    // parent's `update` decides (site audit — without this Filament allowed
+    // every panel user by default).
+    public function canCreate(): bool
+    {
+        return auth()->user()?->can('update', $this->getOwnerRecord()) === true;
+    }
+
+    public function canEdit(Model $record): bool
+    {
+        return $this->canCreate();
+    }
+
+    public function canDelete(Model $record): bool
+    {
+        return $this->canCreate();
     }
 }

@@ -38,6 +38,17 @@ class LocationMisconception extends Model
 
     protected $casts = ['sort_order' => 'integer'];
 
+    protected static function booted(): void
+    {
+        // A change here is a change to what the scholar approved (site audit).
+        $tell = function (self $record): void {
+            $record->location?->noteContentChange();
+        };
+
+        static::saved($tell);
+        static::deleted($tell);
+    }
+
     /** @return BelongsTo<ZiyarahLocation, $this> */
     public function location(): BelongsTo
     {

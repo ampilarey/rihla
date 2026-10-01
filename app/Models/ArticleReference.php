@@ -69,6 +69,18 @@ class ArticleReference extends Model
 
     protected static function booted(): void
     {
+        // A change here is a change to what the scholar approved (site audit).
+        $tell = function (self $record): void {
+            $parent = $record->referenceable;
+
+            if ($parent !== null && method_exists($parent, 'noteContentChange')) {
+                $parent->noteContentChange();
+            }
+        };
+
+        static::saved($tell);
+        static::deleted($tell);
+
         static::saving(function (self $reference): void {
             if ($reference->kind === self::HADITH && blank($reference->grading)) {
                 throw new \InvalidArgumentException(

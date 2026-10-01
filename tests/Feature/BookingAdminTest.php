@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Bookings\Pages\ListBookings;
+use App\Filament\Resources\Packages\Pages\EditPackage;
+use App\Filament\Resources\Packages\RelationManagers\DeparturesRelationManager;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
@@ -145,7 +147,7 @@ class BookingAdminTest extends TestCase
     {
         $departure = $this->departure(10);
         $booking = $this->heldBooking(2, $departure);
-        $staff = $this->staff(Access::BOOKING_STAFF);
+        $staff = $this->staff(Access::OPERATIONS_MANAGER);
 
         Livewire::actingAs($staff)
             ->test(EditBooking::class, ['record' => $booking->getKey()])
@@ -231,7 +233,7 @@ class BookingAdminTest extends TestCase
     {
         $departure = $this->departure(10);
         $booking = $this->heldBooking(3, $departure);
-        $staff = $this->staff(Access::BOOKING_STAFF);
+        $staff = $this->staff(Access::OPERATIONS_MANAGER);
 
         Livewire::actingAs($staff)
             ->test(EditBooking::class, ['record' => $booking->getKey()])
@@ -282,7 +284,7 @@ class BookingAdminTest extends TestCase
         );
     }
 
-    public function test_the_old_hold_is_released_when_one_is_extended(): void
+    public function test_a_live_hold_is_the_same_hold_with_more_time(): void
     {
         $departure = $this->departure(10);
         $booking = $this->heldBooking(2, $departure);
@@ -292,8 +294,10 @@ class BookingAdminTest extends TestCase
             ->test(EditBooking::class, ['record' => $booking->getKey()])
             ->callAction('extendHold', ['reason' => 'Waiting on payment']);
 
-        $this->assertNotNull($original->fresh()->released_at);
+        // Since the site audit a live hold is the same hold with more time,
+        // not a replacement: still exactly one live hold, and a later expiry.
         $this->assertSame(1, $booking->seatHolds()->live()->count());
+        $this->assertTrue($original->fresh()->expires_at->gt(now()->addHours(23)));
     }
 
     /** Extending on a sold-out departure must not oversell it. */
@@ -365,5 +369,154 @@ class BookingAdminTest extends TestCase
             ->test(ListBookings::class)
             ->assertOk()
             ->assertDontSee('New booking');
+    }
+
+    // ── Site audit ────────────────────────────────────────────────────────
+
+    /**
+     * "Confirm (payment received)" is the money decision. Booking Staff are
+     * deliberately denied payment.reconcile, yet this button let them make
+     * the same decision at the booking level. They may confirm once Finance
+     * has recorded the deposit.
+     */
+    public function test_booking_staff_confirm_only_once_the_deposit_is_recorded(): void
+    {
+        $booking = $this->heldBooking(2);
+        $staff = $this->staff(Access::BOOKING_STAFF);
+
+        Livewire::actingAs($staff)
+            ->test(EditBooking::class, ['record' => $booking->getKey()])
+            ->assertActionHidden('confirm');
+
+        $booking->forceFill(['deposit_minor' => 1_000_000, 'paid_minor' => 1_000_000])->save();
+
+        Livewire::actingAs($staff)
+            ->test(EditBooking::class, ['record' => $booking->getKey()])
+            ->callAction('confirm', ['reason' => 'Deposit reconciled by Finance']);
+
+        $this->assertSame(Booking::CONFIRMED, $booking->fresh()->status);
+    }
+
+    /**
+     * The seats were committed before the status was checked, against a
+     * page loaded minutes ago. A booking the sweep had expired meanwhile
+     * took the seats again and then threw, leaving confirmed seats nobody
+     * held on a departure that read "full".
+     */
+    public function test_confirming_a_booking_that_expired_meanwhile_takes_no_seats(): void
+    {
+        $departure = $this->departure(10);
+        $booking = $this->heldBooking(2, $departure);
+        $page = Livewire::actingAs($this->staff(Access::OPERATIONS_MANAGER))
+            ->test(EditBooking::class, ['record' => $booking->getKey()]);
+
+        // The hold lapses and the sweep runs while the page is open.
+        $booking->seatHolds()->sole()->forceFill(['expires_at' => now()->subMinute()])->save();
+        app(SeatAllocator::class)->reclaim($departure);
+        $this->assertSame(Booking::EXPIRED, $booking->fresh()->status);
+
+        $page->callAction('confirm', ['reason' => 'Paid']);
+
+        $this->assertSame(Booking::EXPIRED, $booking->fresh()->status);
+        $this->assertSame(0, $departure->fresh()->capacity_confirmed);
+        $this->assertSame(0, $departure->fresh()->capacity_held);
+    }
+
+    /** A booking with no hold at all asks for its seats under the lock rather than being confirmed without any. */
+    public function test_confirming_a_booking_with_no_hold_takes_its_seats_or_refuses(): void
+    {
+        $departure = $this->departure(2);
+        $orphan = Booking::factory()->create([
+            'customer_id' => Customer::factory()->create()->getKey(),
+            'departure_id' => $departure->getKey(),
+            'seats' => 2,
+        ]);
+        $this->assertSame(0, $orphan->seatHolds()->count());
+
+        Livewire::actingAs($this->staff(Access::OPERATIONS_MANAGER))
+            ->test(EditBooking::class, ['record' => $orphan->getKey()])
+            ->callAction('confirm', ['reason' => 'Paid']);
+
+        $this->assertSame(Booking::CONFIRMED, $orphan->fresh()->status);
+        $this->assertSame(2, $departure->fresh()->capacity_confirmed);
+
+        // And a second such booking on the now-full departure is refused, not confirmed at nothing.
+        $another = Booking::factory()->create([
+            'customer_id' => Customer::factory()->create()->getKey(),
+            'departure_id' => $departure->getKey(),
+            'seats' => 1,
+        ]);
+
+        Livewire::actingAs($this->staff(Access::OPERATIONS_MANAGER))
+            ->test(EditBooking::class, ['record' => $another->getKey()])
+            ->callAction('confirm', ['reason' => 'Paid']);
+
+        $this->assertSame(Booking::DRAFT, $another->fresh()->status);
+        $this->assertSame(2, $departure->fresh()->capacity_confirmed);
+    }
+
+    /**
+     * Extending a hold that has lapsed (the sweep not yet run) used to
+     * expire the booking and then hold seats for a day for a booking
+     * nobody could confirm; on a full departure it could never succeed.
+     */
+    public function test_extending_a_lapsed_hold_keeps_the_booking_and_retakes_the_seats(): void
+    {
+        $departure = $this->departure(2);
+        $booking = $this->heldBooking(2, $departure);
+        $booking->seatHolds()->sole()->forceFill(['expires_at' => now()->subMinutes(3)])->save();
+
+        Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(EditBooking::class, ['record' => $booking->getKey()])
+            ->callAction('extendHold', ['reason' => 'Transfer on its way']);
+
+        $this->assertSame(Booking::HELD, $booking->fresh()->status);
+        $this->assertSame(2, $departure->fresh()->capacity_held);
+        $this->assertTrue($booking->fresh()->seatHolds()->whereNull('released_at')->sole()->expires_at->isFuture());
+    }
+
+    /** Two cancellations of one confirmed booking give its seats back once. */
+    public function test_cancelling_twice_gives_the_seats_back_once(): void
+    {
+        $departure = $this->departure(10);
+        $booking = $this->heldBooking(3, $departure);
+        app(SeatAllocator::class)->confirm($booking->seatHolds()->sole());
+        $booking->transitionTo(Booking::CONFIRMED);
+        $this->assertSame(3, $departure->fresh()->capacity_confirmed);
+
+        $first = Livewire::actingAs($this->staff(Access::BOOKING_STAFF))->test(EditBooking::class, ['record' => $booking->getKey()]);
+        $second = Livewire::actingAs($this->staff(Access::BOOKING_STAFF))->test(EditBooking::class, ['record' => $booking->getKey()]);
+
+        $first->callAction('cancel', ['reason' => 'Passport expired']);
+        $second->callAction('cancel', ['reason' => 'Passport expired']);
+
+        $this->assertSame(0, $departure->fresh()->capacity_confirmed);
+    }
+
+    /** The seat counters belong to the engine: the form saves neither. */
+    public function test_the_departure_form_cannot_type_the_confirmed_count(): void
+    {
+        $departure = $this->departure(10);
+        app(SeatAllocator::class)->confirm(app(SeatAllocator::class)->hold($departure, 4));
+        $this->assertSame(4, $departure->fresh()->capacity_confirmed);
+
+        Livewire::actingAs($this->staff(Access::SUPER_ADMIN))
+            ->test(DeparturesRelationManager::class, [
+                'ownerRecord' => $departure->package,
+                'pageClass' => EditPackage::class,
+            ])
+            ->callTableAction('edit', $departure, data: ['capacity_total' => 12, 'capacity_confirmed' => 0])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame(4, $departure->fresh()->capacity_confirmed, 'Typing the confirmed count down sold the seats twice.');
+        $this->assertSame(12, $departure->fresh()->capacity_total);
+
+        Livewire::actingAs($this->staff(Access::SUPER_ADMIN))
+            ->test(DeparturesRelationManager::class, [
+                'ownerRecord' => $departure->package,
+                'pageClass' => EditPackage::class,
+            ])
+            ->callTableAction('edit', $departure, data: ['capacity_total' => 3])
+            ->assertHasTableActionErrors(['capacity_total']);
     }
 }

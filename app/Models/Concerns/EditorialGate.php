@@ -66,6 +66,65 @@ trait EditorialGate
         static::creating(function (self $record): void {
             $record->written_by ??= Auth::id();
         });
+
+        // Approved words that change are no longer the approved words.
+        // Before the site audit a Content Manager could rewrite the body
+        // of a live, scholar-signed page and it stayed live under the
+        // scholar's name — the one thing §6.4 exists to prevent.
+        static::updating(function (self $record): void {
+            if ($record->isDirty('status') || ! $record->isDirty($record->editorialContent())) {
+                return;
+            }
+
+            // forceFill: status is deliberately not fillable.
+            $record->forceFill($record->backToTheScholar());
+        });
+    }
+
+    /**
+     * The attributes a scholar signs off. Overridden where a model has
+     * more; anything not listed (a slug, a sort order) may change freely.
+     *
+     * @return list<string>
+     */
+    protected function editorialContent(): array
+    {
+        return ['title', 'summary', 'body'];
+    }
+
+    /**
+     * A source, a question or a misconception attached to this changed.
+     * Called by the child models; the same rule as a change to the body.
+     */
+    public function noteContentChange(): void
+    {
+        if ($this->exists && $this->backToTheScholar() !== []) {
+            $this->forceFill($this->backToTheScholar())->saveQuietly();
+        }
+    }
+
+    /**
+     * What a content change does to an approved or published record: back
+     * to the scholar's queue, the signature cleared — unless the person
+     * making it is a reviewer, whose own edit needs no second pair of eyes.
+     *
+     * @return array<string, mixed>
+     */
+    private function backToTheScholar(): array
+    {
+        if (! in_array($this->status, [self::APPROVED, self::PUBLISHED], true)) {
+            return [];
+        }
+
+        // No signed-in person — a seeder, a command — is nobody to send it
+        // back for; a reviewer's own edit needs no second pair of eyes.
+        $user = Auth::user();
+
+        if ($user === null || $user->can('review', $this)) {
+            return [];
+        }
+
+        return ['status' => self::IN_REVIEW, 'reviewed_by' => null, 'reviewed_at' => null];
     }
 
     /**

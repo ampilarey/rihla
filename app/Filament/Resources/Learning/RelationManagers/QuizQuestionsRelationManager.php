@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The quiz — §7.3.
@@ -155,5 +156,23 @@ class QuizQuestionsRelationManager extends RelationManager
             ->recordActions([EditAction::make(), DeleteAction::make()])
             ->emptyStateHeading('No questions yet')
             ->emptyStateDescription('Optional. A module with no quiz is a normal module — §7.3 asks for quizzes, not for one per page.');
+    }
+
+    // No policy of their own: the children are part of the parent, so the
+    // parent's `update` decides (site audit — without this Filament allowed
+    // every panel user by default).
+    public function canCreate(): bool
+    {
+        return auth()->user()?->can('update', $this->getOwnerRecord()) === true;
+    }
+
+    public function canEdit(Model $record): bool
+    {
+        return $this->canCreate();
+    }
+
+    public function canDelete(Model $record): bool
+    {
+        return $this->canCreate();
     }
 }
