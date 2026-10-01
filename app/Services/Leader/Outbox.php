@@ -74,7 +74,16 @@ final class Outbox
         $results = [];
 
         foreach ($items as $item) {
-            $results[] = DB::transaction(fn (): array => $this->applyOne($item, $actor));
+            // A malformed item is refused on its own. Before, one item that
+            // threw (an array where an id should be, a note past the column)
+            // failed the whole request, and the phone kept every item —
+            // including the applied ones — and retried for ever.
+            try {
+                $results[] = DB::transaction(fn (): array => $this->applyOne($item, $actor));
+            } catch (\Throwable $e) {
+                report($e);
+                $results[] = ['id' => $item['id'] ?? null, 'result' => self::REFUSED, 'reason' => 'That item could not be read.'];
+            }
         }
 
         return $results;
@@ -103,7 +112,7 @@ final class Outbox
             return ['result' => self::REFUSED, 'reason' => 'You may not change a head count.'];
         }
 
-        $rollCall = RollCall::find($item['roll_call_id'] ?? null);
+        $rollCall = RollCall::find($this->id($item['roll_call_id'] ?? null));
 
         if ($rollCall === null) {
             return ['result' => self::REFUSED, 'reason' => 'That head count no longer exists.'];
@@ -113,7 +122,7 @@ final class Outbox
             return ['result' => self::REFUSED, 'reason' => 'That departure is not yours.'];
         }
 
-        $traveller = Traveller::find($item['traveller_id'] ?? null);
+        $traveller = Traveller::find($this->id($item['traveller_id'] ?? null));
 
         // Not merely "does this traveller exist": somebody on another trip
         // must not be markable on this one, whatever the phone posts.
@@ -125,6 +134,12 @@ final class Outbox
 
         if (! in_array($state, RollCallMark::STATES, true)) {
             return ['result' => self::REFUSED, 'reason' => 'That is not a state a mark can be in.'];
+        }
+
+        $note = $this->text($item['note'] ?? null);
+
+        if ($note === false) {
+            return ['result' => self::REFUSED, 'reason' => 'A note is up to 255 characters.'];
         }
 
         $markedAt = $this->timeFrom($item['marked_at'] ?? null);
@@ -145,7 +160,7 @@ final class Outbox
             ['roll_call_id' => $rollCall->getKey(), 'traveller_id' => $traveller->getKey()],
             [
                 'state' => $state,
-                'note' => $item['note'] ?? null,
+                'note' => $note,
                 'marked_by' => $actor->getKey(),
                 'marked_at' => $markedAt,
             ],
@@ -177,7 +192,7 @@ final class Outbox
             return ['result' => self::DUPLICATE];
         }
 
-        $departure = Departure::find($item['departure_id'] ?? null);
+        $departure = Departure::find($this->id($item['departure_id'] ?? null));
 
         if ($departure === null || ! $this->mayWorkOn($actor, $departure)) {
             return ['result' => self::REFUSED, 'reason' => 'That departure is not yours.'];
@@ -195,7 +210,12 @@ final class Outbox
             $category = Incident::OTHER;
         }
 
-        $summary = trim((string) ($item['summary'] ?? ''));
+        $summary = trim((string) ($this->text($item['summary'] ?? null) ?: ''));
+        $location = $this->text($item['location'] ?? null);
+
+        if (($this->text($item['summary'] ?? null) === false) || $location === false) {
+            return ['result' => self::REFUSED, 'reason' => 'The summary and the place are up to 255 characters each.'];
+        }
 
         if ($summary === '') {
             return ['result' => self::REFUSED, 'reason' => 'An incident needs a line saying what happened.'];
@@ -209,7 +229,7 @@ final class Outbox
             'category' => $category,
             'summary' => $summary,
             'detail' => $item['detail'] ?? null,
-            'location' => $item['location'] ?? null,
+            'location' => $location,
             'happened_at' => $this->timeFrom($item['happened_at'] ?? null),
         ]);
 
@@ -274,5 +294,21 @@ final class Outbox
         }
 
         return $time->isFuture() ? now() : $time;
+    }
+
+    /** An id the phone sent, or null for anything that is not a whole number. */
+    private function id(mixed $value): ?int
+    {
+        return is_int($value) || (is_string($value) && ctype_digit($value)) ? (int) $value : null;
+    }
+
+    /** A short text field: null when absent, false when it is not a string that fits the column. */
+    private function text(mixed $value): string|null|false
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_string($value) && mb_strlen($value) <= 255 ? $value : false;
     }
 }

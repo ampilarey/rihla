@@ -509,6 +509,7 @@ return [
     'We will check it against our account and confirm. Nothing is marked as paid until we have.' => 'We will check it against our account and confirm. Nothing is marked as paid until we have.',
     'Thank you — we have your slip. We will confirm once the money is in.' => 'Thank you — we have your slip. We will confirm once the money is in.',
     'That is more than is owed: :amount.' => 'That is more than is owed: :amount.',
+    'We already have several copies of this document from today. We will be in touch once they are checked.' => 'We already have several copies of this document from today. We will be in touch once they are checked.',
     'That price is no longer offered. Please choose again.' => 'That price is no longer offered. Please choose again.',
     'We already have slips waiting to be checked. We will be in touch once they are.' => 'We already have slips waiting to be checked. We will be in touch once they are.',
     'Hotels' => 'Hotels',

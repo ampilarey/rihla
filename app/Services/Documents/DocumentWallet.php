@@ -60,8 +60,24 @@ final class DocumentWallet
                 ['category' => $category] + $attributes,
             );
 
+            // The pilgrim may change the expiry date they typed — but a new
+            // date on a passport somebody has already verified is a claim
+            // nobody has looked at, so it goes back to pending (security
+            // review). Before, the same scan re-sent with "2040" turned the
+            // readiness board green while the status still read verified.
             if ($attributes !== []) {
-                $document->fill($attributes)->save();
+                $document->fill($attributes);
+
+                if ($document->isDirty('expires_at') && $document->status === Document::VERIFIED) {
+                    $document->forceFill([
+                        'status' => Document::PENDING,
+                        'verified_by' => null,
+                        'verified_at' => null,
+                        'rejection_reason' => null,
+                    ]);
+                }
+
+                $document->save();
             }
 
             $latest = $document->versions()->orderByDesc('version')->first();
@@ -114,6 +130,21 @@ final class DocumentWallet
 
             return $version;
         });
+    }
+
+    /**
+     * Versions one traveller's document may gain in a day — security review.
+     * Each is an encrypted file kept for good on a disk with a fixed
+     * allowance; a link that can add them without limit fills it.
+     */
+    public const MAX_VERSIONS_A_DAY = 5;
+
+    public function tooManyToday(Traveller $traveller, string $type): bool
+    {
+        return DocumentVersion::query()
+            ->whereHas('document', fn ($q) => $q->where('traveller_id', $traveller->getKey())->where('type', $type))
+            ->where('created_at', '>=', now()->subDay())
+            ->count() >= self::MAX_VERSIONS_A_DAY;
     }
 
     public function verify(Document $document, ?int $userId = null): void

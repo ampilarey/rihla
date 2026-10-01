@@ -19,6 +19,7 @@ use App\Models\WhySection;
 use App\Observers\AuditObserver;
 use App\Observers\CoverImageObserver;
 use App\Observers\LostStayObserver;
+use App\Services\Family\Doorkeeper;
 use App\Services\Portal\Gatekeeper;
 use App\Services\Stays\StayGatekeeper;
 use App\Support\InitialsAvatar;
@@ -199,14 +200,24 @@ class AppServiceProvider extends ServiceProvider
             'stay-message:'.($request->session()->get(StayGatekeeper::SESSION_STAY) ?? $request->ip()),
         ));
 
-        // Security review of §16: a payment slip, from /my-stay or the
-        // portal. By the stay or booking the link opened rather than by
-        // address — many phones here share one carrier address.
-        RateLimiter::for('slip', fn (Request $request) => Limit::perHour(20)->by('slip:'.(
-            $request->session()->get(StayGatekeeper::SESSION_STAY)
-                ?? $request->session()->get(Gatekeeper::SESSION_BOOKING)
-                ?? $request->ip()
-        )));
+        // Security review: anything a link-opened session writes — a
+        // payment slip, a passport scan, a family link. By the stay or
+        // booking the link opened rather than by address — many phones
+        // here share one carrier address.
+        RateLimiter::for('portal-write', fn (Request $request) => Limit::perHour(20)->by('portal-write:'.$this->portalKey($request)));
+
+        // The Learning Academy's quiz and Ask a Scholar: every submission is
+        // a row somebody reads, so one session gets a classroom's worth an
+        // hour and no more.
+        RateLimiter::for('learning', fn (Request $request) => Limit::perHour(20)->by('learning:'.$this->portalKey($request)));
+
+        // The assistant is a paid call when it is switched on: a ceiling per
+        // session and a ceiling for the whole site in a day, so a scripted
+        // loop cannot run up the bill.
+        RateLimiter::for('assistant', fn (Request $request) => [
+            Limit::perHour(10)->by('assistant:'.$this->portalKey($request)),
+            Limit::perDay((int) config('assistant.daily_cap', 300))->by('assistant:everyone'),
+        ]);
 
         RateLimiter::for('password-reset', fn (Request $request) => [
             Limit::perHour(5)->by($request->ip()),
@@ -216,5 +227,16 @@ class AppServiceProvider extends ServiceProvider
         // Guessing a reset token, or a password from inside a session.
         RateLimiter::for('credentials', fn (Request $request) => Limit::perMinute(6)
             ->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
+    }
+
+    /** The stay, booking or family link this session was opened from, else the address. */
+    private function portalKey(Request $request): string
+    {
+        $session = $request->hasSession() ? $request->session() : null;
+
+        return (string) ($session?->get(StayGatekeeper::SESSION_STAY)
+            ?? $session?->get(Gatekeeper::SESSION_BOOKING)
+            ?? $session?->get(Doorkeeper::SESSION_ACCESS)
+            ?? $request->ip());
     }
 }

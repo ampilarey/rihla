@@ -16,6 +16,7 @@ use App\Services\Portal\Gatekeeper;
 use App\Support\JourneyProgress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -93,6 +94,26 @@ class FamilyPortalTest extends TestCase
         $this->get(route('family.home'))
             ->assertOk()
             ->assertSee($booking->departure->package->title);
+    }
+
+    /** A session id from before the link was clicked is not the one that opens it, and Leave destroys it. */
+    public function test_the_session_id_changes_on_entry_and_is_destroyed_on_leave(): void
+    {
+        [$booking] = $this->booking();
+        $doorkeeper = app(Doorkeeper::class);
+        $token = $doorkeeper->issue($booking, 'Mum', false);
+
+        Session::start();
+        $before = Session::getId();
+
+        $doorkeeper->admit($doorkeeper->find($token));
+        $opened = Session::getId();
+        $this->assertNotSame($before, $opened, 'Entry keeps the session id a stranger may have planted.');
+        $this->assertNotNull($doorkeeper->access());
+
+        $doorkeeper->leave();
+        $this->assertNotSame($opened, Session::getId(), 'Leave keeps the old session id alive.');
+        $this->assertNull($doorkeeper->access());
     }
 
     public function test_without_a_link_there_is_nothing(): void

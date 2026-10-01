@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  */
 final class Doorkeeper
 {
-    private const SESSION_ACCESS = 'family.access';
+    public const SESSION_ACCESS = 'family.access';
 
     private const SESSION_UNTIL = 'family.until';
 
@@ -71,6 +71,10 @@ final class Doorkeeper
             'last_used_at' => now(),
         ])->save();
 
+        // A new session id on the way in, as the portal and stay doors do
+        // (security review): an id planted before the link was clicked is
+        // not the one that gets the access.
+        Session::regenerate();
         Session::put(self::SESSION_ACCESS, $access->getKey());
         Session::put(self::SESSION_UNTIL, now()->addHours((int) config('portal.session_hours', 12))->timestamp);
     }
@@ -99,6 +103,9 @@ final class Doorkeeper
     public function leave(): void
     {
         Session::forget([self::SESSION_ACCESS, self::SESSION_UNTIL]);
+        // The old id is destroyed, not merely emptied: a session id captured
+        // while the portal was open must not stay valid after Leave.
+        Session::regenerate(true);
     }
 
     public function revoke(FamilyAccess $access): void

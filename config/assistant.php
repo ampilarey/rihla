@@ -21,6 +21,10 @@ return [
 
     'enabled' => (bool) env('ASSISTANT_ENABLED', false),
 
+    // Calls the whole site may make in a day, whoever asks. Each is a paid
+    // request when the assistant is on; this is the ceiling on the bill.
+    'daily_cap' => (int) env('ASSISTANT_DAILY_CAP', 300),
+
     /*
     |--------------------------------------------------------------------------
     | The provider

@@ -92,7 +92,10 @@ class ScholarDeskTest extends TestCase
 
     public function test_the_desk_lists_what_is_waiting_and_says_how_long(): void
     {
-        $this->travelTo(now()->subDays(30));
+        // Four weeks, not thirty days: on the first of a thirty-day month's
+        // successor, thirty days back is exactly one calendar month and the
+        // sentence reads "1 month" — which failed this test on 1 October.
+        $this->travelTo(now()->subWeeks(4));
         ScholarQuestion::factory()->create(['body' => 'A question that has been waiting a month.']);
         $this->travelBack();
 

@@ -144,6 +144,49 @@ class DocumentWalletTest extends TestCase
         $this->assertNull($document->fresh()->verified_at);
     }
 
+    /**
+     * The same scan sent again with a different expiry date is a new claim
+     * about the passport, not a verified fact. Before the security review
+     * the date was rewritten while the status stayed verified, so a pilgrim
+     * could turn the readiness board green by typing 2040.
+     */
+    public function test_a_new_expiry_on_a_verified_document_sends_it_back_for_checking(): void
+    {
+        $traveller = Traveller::factory()->create();
+        $this->wallet()->store($traveller, $this->file('scan'), Document::IDENTITY, Document::PASSPORT, ['expires_at' => '2027-01-01']);
+        $document = Document::sole();
+        $this->wallet()->verify($document, $this->staff(Access::VISA_STAFF)->getKey());
+
+        $this->wallet()->store($traveller, $this->file('scan'), Document::IDENTITY, Document::PASSPORT, ['expires_at' => '2040-01-01']);
+
+        $this->assertSame(1, DocumentVersion::count(), 'The same bytes make no new version.');
+        $this->assertSame('2040-01-01', $document->fresh()->expires_at?->toDateString());
+        $this->assertSame(Document::PENDING, $document->fresh()->status);
+        $this->assertNull($document->fresh()->verified_at);
+
+        // The same date again changes nothing, so it stays as it is.
+        $this->wallet()->verify($document->fresh(), $this->staff(Access::VISA_STAFF)->getKey());
+        $this->wallet()->store($traveller, $this->file('scan'), Document::IDENTITY, Document::PASSPORT, ['expires_at' => '2040-01-01']);
+        $this->assertSame(Document::VERIFIED, $document->fresh()->status);
+    }
+
+    /** Each version is a file kept for good; a link may add only so many a day. */
+    public function test_a_traveller_may_add_only_so_many_versions_a_day(): void
+    {
+        $traveller = Traveller::factory()->create();
+
+        for ($i = 0; $i < DocumentWallet::MAX_VERSIONS_A_DAY; $i++) {
+            $this->assertFalse($this->wallet()->tooManyToday($traveller, Document::PASSPORT));
+            $this->store("scan {$i}", $traveller);
+        }
+
+        $this->assertTrue($this->wallet()->tooManyToday($traveller, Document::PASSPORT));
+        $this->assertFalse($this->wallet()->tooManyToday(Traveller::factory()->create(), Document::PASSPORT));
+
+        $this->travel(25)->hours();
+        $this->assertFalse($this->wallet()->tooManyToday($traveller, Document::PASSPORT));
+    }
+
     // ── Storage ───────────────────────────────────────────────────────────
 
     /** A predictable layout is one misconfiguration away from being an index. */
