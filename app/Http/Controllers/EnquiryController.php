@@ -9,6 +9,7 @@ use App\Support\PhoneNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 
 /**
  * The enquiry form on the contact page — §8.1.
@@ -34,7 +35,7 @@ class EnquiryController extends Controller
             'phone' => ['nullable', 'string', 'max:40', 'required_without:email'],
             'email' => ['nullable', 'email', 'max:255', 'required_without:phone'],
             'message' => ['nullable', 'string', 'max:2000'],
-            'package_id' => ['nullable', 'integer', 'exists:packages,id'],
+            'package_id' => ['nullable', 'integer', Rule::exists('packages', 'id')->where('is_published', true)],
             'party_size' => ['nullable', 'integer', 'min:1', 'max:60'],
         ], [
             'phone.required_without' => __('messages.Leave us a phone number or an email so we can reply.'),
@@ -91,7 +92,8 @@ class EnquiryController extends Controller
         if ($key !== null) {
             $match = Enquiry::where('created_at', '>=', $since)
                 ->get()
-                ->first(fn (Enquiry $enquiry): bool => PhoneNumber::key($enquiry->phone) === $key);
+                ->first(fn (Enquiry $enquiry): bool => PhoneNumber::key($enquiry->phone) === $key
+                    && $this->sameName($enquiry->name, $validated['name'] ?? null));
 
             if ($match !== null) {
                 return $match;
@@ -101,10 +103,23 @@ class EnquiryController extends Controller
         if (filled($validated['email'] ?? null)) {
             return Enquiry::where('created_at', '>=', $since)
                 ->whereRaw('LOWER(email) = ?', [mb_strtolower((string) $validated['email'])])
-                ->first();
+                ->get()
+                ->first(fn (Enquiry $enquiry): bool => $this->sameName($enquiry->name, $validated['name'] ?? null));
         }
 
         return null;
+    }
+
+    /**
+     * Site audit: a duplicate is the same *person*, so the name has to match
+     * as well as the number. Before, anybody who knew a number could append
+     * text to that person's enquiry for six hours.
+     */
+    private function sameName(?string $a, ?string $b): bool
+    {
+        $key = fn (?string $name): string => mb_strtolower(trim(preg_replace('/\s+/u', ' ', (string) $name) ?? ''));
+
+        return $key($a) !== '' && $key($a) === $key($b);
     }
 
     /**

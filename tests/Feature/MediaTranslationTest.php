@@ -188,4 +188,19 @@ class MediaTranslationTest extends TestCase
         $this->assertContains('title', Schema::getColumnListing('media'));
         $this->assertContains('caption', Schema::getColumnListing('media'));
     }
+
+    /**
+     * An unpublished photo with no trip was live on the homepage and the
+     * gallery: the query read `published AND has-trip OR no-trip`, with the
+     * OR bare, so "no trip" alone was enough. Site audit.
+     */
+    public function test_an_unpublished_photo_with_no_trip_is_not_shown(): void
+    {
+        Media::create(['type' => 'photo', 'title' => ['en' => 'Still a draft'], 'file_path' => 'media/large/draft.webp', 'is_published' => false]);
+        Media::create(['type' => 'video', 'title' => ['en' => 'A published film'], 'file_path' => 'media/large/film.webp', 'is_published' => true]);
+
+        $this->get('/en/gallery')->assertOk()->assertDontSee('Still a draft')->assertSee('A published film');
+        $this->get('/en/gallery?type=photo')->assertOk()->assertDontSee('Still a draft')->assertDontSee('A published film');
+        $this->get('/en')->assertOk()->assertDontSee('Still a draft');
+    }
 }

@@ -192,6 +192,12 @@ class AppServiceProvider extends ServiceProvider
         // fill the office's board with nonsense.
         RateLimiter::for('stay-book', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
 
+        // Site audit: the three forms a stranger can post without a session
+        // — holding seats, joining a waiting list, an enquiry. Thirty an
+        // hour from one address is a busy office, not a script; a hold
+        // loop at that rate cannot keep a departure "fully booked".
+        RateLimiter::for('public-form', fn (Request $request) => Limit::perHour(30)->by('public-form:'.$request->ip()));
+
         // §16.11: a guest writing to their host. Thirty an hour is a
         // conversation; more is somebody pasting into the box.
         // Counted per stay, from the stay page's own session, so a guest

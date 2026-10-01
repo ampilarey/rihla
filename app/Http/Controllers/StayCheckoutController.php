@@ -117,7 +117,7 @@ class StayCheckoutController extends Controller
         $validated = $request->validate([
             'room' => ['required', 'integer'],
             'from' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'to' => ['required', 'date_format:Y-m-d', 'after:from'],
+            'to' => ['required', 'date_format:Y-m-d', 'after:from', 'before_or_equal:'.CarbonImmutable::parse((string) $request->input('from', 'today'))->addDays(StayFilters::MAX_NIGHTS)->toDateString()],
             'adults' => ['required', 'integer', 'min:1', 'max:30'],
             'children' => ['nullable', 'integer', 'min:0', 'max:30'],
             'audience' => ['required', 'in:'.implode(',', Audience::ALL)],

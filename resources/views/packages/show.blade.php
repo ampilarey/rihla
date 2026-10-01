@@ -290,6 +290,11 @@
                                           class="mt-4 grid gap-3 sm:grid-cols-2">
                                         @csrf
                                         <input type="hidden" name="departure" value="{{ $departure->id }}">
+                                        {{-- A field no human sees: filled in only by a script. --}}
+                                        <div aria-hidden="true" style="position:absolute;left:-9999px;">
+                                            <label for="wl-website-{{ $departure->id }}">{{ __('messages.Leave this empty') }}</label>
+                                            <input id="wl-website-{{ $departure->id }}" name="website" type="text" tabindex="-1" autocomplete="off">
+                                        </div>
 
                                         <div class="sm:col-span-2">
                                             <label dir="auto" for="wl-name-{{ $departure->id }}" class="mb-1 block text-sm font-medium text-ink">

@@ -84,7 +84,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // booking is held in the session, because a reference in the path would
     // let anyone who guessed one read a stranger's passport details.
     Route::get('/packages/{slug}/book', [BookingController::class, 'start'])->name('booking.start');
-    Route::post('/packages/{slug}/book', [BookingController::class, 'hold'])->name('booking.hold');
+    Route::post('/packages/{slug}/book', [BookingController::class, 'hold'])
+        ->middleware('throttle:public-form')->name('booking.hold');
     Route::get('/book/travellers', [BookingController::class, 'travellers'])->name('booking.travellers');
     Route::post('/book/travellers', [BookingController::class, 'storeTravellers'])->name('booking.travellers.store');
     Route::get('/book/review', [BookingController::class, 'review'])->name('booking.review');
@@ -94,7 +95,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // The waiting list for a full departure. The claim link hands over seats
     // that are already held, so it is signed and expires with the offer —
     // a guessable URL would let anybody take somebody else's.
-    Route::post('/packages/{slug}/waitlist', [WaitlistController::class, 'join'])->name('waitlist.join');
+    Route::post('/packages/{slug}/waitlist', [WaitlistController::class, 'join'])
+        ->middleware('throttle:public-form')->name('waitlist.join');
     Route::get('/waitlist/claim/{entry}', [WaitlistController::class, 'claim'])
         ->name('waitlist.claim')
         ->middleware('signed');
@@ -200,7 +202,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // §8.1: a message sent here becomes a tracked lead with somewhere to
     // put an owner and a next action, rather than another line in a shared
     // inbox.
-    Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiries.store');
+    Route::post('/contact', [EnquiryController::class, 'store'])
+        ->middleware('throttle:public-form')->name('enquiries.store');
     Route::get('/guide', [PageController::class, 'guide'])->name('guide');
     Route::get('/guide/pdf', [PageController::class, 'guidePdf'])->name('guide.pdf');
 

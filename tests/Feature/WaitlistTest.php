@@ -170,6 +170,42 @@ class WaitlistTest extends TestCase
         $this->assertSame(3, WaitlistEntry::sole()->seats);
     }
 
+    /**
+     * Knowing a phone number is not being the person. Before the site audit
+     * a form posted with somebody else's number rewrote *their* seats — set
+     * to twelve, they would never fit a returned seat and be skipped.
+     */
+    public function test_a_stranger_who_knows_the_number_cannot_change_the_seats(): void
+    {
+        $package = $this->package();
+        $departure = $this->departure($package);
+
+        $mine = $this->waitlist()->joinByContact($departure, 'Aminath Ali', '7712345', null, 2);
+        $this->waitlist()->joinByContact($departure, 'Somebody Else', '7712345', null, 12);
+
+        $this->assertSame(2, $mine->fresh()->seats);
+        $this->assertSame(2, WaitlistEntry::count(), 'The stranger joins on their own entry.');
+
+        // The same person, writing their name a little differently, still updates theirs.
+        $this->waitlist()->joinByContact($departure, '  aminath  ALI ', '7712345', null, 3);
+        $this->assertSame(3, $mine->fresh()->seats);
+        $this->assertSame(2, WaitlistEntry::count());
+    }
+
+    /** A field no human sees: a script that fills it is thanked and ignored. */
+    public function test_a_filled_honeypot_queues_nobody(): void
+    {
+        $package = $this->package();
+        $departure = $this->departure($package);
+
+        $this->post(route('waitlist.join', ['locale' => 'en', 'slug' => $package->slug]), [
+            'departure' => $departure->getKey(), 'name' => 'Bot', 'phone' => '7700000', 'seats' => 1, 'website' => 'http://spam',
+        ])->assertRedirect();
+
+        $this->assertSame(0, WaitlistEntry::count());
+        $this->assertSame(0, Customer::count());
+    }
+
     // ── Promotion ─────────────────────────────────────────────────────────
 
     /**

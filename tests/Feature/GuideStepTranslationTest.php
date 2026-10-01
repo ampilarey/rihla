@@ -327,4 +327,11 @@ class GuideStepTranslationTest extends TestCase
         $this->assertSame('Intention', $step->getTranslation('title', 'dv'));
         $this->assertSame(['Make sincere intention'], $step->getTranslation('checklist', 'dv'));
     }
+
+    /** A visitor reading in Arabic gets the English guide, not a 400 — site audit. */
+    public function test_the_api_falls_back_to_english_for_a_language_the_guide_lacks(): void
+    {
+        $this->withSession(['app_locale' => 'ar'])->getJson('/api/guide-steps')->assertOk();
+        $this->getJson('/api/guide-steps?locale=ar')->assertStatus(400);
+    }
 }

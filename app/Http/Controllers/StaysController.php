@@ -398,6 +398,10 @@ class StaysController extends Controller
     {
         abort_unless($property->isListable(), 404);
 
+        if (ServiceRegistry::isOff($property->type === Property::RENTAL ? 'stays_rooms' : 'stays_guesthouses')) {
+            throw new NotFoundHttpException;
+        }
+
         $png = $cards->bytes($property);
 
         if ($png === null) {

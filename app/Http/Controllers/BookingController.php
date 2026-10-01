@@ -112,6 +112,16 @@ class BookingController extends Controller
             ]);
         }
 
+        // Choosing again gives the earlier choice back first. Before the
+        // site audit each re-submission took a fresh hold and only forgot
+        // the old one, so one visitor pressing "Book" four times held four
+        // families' seats for fifteen minutes.
+        $earlier = Checkout::hold();
+
+        if ($earlier !== null && $earlier->booking_id === null) {
+            $this->seats->release($earlier);
+        }
+
         try {
             // No booking yet: there is no customer to attach one to until the
             // next step, and `seat_holds.booking_id` is nullable for exactly

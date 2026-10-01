@@ -137,6 +137,33 @@ class BookingFlowTest extends TestCase
      * customer to attach a booking to yet, which is why seat_holds.booking_id
      * is nullable.
      */
+    /**
+     * Choosing again gives the earlier choice back. Before the site audit
+     * each submission took a new hold and only forgot the old one, so one
+     * visitor pressing "Book" four times held four families' seats — and a
+     * script with a fresh cookie jar kept a departure "fully booked".
+     */
+    public function test_choosing_again_releases_the_seats_held_a_moment_ago(): void
+    {
+        $package = $this->package(4);
+        $this->holdSeats($package, 2);
+        $this->holdSeats($package, 2);
+        $this->holdSeats($package, 1);
+
+        $this->assertSame(1, $this->departureOf($package)->fresh()->capacity_held);
+        $this->assertSame(1, SeatHold::whereNull('released_at')->count());
+    }
+
+    /** And the form a stranger can post to without a session is rate limited. */
+    public function test_the_public_forms_are_throttled(): void
+    {
+        $routes = app('router')->getRoutes();
+
+        foreach (['booking.hold', 'waitlist.join', 'enquiries.store'] as $name) {
+            $this->assertContains('throttle:public-form', $routes->getByName($name)?->middleware() ?? [], "{$name} is not throttled.");
+        }
+    }
+
     public function test_the_first_step_creates_no_booking_yet(): void
     {
         $this->holdSeats($this->package());
