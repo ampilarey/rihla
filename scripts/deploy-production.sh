@@ -145,7 +145,11 @@ git log --oneline "$LOCAL..$REMOTE" | sed 's/^/           /' | head -40
 log "4/7 maintenance mode and checkout"
 run php artisan down --retry=60 --render="errors::503" || log "     WARN: could not enter maintenance mode"
 
-restore_up() { run php artisan up >/dev/null 2>&1 || true; }
+# A failed migration or install leaves the site DOWN. Bringing it up would
+# serve new code against a half-migrated database (site audit); the
+# die messages that say "still in maintenance mode" are then true.
+KEEP_DOWN=0
+restore_up() { [[ "$KEEP_DOWN" == "1" ]] || run php artisan up >/dev/null 2>&1 || true; }
 trap 'restore_up; rmdir "$LOCK" 2>/dev/null' EXIT
 
 run git merge --ff-only "$REMOTE" || die "fast-forward failed — resolve by hand, site is still in maintenance mode"
@@ -154,7 +158,7 @@ run git merge --ff-only "$REMOTE" || die "fast-forward failed — resolve by han
 if [[ "$DRY_RUN" == "1" ]] || git diff --name-only "$LOCAL" "$REMOTE" | grep -qE '^composer\.(lock|json)$'; then
   log "5/7 composer install"
   run composer install --no-dev --optimize-autoloader --no-interaction \
-    || die "composer install failed — site is still in maintenance mode"
+    || { KEEP_DOWN=1; die "composer install failed — site is still in maintenance mode"; }
 else
   log "5/7 composer install (skipped: no dependency change)"
 
@@ -165,13 +169,13 @@ else
   # on it, the autoloader tries to include the missing file, and the page
   # fatals. Blade does exactly that for every <x-component> tag.
   run composer dump-autoload --optimize --no-interaction \
-    || die "dump-autoload failed — site is still in maintenance mode"
+    || { KEEP_DOWN=1; die "dump-autoload failed — site is still in maintenance mode"; }
 fi
 
 # ------------------------------------------------------------------ 6. migrate
 log "6/7 migrate and cache"
 run php artisan storage:link --force >/dev/null 2>&1 || log "     WARN: storage:link failed"
-run php artisan migrate --force || die "migration failed — restore the backup from storage/app/backups"
+run php artisan migrate --force || { KEEP_DOWN=1; die "migration failed — the site stays in maintenance mode; restore the backup from storage/app/backups"; }
 run php artisan config:cache || die "config:cache failed"
 run php artisan route:cache || die "route:cache failed"
 run php artisan view:cache || die "view:cache failed"

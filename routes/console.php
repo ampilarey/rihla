@@ -35,6 +35,10 @@ Schedule::command('bookings:expire-holds')->everyTenMinutes()->withoutOverlappin
 
 Schedule::command('notices:sweep')->hourly()->withoutOverlapping(10);
 
+// The one retention rule in the system (config/assistant.php) was never
+// scheduled, so it was never applied (site audit).
+Schedule::command('assistant:prune')->daily()->withoutOverlapping(30);
+
 // §16.9: last month's host statements, on the 2nd so the month has closed.
 Schedule::command('stays:statements')->monthlyOn(2, '03:15')->withoutOverlapping(30);
 

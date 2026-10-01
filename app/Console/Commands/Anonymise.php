@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Support\Anonymisation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -118,15 +119,18 @@ class Anonymise extends Command
                 continue;
             }
 
-            $present = array_filter(
-                $columns,
-                fn (string $strategy, string $column): bool => Schema::hasColumn($table, $column),
-                ARRAY_FILTER_USE_BOTH,
-            );
+            // A column the table does not have is a mistake in the list,
+            // not something to step over: stepping over it is how thirteen
+            // misnamed columns went unscrubbed for a year (site audit).
+            foreach (array_keys($columns) as $column) {
+                if (! Schema::hasColumn($table, $column)) {
+                    $this->error("Refusing to run: {$table}.{$column} is named in Anonymisation::SCRUB and does not exist.");
 
-            if ($present === []) {
-                continue;
+                    return self::FAILURE;
+                }
             }
+
+            $present = $columns;
 
             $rows = DB::table($table)->select('id')->get();
 
@@ -202,6 +206,9 @@ class Anonymise extends Command
             'phone' => '3'.str_pad((string) ($id % 1000000), 6, '0', STR_PAD_LEFT),
             'text' => 'Placeholder text, scrubbed for the test server.',
             'token' => bin2hex(random_bytes(32)),
+            // A password nobody knows. Leaving the production hash in place
+            // let a staff member's real password open the public test box.
+            'hash' => Hash::make(bin2hex(random_bytes(24))),
             // For a column that points at a file and cannot be null. The
             // pointer is dead either way; this says so instead of failing
             // the whole run on a NOT NULL constraint.

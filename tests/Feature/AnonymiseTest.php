@@ -18,6 +18,7 @@ use App\Support\Anonymisation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -259,9 +260,11 @@ class AnonymiseTest extends TestCase
         $this->assertStringNotContainsString('Real Administrator', (string) $after->name);
         $this->assertStringNotContainsString('rihla.example', (string) $after->email);
 
-        // The hash is left alone on purpose: setting it would mint a
-        // credential that works on a public host.
-        $this->assertSame($before, $after->password);
+        // Since the site audit the hash is replaced with one for a password
+        // nobody knows: the production hash coming along let a real staff
+        // password open the public test box.
+        $this->assertNotSame($before, $after->password);
+        $this->assertFalse(Hash::check('password', (string) $after->password));
     }
 
     // ── The dry run ──────────────────────────────────────────────────────
@@ -416,5 +419,62 @@ class AnonymiseTest extends TestCase
             ->reject(fn (string $table): bool => str_starts_with($table, 'sqlite_'))
             ->values()
             ->all();
+    }
+
+    // ── Site audit ────────────────────────────────────────────────────────
+
+    /**
+     * Thirteen names in SCRUB did not exist — `title` for `headline`, `note`
+     * for `reason`, a waiting-list `name` the table never had — and the
+     * scrubber skipped an unknown column without a word, so the real ones
+     * were never scrubbed. Every name is checked against the schema now.
+     */
+    public function test_every_column_in_the_scrub_list_exists(): void
+    {
+        $missing = [];
+
+        foreach (Anonymisation::SCRUB as $table => $columns) {
+            foreach (array_keys($columns) as $column) {
+                if (! Schema::hasColumn($table, $column)) {
+                    $missing[] = $table.'.'.$column;
+                }
+            }
+        }
+
+        $this->assertSame([], $missing, 'Anonymisation::SCRUB names columns that do not exist: '.implode(', ', $missing));
+    }
+
+    /** A birth date, a passport's expiry and the address a link was opened from identify a person too. */
+    public function test_dates_of_birth_passport_dates_and_ip_addresses_are_scrubbed(): void
+    {
+        $customer = $this->somebodyReal();
+        $traveller = $customer->travellers()->sole();
+        $traveller->forceFill(['date_of_birth' => '1980-05-05', 'passport_expiry' => '2030-01-01', 'passport_issuing_country' => 'MV'])->save();
+        $booking = Booking::factory()->create(['customer_id' => $customer->getKey()]);
+        DB::table('portal_accesses')->insert(['booking_id' => $booking->getKey(), 'token_hash' => str_repeat('a', 64), 'expires_at' => now()->addDay(), 'first_used_ip' => '203.0.113.7', 'created_at' => now(), 'updated_at' => now()]);
+        $staff = User::factory()->create();
+        $hash = $staff->password;
+
+        $this->artisan('data:anonymise', ['--force' => true])->assertSuccessful();
+
+        $this->assertNull($traveller->fresh()->date_of_birth);
+        $this->assertNull($traveller->fresh()->passport_expiry);
+        $this->assertNull($traveller->fresh()->passport_issuing_country);
+        $this->assertNull(DB::table('portal_accesses')->value('first_used_ip'));
+        $this->assertNotSame($hash, $staff->fresh()->password, 'The production password hash came along to the test box.');
+    }
+
+    /** The real column names are scrubbed: a headline, a reason, a waiting-list note. */
+    public function test_headlines_reasons_and_waiting_list_notes_are_scrubbed(): void
+    {
+        $customer = $this->somebodyReal();
+        $departure = Departure::factory()->create();
+        DB::table('announcements')->insert(['departure_id' => $departure->getKey(), 'headline' => 'Aishath is in hospital', 'body' => 'Body', 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('waitlist_entries')->insert(['departure_id' => $departure->getKey(), 'customer_id' => $customer->getKey(), 'seats' => 1, 'status' => 'waiting', 'notes' => 'Aishath needs a ground-floor room', 'created_at' => now(), 'updated_at' => now()]);
+
+        $this->artisan('data:anonymise', ['--force' => true])->assertSuccessful();
+
+        $this->assertStringNotContainsString('Aishath', (string) DB::table('announcements')->value('headline'));
+        $this->assertStringNotContainsString('Aishath', (string) DB::table('waitlist_entries')->value('notes'));
     }
 }

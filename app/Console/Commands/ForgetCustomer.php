@@ -8,8 +8,10 @@ use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\Payment;
 use App\Models\Stay;
+use App\Models\Traveller;
 use App\Support\Anonymisation;
 use App\Support\Forgetting;
+use App\Support\PhoneNumber;
 use Illuminate\Console\Command;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -95,7 +97,17 @@ class ForgetCustomer extends Command
 
         $travellerIds = $customer->travellers()->pluck('id')->all();
         $bookingIds = $customer->bookings()->pluck('id')->all();
-        $enquiryIds = DB::table('enquiries')->where('customer_id', $customer->getKey())->pluck('id')->all();
+        // Theirs by the link, and theirs by the number or the address: the
+        // board links only the enquiry that became the booking, so a person
+        // who asked three times kept two of them (site audit).
+        $phoneKey = PhoneNumber::key($customer->phone);
+        $enquiryIds = DB::table('enquiries')
+            ->where('customer_id', $customer->getKey())
+            ->when(filled($customer->email), fn ($q) => $q->orWhereRaw('LOWER(email) = ?', [mb_strtolower((string) $customer->email)]))
+            ->get(['id', 'phone'])
+            ->merge($phoneKey === null ? collect() : DB::table('enquiries')->whereNotNull('phone')->get(['id', 'phone'])
+                ->filter(fn ($row): bool => PhoneNumber::key($row->phone) === $phoneKey))
+            ->pluck('id')->map(fn ($id): int => (int) $id)->unique()->values()->all();
         $stayIds = DB::table('stays')->where('customer_id', $customer->getKey())->pluck('id')->all();
         $documentIds = $travellerIds === [] ? [] : DB::table('documents')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
         $incidentIds = $travellerIds === [] ? [] : DB::table('incidents')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
@@ -124,14 +136,15 @@ class ForgetCustomer extends Command
 
         $this->line($dry ? 'Would erase:' : 'Erasing:');
 
-        $files = $this->files($documentIds, $bookingIds);
+        $files = $this->files($documentIds, $bookingIds, $stayIds);
         $erased = 0;
 
         DB::transaction(function () use ($keys, $columns, $customer, $dry, &$erased): void {
             foreach (Forgetting::REACHED as $table => $route) {
                 // Every table in REACHED is in SCRUB — `Forgetting::unreached()`
-                // is checked above and the run stops if it is not.
-                $scrub = Anonymisation::SCRUB[$table];
+                // is checked above and the run stops if it is not — or in
+                // ALSO_SCRUB, for the two the scrubber empties instead.
+                $scrub = (Anonymisation::SCRUB[$table] ?? Forgetting::ALSO_SCRUB[$table]);
 
                 $query = $this->queryFor($table, $route, $customer, $keys, $columns);
 
@@ -169,6 +182,12 @@ class ForgetCustomer extends Command
             Storage::disk($disk)->delete($path);
         }
 
+        // The pointers to the deleted replaced slips go with them.
+        DB::table('payment_transactions')->whereIn('payment_id', Payment::query()
+            ->where(fn ($q) => $q->where('payable_type', Booking::class)->whereIn('payable_id', $keys['booking'] ?: [0]))
+            ->orWhere(fn ($q) => $q->where('payable_type', Stay::class)->whereIn('payable_id', $keys['stay'] ?: [0]))
+            ->pluck('id'))->whereNotNull('payload')->update(['payload' => null]);
+
         // The id, not the name — recording who was forgotten would undo
         // the forgetting. This row says a request was honoured and when,
         // which is what an auditor needs and all they need.
@@ -196,7 +215,7 @@ class ForgetCustomer extends Command
      * @param  list<int>  $bookingIds
      * @return list<array{string, string}>
      */
-    private function files(array $documentIds, array $bookingIds): array
+    private function files(array $documentIds, array $bookingIds, array $stayIds = []): array
     {
         $files = [];
 
@@ -208,9 +227,28 @@ class ForgetCustomer extends Command
             }
         }
 
-        if ($bookingIds !== []) {
-            foreach (Payment::query()->where('payable_type', Booking::class)->whereIn('payable_id', $bookingIds)->whereNotNull('slip_path')->get() as $payment) {
+        // Both payables (site audit: a guesthouse deposit's slip was left on
+        // disk with its path nulled), and the slip each payment replaced —
+        // SlipVault keeps the superseded file and records it in the
+        // transaction's payload.
+        $payments = Payment::query()
+            ->where(function ($q) use ($bookingIds, $stayIds): void {
+                $q->where(fn ($b) => $b->where('payable_type', Booking::class)->whereIn('payable_id', $bookingIds ?: [0]))
+                    ->orWhere(fn ($s) => $s->where('payable_type', Stay::class)->whereIn('payable_id', $stayIds ?: [0]));
+            })
+            ->get();
+
+        foreach ($payments as $payment) {
+            if ($payment->slip_path !== null && $payment->slip_path !== '') {
                 $files[] = [(string) $payment->slip_disk, (string) $payment->slip_path];
+            }
+
+            foreach (DB::table('payment_transactions')->where('payment_id', $payment->getKey())->whereNotNull('payload')->get() as $transaction) {
+                $payload = json_decode((string) $transaction->payload, true);
+
+                if (is_array($payload) && filled($payload['replaced_path'] ?? null)) {
+                    $files[] = [(string) ($payment->slip_disk ?: config('payments.slips.disk', 'local')), (string) $payload['replaced_path']];
+                }
             }
         }
 
@@ -232,6 +270,23 @@ class ForgetCustomer extends Command
      */
     private function queryFor(string $table, string $route, Customer $customer, array $keys, array $columns): Builder
     {
+        // The trail of the person's own records: whatever was written about
+        // the customer, their travellers, bookings and stays.
+        if ($route === 'audited') {
+            return DB::table('audit_logs')->where(function (Builder $query) use ($customer, $keys): void {
+                $query->where(fn (Builder $q) => $q->where('auditable_type', Customer::class)->where('auditable_id', $customer->getKey()))
+                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', Traveller::class)->whereIn('auditable_id', $keys['traveller'] ?: [0]))
+                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', Booking::class)->whereIn('auditable_id', $keys['booking'] ?: [0]))
+                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', Stay::class)->whereIn('auditable_id', $keys['stay'] ?: [0]));
+            });
+        }
+
+        // The enquiries themselves: the ones gathered by link, number and
+        // address above, not only the ones carrying the customer's id.
+        if ($table === 'enquiries') {
+            return DB::table('enquiries')->whereIn('id', $keys['enquiry'] ?: [0]);
+        }
+
         if ($route === 'morph') {
             return DB::table('crm_tasks')->where(function (Builder $query) use ($customer, $keys): void {
                 $query->where(function (Builder $q) use ($customer): void {

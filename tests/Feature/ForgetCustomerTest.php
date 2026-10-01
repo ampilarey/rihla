@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\DocumentVersion;
+use App\Models\EmergencyBroadcast;
 use App\Models\Enquiry;
 use App\Models\Notice;
 use App\Models\Package;
@@ -15,6 +16,7 @@ use App\Models\RoomType;
 use App\Models\Stay;
 use App\Models\StayGuest;
 use App\Models\Traveller;
+use App\Models\User;
 use App\Services\Documents\DocumentWallet;
 use App\Services\Payments\SlipVault;
 use App\Support\Anonymisation;
@@ -148,9 +150,8 @@ class ForgetCustomerTest extends TestCase
     public function test_every_reached_table_is_one_the_scrubber_knows(): void
     {
         foreach (array_keys(Forgetting::REACHED) as $table) {
-            $this->assertArrayHasKey(
-                $table,
-                Anonymisation::SCRUB,
+            $this->assertTrue(
+                array_key_exists($table, Anonymisation::SCRUB) || array_key_exists($table, Forgetting::ALSO_SCRUB),
                 $table.' is reachable but has no columns to scrub.',
             );
         }
@@ -491,5 +492,82 @@ class ForgetCustomerTest extends TestCase
             (string) $onStay->fresh()->body,
             'A guesthouse notice outlived the erasure unscrubbed.',
         );
+    }
+
+    // ── Site audit ────────────────────────────────────────────────────────
+
+    /**
+     * Every create and update of a customer, traveller or booking is
+     * recorded in the audit trail with its values — a forgotten person's
+     * name, contacts and medical notes survived there, in a table many
+     * more staff can read, after the command reported "Erased".
+     */
+    public function test_the_audit_trail_of_the_person_loses_its_values(): void
+    {
+        [$customer, $traveller] = $this->somebodyWhoTravelled();
+        $this->actingAs(User::factory()->create());
+        $customer->update(['notes' => 'Allergic to penicillin']);
+        $traveller->update(['medical_notes' => 'Diabetic']);
+        $this->assertStringContainsString('penicillin', (string) json_encode(DB::table('audit_logs')->pluck('new_values')));
+
+        $this->artisan('data:forget', ['customer' => $customer->getKey()])->assertSuccessful();
+
+        $trail = (string) json_encode(DB::table('audit_logs')->get(['old_values', 'new_values']));
+        $this->assertStringNotContainsString('penicillin', $trail);
+        $this->assertStringNotContainsString('Diabetic', $trail);
+        $this->assertStringNotContainsString('Aishath', $trail);
+        $this->assertGreaterThan(0, DB::table('audit_logs')->where('event', 'updated')->count(), 'The fact of the change is kept; only the values go.');
+    }
+
+    /** "Sent to <address>" in a broadcast delivery is the person's address. */
+    public function test_a_broadcast_delivery_forgets_where_it_went(): void
+    {
+        [$customer, , $booking] = $this->somebodyWhoTravelled();
+        $broadcast = EmergencyBroadcast::query()->create(['departure_id' => $booking->departure_id, 'headline' => 'Gate change', 'body' => 'Gate 4']);
+        DB::table('broadcast_deliveries')->insert(['emergency_broadcast_id' => $broadcast->getKey(), 'booking_id' => $booking->getKey(), 'channel' => 'email', 'status' => 'sent', 'detail' => 'Sent to aishath@realdomain.example', 'created_at' => now(), 'updated_at' => now()]);
+
+        $this->artisan('data:forget', ['customer' => $customer->getKey()])->assertSuccessful();
+
+        $this->assertNull(DB::table('broadcast_deliveries')->value('detail'));
+    }
+
+    /** A guesthouse deposit's slip, and the slip it replaced, leave the disk too. */
+    public function test_a_stay_slip_and_a_replaced_slip_are_deleted_from_disk(): void
+    {
+        Storage::fake(config('payments.slips.disk', 'local'));
+        [$customer] = $this->somebodyWhoTravelled();
+        $stay = Stay::factory()->create([
+            'customer_id' => $customer->getKey(),
+            'status' => Stay::COMPLETED,
+            'property_id' => Property::factory()->create()->id,
+            'room_type_id' => RoomType::factory()->create()->id,
+        ]);
+        $payment = Payment::factory()->create(['payable_type' => Stay::class, 'payable_id' => $stay->getKey(), 'status' => Payment::SUCCEEDED]);
+        app(SlipVault::class)->attach($payment, UploadedFile::fake()->createWithContent('first.pdf', 'first slip'));
+        $first = (string) $payment->fresh()->slip_path;
+        app(SlipVault::class)->attach($payment->fresh(), UploadedFile::fake()->createWithContent('second.pdf', 'second slip'));
+        $second = (string) $payment->fresh()->slip_path;
+        $disk = (string) $payment->fresh()->slip_disk;
+        $this->assertTrue(Storage::disk($disk)->exists($first), 'The replaced slip is kept on disk by design.');
+        $this->assertTrue(Storage::disk($disk)->exists($second));
+
+        $this->artisan('data:forget', ['customer' => $customer->getKey()])->assertSuccessful();
+
+        $this->assertFalse(Storage::disk($disk)->exists($first));
+        $this->assertFalse(Storage::disk($disk)->exists($second));
+        $this->assertStringNotContainsString($first, (string) json_encode(DB::table('payment_transactions')->pluck('payload')));
+    }
+
+    /** The enquiries that never became the booking are theirs by the number. */
+    public function test_an_enquiry_linked_only_by_the_phone_number_is_erased_too(): void
+    {
+        [$customer] = $this->somebodyWhoTravelled();
+        Enquiry::factory()->create(['customer_id' => null, 'name' => 'Aishath Real Person', 'phone' => '+960 771 2345', 'email' => null, 'message' => 'Asking again']);
+        Enquiry::factory()->create(['customer_id' => null, 'name' => 'Somebody Else', 'phone' => '7700000', 'email' => 'else@example.com', 'message' => 'Not hers']);
+
+        $this->artisan('data:forget', ['customer' => $customer->getKey()])->assertSuccessful();
+
+        $this->assertSame(0, Enquiry::where('name', 'Aishath Real Person')->count());
+        $this->assertSame(1, Enquiry::where('name', 'Somebody Else')->count());
     }
 }

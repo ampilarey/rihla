@@ -56,8 +56,14 @@ class HeroBannerForm
                 ->description('One address per button. The language is added to the front of it automatically, so it is the same in every language.')
                 ->columns(2)
                 ->schema([
-                    TextInput::make('primary_cta_url')->label('Main button link')->maxLength(255),
-                    TextInput::make('secondary_cta_url')->label('Second button link')->maxLength(255),
+                    // A path on this site or an http(s) address — never a
+                    // scheme the browser would run (site audit).
+                    TextInput::make('primary_cta_url')->label('Main button link')->maxLength(255)
+                        ->regex('/^(\/[^\s]*|https?:\/\/[^\s]+)$/')
+                        ->validationMessages(['regex' => 'A link starts with / or with https://.']),
+                    TextInput::make('secondary_cta_url')->label('Second button link')->maxLength(255)
+                        ->regex('/^(\/[^\s]*|https?:\/\/[^\s]+)$/')
+                        ->validationMessages(['regex' => 'A link starts with / or with https://.']),
                 ]),
 
             Section::make('Picture')->schema([
