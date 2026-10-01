@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RequireSecondFactor;
 use Laravel\Pulse\Http\Middleware\Authorize;
 use Laravel\Pulse\Pulse;
 use Laravel\Pulse\Recorders;
@@ -143,6 +144,9 @@ return [
     'middleware' => [
         'web',
         Authorize::class,
+        // The second step, as on every other signed-in screen (site audit):
+        // this one shows emails, queries and exception traces.
+        RequireSecondFactor::class,
     ],
 
     /*

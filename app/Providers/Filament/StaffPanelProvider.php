@@ -91,6 +91,9 @@ class StaffPanelProvider extends PanelProvider
                 // needs a user to have an opinion about, and it never
                 // locks anybody out — see the middleware.
                 RequireSecondFactor::class,
-            ]);
+                // Persistent, or Livewire's update requests — every button in
+                // the panel — skip it, and an action runs for a session that
+                // never passed the challenge (site audit).
+            ], isPersistent: true);
     }
 }

@@ -163,7 +163,7 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // ages and who is sharing a room with whom. The controller narrows
     // further to the departures this person's profile is assigned to, so an
     // account with no profile sees nothing rather than everything.
-    Route::middleware(['auth', 'can:attendance.create'])->prefix('leader')->name('leader.')->group(function () {
+    Route::middleware(['auth', 'mfa', 'can:attendance.create'])->prefix('leader')->name('leader.')->group(function () {
         Route::get('/', [LeaderController::class, 'index'])->name('index');
         Route::get('/{departure}', [LeaderController::class, 'departure'])->name('departure');
         Route::get('/{departure}/snapshot', [LeaderController::class, 'snapshot'])->name('snapshot');
@@ -341,7 +341,7 @@ Route::get('/lang/{code}', [PageController::class, 'setLocale'])->name('locale.s
 // one of those flows threw RouteNotFoundException and returned a 500. Admins
 // are forwarded to the admin panel; everyone else gets the plain dashboard,
 // which is why this is not simply an alias for the admin route.
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'mfa'])->group(function () {
     Route::get('/dashboard', function () {
         return Gate::allows('admin')
             ? redirect()->route('admin.dashboard')
@@ -381,7 +381,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes (require authentication and admin privileges)
-Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'mfa', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
         $tripCount = Trip::count();
         $mediaCount = Media::count();
@@ -444,7 +444,7 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
 | Not locale-prefixed: these are staff screens, and the panel is English.
 |
 */
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'mfa'])->group(function () {
     Route::get('/two-factor', [SecondFactorController::class, 'settings'])->name('mfa.settings');
     Route::get('/two-factor/set-up', [SecondFactorController::class, 'enrol'])->name('mfa.enrol');
     Route::post('/two-factor/set-up', [SecondFactorController::class, 'confirm'])->name('mfa.confirm');

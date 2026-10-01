@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Support\Totp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -56,7 +58,7 @@ class SecondFactorController extends Controller
             return redirect()->route('mfa.enrol');
         }
 
-        if (! Totp::verify($secret, $data['code'])) {
+        if (! Totp::verify($secret, $data['code']) || ! $this->firstUseOf($user, $data['code'])) {
             return back()->withErrors([
                 'code' => __('messages.That code did not match. Check the clock on your telephone is right, and try the next one.'),
             ]);
@@ -107,7 +109,7 @@ class SecondFactorController extends Controller
 
         $code = (string) $data['code'];
 
-        if (Totp::verify((string) $user->mfa_secret, $code) || $user->consumeRecoveryCode($code)) {
+        if ($this->accepts($user, $code)) {
             RateLimiter::clear($key);
 
             // A new session id on a privilege change, so a fixated session
@@ -152,18 +154,54 @@ class SecondFactorController extends Controller
             ]);
         }
 
-        $request->validate(['password' => ['required', 'current_password']]);
+        $data = $request->validate([
+            'password' => ['required', 'current_password'],
+            'code' => ['required', 'string'],
+        ]);
+
+        // The password alone is the one thing the second step exists to
+        // not trust (site audit): whoever has it could otherwise switch the
+        // step off from any signed-in session and then open the panel.
+        if (! $this->accepts($user, (string) $data['code'])) {
+            return back()->withErrors([
+                'code' => __('messages.That code did not match. Use the next one your app shows, or one of your recovery codes.'),
+            ]);
+        }
 
         $user->forceFill([
             'mfa_secret' => null,
             'mfa_confirmed_at' => null,
             'mfa_recovery_codes' => null,
+            // Whoever held a "remember me" cookie signs in again.
+            'remember_token' => Str::random(60),
         ])->save();
 
         $request->session()->forget(RequireSecondFactor::VERIFIED_AT);
 
         return redirect()->route('mfa.settings')
             ->with('status', __('messages.The second step has been turned off for your account.'));
+    }
+
+    /**
+     * A time-based code, or a recovery code. A time-based code is accepted
+     * once: the app shows the same six digits for thirty seconds and the
+     * check allows a step of drift either side, so a code read over a
+     * shoulder was good for ninety seconds more (site audit).
+     */
+    private function accepts(User $user, string $code): bool
+    {
+        if (Totp::verify((string) $user->mfa_secret, $code)) {
+            return $this->firstUseOf($user, $code);
+        }
+
+        return $user->consumeRecoveryCode($code);
+    }
+
+    private function firstUseOf(User $user, string $code): bool
+    {
+        $code = preg_replace('/\s+/', '', $code) ?? '';
+
+        return Cache::add('totp-used:'.$user->getKey().':'.$code, true, now()->addMinutes(3));
     }
 
     private function user(Request $request): User

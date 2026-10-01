@@ -30,6 +30,7 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'current_password' => 'password',
             ]);
 
         $response
@@ -95,5 +96,22 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    /** The address is where a password reset goes, so changing it takes the password — site audit. */
+    public function test_changing_the_address_needs_the_current_password(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patch('/profile', ['name' => $user->name, 'email' => 'other@example.com'])
+            ->assertSessionHasErrors('current_password');
+
+        $this->assertNotSame('other@example.com', $user->fresh()->email);
+
+        // The name alone changes without it.
+        $this->actingAs($user)
+            ->patch('/profile', ['name' => 'New Name', 'email' => $user->email])
+            ->assertSessionHasNoErrors();
     }
 }

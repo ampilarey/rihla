@@ -53,7 +53,6 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         // Deprecated: superseded by roles. Read only by the migration
         // that backfilled Super Admin from it, and kept for one release
         // so that backfill remains reversible. Nothing else may read it.
-        'is_admin',
     ];
 
     /**

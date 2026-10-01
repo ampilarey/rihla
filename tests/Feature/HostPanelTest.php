@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Filament\Host\Pages\RegisterHost;
 use App\Filament\Resources\Partners\Pages\ListPartners;
 use App\Models\HostMembership;
+use App\Models\HostStatement;
 use App\Models\Partner;
+use App\Models\Property;
+use App\Models\Stay;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\EncryptedFile;
@@ -256,5 +259,30 @@ class HostPanelTest extends TestCase
         $content = User::factory()->create()->assignRole(Access::CONTENT_MANAGER);
 
         $this->assertFalse($content->can('partner.verify'));
+    }
+
+    /**
+     * Inside /host a Super Admin is whatever their membership says. Before
+     * the site audit the global grant answered before the host policies
+     * could, so a reception member who was also staff held every host
+     * ability at that host.
+     */
+    public function test_a_super_admin_inside_the_host_panel_is_only_their_membership(): void
+    {
+        $host = Partner::factory()->create();
+        $user = $this->hostUser($host, HostRole::RECEPTION)->assignRole(Access::SUPER_ADMIN);
+        $stay = Stay::factory()->create([
+            'property_id' => Property::factory()->create(['partner_id' => $host->id])->id,
+        ]);
+
+        $this->actingAs($user);
+        $this->assertTrue($user->can('view', $stay), 'Outside the panel the global grant stands.');
+
+        Filament::setCurrentPanel(Filament::getPanel('host'));
+        Filament::getPanel('host')->boot();
+        Filament::setTenant($host);
+
+        $this->assertFalse(HostRole::allows(HostRole::RECEPTION, HostRole::EARNINGS));
+        $this->assertFalse($user->can('viewAny', HostStatement::class), 'Reception cannot see the money, Super Admin or not.');
     }
 }

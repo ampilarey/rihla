@@ -51,4 +51,14 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    /** Per address and per account, not only per pair — site audit. */
+    public function test_the_sign_in_form_is_throttled(): void
+    {
+        $post = collect(app('router')->getRoutes()->getRoutes())
+            ->first(fn ($route): bool => $route->uri() === 'login' && in_array('POST', $route->methods(), true));
+
+        $this->assertNotNull($post);
+        $this->assertContains('throttle:login', $post->middleware());
+    }
 }

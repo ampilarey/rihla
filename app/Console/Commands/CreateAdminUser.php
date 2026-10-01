@@ -38,6 +38,12 @@ class CreateAdminUser extends Command
             return 1;
         }
 
+        if (mb_strlen((string) $password) < 12) {
+            $this->error('The password needs at least 12 characters.');
+
+            return 1;
+        }
+
         $user = User::create([
             'name' => 'Admin',
             'email' => $email,

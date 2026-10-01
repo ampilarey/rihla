@@ -39,6 +39,10 @@
                     @error('password')
                         <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>
                     @enderror
+
+                    <label for="code" class="mb-1 mt-3 block text-sm text-ink">{{ __('messages.A code from your app, or a recovery code') }}</label>
+                    <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required
+                           class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">
                     @error('code')
                         <p class="mt-1 text-sm text-error-dark">{{ $message }}</p>
                     @enderror

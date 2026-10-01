@@ -59,13 +59,40 @@ class PasswordResetTest extends TestCase
             $response = $this->post('/reset-password', [
                 'token' => $notification->token,
                 'email' => $user->email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'a-longer-password',
+                'password_confirmation' => 'a-longer-password',
             ]);
 
             $response
                 ->assertSessionHasNoErrors()
                 ->assertRedirect(route('login'));
+
+            return true;
+        });
+    }
+
+    /** "We can't find a user with that address" told a stranger who works here — site audit. */
+    public function test_an_unknown_address_gets_the_same_answer_as_a_known_one(): void
+    {
+        Notification::fake();
+
+        $this->post('/forgot-password', ['email' => 'nobody@example.com'])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status');
+    }
+
+    /** Twelve characters, as the host invitation already asks — site audit. */
+    public function test_a_short_password_is_refused(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+            $this->post('/reset-password', [
+                'token' => $notification->token, 'email' => $user->email,
+                'password' => 'short123', 'password_confirmation' => 'short123',
+            ])->assertSessionHasErrors('password');
 
             return true;
         });
