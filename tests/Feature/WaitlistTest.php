@@ -206,6 +206,24 @@ class WaitlistTest extends TestCase
         $this->assertSame(0, Customer::count());
     }
 
+    /** Reaching the list is read-only; removing somebody and freeing their seats is not. */
+    public function test_a_read_only_role_cannot_remove_somebody_from_the_queue(): void
+    {
+        $package = $this->package();
+        $departure = $this->departure($package);
+        $entry = $this->join($departure, 'Aminath Waiting', seats: 1);
+
+        Livewire::actingAs(User::factory()->create()->assignRole(Access::FINANCE))
+            ->test(ListWaitlistEntries::class)
+            ->assertTableActionHidden('cancel', $entry);
+
+        Livewire::actingAs(User::factory()->create()->assignRole(Access::BOOKING_STAFF))
+            ->test(ListWaitlistEntries::class)
+            ->callTableAction('cancel', $entry, ['reason' => 'They rang to say no']);
+
+        $this->assertSame(WaitlistEntry::CANCELLED, $entry->fresh()->status);
+    }
+
     // ── Promotion ─────────────────────────────────────────────────────────
 
     /**

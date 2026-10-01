@@ -38,6 +38,17 @@ class QuizQuestion extends Model
 
     protected $casts = ['sort_order' => 'integer'];
 
+    protected static function booted(): void
+    {
+        // A change here is a change to what the scholar approved (site audit).
+        $tell = function (self $record): void {
+            $record->module?->noteContentChange();
+        };
+
+        static::saved($tell);
+        static::deleted($tell);
+    }
+
     /** @return BelongsTo<LearningModule, $this> */
     public function module(): BelongsTo
     {

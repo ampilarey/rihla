@@ -995,7 +995,7 @@ final class Access
             // to. Editing a booking is booking staff's job. Payments are
             // now this role's whole reason to exist: it records them, pulls
             // the slips, decides whether the money is in, and issues
-            // refunds. Nobody else holds `payment.reconcile`.
+            // refunds. Only the Operations Manager also holds `payment.reconcile`.
             // The board's money line is this role's job: which departures
             // are flying with a balance outstanding, and how much.
             self::FINANCE => array_merge(

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Payments\Tables;
 
 use App\Exceptions\RoomNotAvailable;
+use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Stay;
 use App\Services\Payments\Ledger;
@@ -131,10 +132,13 @@ class PaymentsTable
     private static function receiptAction(): Action
     {
         return Action::make('receipt')
+            // The receipt template is a booking's; a stay payment threw
+            // inside it (site audit).
+            ->visible(fn (Payment $record): bool => $record->payable_type === Booking::class
+                && $record->status === Payment::SUCCEEDED
+                && auth()->user()?->can('payment.view') === true)
             ->label(fn (Payment $record): string => $record->isRefund() ? 'Refund note' : 'Receipt')
             ->icon('heroicon-o-document-arrow-down')
-            ->visible(fn (Payment $record): bool => $record->status === Payment::SUCCEEDED
-                && auth()->user()?->can('payment.view') === true)
             ->url(fn (Payment $record): string => route('staff.receipt', ['payment' => $record]), shouldOpenInNewTab: true);
     }
 
@@ -264,6 +268,7 @@ class PaymentsTable
                 TextInput::make('amount')
                     ->label('Amount')
                     ->numeric()
+                    ->integer()
                     ->prefix(fn (Payment $record): string => $record->currency)
                     ->helperText('Whole rufiyaa. Leave blank to refund the whole payment.'),
 

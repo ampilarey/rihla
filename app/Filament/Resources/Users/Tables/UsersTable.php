@@ -3,14 +3,17 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Models\User;
+use App\Support\Access;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class UsersTable
 {
@@ -61,7 +64,19 @@ class UsersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    // The single delete hides itself for your own row and the
+                    // model refuses the last Super Admin; the bulk one did
+                    // neither (site audit).
+                    DeleteBulkAction::make()
+                        ->before(function (DeleteBulkAction $action, Collection $records): void {
+                            $superAdmins = User::role(Access::SUPER_ADMIN)->count();
+                            $going = $records->filter(fn (User $user): bool => $user->hasRole(Access::SUPER_ADMIN))->count();
+
+                            if ($records->contains(fn (User $user): bool => $user->is(auth()->user())) || $going >= $superAdmins) {
+                                Notification::make()->danger()->title('Not these')->body('You cannot delete yourself or the last Super Admin.')->send();
+                                $action->cancel();
+                            }
+                        }),
                 ]),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query->with('roles'));

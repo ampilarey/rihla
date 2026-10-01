@@ -38,7 +38,9 @@ class CrmTaskForm
                     ->default(fn () => auth()->id())
                     // Work everybody can hand around is work nobody owns.
                     ->disabled(fn (): bool => auth()->user()?->can('task.assign') !== true)
-                    ->dehydrated()
+                    // Disabled is not enough: an explicit dehydrated() wins
+                    // and a crafted request wrote any owner (site audit).
+                    ->dehydrated(fn (): bool => auth()->user()?->can('task.assign') === true)
                     ->helperText('Left as you, unless you can hand it to somebody else.'),
 
                 Textarea::make('detail')->rows(3)->columnSpanFull(),

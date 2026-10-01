@@ -14,6 +14,12 @@ class ListCrmTasks extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('Add a follow-up')];
+        return [
+            CreateAction::make()->label('Add a follow-up')
+                // Whoever may not assign work owns what they make.
+                ->mutateDataUsing(fn (array $data): array => auth()->user()?->can('task.assign') === true
+                    ? $data
+                    : [...$data, 'owner_id' => auth()->id()]),
+        ];
     }
 }

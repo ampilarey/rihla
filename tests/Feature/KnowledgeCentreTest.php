@@ -6,6 +6,8 @@ use App\Exceptions\EditorialStandardNotMet;
 use App\Models\ArticleReference;
 use App\Models\KnowledgeArticle;
 use App\Models\Person;
+use App\Models\User;
+use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -320,5 +322,65 @@ class KnowledgeCentreTest extends TestCase
         foreach (KnowledgeArticle::CATEGORIES as $category) {
             $this->assertNotSame('Unknown', (new KnowledgeArticle(['category' => $category]))->categoryLabel(), $category);
         }
+    }
+
+    // ── Site audit ────────────────────────────────────────────────────────
+
+    /**
+     * Approved words that change are no longer the approved words. A
+     * Content Manager could rewrite the body of a live, scholar-signed page
+     * and it stayed live under the scholar's name.
+     */
+    public function test_a_change_to_a_published_article_by_a_non_reviewer_takes_it_back_to_the_scholar(): void
+    {
+        $article = $this->article();
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        $article->fresh()->approve($this->scholar());
+        $article->fresh()->publish();
+        $this->assertTrue($article->fresh()->isLive());
+
+        $this->actingAs(User::factory()->create()->assignRole(Access::CONTENT_MANAGER));
+        $live = $article->fresh();
+        $live->setTranslation('body', 'en', 'A different ruling entirely.');
+        $live->save();
+
+        $this->assertSame(KnowledgeArticle::IN_REVIEW, $live->fresh()->status);
+        $this->assertNull($live->fresh()->reviewed_by);
+        $this->assertFalse($live->fresh()->isLive());
+    }
+
+    /** A reviewer's own edit needs no second pair of eyes, and a slug is not content. */
+    public function test_a_reviewers_edit_and_a_slug_change_leave_it_live(): void
+    {
+        $article = $this->article();
+        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        $article->fresh()->approve($this->scholar());
+        $article->fresh()->publish();
+
+        $this->actingAs(User::factory()->create()->assignRole(Access::CONTENT_MANAGER));
+        $live = $article->fresh();
+        $live->slug = 'a-new-slug';
+        $live->save();
+        $this->assertSame(KnowledgeArticle::PUBLISHED, $live->fresh()->status);
+
+        $this->actingAs(User::factory()->create()->assignRole(Access::SCHOLAR));
+        $live = $article->fresh();
+        $live->setTranslation('body', 'en', 'A typo fixed by the scholar.');
+        $live->save();
+        $this->assertSame(KnowledgeArticle::PUBLISHED, $live->fresh()->status);
+    }
+
+    /** And a source attached to a live article is part of its content. */
+    public function test_changing_a_source_on_a_published_article_takes_it_back_too(): void
+    {
+        $article = $this->article();
+        $reference = ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        $article->fresh()->approve($this->scholar());
+        $article->fresh()->publish();
+
+        $this->actingAs(User::factory()->create()->assignRole(Access::CONTENT_MANAGER));
+        $reference->fresh()->forceFill(['grading' => 'daif'])->save();
+
+        $this->assertSame(KnowledgeArticle::IN_REVIEW, $article->fresh()->status);
     }
 }

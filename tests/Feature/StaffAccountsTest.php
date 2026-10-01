@@ -241,4 +241,33 @@ class StaffAccountsTest extends TestCase
         $this->artisan('admin:create', ['email' => 'owner@example.com', 'password' => 'a-longer-password'])->assertSuccessful();
         $this->assertTrue(User::where('email', 'owner@example.com')->sole()->hasRole(Access::SUPER_ADMIN));
     }
+
+    /** Nobody may remove the last Super Admin's role, themselves included — site audit. */
+    public function test_the_last_super_admin_cannot_demote_themselves(): void
+    {
+        $admin = $this->superAdmin();
+        $booking = Role::where('name', Access::BOOKING_STAFF)->value('id');
+
+        Livewire::actingAs($admin)
+            ->test(EditUser::class, ['record' => $admin->getKey()])
+            ->fillForm(['roles' => [$booking]])
+            ->call('save')
+            ->assertNotified();
+
+        $this->assertTrue($admin->fresh()->hasRole(Access::SUPER_ADMIN));
+    }
+
+    /** The bulk delete respects the same two rules the single delete does. */
+    public function test_bulk_delete_spares_yourself_and_the_last_super_admin(): void
+    {
+        $admin = $this->superAdmin();
+        $other = User::factory()->create()->assignRole(Access::BOOKING_STAFF);
+
+        Livewire::actingAs($admin)
+            ->test(ListUsers::class)
+            ->callTableBulkAction('delete', [$admin, $other]);
+
+        $this->assertNotNull($admin->fresh());
+        $this->assertNotNull($other->fresh(), 'The whole selection is refused, not half of it.');
+    }
 }

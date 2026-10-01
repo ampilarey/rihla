@@ -23,6 +23,11 @@ class AuditObserver
         'remember_token',
         'two_factor_secret',
         'two_factor_recovery_codes',
+        // This app's own names for the second factor: the seed's ciphertext
+        // and the recovery-code hashes went into the trail on enrolment
+        // (site audit), readable by anyone with audit.view.
+        'mfa_secret',
+        'mfa_recovery_codes',
         'api_token',
     ];
 
@@ -39,7 +44,7 @@ class AuditObserver
      *
      * @var list<string>
      */
-    private const REDACT = ['passport_number', 'national_id'];
+    private const REDACT = ['passport_number', 'national_id', 'payout_account_number', 'id_number'];
 
     private const REDACTED = '[redacted]';
 

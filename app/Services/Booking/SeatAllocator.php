@@ -183,10 +183,79 @@ final class SeatAllocator
         DB::transaction(function () use ($booking): void {
             $locked = $this->lock($booking->departure);
 
-            $this->setCounters($locked, confirmed: max(0, $locked->capacity_confirmed - $booking->seats));
+            // The seats are given back once, however many times this is
+            // called (site audit): the hold that put them in the confirmed
+            // count is marked cancelled as they go, and a second caller
+            // under the lock finds none left to return. A booking confirmed
+            // by hand with no hold never added to the count, so it has
+            // nothing to give back either.
+            $hold = $booking->seatHolds()
+                ->whereNotNull('confirmed_at')
+                ->where('released_reason', SeatHold::CONFIRMED)
+                ->latest('id')
+                ->first();
+
+            if (! $hold instanceof SeatHold) {
+                return;
+            }
+
+            $this->setCounters($locked, confirmed: max(0, $locked->capacity_confirmed - $hold->seats));
+            $hold->forceFill(['released_reason' => SeatHold::CANCELLED])->save();
         });
 
         $this->offerToWaitlist($booking->departure);
+    }
+
+    /**
+     * Give a booking's hold more time — site audit.
+     *
+     * A live hold simply gets a later expiry. A hold that has lapsed takes
+     * its seats again under the lock, as a new hold on the same booking,
+     * *without* the booking being expired on the way: before this the
+     * screen called {@see hold()}, whose sweep expired the booking (final)
+     * and then held seats for twenty-four hours for a booking nobody could
+     * confirm — and on a full departure the new hold could never fit beside
+     * the old one, so the customer waiting on a bank transfer for the last
+     * seats was exactly the one who could not be given time.
+     *
+     * @throws NoSeatsAvailable
+     */
+    public function extend(SeatHold $hold, CarbonInterface $until): SeatHold
+    {
+        return DB::transaction(function () use ($hold, $until): SeatHold {
+            $locked = $this->lock($hold->departure);
+            $hold->refresh();
+
+            if ($hold->confirmed_at !== null) {
+                throw new \InvalidArgumentException('Those seats are already confirmed.');
+            }
+
+            if ($hold->isLive()) {
+                $hold->forceFill(['expires_at' => $until])->save();
+
+                return $hold;
+            }
+
+            // Lapsed but not yet swept: its seats are still counted as held.
+            if ($hold->released_at === null) {
+                $this->setCounters($locked, held: max(0, $locked->capacity_held - $hold->seats));
+                $hold->forceFill(['released_at' => now(), 'released_reason' => SeatHold::EXPIRED])->save();
+            }
+
+            $remaining = $locked->capacity_total - $locked->capacity_held - $locked->capacity_confirmed;
+
+            if ($hold->seats > $remaining) {
+                throw NoSeatsAvailable::on($locked, $hold->seats, max(0, $remaining));
+            }
+
+            $this->setCounters($locked, held: $locked->capacity_held + $hold->seats);
+
+            return $locked->seatHolds()->create([
+                'booking_id' => $hold->booking_id,
+                'seats' => $hold->seats,
+                'expires_at' => $until,
+            ]);
+        });
     }
 
     /**

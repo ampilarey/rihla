@@ -117,6 +117,7 @@ class HostStatementResource extends Resource
                 TextInput::make('amount')
                     ->label('Amount sent ('.$record->currency.')')
                     ->numeric()
+                    ->integer()
                     ->minValue(1)
                     ->required()
                     ->default(fn (): int => intdiv($record->stillOwed()->minor, 100)),

@@ -573,4 +573,27 @@ class PaymentTest extends TestCase
         $this->assertFalse($staff->can('payment.viewAny'));
         $this->assertFalse($staff->can('payment.view'));
     }
+
+    /**
+     * Two reviewers act on one slip within a minute. The second screen was
+     * loaded before the first decided, so its refuse() ran against the
+     * status it had loaded and wrote "failed" over "succeeded" — a move the
+     * state machine forbids — and the total went back to nought.
+     */
+    public function test_a_decision_already_made_is_not_overwritten_by_a_stale_screen(): void
+    {
+        $booking = $this->booking();
+        $payment = Payment::factory()->awaitingReview()->create(['payable_type' => Booking::class, 'payable_id' => $booking->getKey(), 'amount_minor' => 1_000_000]);
+        $staleCopy = Payment::find($payment->getKey());
+
+        $this->ledger()->reconcile($payment);
+
+        $this->expectException(IllegalPaymentTransition::class);
+        try {
+            $this->ledger()->refuse($staleCopy, 'Wrong amount');
+        } finally {
+            $this->assertSame(Payment::SUCCEEDED, $payment->fresh()->status);
+            $this->assertSame(1_000_000, $booking->fresh()->paid_minor);
+        }
+    }
 }

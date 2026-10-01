@@ -68,9 +68,16 @@ class DeparturesRelationManager extends RelationManager
                 ->description('A held seat is neither free nor sold. "Held" is moved by the booking engine under a row lock and must not be typed here [R-2].')
                 ->columns(3)
                 ->schema([
-                    TextInput::make('capacity_total')->label('Total seats')->numeric()->minValue(0)->default(0)
-                        ->helperText('Leave at 0 to show no seats bar at all.'),
-                    TextInput::make('capacity_confirmed')->label('Confirmed')->numeric()->minValue(0)->default(0),
+                    TextInput::make('capacity_total')->label('Total seats')->numeric()->default(0)
+                        // Never below the seats already taken (site audit):
+                        // the engine would then sell what does not exist.
+                        ->minValue(fn (?Departure $record): int => $record === null ? 0 : $record->capacity_held + $record->capacity_confirmed)
+                        ->helperText('Leave at 0 to show no seats bar at all. It cannot go below the seats already held or sold.'),
+                    // Engine-owned like "held": typing it down made the
+                    // allocator sell seats twice, and the database check
+                    // cannot see an undercount (site audit).
+                    TextInput::make('capacity_confirmed')->label('Confirmed')->numeric()->minValue(0)->default(0)->disabled()->dehydrated(false)
+                        ->helperText('Moved by confirming and cancelling bookings.'),
                     TextInput::make('capacity_held')->label('Held')->numeric()->minValue(0)->default(0)->disabled()
                         ->helperText('Set by the booking engine.'),
                 ]),
