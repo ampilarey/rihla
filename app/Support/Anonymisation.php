@@ -57,8 +57,11 @@ final class Anonymisation
             'full_name' => 'name', 'passport_number' => 'name',
             'medical_notes' => 'null', 'emergency_contact_name' => 'name',
             'emergency_contact_phone' => 'phone',
+            // A birth date and a passport's expiry and issuer identify a
+            // person as surely as the number does (site audit).
+            'date_of_birth' => 'null', 'passport_expiry' => 'null', 'passport_issuing_country' => 'null',
         ],
-        'people' => ['name' => 'name', 'email' => 'email', 'phone' => 'phone', 'bio' => 'text'],
+        'people' => ['name' => 'name', 'bio' => 'text'],
         // A partner is a real guesthouse owner, and their record holds the
         // phone number Rihla actually rings, their WhatsApp, and what was
         // agreed with them commercially — §15.4. None of it belongs on a
@@ -85,7 +88,7 @@ final class Anonymisation
         // left alone rather than set to something known: nobody should be
         // able to sign in to the test server with a credential this command
         // minted. Make an account afterwards with `admin:create`.
-        'users' => ['name' => 'name', 'email' => 'email', 'remember_token' => 'null'],
+        'users' => ['name' => 'name', 'email' => 'email', 'remember_token' => 'null', 'password' => 'hash'],
         'enquiries' => [
             'name' => 'name', 'phone' => 'phone', 'email' => 'email',
             'message' => 'text', 'next_action' => 'text', 'lost_reason' => 'text',
@@ -137,6 +140,7 @@ final class Anonymisation
         // would throw on every read after this command ran.
         'stay_guests' => [
             'full_name' => 'name', 'id_number' => 'name', 'nationality' => 'name',
+            'date_of_birth' => 'null',
         ],
         'payments' => [
             'payer_name' => 'name', 'payer_bank' => 'text', 'payer_reference' => 'text',
@@ -154,12 +158,12 @@ final class Anonymisation
         'scholar_questions' => ['body' => 'text', 'answer' => 'text', 'declined_reason' => 'text'],
         'assistant_exchanges' => ['question' => 'text', 'answer' => 'text', 'reason' => 'text'],
         'crm_tasks' => ['subject' => 'text', 'detail' => 'text'],
-        'customer_tags' => ['tag' => 'text', 'note' => 'text'],
+        'customer_tags' => ['tag' => 'text'],
         'quotations' => ['includes' => 'text', 'excludes' => 'text', 'decline_reason' => 'text'],
         'visa_applications' => ['reference' => 'name', 'rejection_reason' => 'text', 'notes' => 'text'],
-        'visa_application_events' => ['note' => 'text'],
+        'visa_application_events' => ['reason' => 'text'],
         'nusuk_permits' => ['reference' => 'name', 'refusal_reason' => 'text', 'notes' => 'text'],
-        'nusuk_permit_events' => ['note' => 'text'],
+        'nusuk_permit_events' => ['reason' => 'text'],
         'operations_log_entries' => ['body' => 'text'],
         // §8.3. The flights themselves are timetable facts and stay; the
         // notes are free text somebody may have written a name into, and a
@@ -168,15 +172,20 @@ final class Anonymisation
         'departure_transfers' => ['contact_phone' => 'phone', 'notes' => 'text'],
         'departure_checklist_items' => ['notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],
-        'room_assignments' => ['note' => 'text'],
-        'notices' => ['body' => 'text'],
-        'announcements' => ['title' => 'text', 'body' => 'text'],
-        'emergency_broadcasts' => ['subject' => 'text', 'body' => 'text'],
-        'waitlist_entries' => ['name' => 'name', 'email' => 'email', 'phone' => 'phone', 'note' => 'text'],
+        // Site audit: thirteen of the names here did not exist — `title`
+        // for `headline`, `note` for `reason`, a waiting-list `name` the
+        // table never had — and the scrubber skipped an unknown column
+        // without a word, so the real ones were never touched. It refuses
+        // them now, and AnonymiseTest checks every name against the schema.
+        'room_assignments' => [],
+        'notices' => ['headline' => 'text', 'body' => 'text'],
+        'announcements' => ['headline' => 'text', 'body' => 'text'],
+        'emergency_broadcasts' => ['headline' => 'text', 'body' => 'text'],
+        'waitlist_entries' => ['notes' => 'text'],
         'settings' => [],
         // The tokens, so a link somebody was sent for a real booking does
         // not open a scrubbed one on a public host.
-        'portal_accesses' => ['token_hash' => 'token'],
+        'portal_accesses' => ['token_hash' => 'token', 'first_used_ip' => 'null'],
         'family_accesses' => ['token_hash' => 'token', 'label' => 'name'],
     ];
 

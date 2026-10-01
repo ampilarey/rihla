@@ -118,6 +118,12 @@ final class Forgetting
         'nusuk_permit_events' => 'permit',
 
         'crm_tasks' => 'morph',
+
+        // Site audit: a forgotten person's name, contacts and medical notes
+        // survived in the audit trail (every create and update is recorded
+        // there), and "Sent to <address>" in the broadcast deliveries.
+        'audit_logs' => 'audited',
+        'broadcast_deliveries' => 'booking',
     ];
 
     /**
@@ -156,12 +162,42 @@ final class Forgetting
      */
     public static function unreached(): array
     {
+        // Both halves of the scrubber's map, not only SCRUB: the tables it
+        // empties on the test server (the audit trail, broadcast
+        // deliveries) hold a person's name too, and were invisible to this
+        // check (site audit).
         return array_values(array_diff(
-            array_keys(Anonymisation::SCRUB),
+            [...array_keys(Anonymisation::SCRUB), ...Anonymisation::EMPTY_OUT],
             array_keys(self::REACHED),
             array_keys(self::NOT_ONE_PERSONS),
+            self::NOBODYS,
         ));
     }
+
+    /**
+     * Tables the scrubber empties that hold nobody's data in particular —
+     * caches, queues, sessions — so a deletion request has nothing to
+     * find in them.
+     *
+     * @var list<string>
+     */
+    public const NOBODYS = [
+        'cache', 'cache_locks', 'sessions', 'password_reset_tokens', 'failed_jobs', 'jobs', 'job_batches',
+        'imports', 'exports', 'failed_import_rows', 'pulse_entries', 'pulse_aggregates', 'pulse_values', 'seat_holds',
+    ];
+
+    /**
+     * What to blank in the tables the scrubber empties rather than scrubs.
+     * The audit trail keeps the fact that a change was made and loses the
+     * values; a broadcast delivery keeps that it was sent and loses the
+     * address it went to.
+     *
+     * @var array<string, array<string, string>>
+     */
+    public const ALSO_SCRUB = [
+        'audit_logs' => ['old_values' => 'null', 'new_values' => 'null'],
+        'broadcast_deliveries' => ['detail' => 'null'],
+    ];
 
     /**
      * Tables named here that the schema does not have.

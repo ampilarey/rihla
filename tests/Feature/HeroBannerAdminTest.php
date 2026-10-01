@@ -403,4 +403,24 @@ class HeroBannerAdminTest extends TestCase
 
         $this->assertSame([], $missing, 'Offered on the form but absent from the built CSS: '.implode(', ', $missing));
     }
+
+    /** A button link is a path here or an http(s) address — never something the browser would run (site audit). */
+    public function test_a_button_link_cannot_carry_a_script_scheme(): void
+    {
+        $manager = $this->contentManager();
+
+        Livewire::actingAs($manager)
+            ->test(CreateHeroBanner::class)
+            ->fillForm(['title' => ['en' => 'A banner'], 'overlay_opacity' => 40, 'primary_cta_url' => 'javascript:alert(1)'])
+            ->call('create')
+            ->assertHasFormErrors(['primary_cta_url']);
+
+        $this->assertSame(0, HeroBanner::count());
+
+        Livewire::actingAs($manager)
+            ->test(CreateHeroBanner::class)
+            ->fillForm(['title' => ['en' => 'A banner'], 'overlay_opacity' => 40, 'primary_cta_url' => '/packages', 'secondary_cta_url' => 'https://wa.me/9607000000'])
+            ->call('create')
+            ->assertHasNoFormErrors();
+    }
 }

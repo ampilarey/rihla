@@ -81,7 +81,7 @@ class BackupDatabase extends Command
         $process = Process::fromShellCommandline(
             'mysqldump --host="$DB_HOST" --port="$DB_PORT" --user="$DB_USER" '
             .'--single-transaction --quick --routines --events '
-            .'--no-tablespaces "$DB_NAME" | gzip > "$DB_TARGET"',
+            .'--no-tablespaces "$DB_NAME" | (umask 077; gzip > "$DB_TARGET")',
             null,
             [
                 'MYSQL_PWD' => (string) $config['password'],

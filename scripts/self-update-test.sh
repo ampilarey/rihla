@@ -28,21 +28,24 @@ REMOTE=$(git rev-parse FETCH_HEAD)
 [ "$LOCAL" = "$REMOTE" ] && exit 0
 
 # Anonymous API — repo is public. Holds if CI is red/running.
-CHECKS=$(curl -fsS -m 20 -H 'Accept: application/vnd.github+json' \
-    "https://api.github.com/repos/${REPO}/commits/${REMOTE}/check-runs?per_page=100") \
-    || { echo "$(date '+%F %T') GitHub API unreachable — will retry next run"; exit 0; }
-
-# If no checks exist yet (no CI workflow), deploy anyway (rihla may not have CI).
-if printf '%s' "$CHECKS" | grep -q '"total_count": *[1-9]'; then
-  if printf '%s' "$CHECKS" | grep -qE '"status": *"(queued|in_progress|pending|waiting)"'; then
-      echo "$(date '+%F %T') ${REMOTE:0:8}: CI still running — holding."
+# Every CI check, by name, must be green — site audit. Reading every
+# check-run on the commit instead held for ever exactly when the webhook
+# deploy (itself a check-run on the same commit) had failed, which is the
+# one case this fallback exists for; and a commit polled before GitHub had
+# made its check-runs deployed untested.
+for NAME in "Tests (PHP 8.3)" "Tests (PHP 8.4)" "Tests (MySQL)" "Static analysis" "Dependency audit" "Committed build is current"; do
+  ONE=$(curl -fsS -m 20 -H 'Accept: application/vnd.github+json' \
+      "https://api.github.com/repos/${REPO}/commits/${REMOTE}/check-runs?check_name=$(printf '%s' "$NAME" | sed 's/ /%20/g;s/(/%28/g;s/)/%29/g')&per_page=5") \
+      || { echo "$(date '+%F %T') GitHub API unreachable — will retry next run"; exit 0; }
+  if ! printf '%s' "$ONE" | grep -q '"total_count": *[1-9]'; then
+      echo "$(date '+%F %T') ${REMOTE:0:8}: no result yet for ${NAME} — holding."
       exit 0
   fi
-  if printf '%s' "$CHECKS" | grep -qE '"conclusion": *"(failure|cancelled|timed_out|action_required|startup_failure|stale)"'; then
-      echo "$(date '+%F %T') ${REMOTE:0:8}: CI not green — holding."
+  if ! printf '%s' "$ONE" | grep -qE '"conclusion": *"success"'; then
+      echo "$(date '+%F %T') ${REMOTE:0:8}: ${NAME} is not green — holding."
       exit 0
   fi
-fi
+done
 
 if [[ ! -x "$PULL" ]]; then
   chmod +x "$PULL" 2>/dev/null || true

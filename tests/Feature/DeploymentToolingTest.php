@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Setting;
 use App\Models\Trip;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -399,5 +400,56 @@ class DeploymentToolingTest extends TestCase
         $this->artisan('rihla:preflight')
             ->doesntExpectOutputToContain('overbooking constraint')
             ->assertSuccessful();
+    }
+
+    // ── Site audit ────────────────────────────────────────────────────────
+
+    /**
+     * A failed migration leaves the site down. The EXIT trap used to bring
+     * it up regardless, serving new code against a half-migrated database
+     * while the message said the site was "still in maintenance mode".
+     */
+    public function test_a_failed_migration_keeps_the_site_down(): void
+    {
+        $script = (string) file_get_contents(base_path('scripts/deploy-production.sh'));
+
+        $this->assertStringContainsString('KEEP_DOWN=1; die "migration failed', $script);
+        $this->assertStringContainsString('KEEP_DOWN=1; die "composer install failed', $script);
+        $this->assertMatchesRegularExpression('/restore_up\(\)\s*\{\s*\[\[ "\$KEEP_DOWN" == "1" \]\] \|\|/', $script);
+    }
+
+    /**
+     * The cron fallback reads each CI check by name. Reading every
+     * check-run on the commit held for ever exactly when the webhook deploy
+     * — itself a check-run on the same commit — had failed, which is the
+     * one case the fallback exists for; and no check-runs at all deployed.
+     */
+    public function test_the_cron_fallback_waits_for_each_named_check(): void
+    {
+        $script = (string) file_get_contents(base_path('scripts/self-update-test.sh'));
+
+        foreach (['Tests (PHP 8.3)', 'Tests (PHP 8.4)', 'Tests (MySQL)', 'Static analysis', 'Dependency audit', 'Committed build is current'] as $name) {
+            $this->assertStringContainsString('"'.$name.'"', $script, "{$name} is not waited for.");
+        }
+
+        $this->assertStringContainsString('check_name=', $script);
+        $this->assertStringContainsString('no result yet for', $script);
+        $this->assertStringNotContainsString('deploy anyway', $script);
+    }
+
+    /** The one retention rule in the system is on the schedule. */
+    public function test_the_assistant_log_is_pruned_on_a_schedule(): void
+    {
+        $commands = collect(app(Schedule::class)->events())
+            ->map(fn ($event): string => (string) $event->command)
+            ->filter(fn (string $command): bool => str_contains($command, 'assistant:prune'));
+
+        $this->assertCount(1, $commands);
+    }
+
+    /** A dump of travellers' passports is readable by its owner alone. */
+    public function test_a_backup_is_written_for_its_owner_alone(): void
+    {
+        $this->assertStringContainsString('umask 077', (string) file_get_contents(base_path('app/Console/Commands/BackupDatabase.php')));
     }
 }
