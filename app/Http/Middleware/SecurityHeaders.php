@@ -4,6 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Providers\Filament\HostPanelProvider;
 use App\Providers\Filament\StaffPanelProvider;
+use App\Services\Family\Doorkeeper;
+use App\Services\Portal\Gatekeeper;
+use App\Services\Stays\StayGatekeeper;
 use App\Support\Csp;
 use Closure;
 use Illuminate\Http\Request;
@@ -46,6 +49,14 @@ class SecurityHeaders
         // exact patch version, which is a free hint to anyone looking for an
         // unpatched one.
         $response->headers->remove('X-Powered-By');
+
+        // A page that shows one person's data is never stored by a shared
+        // cache or a browser's back-forward cache: a signed-in user, or a
+        // portal/family/stay session opened from a link. The service worker
+        // keeps the same list of paths out of its cache (public/sw.js).
+        if ($this->isPersonal($request)) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+        }
         header_remove('X-Powered-By');
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
@@ -220,5 +231,20 @@ class SecurityHeaders
             array_keys($directives),
             $directives,
         ));
+    }
+
+    private function isPersonal(Request $request): bool
+    {
+        if ($request->user() !== null) {
+            return true;
+        }
+
+        $session = $request->hasSession() ? $request->session() : null;
+
+        return $session !== null && (
+            $session->has(Gatekeeper::SESSION_BOOKING)
+            || $session->has(StayGatekeeper::SESSION_STAY)
+            || $session->has(Doorkeeper::SESSION_ACCESS)
+        );
     }
 }

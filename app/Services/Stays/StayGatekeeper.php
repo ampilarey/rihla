@@ -103,6 +103,8 @@ final class StayGatekeeper
     public function leave(): void
     {
         Session::forget([self::SESSION_STAY, self::SESSION_UNTIL, self::SESSION_OPENED]);
+        // The old id is destroyed, not merely emptied (security review).
+        Session::regenerate(true);
     }
 
     public function revokeAllFor(Stay $stay): int

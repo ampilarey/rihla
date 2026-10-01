@@ -569,6 +569,36 @@ class LeaderPortalTest extends TestCase
         $this->assertCount(2, $rollCall->fresh()->marks);
     }
 
+    /**
+     * An item the phone could not have made — an array where an id goes, a
+     * note past the column — is refused on its own. Before the security
+     * review it threw, the whole request was a 500, and the phone kept every
+     * item including the applied ones and retried for ever.
+     */
+    public function test_a_malformed_item_is_refused_and_the_rest_still_applied(): void
+    {
+        [$departure, $travellers, $profile] = $this->groupOnTheGround(3);
+        $rollCall = $this->headCount($departure);
+
+        $results = $this->actingAs($this->leader($profile))
+            ->postJson(route('leader.sync'), ['items' => [
+                ['id' => 'a', 'type' => Outbox::MARK, 'roll_call_id' => ['not' => 'an id'],
+                    'traveller_id' => $travellers[0]->getKey(), 'state' => RollCallMark::PRESENT],
+                ['id' => 'b', 'type' => Outbox::MARK, 'roll_call_id' => $rollCall->getKey(),
+                    'traveller_id' => $travellers[1]->getKey(), 'state' => RollCallMark::PRESENT, 'note' => str_repeat('x', 256)],
+                ['id' => 'c', 'type' => Outbox::INCIDENT, 'client_uuid' => (string) Str::uuid(), 'departure_id' => $departure->getKey(),
+                    'severity' => Incident::SEVERITIES[0], 'summary' => 'Fine', 'location' => str_repeat('y', 300)],
+                ['id' => 'd', 'type' => Outbox::MARK, 'roll_call_id' => (string) $rollCall->getKey(),
+                    'traveller_id' => $travellers[2]->getKey(), 'state' => RollCallMark::EXCUSED],
+            ]])
+            ->assertOk()
+            ->json('results');
+
+        $this->assertSame(['a', 'b', 'c', 'd'], array_column($results, 'id'));
+        $this->assertSame([Outbox::REFUSED, Outbox::REFUSED, Outbox::REFUSED, Outbox::APPLIED], array_column($results, 'result'));
+        $this->assertCount(1, $rollCall->fresh()->marks);
+    }
+
     public function test_an_unknown_kind_of_write_is_refused_rather_than_ignored(): void
     {
         [, , $profile] = $this->groupOnTheGround();

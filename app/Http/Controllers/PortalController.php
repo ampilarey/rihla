@@ -292,6 +292,12 @@ class PortalController extends Controller
 
         abort_if($line === null, 403);
 
+        if (app(DocumentWallet::class)->tooManyToday($line->traveller, Document::PASSPORT)) {
+            throw ValidationException::withMessages([
+                'file' => __('messages.We already have several copies of this document from today. We will be in touch once they are checked.'),
+            ]);
+        }
+
         app(DocumentWallet::class)->store(
             $line->traveller,
             $validated['file'],

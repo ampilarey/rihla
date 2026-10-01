@@ -123,6 +123,8 @@ final class Gatekeeper
     public function leave(): void
     {
         Session::forget([self::SESSION_BOOKING, self::SESSION_UNTIL, self::SESSION_OPENED]);
+        // The old id is destroyed, not merely emptied (security review).
+        Session::regenerate(true);
     }
 
     /** Immediately, without waiting for the link to lapse. */

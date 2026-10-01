@@ -113,16 +113,18 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     Route::middleware('portal')->group(function () {
         Route::get('/portal', [PortalController::class, 'home'])->name('portal.home');
         Route::get('/portal/documents', [PortalController::class, 'documents'])->name('portal.documents');
-        Route::post('/portal/documents', [PortalController::class, 'storeDocument'])->name('portal.documents.store');
+        Route::post('/portal/documents', [PortalController::class, 'storeDocument'])
+            ->middleware('throttle:portal-write')->name('portal.documents.store');
         Route::post('/portal/payments', [PortalController::class, 'storePayment'])
-            ->middleware('throttle:slip')->name('portal.payments.store');
+            ->middleware('throttle:portal-write')->name('portal.payments.store');
         Route::post('/portal/leave', [PortalController::class, 'leave'])->name('portal.leave');
 
         // §6.2 puts the family-sharing controls in the pilgrim's hands, so
         // they live behind the pilgrim's own gate and there is no staff
         // path to any of them.
         Route::get('/portal/family', [PortalController::class, 'family'])->name('portal.family');
-        Route::post('/portal/family', [PortalController::class, 'storeFamilyLink'])->name('portal.family.store');
+        Route::post('/portal/family', [PortalController::class, 'storeFamilyLink'])
+            ->middleware('throttle:portal-write')->name('portal.family.store');
         Route::patch('/portal/family/{familyAccess}', [PortalController::class, 'updateFamilyLink'])->name('portal.family.update');
         Route::delete('/portal/family/{familyAccess}', [PortalController::class, 'revokeFamilyLink'])->name('portal.family.revoke');
 
@@ -134,16 +136,19 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         // read, and is keyed to their departure date.
         Route::get('/portal/learn', [LearningController::class, 'index'])->name('learning.index');
         Route::get('/portal/learn/{slug}', [LearningController::class, 'show'])->name('learning.show');
-        Route::post('/portal/learn/{slug}', [LearningController::class, 'submitQuiz'])->name('learning.quiz');
+        Route::post('/portal/learn/{slug}', [LearningController::class, 'submitQuiz'])
+            ->middleware('throttle:learning')->name('learning.quiz');
 
         // Ask a Scholar (§6.4). Declared before /learn/{slug} would catch
         // it — "questions" is not a module slug, and the ordering trap is
         // the same one the packages and ziyarah routes carry a note about.
         Route::get('/portal/questions', [LearningController::class, 'questions'])->name('learning.questions');
-        Route::post('/portal/questions', [LearningController::class, 'askQuestion'])->name('learning.questions.store');
+        Route::post('/portal/questions', [LearningController::class, 'askQuestion'])
+            ->middleware('throttle:learning')->name('learning.questions.store');
         // §9.6's assistant, in front of the scholar's queue rather than
         // beside it. It answers only from approved content or hands over.
-        Route::post('/portal/questions/guide', [LearningController::class, 'askTheGuide'])->name('learning.questions.guide');
+        Route::post('/portal/questions/guide', [LearningController::class, 'askTheGuide'])
+            ->middleware('throttle:assistant')->name('learning.questions.guide');
 
         Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
         Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
@@ -259,7 +264,7 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     Route::middleware('my-stay')->group(function () {
         Route::get('/my-stay', [MyStayController::class, 'home'])->name('my-stay.home');
         Route::post('/my-stay/payments', [MyStayController::class, 'storePayment'])
-            ->middleware('throttle:slip')->name('my-stay.payments.store');
+            ->middleware('throttle:portal-write')->name('my-stay.payments.store');
         Route::post('/my-stay/cancel', [MyStayController::class, 'cancel'])->name('my-stay.cancel');
         Route::get('/my-stay/confirmation.pdf', [MyStayController::class, 'confirmation'])->name('my-stay.confirmation');
         Route::post('/my-stay/leave', [MyStayController::class, 'leave'])->name('my-stay.leave');

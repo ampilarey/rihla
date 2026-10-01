@@ -351,6 +351,14 @@ async function keepSnapshot() {
 // ── Wiring ───────────────────────────────────────────────────────────────
 
 export function startLeaderPortal() {
+    // This store holds pilgrim names. A shared phone that keeps them after
+    // the leader signs out is the same disclosure as leaving the roster on
+    // a table — so it is cleared on sign-out from any page, not only a
+    // leader page, and before the early return below.
+    document.querySelectorAll('form[action$="/logout"]').forEach((form) => {
+        form.addEventListener('submit', () => { indexedDB.deleteDatabase(DB_NAME); });
+    });
+
     if (!document.querySelector('[data-leader-count], [data-snapshot-url]')) {
         return;
     }
@@ -366,13 +374,6 @@ export function startLeaderPortal() {
     });
 
     window.addEventListener('offline', reportQueue);
-
-    // This store holds pilgrim names. A shared phone that keeps them after
-    // the leader signs out is the same disclosure as leaving the roster on
-    // a table.
-    document.querySelectorAll('form[action$="/logout"]').forEach((form) => {
-        form.addEventListener('submit', () => { clear(); });
-    });
 }
 
 export const leaderStore = { queue, queued, forget, clear, rememberSnapshot, recallSnapshot };

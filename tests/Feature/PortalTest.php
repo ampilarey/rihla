@@ -474,4 +474,22 @@ class PortalTest extends TestCase
 
         $this->assertSame($staff->getKey(), PortalAccess::sole()->issued_by);
     }
+
+    /** Every write a link-opened session can make is rate limited — security review. */
+    public function test_every_portal_write_is_throttled(): void
+    {
+        $routes = app('router')->getRoutes();
+
+        foreach ([
+            'portal.documents.store' => 'throttle:portal-write',
+            'portal.payments.store' => 'throttle:portal-write',
+            'portal.family.store' => 'throttle:portal-write',
+            'my-stay.payments.store' => 'throttle:portal-write',
+            'learning.quiz' => 'throttle:learning',
+            'learning.questions.store' => 'throttle:learning',
+            'learning.questions.guide' => 'throttle:assistant',
+        ] as $name => $throttle) {
+            $this->assertContains($throttle, $routes->getByName($name)?->middleware() ?? [], "{$name} is not throttled.");
+        }
+    }
 }

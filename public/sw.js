@@ -11,7 +11,7 @@
  * it did manage to store would be served stale forever.
  */
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 const SHELL_CACHE = `rihla-shell-${VERSION}`;
 const RUNTIME_CACHE = `rihla-runtime-${VERSION}`;
 
@@ -242,6 +242,18 @@ self.addEventListener('message', (event) => {
     }));
 });
 
+/**
+ * Paths that carry one person's data or a login. Matched after an optional
+ * two-letter locale segment, because the portals live under /{locale}/.
+ * Kept in step with the `Cache-Control: no-store` the server sends for the
+ * same pages (SecurityHeaders) and pinned by PwaTest.
+ */
+const PRIVATE_PATH = /^(?:\/[a-z]{2})?\/(?:portal|family|my-stay|leader|staff|host|admin|dashboard|profile|devices|two-factor|login|logout|register|password|pulse|documents|payments|staff-documents|join|livewire|filament)(?:\/|$)/;
+
+function isPrivatePath(pathname) {
+    return PRIVATE_PATH.test(pathname);
+}
+
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
@@ -257,9 +269,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Never intercept the admin panel or anything authenticated: a cached
-    // response could be shown to the wrong user after logout.
-    if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/dashboard')) {
+    // Never intercept anything personal or authenticated: the Cache API
+    // ignores Cache-Control, so a cached portal page would be shown to the
+    // next person on the phone after Leave. The list used to name /admin
+    // and /dashboard only, from before the panels and portals existed.
+    if (isPrivatePath(url.pathname)) {
         return;
     }
 

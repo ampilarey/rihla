@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
+use App\Models\User;
+use App\Services\Portal\Gatekeeper;
 use App\Support\Brand;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -261,5 +264,49 @@ class PwaTest extends TestCase
 
         $this->assertStringContainsString(Brand::INK, $offline,
             'The offline page does not carry the brand ink.');
+    }
+
+    /**
+     * The worker never caches a page that shows one person's data. The
+     * exclusion list used to name /admin and /dashboard only — from before
+     * the panels moved and the portals existed — so a pilgrim's portal, a
+     * guest's stay page and a leader's roster were cached, and served to
+     * the next person on the phone after Leave. Security review.
+     */
+    public function test_the_worker_keeps_out_of_personal_and_authenticated_pages(): void
+    {
+        $worker = (string) file_get_contents(public_path('sw.js'));
+        preg_match('/const PRIVATE_PATH = (\/.*\/);/', $worker, $m);
+        $this->assertNotEmpty($m, 'sw.js has no PRIVATE_PATH list.');
+
+        $private = ['/en/portal', '/en/portal/documents', '/dv/portal/invoice', '/en/family', '/en/my-stay', '/en/my-stay/confirmation.pdf',
+            '/en/leader', '/en/leader/3/snapshot', '/staff', '/staff/bookings/1', '/host/coral/bookings', '/admin/audit', '/dashboard',
+            '/profile', '/devices', '/two-factor', '/login', '/pulse', '/documents/4/download', '/payments/9/slip', '/staff-documents/booking/1/invoice',
+            '/join/host/abc', '/livewire/update'];
+        $public = ['/', '/en', '/en/packages', '/en/packages/shawwal', '/en/stays/guesthouses', '/en/stays/coral-garden', '/en/guide', '/en/ziyarah/quba', '/offline.html', '/en/hosts-of-rihla'];
+
+        $script = 'const re = '.$m[1].'; const r = {}; for (const p of JSON.parse(process.argv[1])) r[p] = re.test(p); process.stdout.write(JSON.stringify(r));';
+        $result = json_decode((string) shell_exec('node -e '.escapeshellarg($script).' '.escapeshellarg(json_encode([...$private, ...$public]))), true);
+
+        foreach ($private as $path) {
+            $this->assertTrue($result[$path] ?? false, "sw.js would cache {$path}.");
+        }
+
+        foreach ($public as $path) {
+            $this->assertFalse($result[$path] ?? true, "sw.js would refuse to cache the public page {$path}.");
+        }
+    }
+
+    /** And the server tells every other cache the same thing. */
+    public function test_a_personal_page_is_never_stored_by_a_cache(): void
+    {
+        $this->assertStringNotContainsString('no-store', (string) $this->get('/en')->assertOk()->headers->get('Cache-Control'), 'A public page may be cached.');
+
+        $booking = Booking::factory()->create();
+        $token = app(Gatekeeper::class)->issue($booking);
+        $this->get('/en/portal/enter/'.$token);
+        $this->get('/en/portal')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+
+        $this->actingAs(User::factory()->create())->get('/en')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
     }
 }
