@@ -19,10 +19,11 @@ class HomeController extends Controller
         $currentTrip = Trip::published()->current()->first();
         $upcomingTrip = Trip::published()->upcoming()->orderBy('date_start')->first();
         $recentMedia = Media::published()
-            ->whereHas('trip', function ($query) {
+            // Grouped: before the site audit the OR was bare, so any media
+            // with no trip was shown whether or not it was published.
+            ->where(fn ($scope) => $scope->whereHas('trip', function ($query) {
                 $query->where('status', 'past');
-            })
-            ->orWhereNull('trip_id')
+            })->orWhereNull('trip_id'))
             ->orderBy('created_at', 'desc')
             ->take(8)
             ->get();

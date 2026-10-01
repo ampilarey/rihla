@@ -9,7 +9,9 @@ use App\Models\RoomType;
 use App\Models\Stay;
 use App\Support\Audience;
 use App\Support\Services;
+use App\Support\StayFilters;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 /**
@@ -267,5 +269,33 @@ class StaysSearchTest extends TestCase
 
         $this->get('/en/stays?audience=local')
             ->assertSee(route('stays.show', ['property' => $property->slug, 'audience' => 'local']), false);
+    }
+
+    /**
+     * A span of nights has a ceiling. Availability holds one object per
+     * night per room, so `to=2400-01-01` was 194 MB and two seconds per
+     * room on every page that prices listings — from one unauthenticated
+     * request. Site audit.
+     */
+    public function test_an_absurd_span_of_dates_is_ignored_rather_than_computed(): void
+    {
+        $this->listing('Free House');
+
+        $filters = StayFilters::fromRequest(Request::create('/en/stays', 'GET', ['from' => '2027-03-01', 'to' => '2400-01-01']));
+        $this->assertNull($filters->checkIn, 'The dates are dropped, not computed.');
+
+        $inside = StayFilters::fromRequest(Request::create('/en/stays', 'GET', ['from' => '2027-03-01', 'to' => '2027-04-15']));
+        $this->assertNotNull($inside->checkIn);
+
+        $this->get('/en/stays?from=2027-03-01&to=2400-01-01')->assertOk()->assertSee('Free House');
+    }
+
+    /** The share card follows the strand's switch like the page and the fact sheet do. */
+    public function test_the_share_card_is_gone_when_the_strand_is_off(): void
+    {
+        $listing = $this->listing('Free House');
+        Services::save(['stays_guesthouses' => Services::OFF]);
+
+        $this->get('/en/stays/'.$listing->slug.'/card.png')->assertNotFound();
     }
 }

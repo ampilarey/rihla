@@ -104,6 +104,29 @@ class EnquiryTest extends TestCase
         $this->assertStringContainsString('Second', (string) Enquiry::sole()->notes()->latest('id')->first()->body);
     }
 
+    /**
+     * A duplicate is the same person — the number *and* the name. Before
+     * the site audit anybody who knew a number could append text to that
+     * person's enquiry for six hours, and it read as if they had written it.
+     */
+    public function test_a_stranger_with_the_same_number_does_not_write_on_your_enquiry(): void
+    {
+        $this->post('/en/contact', ['name' => 'Ibrahim Waheed', 'phone' => '7712345', 'message' => 'Mine']);
+        $this->post('/en/contact', ['name' => 'Somebody Else', 'phone' => '7712345', 'message' => 'Not mine']);
+
+        $this->assertSame(2, Enquiry::count());
+        $this->assertSame(0, Enquiry::where('name', 'Ibrahim Waheed')->sole()->notes()->count());
+    }
+
+    /** An enquiry may name a package the site is showing, not one it is not. */
+    public function test_an_enquiry_cannot_name_an_unpublished_package(): void
+    {
+        $draft = Package::factory()->create(['is_published' => false]);
+
+        $this->post('/en/contact', ['name' => 'Ibrahim Waheed', 'phone' => '7712345', 'package_id' => $draft->getKey()])
+            ->assertSessionHasErrors('package_id');
+    }
+
     /** A form that says "you already sent this" reveals who is on file. */
     public function test_a_repeat_gets_the_same_answer_as_a_first_message(): void
     {

@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureServiceEnabled;
 use App\Http\Middleware\FamilySession;
 use App\Http\Middleware\PortalSession;
+use App\Http\Middleware\RequireSecondFactor;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\StaySession;
@@ -31,6 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // the entry route — the one that spends a link — is deliberately
         // outside it.
         $middleware->alias([
+            // §10.4's second step, for the signed-in screens outside the
+            // panels: the leader portal, the old admin screens, profile,
+            // devices, staff documents (site audit).
+            'mfa' => RequireSecondFactor::class,
             'portal' => PortalSession::class,
             'family' => FamilySession::class,
             // A guest's own stay — §16.7. Its own session, never the portal's.

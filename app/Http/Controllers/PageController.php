@@ -118,7 +118,9 @@ class PageController extends Controller
 
     public function guideStepsApi()
     {
-        $locale = request()->get('locale', app()->getLocale());
+        // The guide exists in two languages. A visitor reading the site in
+        // a third gets English unless they asked for something by name.
+        $locale = request()->get('locale', in_array(app()->getLocale(), ['en', 'dv'], true) ? app()->getLocale() : 'en');
 
         if (! in_array($locale, ['en', 'dv'], true)) {
             // `request()->json()` reads the *request* body; it never produces a

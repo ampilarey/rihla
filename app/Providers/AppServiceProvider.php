@@ -22,6 +22,7 @@ use App\Observers\LostStayObserver;
 use App\Services\Family\Doorkeeper;
 use App\Services\Portal\Gatekeeper;
 use App\Services\Stays\StayGatekeeper;
+use App\Support\CanonicalUrl;
 use App\Support\InitialsAvatar;
 use App\Support\LivewireReturns;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Pulse\Facades\Pulse;
 use Spatie\Translatable\Facades\Translatable;
 
@@ -101,6 +103,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->defineRateLimits();
+
+        // Twelve characters, as the host invitation already asks (site
+        // audit). Laravel's default is eight, and admin:create asked nothing.
+        Password::defaults(fn () => Password::min(12));
+
+        // Links in mail and the sitemap come from APP_URL, never from the
+        // Host header of whichever request built them — see the class.
+        CanonicalUrl::enforce();
 
         // No Livewire call returns a model to the browser — see the class.
         \Livewire\on('call', fn () => fn (mixed $return): mixed => LivewireReturns::forBrowser($return));
@@ -192,6 +202,12 @@ class AppServiceProvider extends ServiceProvider
         // fill the office's board with nonsense.
         RateLimiter::for('stay-book', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
 
+        // Site audit: the three forms a stranger can post without a session
+        // — holding seats, joining a waiting list, an enquiry. Thirty an
+        // hour from one address is a busy office, not a script; a hold
+        // loop at that rate cannot keep a departure "fully booked".
+        RateLimiter::for('public-form', fn (Request $request) => Limit::perHour(30)->by('public-form:'.$request->ip()));
+
         // §16.11: a guest writing to their host. Thirty an hour is a
         // conversation; more is somebody pasting into the box.
         // Counted per stay, from the stay page's own session, so a guest
@@ -217,6 +233,14 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('assistant', fn (Request $request) => [
             Limit::perHour(10)->by('assistant:'.$this->portalKey($request)),
             Limit::perDay((int) config('assistant.daily_cap', 300))->by('assistant:everyone'),
+        ]);
+
+        // Site audit: the sign-in form's own limit is five per (email, address)
+        // pair, so one address could try five guesses against every
+        // account, and one account could be tried from every address.
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(20)->by('login:ip:'.$request->ip()),
+            Limit::perMinute(10)->by('login:email:'.Str::lower((string) $request->input('email'))),
         ]);
 
         RateLimiter::for('password-reset', fn (Request $request) => [

@@ -11,10 +11,11 @@ class MediaController extends Controller
     public function gallery(Request $request)
     {
         $query = Media::published()
-            ->whereHas('trip', function ($query) {
+            // Grouped: before the site audit the OR was bare, so unpublished
+            // media with no trip was shown and ?type= filtered only that half.
+            ->where(fn ($scope) => $scope->whereHas('trip', function ($query) {
                 $query->where('status', 'past');
-            })
-            ->orWhereNull('trip_id');
+            })->orWhereNull('trip_id'));
 
         $type = $request->get('type');
         if ($type && in_array($type, ['photo', 'video'])) {

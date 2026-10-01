@@ -84,7 +84,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // booking is held in the session, because a reference in the path would
     // let anyone who guessed one read a stranger's passport details.
     Route::get('/packages/{slug}/book', [BookingController::class, 'start'])->name('booking.start');
-    Route::post('/packages/{slug}/book', [BookingController::class, 'hold'])->name('booking.hold');
+    Route::post('/packages/{slug}/book', [BookingController::class, 'hold'])
+        ->middleware('throttle:public-form')->name('booking.hold');
     Route::get('/book/travellers', [BookingController::class, 'travellers'])->name('booking.travellers');
     Route::post('/book/travellers', [BookingController::class, 'storeTravellers'])->name('booking.travellers.store');
     Route::get('/book/review', [BookingController::class, 'review'])->name('booking.review');
@@ -94,7 +95,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // The waiting list for a full departure. The claim link hands over seats
     // that are already held, so it is signed and expires with the offer —
     // a guessable URL would let anybody take somebody else's.
-    Route::post('/packages/{slug}/waitlist', [WaitlistController::class, 'join'])->name('waitlist.join');
+    Route::post('/packages/{slug}/waitlist', [WaitlistController::class, 'join'])
+        ->middleware('throttle:public-form')->name('waitlist.join');
     Route::get('/waitlist/claim/{entry}', [WaitlistController::class, 'claim'])
         ->name('waitlist.claim')
         ->middleware('signed');
@@ -161,7 +163,7 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // ages and who is sharing a room with whom. The controller narrows
     // further to the departures this person's profile is assigned to, so an
     // account with no profile sees nothing rather than everything.
-    Route::middleware(['auth', 'can:attendance.create'])->prefix('leader')->name('leader.')->group(function () {
+    Route::middleware(['auth', 'mfa', 'can:attendance.create'])->prefix('leader')->name('leader.')->group(function () {
         Route::get('/', [LeaderController::class, 'index'])->name('index');
         Route::get('/{departure}', [LeaderController::class, 'departure'])->name('departure');
         Route::get('/{departure}/snapshot', [LeaderController::class, 'snapshot'])->name('snapshot');
@@ -200,7 +202,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // §8.1: a message sent here becomes a tracked lead with somewhere to
     // put an owner and a next action, rather than another line in a shared
     // inbox.
-    Route::post('/contact', [EnquiryController::class, 'store'])->name('enquiries.store');
+    Route::post('/contact', [EnquiryController::class, 'store'])
+        ->middleware('throttle:public-form')->name('enquiries.store');
     Route::get('/guide', [PageController::class, 'guide'])->name('guide');
     Route::get('/guide/pdf', [PageController::class, 'guidePdf'])->name('guide.pdf');
 
@@ -338,7 +341,7 @@ Route::get('/lang/{code}', [PageController::class, 'setLocale'])->name('locale.s
 // one of those flows threw RouteNotFoundException and returned a 500. Admins
 // are forwarded to the admin panel; everyone else gets the plain dashboard,
 // which is why this is not simply an alias for the admin route.
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'mfa'])->group(function () {
     Route::get('/dashboard', function () {
         return Gate::allows('admin')
             ? redirect()->route('admin.dashboard')
@@ -378,7 +381,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes (require authentication and admin privileges)
-Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'mfa', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
         $tripCount = Trip::count();
         $mediaCount = Media::count();
@@ -441,7 +444,7 @@ Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group
 | Not locale-prefixed: these are staff screens, and the panel is English.
 |
 */
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'mfa'])->group(function () {
     Route::get('/two-factor', [SecondFactorController::class, 'settings'])->name('mfa.settings');
     Route::get('/two-factor/set-up', [SecondFactorController::class, 'enrol'])->name('mfa.enrol');
     Route::post('/two-factor/set-up', [SecondFactorController::class, 'confirm'])->name('mfa.confirm');

@@ -6,9 +6,11 @@ use App\Http\Middleware\RequireSecondFactor;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\Totp;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Mechanisms\PersistentMiddleware\PersistentMiddleware;
 use Tests\TestCase;
 
 /**
@@ -382,34 +384,137 @@ class SecondFactorTest extends TestCase
     public function test_a_required_role_cannot_turn_it_off(): void
     {
         $user = $this->staff(Access::SUPER_ADMIN);
-        $this->withFactor($user);
+        $secret = $this->withFactor($user);
+        $this->passed($user);
 
         $this->actingAs($user)
-            ->post(route('mfa.disable'), ['password' => 'password'])
+            ->post(route('mfa.disable'), ['password' => 'password', 'code' => Totp::code($secret)])
             ->assertSessionHasErrors('code');
 
         $this->assertTrue($user->fresh()->hasSecondFactor());
     }
 
-    public function test_anybody_else_can_turn_it_off_with_their_password(): void
+    public function test_anybody_else_can_turn_it_off_with_their_password_and_a_code(): void
     {
         $user = $this->staff(Access::TOUR_LEADER);
-        $this->withFactor($user);
+        $secret = $this->withFactor($user);
+        $this->passed($user);
 
         $this->actingAs($user)
-            ->post(route('mfa.disable'), ['password' => 'password'])
+            ->post(route('mfa.disable'), ['password' => 'password', 'code' => Totp::code($secret)])
             ->assertRedirect(route('mfa.settings'));
 
         $this->assertFalse($user->fresh()->hasSecondFactor());
     }
 
-    public function test_turning_it_off_needs_the_password(): void
+    /**
+     * The password alone is the one thing the second step exists to not
+     * trust. Before the site audit anybody holding it could switch the
+     * step off from a plain sign-in and then open the panel unchallenged.
+     */
+    public function test_turning_it_off_needs_a_live_code_not_only_the_password(): void
     {
         $user = $this->staff(Access::TOUR_LEADER);
         $this->withFactor($user);
+        $this->passed($user);
 
         $this->actingAs($user)
-            ->post(route('mfa.disable'), ['password' => 'not-the-password'])
+            ->post(route('mfa.disable'), ['password' => 'password'])
+            ->assertSessionHasErrors('code');
+
+        $this->actingAs($user)
+            ->post(route('mfa.disable'), ['password' => 'password', 'code' => '000000'])
+            ->assertSessionHasErrors('code');
+
+        $this->assertTrue($user->fresh()->hasSecondFactor());
+    }
+
+    /** And the settings page itself sits behind the step: a session that has not passed it is challenged. */
+    public function test_the_settings_and_the_off_switch_are_behind_the_step(): void
+    {
+        $user = $this->staff(Access::TOUR_LEADER);
+        $secret = $this->withFactor($user);
+
+        $this->actingAs($user)->get(route('mfa.settings'))->assertRedirect(route('mfa.challenge'));
+        $this->actingAs($user)
+            ->post(route('mfa.disable'), ['password' => 'password', 'code' => Totp::code($secret)])
+            ->assertRedirect(route('mfa.challenge'));
+
+        $this->assertTrue($user->fresh()->hasSecondFactor());
+    }
+
+    /**
+     * A time-based code is accepted once. The app shows the same digits
+     * for thirty seconds and the check allows a step either side, so a
+     * code read over a shoulder was good for ninety seconds more.
+     */
+    public function test_a_code_is_accepted_once(): void
+    {
+        $user = $this->staff(Access::TOUR_LEADER);
+        $secret = $this->withFactor($user);
+        $code = Totp::code($secret);
+
+        $this->actingAs($user)->post(route('mfa.verify'), ['code' => $code])->assertSessionHasNoErrors();
+        $this->actingAs($user)->post(route('mfa.verify'), ['code' => $code])->assertSessionHasErrors('code');
+    }
+
+    /**
+     * The step covers every signed-in screen, not only the two panels: the
+     * leader portal, the old admin screens, profile, devices, Pulse. Before
+     * the site audit a Super Admin's password alone opened Pulse.
+     */
+    public function test_every_signed_in_screen_is_behind_the_step(): void
+    {
+        $routes = app('router')->getRoutes();
+
+        foreach (['leader.index', 'admin.audit.index', 'profile.edit', 'devices.index', 'mfa.settings', 'mfa.disable', 'staff.invoice'] as $name) {
+            $route = $routes->getByName($name);
+            $this->assertNotNull($route, "{$name} is not routed.");
+            $this->assertContains('mfa', $route->middleware(), "{$name} is not behind the second step.");
+        }
+
+        foreach (['mfa.challenge', 'mfa.verify', 'mfa.enrol', 'mfa.confirm'] as $name) {
+            $this->assertContains('mfa', $routes->getByName($name)?->middleware() ?? [], "{$name} must be inside the group so the exemption is tested.");
+        }
+
+        $this->assertContains(RequireSecondFactor::class, config('pulse.middleware'));
+
+        $user = $this->staff(Access::SUPER_ADMIN);
+        $this->withFactor($user);
+        $this->actingAs($user)->get('/profile')->assertRedirect(route('mfa.challenge'));
+        $this->actingAs($user)->get('/en/leader')->assertRedirect(route('mfa.challenge'));
+    }
+
+    /**
+     * Livewire re-runs only the panel's *persistent* middleware on an
+     * update request — every button in the panel. Not persistent, and an
+     * action ran for a session that never passed the challenge.
+     */
+    public function test_the_step_is_persistent_in_both_panels(): void
+    {
+        foreach (['staff', 'host'] as $panel) {
+            $this->assertContains(RequireSecondFactor::class, Filament::getPanel($panel)->getAuthMiddleware(), "{$panel}: not wired.");
+            Filament::getPanel($panel)->boot();
+        }
+
+        // The panel hands its persistent list to Livewire when it boots.
+        $this->assertContains(RequireSecondFactor::class, app(PersistentMiddleware::class)->getPersistentMiddleware());
+    }
+
+    /** A session that has passed the step, for tests of what lies behind it. */
+    private function passed(User $user): void
+    {
+        $this->withSession([RequireSecondFactor::VERIFIED_AT => now()->toDateTimeString()]);
+    }
+
+    public function test_turning_it_off_needs_the_password(): void
+    {
+        $user = $this->staff(Access::TOUR_LEADER);
+        $secret = $this->withFactor($user);
+        $this->passed($user);
+
+        $this->actingAs($user)
+            ->post(route('mfa.disable'), ['password' => 'not-the-password', 'code' => Totp::code($secret)])
             ->assertSessionHasErrors('password');
 
         $this->assertTrue($user->fresh()->hasSecondFactor());

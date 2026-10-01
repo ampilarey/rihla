@@ -8,6 +8,7 @@ use App\Support\SignedInDevices;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class PasswordController extends Controller
@@ -32,7 +33,13 @@ class PasswordController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        $user->update(['password' => Hash::make($validated['password'])]);
+        // The remember token turns with the password (site audit): a stolen
+        // "remember me" cookie otherwise outlived "change password and sign
+        // out everywhere", because only a reset rotated it.
+        $user->forceFill([
+            'password' => Hash::make($validated['password']),
+            'remember_token' => Str::random(60),
+        ])->save();
 
         SignedInDevices::signOutOthers($user, $request->session()->getId());
 

@@ -7,6 +7,7 @@ use App\Models\Person;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 /**
@@ -166,5 +167,21 @@ class ArticleTest extends TestCase
         $leader = User::factory()->create()->assignRole(Access::TOUR_LEADER);
 
         $this->actingAs($leader)->get('/staff/articles')->assertForbidden();
+    }
+
+    /**
+     * The sitemap is cached for an hour for every crawler, so its addresses
+     * come from APP_URL and never from whatever Host header one request
+     * carried — site audit.
+     */
+    public function test_the_sitemap_addresses_come_from_the_configured_url_not_the_request(): void
+    {
+        config(['app.url' => 'https://rihla.mv']);
+        Cache::forget('sitemap.xml');
+
+        $xml = (string) $this->get('http://attacker.example/sitemap.xml')->assertOk()->getContent();
+
+        $this->assertStringContainsString('https://rihla.mv/en', $xml);
+        $this->assertStringNotContainsString('attacker.example', $xml);
     }
 }

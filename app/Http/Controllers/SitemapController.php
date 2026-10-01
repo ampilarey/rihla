@@ -11,6 +11,7 @@ use App\Models\Trip;
 use App\Models\ZiyarahLocation;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\URL;
 
 class SitemapController extends Controller
 {
@@ -23,6 +24,14 @@ class SitemapController extends Controller
      */
     public function index(): Response
     {
+        // Built from APP_URL, never the request's Host header: the result is
+        // cached for an hour for every crawler, so one request with a
+        // foreign Host would otherwise poison it (site audit).
+        if (filled(config('app.url'))) {
+            URL::forceRootUrl((string) config('app.url'));
+            URL::forceScheme((string) (parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https'));
+        }
+
         $xml = Cache::remember('sitemap.xml', now()->addHour(), fn () => $this->build());
 
         return response($xml, 200, ['Content-Type' => 'application/xml']);

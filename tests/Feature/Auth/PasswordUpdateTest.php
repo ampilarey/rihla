@@ -48,4 +48,21 @@ class PasswordUpdateTest extends TestCase
             ->assertSessionHasErrorsIn('updatePassword', 'current_password')
             ->assertRedirect('/profile');
     }
+
+    /** A stolen "remember me" cookie must not outlive a changed password — site audit. */
+    public function test_a_new_password_turns_the_remember_token(): void
+    {
+        $user = User::factory()->create(['remember_token' => 'old-token-old-token-old-token-old-token-old-token-old-token-']);
+
+        $this->actingAs($user)
+            ->from('/profile')
+            ->put('/password', [
+                'current_password' => 'password',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertNotSame('old-token-old-token-old-token-old-token-old-token-old-token-', $user->fresh()->remember_token);
+    }
 }

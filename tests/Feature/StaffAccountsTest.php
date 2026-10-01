@@ -231,4 +231,14 @@ class StaffAccountsTest extends TestCase
 
         $this->assertFalse((bool) User::where('email', 'hassan@rihla.mv')->sole()->is_admin);
     }
+
+    /** admin:create applies the same password rule as everything else — site audit. */
+    public function test_admin_create_refuses_a_short_password(): void
+    {
+        $this->artisan('admin:create', ['email' => 'owner@example.com', 'password' => 'short1'])->assertFailed();
+        $this->assertSame(0, User::where('email', 'owner@example.com')->count());
+
+        $this->artisan('admin:create', ['email' => 'owner@example.com', 'password' => 'a-longer-password'])->assertSuccessful();
+        $this->assertTrue(User::where('email', 'owner@example.com')->sole()->hasRole(Access::SUPER_ADMIN));
+    }
 }

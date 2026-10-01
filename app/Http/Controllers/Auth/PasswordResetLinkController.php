@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
@@ -21,7 +22,7 @@ class PasswordResetLinkController extends Controller
     /**
      * Handle an incoming password reset link request.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
@@ -36,9 +37,11 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        // The same answer whether or not the address is on file: "we
+        // can't find a user with that address" told a stranger who works
+        // here (site audit). A throttled address gets its own message.
+        return $status == Password::RESET_THROTTLED
+                    ? back()->withInput($request->only('email'))->withErrors(['email' => __($status)])
+                    : back()->with('status', __(Password::RESET_LINK_SENT));
     }
 }

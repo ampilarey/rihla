@@ -67,6 +67,7 @@ use App\Policies\WaitlistEntryPolicy;
 use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
 use App\Support\Access;
+use App\Support\HostContext;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -118,6 +119,14 @@ class AuthServiceProvider extends ServiceProvider
         // locked out. Returning null — not false — lets every other check fall
         // through to the normal policy and permission chain.
         Gate::before(function ($user, string $ability) {
+            // Inside /host a Super Admin is whatever their membership says
+            // (site audit): the grant below answered before the host
+            // policies could, so a reception member who was also staff
+            // held every host ability at that host.
+            if (HostContext::current() !== null) {
+                return null;
+            }
+
             return $user->hasRole(Access::SUPER_ADMIN) ? true : null;
         });
 

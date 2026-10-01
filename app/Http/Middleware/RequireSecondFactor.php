@@ -45,7 +45,10 @@ class RequireSecondFactor
         // the web group, a screen that redirects to itself is a staff
         // account nobody can open. `SecondFactorTest` proves the round trip
         // end to end rather than trusting this line.
-        if ($request->routeIs('mfa.*')) {
+        // The screens somebody has to reach *before* passing the step. The
+        // settings and the off switch are not among them (site audit): they
+        // are what the step protects.
+        if ($request->routeIs('mfa.challenge', 'mfa.verify', 'mfa.enrol', 'mfa.confirm')) {
             return $next($request);
         }
 

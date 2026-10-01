@@ -27,6 +27,11 @@ class WaitlistController extends Controller
             ->with(['publishedDepartures'])
             ->firstOrFail();
 
+        // A field no human sees — the same honeypot as the enquiry form.
+        if (filled($request->input('website'))) {
+            return back()->with('status', __('messages.You are on the list. We will message you the moment a seat comes back.'));
+        }
+
         $validated = $request->validate([
             'departure' => ['required', 'integer'],
             'name' => ['required', 'string', 'max:255'],

@@ -42,6 +42,14 @@ final class StayFilters
         public readonly bool $audienceChosen = false,
     ) {}
 
+    /**
+     * The longest stay a search or a booking may ask about — site audit.
+     * Availability holds one object per night per room, so a request for
+     * 2026 to 2400 was 194 MB and two seconds *per room*, and the URL took
+     * any date it could parse.
+     */
+    public const MAX_NIGHTS = 60;
+
     public static function fromRequest(Request $request): self
     {
         $checkIn = self::date($request->query('from'));
@@ -51,7 +59,8 @@ final class StayFilters
         // anything and cannot be checked for availability, so holding half
         // of it would make the page claim to have filtered on dates when it
         // had not.
-        if ($checkIn === null || $checkOut === null || $checkOut->lessThanOrEqualTo($checkIn)) {
+        if ($checkIn === null || $checkOut === null || $checkOut->lessThanOrEqualTo($checkIn)
+            || $checkIn->diffInDays($checkOut) > self::MAX_NIGHTS) {
             $checkIn = $checkOut = null;
         }
 

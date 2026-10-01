@@ -86,10 +86,15 @@ final class Waitlist
         ?string $email,
         int $seats,
     ): WaitlistEntry {
+        // The same person: the number and the name. Before the site audit
+        // the number alone was enough, so anybody who knew a phone number
+        // could set that family's seats to twelve and keep them from ever
+        // fitting a returned seat.
         $existing = WaitlistEntry::where('departure_id', $departure->getKey())
             ->whereIn('status', [WaitlistEntry::WAITING, WaitlistEntry::OFFERED])
             ->whereHas('customer', fn ($query) => $query->where('phone', $phone))
-            ->first();
+            ->get()
+            ->first(fn (WaitlistEntry $entry): bool => self::sameName($entry->customer?->name, $name));
 
         if ($existing instanceof WaitlistEntry) {
             $existing->forceFill(['seats' => $seats])->save();
@@ -210,5 +215,12 @@ final class Waitlist
             $entry->offer_expires_at,
             ['locale' => app()->getLocale(), 'entry' => $entry->getKey()],
         );
+    }
+
+    private static function sameName(?string $a, ?string $b): bool
+    {
+        $key = fn (?string $name): string => mb_strtolower(trim(preg_replace('/\s+/u', ' ', (string) $name) ?? ''));
+
+        return $key($a) !== '' && $key($a) === $key($b);
     }
 }

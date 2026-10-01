@@ -54,6 +54,10 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Build every absolute link from APP_URL rather than the request's Host
+    // header. Always on in production; here for the test server and tests.
+    'force_url' => (bool) env('APP_FORCE_URL', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
