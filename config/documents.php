@@ -98,6 +98,16 @@ return [
         'binary' => env('PDFTOTEXT_BIN', 'pdftotext'),
     ],
 
+    // A visa batch takes a PDF apart with poppler's pdfseparate, and
+    // renders a page that has no text layer with pdftoppm for a reader.
+    'pdfseparate' => [
+        'binary' => env('PDFSEPARATE_BIN', 'pdfseparate'),
+    ],
+
+    'pdftoppm' => [
+        'binary' => env('PDFTOPPM_BIN', 'pdftoppm'),
+    ],
+
     'anthropic' => [
         'key' => env('DOCUMENTS_ANTHROPIC_KEY', env('ANTHROPIC_API_KEY')),
         'model' => env('DOCUMENTS_ANTHROPIC_MODEL', 'claude-sonnet-5-5'),

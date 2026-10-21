@@ -58,6 +58,7 @@ final class DocumentWallet
         string $category,
         string $type,
         array $attributes = [],
+        bool $read = true,
     ): DocumentVersion {
         $checksum = hash_file('sha256', $file->getRealPath()) ?: null;
 
@@ -142,7 +143,8 @@ final class DocumentWallet
         // seconds, and a row lock held for seconds is a queue at the
         // counter. Only a file that is new; the same bytes again were read
         // the first time.
-        if ($version->wasRecentlyCreated) {
+        // A caller that has already read the file (a visa batch) says so.
+        if ($read && $version->wasRecentlyCreated) {
             $this->propose($version, $file, $type);
         }
 
