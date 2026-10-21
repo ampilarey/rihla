@@ -26,14 +26,7 @@ class DocumentForm
                     ->helperText('Documents belong to the person, not the booking: somebody who travels again brings the same passport.'),
 
                 Select::make('type')
-                    ->options([
-                        Document::PASSPORT => 'Passport',
-                        'photo' => 'Photograph',
-                        'national_id' => 'National ID',
-                        'vaccination' => 'Vaccination record',
-                        'bank_slip' => 'Bank transfer slip',
-                        'other' => 'Other',
-                    ])
+                    ->options(Document::TYPES)
                     ->required()
                     ->disabledOn('edit'),
 

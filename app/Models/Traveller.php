@@ -28,11 +28,15 @@ class Traveller extends Model
         'customer_id', 'full_name', 'date_of_birth', 'gender', 'relationship',
         'nationality', 'passport_number', 'passport_issuing_country', 'passport_expiry',
         'medical_notes', 'emergency_contact_name', 'emergency_contact_phone',
+        // The national ID card's number (batch B from Hijaz). Written from an
+        // accepted reading of the card, or typed; redacted in the audit trail.
+        'national_id',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
         'passport_expiry' => 'date',
+        'identity_mismatches' => 'array',
     ];
 
     /** @var array<string, mixed> */
@@ -61,6 +65,26 @@ class Traveller extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return HasMany<Document, $this> */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
+    }
+
+    /**
+     * Where the ID card and the passport disagree and nobody has explained
+     * why — see App\Services\Documents\Reading\IdentityCheck.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function unexplainedMismatches(): array
+    {
+        return array_values(array_filter(
+            $this->identity_mismatches ?? [],
+            fn (array $mismatch): bool => empty($mismatch['explained']),
+        ));
     }
 
     /** @return HasMany<BookingTraveller, $this> */

@@ -86,6 +86,7 @@ final class DepartureReadiness
     {
         return array_merge(
             self::travelDocumentConcerns($departure),
+            self::identityConcerns($departure),
             self::moneyConcerns($departure),
             self::roomingConcerns($departure),
             self::staffingConcerns($departure),
@@ -219,6 +220,47 @@ final class DepartureReadiness
                 ? 'One traveller cannot go yet'
                 : $people.' travellers cannot go yet',
             'detail' => 'Outstanding: '.self::sentenceList($parts).'.',
+        ]];
+    }
+
+    /**
+     * Travellers whose ID card and passport disagree, and nobody has
+     * explained why — batch B from Hijaz. Attention, not blocking: a name
+     * that changed at marriage is the common case and travels fine once
+     * somebody has said so, which is what the note on the traveller is for.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function identityConcerns(Departure $departure): array
+    {
+        $names = [];
+
+        $travellers = Traveller::query()
+            ->whereNotNull('identity_mismatches')
+            ->whereIn('id', BookingTraveller::query()
+                ->whereIn('booking_id', Booking::query()->where('departure_id', $departure->getKey())->active()->select('id'))
+                ->select('traveller_id'))
+            ->get();
+
+        foreach ($travellers as $traveller) {
+            $unexplained = $traveller->unexplainedMismatches();
+
+            if ($unexplained !== []) {
+                $names[] = $traveller->full_name.' ('.implode(', ', array_map(fn (array $m): string => str_replace('_', ' ', (string) $m['field']), $unexplained)).')';
+            }
+        }
+
+        if ($names === []) {
+            return [];
+        }
+
+        return [[
+            'area' => self::TRAVEL_DOCUMENTS,
+            'severity' => self::ATTENTION,
+            'headline' => count($names) === 1
+                ? 'An ID card and a passport disagree'
+                : count($names).' ID cards disagree with their passports',
+            'detail' => self::sentenceList($names).'. Correct the reading, or explain it on the traveller; a visa agent will not guess.',
         ]];
     }
 

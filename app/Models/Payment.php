@@ -44,6 +44,9 @@ class Payment extends Model
     protected $casts = [
         'amount_minor' => 'integer',
         'slip_size_bytes' => 'integer',
+        // What the reader made of the slip (batch B from Hijaz): amount,
+        // reference, date, as words beside Finance's decision.
+        'slip_reading' => 'array',
         'paid_at' => 'datetime',
         'reviewed_at' => 'datetime',
     ];

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
 
 /**
@@ -53,6 +54,37 @@ class Document extends Model
 
     public const PASSPORT = 'passport';
 
+    public const NATIONAL_ID = 'national_id';
+
+    public const PHOTO = 'photo';
+
+    public const VISA = 'visa';
+
+    public const VACCINATION = 'vaccination';
+
+    public const BANK_SLIP = 'bank_slip';
+
+    public const OTHER = 'other';
+
+    /** @var array<string, string> */
+    public const TYPES = [
+        self::PASSPORT => 'Passport',
+        self::NATIONAL_ID => 'National ID',
+        self::PHOTO => 'Photograph',
+        self::VISA => 'Visa',
+        self::VACCINATION => 'Vaccination record',
+        self::BANK_SLIP => 'Bank transfer slip',
+        self::OTHER => 'Other',
+    ];
+
+    /**
+     * The types a reader proposes fields for (batch B from Hijaz). A photo
+     * is checked, not read; a slip is read on the payment, not here.
+     *
+     * @var list<string>
+     */
+    public const READABLE = [self::PASSPORT, self::NATIONAL_ID, self::VISA];
+
     /** @return BelongsTo<Traveller, $this> */
     public function traveller(): BelongsTo
     {
@@ -69,6 +101,30 @@ class Document extends Model
     public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /**
+     * What the readers proposed, across every version, newest first
+     * (batch B from Hijaz).
+     *
+     * @return HasManyThrough<DocumentExtraction, DocumentVersion, $this>
+     */
+    public function readings(): HasManyThrough
+    {
+        return $this->hasManyThrough(DocumentExtraction::class, DocumentVersion::class)->latest('document_extractions.id');
+    }
+
+    /** The newest reading of the current version, whatever its state. */
+    public function latestReading(): ?DocumentExtraction
+    {
+        $current = $this->currentVersion();
+
+        return $current === null ? null : $current->extractions()->latest('id')->first();
+    }
+
+    public function typeLabel(): string
+    {
+        return self::TYPES[$this->type] ?? ucfirst(str_replace('_', ' ', (string) $this->type));
     }
 
     /**

@@ -52,6 +52,7 @@ final class Forgetting
      * - `booking`    — `booking_id` among their bookings
      * - `enquiry`    — `enquiry_id` among their enquiries
      * - `document`   — `document_id` among their travellers' documents
+     * - `version`    — `document_version_id` among those documents' versions
      * - `incident`   — `incident_id` among incidents naming them
      * - `visa`/`permit` — the event tables, through their parent
      * - `morph`      — `crm_tasks`, by `about_type` + `about_id`
@@ -114,6 +115,9 @@ final class Forgetting
 
         'enquiry_notes' => 'enquiry',
         'document_versions' => 'document',
+        // What a reader proposed from a scan, and what staff accepted: the
+        // passport number and the name in the clear — batch B from Hijaz.
+        'document_extractions' => 'version',
         'incident_notes' => 'incident',
         'visa_application_events' => 'visa',
         'nusuk_permit_events' => 'permit',

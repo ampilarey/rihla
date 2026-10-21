@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\EncryptedFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * One uploaded file, kept for ever.
@@ -33,6 +35,22 @@ class DocumentVersion extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /**
+     * What the readers proposed for this file (batch B from Hijaz).
+     *
+     * @return HasMany<DocumentExtraction, $this>
+     */
+    public function extractions(): HasMany
+    {
+        return $this->hasMany(DocumentExtraction::class);
+    }
+
+    /** The file's bytes, decrypted, or null when it is gone from disk. */
+    public function contents(): ?string
+    {
+        return EncryptedFile::contents((string) $this->disk, (string) $this->path);
     }
 
     public function isCurrent(): bool

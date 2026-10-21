@@ -70,4 +70,59 @@ return [
 
     'download_link_minutes' => (int) env('DOCUMENTS_LINK_MINUTES', 5),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Reading — batch B from Hijaz
+    |--------------------------------------------------------------------------
+    |
+    | What proposes the fields a scan carries, for staff to accept. `auto`
+    | picks Claude's vision API when a key is set (the drafting assistant's
+    | will do), else Tesseract when the binary is on the host, else nothing
+    | is proposed and staff type what the scan says. Whatever reads, staff
+    | accept every field; nothing reaches a traveller's record unread.
+    |
+    */
+
+    'reader' => env('DOCUMENTS_READER', 'auto'),
+
+    'tesseract' => [
+        'binary' => env('TESSERACT_BIN', 'tesseract'),
+        'tessdata' => env('TESSDATA_PREFIX'),
+        'languages' => env('TESSERACT_LANGS', 'eng'),
+        'timeout' => 60,
+    ],
+
+    // The text layer of a PDF (an e-visa, a bank statement) needs no OCR;
+    // poppler's pdftotext reads it, when the host has it.
+    'pdftotext' => [
+        'binary' => env('PDFTOTEXT_BIN', 'pdftotext'),
+    ],
+
+    'anthropic' => [
+        'key' => env('DOCUMENTS_ANTHROPIC_KEY', env('ANTHROPIC_API_KEY')),
+        'model' => env('DOCUMENTS_ANTHROPIC_MODEL', 'claude-sonnet-5-5'),
+        'base_url' => env('ASSISTANT_BASE_URL', 'https://api.anthropic.com'),
+        'timeout' => 45,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Passport-size photo
+    |--------------------------------------------------------------------------
+    |
+    | The Saudi e-visa asks for a recent colour photo on a plain light
+    | background, 35 by 45. Checked on upload and said, never blocked: a
+    | visa agent's rejection costs more than a warning, and the owner
+    | confirms the exact numbers their agent wants.
+    |
+    */
+
+    'photo' => [
+        'min_width' => (int) env('PHOTO_MIN_WIDTH', 400),
+        'min_height' => (int) env('PHOTO_MIN_HEIGHT', 500),
+        'aspect' => (float) env('PHOTO_ASPECT', 0.78),
+        'aspect_tolerance' => 0.12,
+        'max_kilobytes' => (int) env('PHOTO_MAX_KB', 4096),
+    ],
+
 ];
