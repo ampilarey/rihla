@@ -85,4 +85,8 @@ php artisan migrate --force \
   && php artisan view:clear \
   || { echo "$(date '+%F %T') Laravel deploy steps failed"; exit 1; }
 
+# The staff Telegram bot, pointed at this site. A no-op without a token.
+php artisan telegram:webhook 2>/dev/null \
+  || echo "$(date '+%F %T') WARN: telegram webhook not registered"
+
 echo "$(date '+%F %T') deploy complete: ${REMOTE:0:8}"

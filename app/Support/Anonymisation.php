@@ -205,6 +205,13 @@ final class Anonymisation
      */
     public const EMPTY_OUT = [
         'audit_logs',
+        // The staff bot's bindings. A chat id is a person's Telegram
+        // account and cannot be nulled; and a test server holding real
+        // links would message real staff from a test bot. Emptied, so the
+        // test server starts with nobody linked.
+        'telegram_links',
+        'telegram_link_codes',
+        'telegram_updates',
         // The cache holds whatever was last put in it, which on this
         // application includes serialised Eloquent models of real people
         // (the homepage's why-section, Pulse's dashboard rows). Emptying it

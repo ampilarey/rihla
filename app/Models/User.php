@@ -200,6 +200,16 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
      *
      * @return HasOne<Person, $this>
      */
+    /**
+     * The Telegram chat this account acts in, if it has linked one.
+     *
+     * @return HasOne<TelegramLink, $this>
+     */
+    public function telegramLink(): HasOne
+    {
+        return $this->hasOne(TelegramLink::class)->whereNull('revoked_at');
+    }
+
     public function person(): HasOne
     {
         return $this->hasOne(Person::class);

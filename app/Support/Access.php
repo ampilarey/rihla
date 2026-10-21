@@ -338,6 +338,12 @@ final class Access
         'card.create',
         'card.scan',
 
+        // Linking this account to a Telegram chat, so the staff bot acts
+        // as the person — with their permissions, written to the audit
+        // trail as them, by chat (App\Services\Telegram). Everybody on
+        // staff; not the scholar, who has no operations to be told about.
+        'telegram.link',
+
         // The daily operations log (§8.3). What happened ordinarily — the
         // coach was late, the hotel moved the group. Things that went
         // *wrong* are incidents and carry a severity and an owner.
@@ -882,7 +888,7 @@ final class Access
 
             // Runs the operation: all content, plus settings and bookings.
             self::OPERATIONS_MANAGER => array_merge(
-                ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny'],
+                ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny', 'telegram.link'],
                 $bookings,
                 ['booking.discount'],
                 $documents,
@@ -923,7 +929,7 @@ final class Access
                 // wording, which is this role's work. It cannot publish
                 // anything it wrote — the draft goes into a form a person
                 // still has to save.
-                ['admin.access', 'draft.use'],
+                ['admin.access', 'draft.use', 'telegram.link'],
                 $content,
                 // Drafts knowledge articles and sends them for review.
                 // Owning the website's words is not enough to sign off
@@ -948,7 +954,7 @@ final class Access
                 // an analyst reading conversion and seat-fill rates has no
                 // need of the margin, and §8.5's board says so on the screen
                 // rather than leaving a blank where a row would be.
-                ['admin.access', 'audit.viewAny', 'booking.viewAny', 'kpi.view'],
+                ['admin.access', 'audit.viewAny', 'booking.viewAny', 'kpi.view', 'telegram.link'],
                 $readOnly,
             ),
 
@@ -957,7 +963,7 @@ final class Access
             // Carries the rooming list on the trip: it is the document they
             // stand at a hotel desk with.
             self::TOUR_LEADER => array_merge(
-                ['admin.access', 'trip.viewAny', 'trip.view'],
+                ['admin.access', 'trip.viewAny', 'trip.view', 'telegram.link'],
                 $roomingReadOnly,
                 // The flight times and the coach pickups are the day they
                 // run; changing them is the office's.
@@ -994,7 +1000,7 @@ final class Access
             self::BOOKING_STAFF => array_merge(
                 // Drafts a reply to an enquiry, then edits and sends it
                 // themselves. §9.6's human in the loop is this person.
-                ['admin.access', 'draft.use'],
+                ['admin.access', 'draft.use', 'telegram.link'],
                 $bookings,
                 // Collects documents and sends them back to the customer who
                 // mislaid them, so it uploads and downloads. Verifying is
@@ -1065,7 +1071,7 @@ final class Access
             // The board's money line is this role's job: which departures
             // are flying with a balance outstanding, and how much.
             self::FINANCE => array_merge(
-                ['admin.access', 'departure.board'],
+                ['admin.access', 'departure.board', 'telegram.link'],
                 $bookingsReadOnly,
                 // Knocks something off a price, with a reason on the record.
                 ['booking.discount'],
@@ -1089,7 +1095,7 @@ final class Access
             // whoever is calling, and nothing more until the pilgrim portal
             // and the CRM give it something to change.
             self::PILGRIM_SUPPORT => array_merge(
-                ['admin.access'],
+                ['admin.access', 'telegram.link'],
                 $bookingsReadOnly,
                 // Can say "yes, we have your passport" without being able to
                 // pull the scan. That is the whole reason download is a
@@ -1127,7 +1133,7 @@ final class Access
             // permits are the next slice; this role already holds the wallet
             // those workflows run on.
             self::VISA_STAFF => array_merge(
-                ['admin.access'],
+                ['admin.access', 'telegram.link'],
                 $documents,
                 $visas,
                 $permits,
