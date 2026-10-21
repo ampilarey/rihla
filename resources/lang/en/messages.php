@@ -602,6 +602,7 @@ return [
     'We have recorded this' => 'We have recorded this',
     'We are checking it' => 'We are checking it',
     'Received' => 'Received',
+    'Received :amount' => 'Received :amount',
     'We could not find this one' => 'We could not find this one',
     'Cancelled' => 'Cancelled',
     'We are looking into this' => 'We are looking into this',

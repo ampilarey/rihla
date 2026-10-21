@@ -38,6 +38,9 @@
                 @if($payment->payer_reference)
                     <div class="muted ltr">{{ $payment->payer_reference }}</div>
                 @endif
+                @if($payment->receivedWords())
+                    <div class="muted ltr">{{ __('messages.Received :amount', ['amount' => $payment->receivedWords()]) }}</div>
+                @endif
             </td>
             <td class="num ltr">{{ $payment->money()->format() }}</td>
         </tr>

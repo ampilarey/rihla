@@ -19,6 +19,7 @@ use App\Services\Payments\SlipVault;
 use App\Services\Portal\Gatekeeper;
 use App\Services\Visa\VisaDesk;
 use App\Support\Money;
+use App\Support\Rates;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -28,7 +29,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * One booking, and the eight things staff can do to it.
@@ -255,15 +259,42 @@ class EditBooking extends EditRecord
                     ->required()
                     ->live(),
 
+                // Batch C from Hijaz: money may arrive in dollars or riyals.
+                // The booking is credited in its own currency at the rate
+                // typed here, which the rate table fills in for the day.
+                Select::make('received_currency')
+                    ->label('Received in')
+                    ->options(array_combine(Rates::currencies(), Rates::currencies()))
+                    ->default(fn (): string => $this->booking()->currency)
+                    ->selectablePlaceholder(false)
+                    ->required()
+                    ->live()
+                    // The rate box follows the currency chosen: the table's
+                    // rate for the day, or empty where the table has none.
+                    // A default() on the rate box itself is evaluated once,
+                    // before this select has a value, and sat at 1.
+                    ->afterStateUpdated(fn (Set $set, ?string $state): mixed => $set('exchange_rate', Rates::rate((string) ($state ?: $this->booking()->currency)))),
+
                 TextInput::make('amount')
                     ->label('Amount')
                     ->numeric()
-                    // Whole rufiyaa: "285.50" was silently 285 (site audit).
+                    // Whole units: "285.50" was silently 285 (site audit).
                     ->integer()
                     ->required()
-                    ->prefix(fn (): string => $this->booking()->currency)
-                    ->helperText(fn (): string => 'Whole rufiyaa. The balance is '
+                    ->live(onBlur: true)
+                    ->prefix(fn (Get $get): string => (string) ($get('received_currency') ?: $this->booking()->currency))
+                    ->helperText(fn (): string => 'Whole units. The balance is '
                         .$this->booking()->balance()->format().'.'),
+
+                TextInput::make('exchange_rate')
+                    ->label(fn (Get $get): string => '1 '.$get('received_currency').' = … '.$this->booking()->currency)
+                    ->numeric()
+                    ->step('0.0001')
+                    ->minValue(0.000001)
+                    ->visible(fn (Get $get): bool => $get('received_currency') !== null && $get('received_currency') !== $this->booking()->currency)
+                    ->required(fn (Get $get): bool => $get('received_currency') !== null && $get('received_currency') !== $this->booking()->currency)
+                    ->live(onBlur: true)
+                    ->helperText(fn (Get $get): string => self::creditWords($this->booking()->currency, $get('received_currency'), $get('amount'), $get('exchange_rate'))),
 
                 DatePicker::make('paid_at')
                     ->label('When they say it was sent')
@@ -296,17 +327,35 @@ class EditBooking extends EditRecord
             ])
             ->action(function (array $data): void {
                 $booking = $this->booking();
+                $receivedIn = strtoupper((string) ($data['received_currency'] ?? $booking->currency));
+                $received = Money::ofMajor((int) $data['amount'], $receivedIn);
+                $details = [
+                    'paid_at' => $data['paid_at'] ?: null,
+                    'payer_name' => $data['payer_name'] ?: null,
+                    'payer_reference' => $data['payer_reference'] ?? null,
+                    'notes' => $data['notes'] ?: null,
+                ];
 
-                $payment = app(Gateways::class)->for($data['method'])->start(
-                    $booking,
-                    Money::ofMajor((int) $data['amount'], $booking->currency),
-                    [
-                        'paid_at' => $data['paid_at'] ?: null,
-                        'payer_name' => $data['payer_name'] ?: null,
-                        'payer_reference' => $data['payer_reference'] ?? null,
-                        'notes' => $data['notes'] ?: null,
-                    ],
-                );
+                if ($receivedIn === $booking->currency) {
+                    $credit = $received;
+                } else {
+                    try {
+                        $rate = (float) ($data['exchange_rate'] ?? 0);
+                        $credit = Rates::toBase($received, $rate > 0 ? $rate : null);
+                    } catch (InvalidArgumentException $e) {
+                        Notification::make()->danger()->title('Not recorded')->body($e->getMessage())->persistent()->send();
+
+                        return;
+                    }
+
+                    $details += [
+                        'received_currency' => $receivedIn,
+                        'received_minor' => $received->minor,
+                        'exchange_rate' => $rate > 0 ? $rate : Rates::rate($receivedIn),
+                    ];
+                }
+
+                $payment = app(Gateways::class)->for($data['method'])->start($booking, $credit, $details);
 
                 if (($data['slip'] ?? null) !== null) {
                     app(SlipVault::class)->attach($payment, $data['slip']);
@@ -314,12 +363,32 @@ class EditBooking extends EditRecord
 
                 Notification::make()
                     ->success()
-                    ->title('Recorded '.$payment->money()->format())
+                    ->title('Recorded '.$payment->money()->format().($payment->receivedWords() ? ' — received '.$payment->receivedWords() : ''))
                     // Said plainly, because the difference between "recorded"
                     // and "received" is the whole point of the separation.
                     ->body('Nothing has been added to the paid total yet. Finance checks it on the payments screen.')
                     ->send();
             });
+    }
+
+    /** "= MVR 10,023 credited to the booking", as the form is filled in. */
+    private static function creditWords(string $bookingCurrency, mixed $receivedIn, mixed $amount, mixed $rate): string
+    {
+        $receivedIn = strtoupper((string) ($receivedIn ?: $bookingCurrency));
+
+        if ($receivedIn === $bookingCurrency) {
+            return '';
+        }
+
+        if (! is_numeric($rate) || (float) $rate <= 0) {
+            return 'No rate is known for '.$receivedIn.' today. Type the one the bank gave, or set it under Exchange rates.';
+        }
+
+        if (! is_numeric($amount) || (int) $amount < 1) {
+            return 'Each '.$receivedIn.' is credited as '.Money::ofMinor((int) round((float) $rate * 100), $bookingCurrency)->format().'.';
+        }
+
+        return '= '.Rates::toBase(Money::ofMajor((int) $amount, $receivedIn), (float) $rate)->format().' credited to the booking.';
     }
 
     /**

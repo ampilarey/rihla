@@ -40,6 +40,10 @@
             <div>
                 <p class="text-sm text-ink-muted">{{ __('messages.From') }}</p>
                 <p class="text-xl font-bold text-wine-600" dir="ltr">{{ $departure->lead_price->format() }}</p>
+                {{-- What it comes to in the other currencies, when Finance has set a rate — never a guess. --}}
+                @if($equivalents = \App\Support\Rates::equivalentsWords($departure->lead_price))
+                    <p class="text-xs text-ink-muted" dir="ltr">{{ $equivalents }}</p>
+                @endif
                 {{-- A package sold to visitors too shows their price beside it — §16 Phase 15. --}}
                 @if($departure->package->sold_to === 'both' && ($visitor = $departure->leadPriceFor('tourist')))
                     <p dir="auto" class="text-sm text-ink-muted">{{ __('messages.Visitors from :price', ['price' => $visitor->format()]) }}</p>

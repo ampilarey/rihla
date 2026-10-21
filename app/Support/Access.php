@@ -198,6 +198,10 @@ final class Access
         'payment.reconcile',
         'payment.refund',
 
+        // The exchange rate table (batch C from Hijaz): what a dollar or a
+        // riyal is credited at. Finance's, and the Operations Manager's.
+        'rate.manage',
+
         // Enquiries — §8.1's minimal CRM. No delete: an enquiry that was
         // lost is the record of a customer this operator did not win, and
         // that is the most useful thing in the table.
@@ -928,7 +932,7 @@ final class Access
                 array_diff($ziyarah, ['ziyarah.review']),
                 array_diff($learning, ['learning.review']),
                 array_diff($questions, ['question.answer']),
-                ['departure.nusuk', 'departure.board', 'departure.lifecycle', 'departure.settle'],
+                ['departure.nusuk', 'departure.board', 'departure.lifecycle', 'departure.settle', 'rate.manage'],
                 $stays,
                 $content,
             ),
@@ -1082,8 +1086,9 @@ final class Access
             // The board's money line is this role's job: which departures
             // are flying with a balance outstanding, and how much.
             self::FINANCE => array_merge(
-                // Settles a departure once its books are closed.
-                ['admin.access', 'departure.board', 'departure.settle', 'telegram.link'],
+                // Settles a departure once its books are closed, and keeps
+                // the exchange rate table.
+                ['admin.access', 'departure.board', 'departure.settle', 'rate.manage', 'telegram.link'],
                 $bookingsReadOnly,
                 // Knocks something off a price, with a reason on the record.
                 ['booking.discount'],

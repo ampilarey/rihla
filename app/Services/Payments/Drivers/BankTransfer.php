@@ -105,6 +105,11 @@ final class BankTransfer implements PaymentGateway
             'provider' => null,
             'currency' => $amount->currency,
             'amount_minor' => $amount->minor,
+            // What arrived when it was not the booking's currency, and the
+            // rate it was credited at — batch C from Hijaz.
+            'received_currency' => $details['received_currency'] ?? null,
+            'received_minor' => $details['received_minor'] ?? null,
+            'exchange_rate' => $details['exchange_rate'] ?? null,
             'paid_at' => $details['paid_at'] ?? null,
             'payer_name' => $details['payer_name'] ?? null,
             'payer_bank' => $details['payer_bank'] ?? null,

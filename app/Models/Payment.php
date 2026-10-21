@@ -37,12 +37,15 @@ class Payment extends Model
 
     protected $fillable = [
         'payable_type', 'payable_id', 'refund_of_id', 'method', 'provider', 'currency',
-        'amount_minor', 'paid_at', 'payer_name', 'payer_bank', 'payer_reference',
+        'amount_minor', 'received_currency', 'received_minor', 'exchange_rate',
+        'paid_at', 'payer_name', 'payer_bank', 'payer_reference',
         'notes',
     ];
 
     protected $casts = [
         'amount_minor' => 'integer',
+        'received_minor' => 'integer',
+        'exchange_rate' => 'float',
         'slip_size_bytes' => 'integer',
         // What the reader made of the slip (batch B from Hijaz): amount,
         // reference, date, as words beside Finance's decision.
@@ -240,6 +243,31 @@ class Payment extends Model
     public function money(): Money
     {
         return Money::ofMinor($this->amount_minor, $this->currency);
+    }
+
+    /**
+     * What actually arrived, when it was not the booking's currency —
+     * batch C from Hijaz. `money()` is what the booking was credited.
+     */
+    public function received(): ?Money
+    {
+        if ($this->received_currency === null || $this->received_minor === null || $this->received_currency === $this->currency) {
+            return null;
+        }
+
+        return Money::ofMinor($this->received_minor, $this->received_currency);
+    }
+
+    /** "USD 650 at 15.4200", or null when it came in the booking's own currency. */
+    public function receivedWords(): ?string
+    {
+        $received = $this->received();
+
+        if ($received === null) {
+            return null;
+        }
+
+        return $received->format().($this->exchange_rate ? ' at '.number_format($this->exchange_rate, 4) : '');
     }
 
     public function isRefund(): bool

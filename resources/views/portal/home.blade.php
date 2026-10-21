@@ -135,7 +135,12 @@
                                         </a>
                                     @endif
                                 </span>
-                                <span class="shrink-0 font-medium text-ink" dir="ltr">{{ $payment->money()->format() }}</span>
+                                <span class="shrink-0 text-end font-medium text-ink" dir="ltr">
+                                    {{ $payment->money()->format() }}
+                                    @if($payment->receivedWords())
+                                        <span class="block text-xs font-normal text-ink-muted">{{ $payment->receivedWords() }}</span>
+                                    @endif
+                                </span>
                             </li>
                         @endforeach
                     </ul>
