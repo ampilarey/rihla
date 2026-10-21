@@ -179,6 +179,9 @@ run php artisan migrate --force || { KEEP_DOWN=1; die "migration failed — the 
 run php artisan config:cache || die "config:cache failed"
 run php artisan route:cache || die "route:cache failed"
 run php artisan view:cache || die "view:cache failed"
+# The staff Telegram bot, pointed at this site. A no-op without a token,
+# and never a reason to stop a deploy.
+run php artisan telegram:webhook || log "     WARN: telegram webhook not registered"
 
 # No seeding. Not as an option, not behind a flag. Demo content reached
 # production once already and advertised resort holidays on an Umrah site.

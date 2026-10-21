@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\TelegramWebhookController;
 use App\Http\Controllers\Api\TestDeployWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,3 +14,10 @@ Route::get('/health', HealthController::class)->middleware('throttle:60,1');
 // TEST_DEPLOY_WEBHOOK_SECRET is unset; always 404 on non-test hosts.
 Route::post('/deploy/test-pull', TestDeployWebhookController::class)
     ->middleware('throttle:10,1');
+
+// Telegram delivers every bot message here — batch A4 from Hijaz. 404
+// until a bot token is set; 403 without the secret Telegram was given
+// when the webhook was registered (`php artisan telegram:webhook`).
+Route::post('/telegram/webhook', TelegramWebhookController::class)
+    ->middleware('throttle:120,1')
+    ->name('api.telegram.webhook');

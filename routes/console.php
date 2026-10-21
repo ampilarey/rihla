@@ -46,6 +46,12 @@ Schedule::command('stays:statements')->monthlyOn(2, '03:15')->withoutOverlapping
 // another site is closed here within the hour.
 Schedule::command('stays:calendars')->hourlyAt(20)->withoutOverlapping(30);
 
+// The morning message to every staff member who linked a Telegram chat —
+// batch A4 from Hijaz. A no-op without a bot token.
+Schedule::command('telegram:daily')
+    ->dailyAt((string) config('telegram.daily_summary_at', '08:00'))
+    ->withoutOverlapping(10);
+
 // Proof the scheduler is alive, read by `rihla:preflight`. A missing cron
 // line fails nothing loudly — holds just stop expiring — so the deploy
 // checklist is where somebody finds out.

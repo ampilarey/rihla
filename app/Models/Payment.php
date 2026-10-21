@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\IllegalPaymentTransition;
 use App\Services\Payments\Ledger;
+use App\Services\Telegram\Notifier;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -293,6 +294,14 @@ class Payment extends Model
             'reason' => $reason,
             'created_at' => now(),
         ]);
+
+        // Finance hears of a slip on Telegram, if anybody has linked a
+        // chat. Called here, at the one place a payment starts waiting,
+        // rather than from each path that puts it there; a no-op without
+        // a bot token, and never a thrown exception — see Notifier.
+        if ($status === self::AWAITING_REVIEW) {
+            app(Notifier::class)->paymentWaiting($this);
+        }
     }
 
     /** @param  Builder<$this>  $query */
