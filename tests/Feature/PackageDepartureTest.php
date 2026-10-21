@@ -57,6 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `booking_travellers.ticket_number` and
+        // `seat_number`. No foreign key, but left recorded while the
+        // booking domain is dropped and re-created below, the table would
+        // come back without them and the migration would never run again.
+        __DIR__.'/../../database/migrations/2026_10_21_100000_add_ticket_and_seat_to_booking_travellers.php',
         // Newest of all: `packages.partner_id` and `submitted_at` (§16 Phase
         // 16). No foreign key, but left recorded while `packages` is dropped
         // and re-created below, the table would come back without them.

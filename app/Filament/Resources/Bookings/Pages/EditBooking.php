@@ -6,6 +6,7 @@ use App\Exceptions\IllegalBookingTransition;
 use App\Exceptions\NoSeatsAvailable;
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
+use App\Models\BookingTraveller;
 use App\Models\NusukPermit;
 use App\Models\Payment;
 use App\Models\PortalAccess;
@@ -25,6 +26,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Schemas\Components\Section;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -45,6 +47,7 @@ class EditBooking extends EditRecord
         return [
             $this->recordPaymentAction(),
             $this->invoiceAction(),
+            $this->ticketsAction(),
             $this->portalLinkAction(),
             $this->confirmAction(),
             $this->openVisasAction(),
@@ -344,6 +347,61 @@ class EditBooking extends EditRecord
         return 'The permits will open, but none can be requested until this departure\'s '
             .implode(' and ', $missing)
             .' is recorded in Nusuk. That is set on the departure.';
+    }
+
+    /**
+     * The airline's two facts about each traveller, typed once the tickets
+     * are issued. One small form for the whole party rather than an edit
+     * screen per traveller: the tickets arrive together, on one e-mail
+     * from the airline, and are typed together.
+     */
+    private function ticketsAction(): Action
+    {
+        return Action::make('tickets')
+            ->label('Tickets & seats')
+            ->icon('heroicon-o-ticket')
+            ->color('gray')
+            ->visible(fn (): bool => auth()->user()?->can('booking.update') === true
+                && $this->booking()->travellers->isNotEmpty())
+            ->modalHeading('Tickets and seats')
+            ->modalDescription('Printed on the manifest the airline is handed. Leave a box empty for a ticket not issued yet.')
+            ->fillForm(fn (): array => [
+                'lines' => $this->booking()->travellers
+                    ->mapWithKeys(fn (BookingTraveller $line): array => [
+                        $line->getKey() => [
+                            'ticket_number' => $line->ticket_number,
+                            'seat_number' => $line->seat_number,
+                        ],
+                    ])
+                    ->all(),
+            ])
+            ->schema(fn (): array => $this->booking()->travellers
+                ->map(fn (BookingTraveller $line): Section => Section::make($line->traveller->full_name)
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('lines.'.$line->getKey().'.ticket_number')
+                            ->label('Ticket number')
+                            ->maxLength(30),
+                        TextInput::make('lines.'.$line->getKey().'.seat_number')
+                            ->label('Seat')
+                            ->maxLength(8)
+                            ->placeholder('12A'),
+                    ]))
+                ->all())
+            ->action(function (array $data): void {
+                $booking = $this->booking();
+
+                foreach ($booking->travellers as $line) {
+                    $typed = $data['lines'][$line->getKey()] ?? [];
+
+                    $line->update([
+                        'ticket_number' => trim((string) ($typed['ticket_number'] ?? '')) ?: null,
+                        'seat_number' => strtoupper(trim((string) ($typed['seat_number'] ?? ''))) ?: null,
+                    ]);
+                }
+
+                Notification::make()->success()->title('Tickets saved')->send();
+            });
     }
 
     private function booking(): Booking

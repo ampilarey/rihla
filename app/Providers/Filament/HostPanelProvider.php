@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\BottomNav;
 use App\Filament\Host\Pages\Dashboard;
 use App\Filament\Host\Pages\RegisterHost;
 use App\Filament\Host\Widgets\Today;
@@ -16,6 +17,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -63,6 +65,9 @@ class HostPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Host/Pages'), for: 'App\Filament\Host\Pages')
             ->pages([Dashboard::class])
             ->widgets([Today::class])
+            // The five things somebody does most, along the bottom of a
+            // phone screen; the sidebar takes over from 64rem.
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => BottomNav::render())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

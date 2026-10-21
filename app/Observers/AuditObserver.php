@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Support\AuditContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -109,6 +110,10 @@ class AuditObserver
             'user_name' => $user?->name,
             'user_email' => $user?->email,
             'event' => $event,
+            // Where it arrived from: a panel, a pilgrim's portal, the
+            // console, a chat. "Who" alone cannot tell a verification
+            // tapped in Telegram from one done at a desk.
+            'channel' => AuditContext::channel(),
             'auditable_type' => $model->getMorphClass(),
             'auditable_id' => $model->getKey(),
             'old_values' => $old,

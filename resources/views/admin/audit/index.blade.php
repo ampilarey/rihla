@@ -30,9 +30,18 @@
             @endforeach
         </select>
 
+        <select name="channel" class="rounded-lg border border-gray-500 px-3 py-2 text-sm">
+            <option value="">{{ __('From anywhere') }}</option>
+            @foreach ($channels as $channel)
+                <option value="{{ $channel }}" @selected(request('channel') === $channel)>
+                    {{ __(ucfirst($channel)) }}
+                </option>
+            @endforeach
+        </select>
+
         <button type="submit" class="btn-primary text-sm">{{ __('Filter') }}</button>
 
-        @if (request()->hasAny(['event', 'subject', 'user']))
+        @if (request()->hasAny(['event', 'subject', 'user', 'channel']))
             <a href="{{ route('admin.audit.index') }}" class="text-sm text-wine-500 self-center">
                 {{ __('Clear') }}
             </a>
@@ -46,6 +55,7 @@
                     <th class="px-4 py-3 text-left font-semibold text-ink">{{ __('When') }}</th>
                     <th class="px-4 py-3 text-left font-semibold text-ink">{{ __('Who') }}</th>
                     <th class="px-4 py-3 text-left font-semibold text-ink">{{ __('Event') }}</th>
+                    <th class="px-4 py-3 text-left font-semibold text-ink">{{ __('From') }}</th>
                     <th class="px-4 py-3 text-left font-semibold text-ink">{{ __('Record') }}</th>
                     <th class="px-4 py-3 text-left font-semibold text-ink">{{ __('Changed') }}</th>
                 </tr>
@@ -73,6 +83,9 @@
                             ])>{{ __(ucfirst($log->event)) }}</span>
                         </td>
                         <td class="px-4 py-3 text-ink-muted">
+                            {{ __(ucfirst($log->channel)) }}
+                        </td>
+                        <td class="px-4 py-3 text-ink-muted">
                             {{ $log->subject }} #{{ $log->auditable_id }}
                         </td>
                         <td class="px-4 py-3 text-ink-muted">
@@ -84,7 +97,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-ink-muted">
+                        <td colspan="6" class="px-4 py-8 text-center text-ink-muted">
                             {{ __('Nothing recorded yet.') }}
                         </td>
                     </tr>
