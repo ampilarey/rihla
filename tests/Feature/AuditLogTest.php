@@ -8,6 +8,8 @@ use App\Models\Traveller;
 use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
+use App\Support\AuditContext;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -277,5 +279,72 @@ class AuditLogTest extends TestCase
             ->assertOk()
             ->assertSee('Trip')
             ->assertDontSee('CONFIDENTIAL-VALUE-MARKER');
+    }
+
+    // ── Where a change arrived from ──────────────────────────────────────
+
+    public function test_the_channel_a_change_arrived_by_is_recorded(): void
+    {
+        $admin = $this->admin();
+        AuditLog::query()->delete();
+
+        // From nowhere in particular — a factory in a test, a visitor on
+        // the public site — is the website.
+        $this->assertSame(AuditContext::WEB, AuditContext::channel());
+
+        // Through the admin screens: a route the context can name.
+        $this->actingAs($admin)->post(route('admin.trips.store'), [
+            'title' => 'Ramadan Umrah',
+            'date_start' => '2026-03-01',
+            'date_end' => '2026-03-08',
+            'status' => 'upcoming',
+        ]);
+
+        $this->assertSame(AuditContext::STAFF, AuditLog::where('auditable_type', Trip::class)->latestFirst()->first()->channel);
+
+        // An entry point that knows says so, and the rows say it too.
+        AuditContext::use(AuditContext::TELEGRAM);
+
+        try {
+            $trip = $this->trip(['slug' => 'by-chat']);
+            $this->assertSame(AuditContext::TELEGRAM, AuditLog::where('auditable_id', $trip->id)->sole()->channel);
+        } finally {
+            AuditContext::reset();
+        }
+
+        $this->assertSame(AuditContext::STAFF, AuditContext::channel(), 'The override is lifted when the work is done; the last request is still the admin screen.');
+
+        // Inside a panel, Livewire's own route says nothing; the panel does.
+        Filament::setCurrentPanel('staff');
+        $this->assertSame(AuditContext::STAFF, AuditContext::channel());
+        Filament::setCurrentPanel('host');
+        $this->assertSame(AuditContext::HOST, AuditContext::channel());
+        Filament::setCurrentPanel(null);
+    }
+
+    public function test_the_log_screen_filters_by_where_a_change_came_from(): void
+    {
+        $admin = $this->admin();
+
+        AuditContext::use(AuditContext::TELEGRAM);
+        $this->trip(['slug' => 'by-chat', 'title' => 'Tapped in a chat']);
+        AuditContext::reset();
+        $this->trip(['slug' => 'at-a-desk', 'title' => 'Typed at a desk']);
+
+        // The screen lists field names, never values, so the rows are
+        // counted rather than read: one trip was made from a chat.
+        $filtered = $this->actingAs($admin)
+            ->get(route('admin.audit.index', ['channel' => AuditContext::TELEGRAM]))
+            ->assertOk()
+            ->assertSee('Telegram')
+            ->getContent();
+        $this->assertSame(1, substr_count($filtered, '<time datetime='));
+
+        $all = $this->actingAs($admin)->get(route('admin.audit.index'))->assertOk()->getContent();
+        $this->assertGreaterThanOrEqual(2, substr_count($all, '<time datetime='));
+
+        $this->actingAs($admin)
+            ->get(route('admin.audit.index', ['channel' => 'carrier-pigeon']))
+            ->assertSessionHasErrors('channel');
     }
 }

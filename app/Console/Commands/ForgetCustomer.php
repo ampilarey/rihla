@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\Stay;
 use App\Models\Traveller;
 use App\Support\Anonymisation;
+use App\Support\AuditContext;
 use App\Support\Forgetting;
 use App\Support\PhoneNumber;
 use Illuminate\Console\Command;
@@ -193,6 +194,7 @@ class ForgetCustomer extends Command
         // which is what an auditor needs and all they need.
         AuditLog::create([
             'event' => 'forgotten',
+            'channel' => AuditContext::channel(),
             'auditable_type' => Customer::class,
             'auditable_id' => $customer->getKey(),
             'new_values' => ['rows' => $erased, 'files' => count($files)],

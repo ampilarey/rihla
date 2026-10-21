@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\BottomNav;
 use App\Filament\InitialsAvatarProvider;
 use App\Http\Middleware\RequireSecondFactor;
 use App\Support\Brand;
@@ -13,6 +14,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -74,6 +76,9 @@ class StaffPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            // The five things somebody does most, along the bottom of a
+            // phone screen; the sidebar takes over from 64rem.
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => BottomNav::render())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

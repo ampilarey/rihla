@@ -64,11 +64,12 @@ class BookingForm
                     ->hiddenLabel()
                     ->state(fn (Booking $record): array => $record->travellers
                         ->map(fn (BookingTraveller $line): string => sprintf(
-                            '%s — %s, %s — %s',
+                            '%s — %s, %s — %s%s',
                             $line->traveller->full_name,
                             ucfirst($line->occupancy),
                             $line->pax_type,
                             $line->money()->format(),
+                            self::ticket($line),
                         ))
                         ->all())
                     ->listWithLineBreaks()
@@ -149,6 +150,17 @@ class BookingForm
                     ->helperText('What was said on the phone. Visible to staff only.'),
             ]),
         ]);
+    }
+
+    /** " — ticket 2201234567, seat 12A", or nothing until the airline has issued one. */
+    private static function ticket(BookingTraveller $line): string
+    {
+        $parts = array_filter([
+            $line->ticket_number !== null ? 'ticket '.$line->ticket_number : null,
+            $line->seat_number !== null ? 'seat '.$line->seat_number : null,
+        ]);
+
+        return $parts === [] ? '' : ' — '.implode(', ', $parts);
     }
 
     /**

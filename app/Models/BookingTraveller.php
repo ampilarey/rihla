@@ -20,6 +20,9 @@ class BookingTraveller extends Model
     protected $fillable = [
         'booking_id', 'traveller_id', 'occupancy', 'pax_type',
         'price_tier_id', 'amount_minor', 'is_lead', 'room_reference',
+        // The airline's two facts about the person, typed once the tickets
+        // are issued and printed on the manifest the airline is handed.
+        'ticket_number', 'seat_number',
     ];
 
     protected $casts = [

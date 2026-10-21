@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Support\AuditContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,7 @@ class AuditLogController extends Controller
             'event' => 'nullable|in:created,updated,deleted',
             'subject' => 'nullable|string|max:100',
             'user' => 'nullable|integer',
+            'channel' => ['nullable', 'string', 'in:'.implode(',', AuditContext::ALL)],
         ]);
 
         $logs = AuditLog::query()
@@ -28,6 +30,7 @@ class AuditLogController extends Controller
                 fn ($query, $subject) => $query->where('auditable_type', 'App\\Models\\'.$subject),
             )
             ->when($filters['user'] ?? null, fn ($query, $user) => $query->where('user_id', $user))
+            ->when($filters['channel'] ?? null, fn ($query, $channel) => $query->where('channel', $channel))
             ->latestFirst()
             ->paginate(50)
             ->withQueryString();
@@ -39,6 +42,8 @@ class AuditLogController extends Controller
             ->sort()
             ->values();
 
-        return view('admin.audit.index', compact('logs', 'subjects'));
+        $channels = AuditContext::ALL;
+
+        return view('admin.audit.index', compact('logs', 'subjects', 'channels'));
     }
 }

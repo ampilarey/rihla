@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Payment;
 use App\Services\Payments\SlipVault;
+use App\Support\AuditContext;
 use App\Support\EncryptedFile;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -61,6 +62,7 @@ class PaymentSlipController extends Controller
             'user_name' => $user?->name,
             'user_email' => $user?->email,
             'event' => AuditLog::DOWNLOADED,
+            'channel' => AuditContext::channel(),
             'auditable_type' => $payment->getMorphClass(),
             'auditable_id' => $payment->getKey(),
             'old_values' => null,

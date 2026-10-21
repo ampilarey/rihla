@@ -8,8 +8,10 @@ use App\Models\DepartureHotel;
 use App\Models\ItineraryItem;
 use App\Models\NusukPermit;
 use App\Models\PriceTier;
+use App\Services\Departures\DepartureCopier;
 use App\Support\Money;
 use App\Support\TravelReadiness;
+use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -21,6 +23,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
@@ -252,6 +255,43 @@ class DeparturesRelationManager extends RelationManager
             ->modalCancelActionLabel('Close');
     }
 
+    /**
+     * The same set-up on new dates: prices, hotels, itinerary, flights,
+     * transfers, checklist and estimated costs, every date moved by the
+     * same number of days. Bookings, holds, PNRs, ticks and the publish
+     * switch stay behind — see DepartureCopier.
+     */
+    private static function copyAction(): Action
+    {
+        return Action::make('copy')
+            ->label('Copy')
+            ->icon('heroicon-o-document-duplicate')
+            ->color('gray')
+            ->authorize(fn (): bool => auth()->user()?->can('departure.create') === true)
+            ->modalHeading(fn (Departure $record): string => 'Copy the '.$record->date_start->format('j M Y').' departure')
+            ->modalDescription(fn (Departure $record): string => DepartureCopier::carries($record) === []
+                ? 'The dates, airline, seats and people travelling with the party are copied. Nothing else is set up on this departure yet.'
+                : 'Copied with every date moved by the same number of days: '.implode(', ', DepartureCopier::carries($record))
+                    .'. Bookings, seat holds, airline booking references and checklist ticks are not copied, and the copy is not live until you publish it.')
+            ->schema([
+                DatePicker::make('date_start')
+                    ->label('New departure date')
+                    ->required()
+                    ->native(false)
+                    ->minDate(now()->toDateString())
+                    ->helperText('The return date and every other date follow it.'),
+            ])
+            ->action(function (Departure $record, array $data): void {
+                $copy = app(DepartureCopier::class)->copy($record, CarbonImmutable::parse($data['date_start']));
+
+                Notification::make()
+                    ->success()
+                    ->title('Departure copied')
+                    ->body('Departs '.$copy->date_start->format('j M Y').', returns '.$copy->date_end->format('j M Y').'. It is not published yet.')
+                    ->send();
+            });
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -282,7 +322,7 @@ class DeparturesRelationManager extends RelationManager
             ])
             ->defaultSort('date_start')
             ->headerActions([CreateAction::make()])
-            ->recordActions([self::readinessAction(), EditAction::make(), DeleteAction::make()])
+            ->recordActions([self::readinessAction(), self::copyAction(), EditAction::make(), DeleteAction::make()])
             ->emptyStateHeading('No departures yet')
             ->emptyStateDescription('A departure is one dated run of this package.');
     }

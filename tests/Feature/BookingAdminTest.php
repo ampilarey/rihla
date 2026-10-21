@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Bookings\BookingResource;
 use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Bookings\Pages\ListBookings;
 use App\Filament\Resources\Packages\Pages\EditPackage;
@@ -11,6 +12,7 @@ use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Package;
 use App\Models\PriceTier;
+use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Booking\SeatAllocator;
 use App\Support\Access;
@@ -541,5 +543,38 @@ class BookingAdminTest extends TestCase
         foreach (['seats', 'total_minor', 'created_at'] as $wider) {
             $this->assertSame('md', $table->getColumn($wider)->getVisibleFrom());
         }
+    }
+
+    // ── Tickets and seats ────────────────────────────────────────────────
+
+    /** The airline's two facts about each traveller, typed once for the whole party. */
+    public function test_tickets_and_seats_are_typed_for_the_whole_party(): void
+    {
+        $booking = $this->heldBooking();
+        $aminath = $booking->travellers()->create([
+            'traveller_id' => Traveller::factory()->create(['customer_id' => $booking->customer_id, 'full_name' => 'Aminath Ali'])->getKey(),
+            'occupancy' => 'double',
+        ]);
+        $hassan = $booking->travellers()->create([
+            'traveller_id' => Traveller::factory()->create(['customer_id' => $booking->customer_id, 'full_name' => 'Hassan Ali'])->getKey(),
+            'occupancy' => 'double',
+        ]);
+
+        Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(EditBooking::class, ['record' => $booking->getKey()])
+            ->callAction('tickets', data: ['lines' => [
+                $aminath->getKey() => ['ticket_number' => ' 2201234567 ', 'seat_number' => '12a'],
+                $hassan->getKey() => ['ticket_number' => '', 'seat_number' => ''],
+            ]])
+            ->assertHasNoActionErrors();
+
+        $this->assertSame('2201234567', $aminath->fresh()->ticket_number);
+        $this->assertSame('12A', $aminath->fresh()->seat_number, 'Seats are upper case on a boarding pass.');
+        $this->assertNull($hassan->fresh()->ticket_number, 'An empty box is a ticket not issued yet, not an empty string.');
+
+        $this->actingAs($this->staff(Access::BOOKING_STAFF))
+            ->get(BookingResource::getUrl('edit', ['record' => $booking]))
+            ->assertOk()
+            ->assertSee('ticket 2201234567, seat 12A');
     }
 }

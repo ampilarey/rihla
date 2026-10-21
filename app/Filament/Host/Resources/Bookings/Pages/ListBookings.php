@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\StayGuest;
 use App\Models\User;
 use App\Services\Hosts\Reports;
+use App\Support\AuditContext;
 use App\Support\HostContext;
 use App\Support\HostRole;
 use Carbon\CarbonImmutable;
@@ -64,6 +65,7 @@ class ListBookings extends ListRecords
                     'user_name' => $user->name,
                     'user_email' => $user->email,
                     'event' => AuditLog::DOWNLOADED,
+                    'channel' => AuditContext::channel(),
                     'auditable_type' => $host->getMorphClass(),
                     'auditable_id' => $host->getKey(),
                     'old_values' => null,

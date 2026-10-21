@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\DocumentVersion;
 use App\Services\Documents\DocumentWallet;
+use App\Support\AuditContext;
 use App\Support\EncryptedFile;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -66,6 +67,7 @@ class DocumentController extends Controller
             'user_name' => $user?->name,
             'user_email' => $user?->email,
             'event' => AuditLog::DOWNLOADED,
+            'channel' => AuditContext::channel(),
             'auditable_type' => $version->getMorphClass(),
             'auditable_id' => $version->getKey(),
             'old_values' => null,
