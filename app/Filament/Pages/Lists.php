@@ -51,7 +51,7 @@ class Lists extends Page
         }
 
         // The next departure to leave: the one whose lists are being printed.
-        $next = Departure::query()->where('date_end', '>=', today())->orderBy('date_start')->value('id');
+        $next = Departure::query()->notHistory()->where('date_end', '>=', today())->orderBy('date_start')->value('id');
 
         $this->departureId = $next === null ? null : (int) $next;
     }

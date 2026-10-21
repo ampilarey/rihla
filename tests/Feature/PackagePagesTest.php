@@ -65,7 +65,7 @@ class PackagePagesTest extends TestCase
 
     public function test_an_unpublished_departure_is_hidden_but_its_package_still_shows(): void
     {
-        $package = $this->packageWithDeparture(['is_published' => false, 'airline' => 'Secret Air']);
+        $package = $this->packageWithDeparture(['status' => Departure::DRAFT, 'airline' => 'Secret Air']);
 
         // The package is still listed — the page is also how somebody asks
         // for the next run.

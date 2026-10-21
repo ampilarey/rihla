@@ -32,7 +32,7 @@ final class PackageFinderOptions
 
     public static function build(): self
     {
-        $departures = Departure::published()
+        $departures = Departure::open()
             ->upcoming()
             ->whereHas('package', function ($package): void {
                 /** @var Builder<Package> $package */

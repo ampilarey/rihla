@@ -2,11 +2,13 @@
 
 namespace App\Filament\Pages;
 
+use App\Exceptions\IllegalDepartureTransition;
 use App\Models\Departure;
 use App\Models\ZiyarahLocation;
 use App\Support\DepartureReadiness;
 use App\Support\StudyPlan;
 use BackedEnum;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
@@ -49,7 +51,10 @@ class DepartureBoard extends Page
     }
 
     /**
-     * Every upcoming departure with its concerns attached.
+     * Every departure that is still somebody's work, with its concerns
+     * attached: open, closed, on the road or home and not yet settled, and
+     * a draft close enough to leaving that somebody should be opening it.
+     * Settled and cancelled departures are history and never here.
      *
      * Ordered by date rather than by how wrong it is: the departure that
      * leaves on Tuesday is the one to fix first, even if the one in March
@@ -60,7 +65,10 @@ class DepartureBoard extends Page
     public function getBoard(): Collection
     {
         return Departure::query()
-            ->where('date_start', '>=', now()->startOfDay())
+            ->notHistory()
+            ->where(fn ($query) => $query
+                ->where('status', '!=', Departure::DRAFT)
+                ->orWhere('date_start', '<=', today()->addDays(DepartureReadiness::OPEN_WITHIN_DAYS)))
             ->with(['package', 'hotels', 'tourLeader', 'scholar'])
             ->orderBy('date_start')
             ->get()
@@ -86,6 +94,60 @@ class DepartureBoard extends Page
                     ),
                 ];
             });
+    }
+
+    /**
+     * The moves the board offers, and who may make each: the ones that need
+     * no reason. Closing and cancelling ask why, and live on the package's
+     * departures list with a form to say it.
+     *
+     * @var array<string, array{string, string}> to-state => [permission, button label]
+     */
+    public const MOVES = [
+        Departure::DEPARTED => ['departure.lifecycle', 'Mark departed'],
+        Departure::RETURNED => ['departure.lifecycle', 'Mark returned'],
+        Departure::SETTLED => ['departure.settle', 'Settle'],
+    ];
+
+    /**
+     * The moves this person may make on this departure from here. Finance
+     * settles from the board because the package's departures list, where
+     * the other moves live, is not a screen Finance opens.
+     *
+     * @return array<string, string> to-state => button label
+     */
+    public function movesFor(Departure $departure): array
+    {
+        $user = auth()->user();
+        $moves = [];
+
+        foreach (self::MOVES as $to => [$permission, $label]) {
+            if ($departure->canBecome($to) && $user?->can($permission) === true) {
+                $moves[$to] = $label;
+            }
+        }
+
+        return $moves;
+    }
+
+    public function move(int $departureId, string $to): void
+    {
+        abort_unless(self::canAccess(), 403);
+
+        [$permission, $label] = self::MOVES[$to] ?? abort(422, 'Not a move the board makes.');
+        abort_unless(auth()->user()?->can($permission) === true, 403);
+
+        $departure = Departure::query()->findOrFail($departureId);
+
+        try {
+            $departure->transitionTo($to);
+        } catch (IllegalDepartureTransition $e) {
+            Notification::make()->danger()->title('Not moved')->body($e->getMessage())->persistent()->send();
+
+            return;
+        }
+
+        Notification::make()->success()->title($label)->body(($departure->package->title ?? 'The departure').' is now '.strtolower($departure->statusLabel()).'.')->send();
     }
 
     /** @param list<array{area: string, severity: string, headline: string, detail: string}> $concerns */

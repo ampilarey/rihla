@@ -69,7 +69,7 @@ final class PackageFilters implements Arrayable
 
             $query->whereHas('departures', function ($departures) use ($start): void {
                 /** @var Builder<Departure> $departures */
-                $departures->published()
+                $departures->open()
                     ->whereBetween('date_start', [$start, $start->copy()->endOfMonth()]);
             });
         }
@@ -81,7 +81,7 @@ final class PackageFilters implements Arrayable
         if ($this->maxBudgetMinor !== null) {
             $query->whereHas('departures', function ($departures): void {
                 /** @var Builder<Departure> $departures */
-                $departures->published()->upcoming()->whereHas('priceTiers', function ($tiers): void {
+                $departures->open()->upcoming()->whereHas('priceTiers', function ($tiers): void {
                     /** @var Builder<PriceTier> $tiers */
                     $tiers->where('amount_minor', '<=', $this->maxBudgetMinor);
                 });

@@ -13,8 +13,8 @@
         <x-filament::callout
             color="gray"
             icon="heroicon-o-calendar"
-            heading="No upcoming departures"
-            description="This board only looks forward. A departure that has already come home is history, not work."
+            heading="Nothing on the board"
+            description="No departure is open, closed, on the road or home and unsettled, and no draft leaves within the next two months. A settled or cancelled departure is history, not work."
         />
     @else
         @foreach ($board as $row)
@@ -35,6 +35,10 @@
                     DepartureBoardTest::test_the_severity_badges_render.
                 --}}
                 <x-slot name="afterHeader">
+                    <x-filament::badge :color="\App\Filament\Resources\Packages\RelationManagers\DeparturesRelationManager::STAGE_COLOURS[$departure->status] ?? 'gray'">
+                        {{ $departure->statusLabel() }}
+                    </x-filament::badge>
+
                     @if ($row['blocking'] > 0)
                         <x-filament::badge color="danger">
                             {{ trans_choice('{1}:count blocker|[2,*]:count blockers', $row['blocking'], ['count' => $row['blocking']]) }}
@@ -68,6 +72,23 @@
                             :description="$concern['detail']"
                         />
                     @endforeach
+                @endif
+
+                @php($moves = $this->movesFor($departure))
+                @if ($moves !== [])
+                    {{-- The moves that need no reason, for whoever may make
+                         them; closing and cancelling ask why, on the
+                         package's departures list. --}}
+                    <div style="display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.75rem;">
+                        @foreach ($moves as $to => $label)
+                            <x-filament::button
+                                size="sm"
+                                :color="$to === \App\Models\Departure::SETTLED ? 'success' : 'gray'"
+                                wire:click="move({{ $departure->getKey() }}, '{{ $to }}')"
+                                wire:confirm="{{ $label }}: {{ $departure->package?->title ?? 'this departure' }}, {{ $departure->date_start->format('j M Y') }}?"
+                            >{{ $label }}</x-filament::button>
+                        @endforeach
+                    </div>
                 @endif
 
                 @if ($row['unmatched_places'] !== [])

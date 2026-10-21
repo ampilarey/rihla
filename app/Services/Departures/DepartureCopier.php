@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\DB;
  * seat holds (the counters start at zero), the airline's booking references
  * (a PNR is for one flight on one day), checklist ticks, what the costs
  * came to (every cost returns to an estimate), the Nusuk records, and
- * `is_published` — a copy goes live when somebody has read it through.
+ * the state — a copy is a draft, and goes on sale when somebody has read it
+ * through and opened it for booking.
  * Rooms are not copied either: they are a rooming list, not a plan.
  */
 class DepartureCopier
@@ -44,8 +45,9 @@ class DepartureCopier
                 'capacity_total' => $from->capacity_total,
                 'capacity_held' => 0,
                 'capacity_confirmed' => 0,
-                'status' => Departure::STATUS_UPCOMING,
-                'is_published' => false,
+                // A draft: it goes on sale when somebody has read it through
+                // and opened it for booking.
+                'status' => Departure::DRAFT,
             ]);
 
             foreach ($from->priceTiers as $tier) {

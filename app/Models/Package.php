@@ -162,7 +162,7 @@ class Package extends Model
     /** @return HasMany<Departure, $this> */
     public function publishedDepartures(): HasMany
     {
-        return $this->departures()->where('is_published', true);
+        return $this->departures()->where('status', Departure::OPEN);
     }
 
     /**

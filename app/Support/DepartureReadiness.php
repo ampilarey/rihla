@@ -77,6 +77,14 @@ final class DepartureReadiness
 
     public const CHECKLIST = 'checklist';
 
+    public const LIFECYCLE = 'lifecycle';
+
+    /** A returned departure may sit this long before the board asks for it to be settled. */
+    public const SETTLE_WITHIN_DAYS = 14;
+
+    /** A draft this close to leaving is asked about. */
+    public const OPEN_WITHIN_DAYS = 60;
+
     /**
      * Everything worth a person's attention on this departure.
      *
@@ -84,7 +92,14 @@ final class DepartureReadiness
      */
     public static function concerns(Departure $departure): array
     {
+        // Settled or cancelled: nothing on it is anybody's work, and a list
+        // of what it lacks would only teach the board to be ignored.
+        if ($departure->isHistory()) {
+            return [];
+        }
+
         return array_merge(
+            self::lifecycleConcerns($departure),
             self::travelDocumentConcerns($departure),
             self::identityConcerns($departure),
             self::moneyConcerns($departure),
@@ -572,6 +587,60 @@ final class DepartureReadiness
      *
      * @return list<array{area: string, severity: string, headline: string, detail: string}>
      */
+    /**
+     * Where the departure sits against its dates — batch C from Hijaz. The
+     * state is moved by hand, so the dates say when a move looks overdue
+     * and never make it. A departure leaving today is not late until
+     * tomorrow.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function lifecycleConcerns(Departure $departure): array
+    {
+        $leaves = $departure->date_start->format('j M Y');
+        $returns = $departure->date_end->format('j M Y');
+        $left = $departure->date_start->lt(today());
+        $due = $departure->date_end->lt(today());
+        $home = $departure->status_changed_at;
+
+        $concern = match (true) {
+            $departure->status === Departure::DRAFT && $departure->date_start->lte(today()->addDays(self::OPEN_WITHIN_DAYS)) => [
+                self::ATTENTION,
+                'Not open for booking yet',
+                'It leaves on '.$leaves.' and nobody can book it. Open it for booking from the package\'s departures once the prices and the seats are right.',
+            ],
+            $departure->status === Departure::OPEN && $left => [
+                self::BLOCKING,
+                'Still open for booking after leaving',
+                'It left on '.$leaves.'. Mark it departed, so the board and the leader\'s tools follow it and nobody books a seat on a plane that has gone.',
+            ],
+            $departure->status === Departure::CLOSED && $left => [
+                self::ATTENTION,
+                'Left on '.$leaves.' and not marked departed',
+                'Mark it departed once the party has flown; the leader\'s tools and the board follow the state, not the date.',
+            ],
+            $departure->status === Departure::DEPARTED && $due => [
+                self::ATTENTION,
+                'Due home on '.$returns.' and not marked returned',
+                'Mark it returned once the party is home, so Finance can settle it.',
+            ],
+            $departure->status === Departure::RETURNED && $home !== null && $home->lt(now()->subDays(self::SETTLE_WITHIN_DAYS)) => [
+                self::ATTENTION,
+                'Home for '.(int) $home->diffInDays(now()).' days and not settled',
+                'Settle it once its books are closed; until then it stays on the board.',
+            ],
+            default => null,
+        };
+
+        if ($concern === null) {
+            return [];
+        }
+
+        [$severity, $headline, $detail] = $concern;
+
+        return [['area' => self::LIFECYCLE, 'severity' => $severity, 'headline' => $headline, 'detail' => $detail]];
+    }
+
     private static function busConcerns(Departure $departure): array
     {
         $problems = app(Buses::class)->problemsWith($departure);

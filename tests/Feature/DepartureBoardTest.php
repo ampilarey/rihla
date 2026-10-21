@@ -159,18 +159,30 @@ class DepartureBoardTest extends TestCase
      * The board looks forward only. A rooming mistake on a trip that came
      * home last March is history, not work.
      */
-    public function test_a_past_departure_is_not_on_the_board(): void
+    public function test_a_settled_departure_is_not_on_the_board_and_one_left_open_is(): void
     {
         Departure::factory()->withSeats(20)->create([
             'date_start' => now()->subDays(30),
             'date_end' => now()->subDays(16),
+            'status' => Departure::SETTLED,
             'package_id' => Package::factory()->create(['title' => ['en' => 'Last March']])->getKey(),
+        ]);
+
+        // Still open for booking a month after it left: the stage, not the
+        // date, decides, and the board says what is wrong.
+        Departure::factory()->withSeats(20)->create([
+            'date_start' => now()->subDays(30),
+            'date_end' => now()->subDays(16),
+            'status' => Departure::OPEN,
+            'package_id' => Package::factory()->create(['title' => ['en' => 'Forgotten April']])->getKey(),
         ]);
 
         Livewire::actingAs($this->staff(Access::OPERATIONS_MANAGER))
             ->test(DepartureBoard::class)
             ->assertOk()
-            ->assertDontSee('Last March');
+            ->assertDontSee('Last March')
+            ->assertSee('Forgotten April')
+            ->assertSee('Still open for booking after leaving');
     }
 
     /**

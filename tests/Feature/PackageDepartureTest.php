@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `departure_events` hangs off `departures`, and
+        // `departures` gains a column the re-created table would otherwise
+        // come back without.
+        __DIR__.'/../../database/migrations/2026_10_23_100000_give_departures_a_lifecycle.php',
         // Newest of all: `document_extractions` hangs off
         // `document_versions`, and `travellers` and `payments` gain columns
         // the re-created tables would otherwise come back without.
