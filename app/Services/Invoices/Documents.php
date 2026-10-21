@@ -80,7 +80,7 @@ final class Documents
      *
      * @return array<string, string|null>
      */
-    private function issuer(): array
+    public function issuer(): array
     {
         return [
             'name' => (string) config('invoices.issuer.name'),

@@ -23,6 +23,7 @@ use App\Http\Controllers\LeaderController;
 use App\Http\Controllers\LearningController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MyStayController;
+use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
@@ -378,6 +379,20 @@ Route::middleware(['auth', 'mfa'])->group(function () {
         ->name('staff.invoice');
     Route::get('/staff-documents/payment/{payment}/receipt', [StaffInvoiceController::class, 'receipt'])
         ->name('staff.receipt');
+
+    // The lists a departure runs on, the cards and the tags — Hijaz's
+    // ground operations. Authenticated and authorised by permission, not
+    // signed, for the reason the staff documents above give; the
+    // controller audits every print. `/staff-lists`, not `/staff/...`:
+    // the panel owns that prefix.
+    Route::prefix('staff-lists')->name('lists.')->controller(OperationsController::class)->group(function () {
+        Route::get('/departure/{departure}/manifest', 'manifest')->name('manifest');
+        Route::get('/departure/{departure}/payments', 'payments')->name('payments');
+        Route::get('/departure/{departure}/documents', 'documents')->name('documents');
+        Route::get('/bus/{busGroup}', 'busList')->name('bus');
+        Route::get('/hotel/{departureHotel}/rooms', 'roomList')->name('rooms');
+        Route::get('/cards/{kind}', 'cards')->name('cards')->whereIn('kind', ['customer', 'luggage']);
+    });
 });
 
 // Admin routes (require authentication and admin privileges)

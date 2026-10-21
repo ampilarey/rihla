@@ -6,12 +6,19 @@ use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * One person on one booking, at the price that person's seat actually cost.
  *
  * `price_tier_id` is lineage, not the price: the tier may be repriced or
  * deleted afterwards, and `amount_minor` is the number that was agreed.
+ *
+ * @property int|null $bus_group_id
+ * @property Carbon|null $checked_in_at
+ * @property string|null $ticket_number
+ * @property string|null $seat_number
  */
 class BookingTraveller extends Model
 {
@@ -23,11 +30,17 @@ class BookingTraveller extends Model
         // The airline's two facts about the person, typed once the tickets
         // are issued and printed on the manifest the airline is handed.
         'ticket_number', 'seat_number',
+        // Which coach, and whether they have boarded it. Written by
+        // App\Services\Operations\Buses and the Scan page, never by the
+        // booking form.
+        'bus_group_id', 'checked_in_at',
     ];
 
     protected $casts = [
         'amount_minor' => 'integer',
         'is_lead' => 'boolean',
+        'bus_group_id' => 'integer',
+        'checked_in_at' => 'datetime',
     ];
 
     /** @var array<string, mixed> */
@@ -53,6 +66,27 @@ class BookingTraveller extends Model
     public function priceTier(): BelongsTo
     {
         return $this->belongsTo(PriceTier::class);
+    }
+
+    /** @return BelongsTo<BusGroup, $this> */
+    public function busGroup(): BelongsTo
+    {
+        return $this->belongsTo(BusGroup::class);
+    }
+
+    /**
+     * The cards and tags issued to this person on this booking.
+     *
+     * @return HasMany<Card, $this>
+     */
+    public function cards(): HasMany
+    {
+        return $this->hasMany(Card::class);
+    }
+
+    public function isCheckedIn(): bool
+    {
+        return $this->checked_in_at !== null;
     }
 
     /**
