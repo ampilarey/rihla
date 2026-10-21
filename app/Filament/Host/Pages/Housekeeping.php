@@ -78,9 +78,10 @@ class Housekeeping extends Page implements HasTable
             ->query(fn (): Builder => self::unitsOf((int) HostContext::current()?->getKey())->with(['property', 'roomType']))
             ->defaultSort('sort_order')
             ->columns([
+                // On a phone: the room, its state and who is in it.
                 TextColumn::make('label')->label('Room'),
-                TextColumn::make('roomType.name')->label('Kind')->toggleable(),
-                TextColumn::make('property.name')->label('Listing')->toggleable(),
+                TextColumn::make('roomType.name')->visibleFrom('md')->label('Kind')->toggleable(),
+                TextColumn::make('property.name')->visibleFrom('md')->label('Listing')->toggleable(),
                 TextColumn::make('housekeeping')
                     ->label('State')
                     ->badge()
@@ -96,9 +97,11 @@ class Housekeeping extends Page implements HasTable
                     }),
                 TextColumn::make('guest')
                     ->label('In it now')
+                    ->wrap()
                     ->state(fn (PropertyUnit $record): ?string => $this->inHouse($record)?->customer?->name)
                     ->placeholder('Empty'),
                 TextColumn::make('leaving')
+                    ->visibleFrom('md')
                     ->label('Leaves')
                     ->state(fn (PropertyUnit $record): ?string => $this->inHouse($record)?->check_out->format('D j M'))
                     ->placeholder('—'),
@@ -124,6 +127,13 @@ class Housekeeping extends Page implements HasTable
         return Action::make($name)
             ->label($label)
             ->icon($icon)
+            // A button, icon only on a phone: as labelled links, the two a
+            // row offers pushed themselves off the edge of the screen, and
+            // labelledFrom() only applies to a button.
+            ->button()
+            ->color('gray')
+            ->size('sm')
+            ->labeledFrom('md')
             ->visible(fn (PropertyUnit $record): bool => $record->housekeeping !== $state)
             ->authorize(fn (PropertyUnit $record): bool => self::canAccess()
                 && HostContext::owns(HostContext::current() ?? abort(404), $record))

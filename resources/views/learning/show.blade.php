@@ -9,7 +9,7 @@
 
         <nav class="mb-4 text-sm">
             <a href="{{ route('learning.index', ['locale' => app()->getLocale()]) }}"
-               class="text-wine-600 hover:underline">&larr; {{ __('messages.Getting ready') }}</a>
+               class="inline-block py-1 text-wine-600 hover:underline">&larr; {{ __('messages.Getting ready') }}</a>
         </nav>
 
         <article>

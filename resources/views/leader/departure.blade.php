@@ -9,7 +9,7 @@
         data-snapshot-url="{{ route('leader.snapshot', $departure) }}"
     >
         <p class="mb-2">
-            <a href="{{ route('leader.index') }}" class="text-ink-muted underline">All your groups</a>
+            <a href="{{ route('leader.index') }}" class="inline-block py-1 text-ink-muted underline">All your groups</a>
         </p>
 
         <h1 dir="auto" class="mb-1 text-2xl font-bold text-ink">

@@ -12,7 +12,7 @@
 @section('content')
     <div class="container mx-auto px-4 section-y-tight">
         <nav class="mb-6 text-sm" aria-label="{{ __('Breadcrumb') }}">
-            <a href="{{ route('packages.index') }}" class="text-wine-600 hover:underline">{{ __('Packages') }}</a>
+            <a href="{{ route('packages.index') }}" class="inline-block py-1 text-wine-600 hover:underline">{{ __('Packages') }}</a>
             <span class="text-ink-muted" aria-hidden="true">/</span>
             <span class="text-ink-muted" dir="auto">{{ $package->title }}</span>
         </nav>
@@ -223,7 +223,7 @@
 
                             @if($departure->itinerary->isNotEmpty())
                                 <details class="group">
-                                    <summary class="cursor-pointer text-sm font-semibold text-wine-600 hover:underline">
+                                    <summary class="cursor-pointer py-2 text-sm font-semibold text-wine-600 hover:underline">
                                         {{ __('messages.Day by day') }}
                                     </summary>
                                     <ol class="mt-3 space-y-3 border-s-2 border-cream-deep ps-4">

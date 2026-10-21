@@ -364,7 +364,7 @@
                      role="region" aria-label="{{ __('messages.Map') }}"></div>
                 <p class="mt-2 text-sm">
                     <a href="https://www.openstreetmap.org/?mlat={{ $property->latitude }}&amp;mlon={{ $property->longitude }}#map=15/{{ $property->latitude }}/{{ $property->longitude }}"
-                       target="_blank" rel="noopener" class="text-wine-700 underline hover:no-underline">
+                       target="_blank" rel="noopener" class="inline-block py-1 text-wine-700 underline hover:no-underline">
                         {{ __('messages.Open the map in a new tab') }}
                     </a>
                 </p>
@@ -396,7 +396,7 @@
             @if($hasFactSheet)
             <p class="mt-4">
                 <a href="{{ route('stays.sheet', ['property' => $property->slug]) }}"
-                   class="text-sm text-wine-700 underline hover:no-underline">
+                   class="inline-block py-1 text-sm text-wine-700 underline hover:no-underline">
                     {{ __('messages.Download a one-page summary (PDF)') }}
                 </a>
             </p>

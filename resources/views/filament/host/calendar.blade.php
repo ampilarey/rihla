@@ -18,10 +18,23 @@
         .dark .rihla-cal .rihla-cal-detail { color: var(--gray-400); }
         .dark .rihla-cal .rihla-cal-line { border-top-color: var(--gray-700); border-inline-start-color: var(--gray-800); }
         .dark .rihla-cal .rihla-cal-request { color: var(--gray-100); }
+
+        /* Phone first: the list leads, and the grid keeps nights a finger
+           wide and scrolls, rather than squeezing a month into the screen.
+           From 768px the grid has the room and the list is not needed. */
+        .rihla-cal-list { list-style: none; margin: 0 0 1rem; padding: 0; }
+        .rihla-cal-list a { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem; min-height: 2.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-200); color: var(--gray-950); text-decoration: none; }
+        .rihla-cal-list .rihla-cal-detail { font-size: 0.875rem; color: var(--gray-600); }
+        .dark .rihla-cal-list .rihla-cal-detail { color: var(--gray-400); }
+        .dark .rihla-cal-list a { border-bottom-color: var(--gray-700); color: var(--gray-100); }
+        @media (min-width: 768px) {
+            .rihla-cal-list { display: none; }
+        }
     </style>
     @php($nights = $this->nights())
     @php($rows = $this->rows())
     @php($today = now()->toDateString())
+    @php($list = $this->stayList())
 
     <x-filament::section>
         <x-slot name="heading">{{ $this->start()->format('F Y') }}</x-slot>
@@ -37,13 +50,30 @@
                 heading="No rooms yet"
                 description="Add a listing and its rooms, and each room gets a row here." />
         @else
+            @if ($list !== [])
+                <ul class="rihla-cal-list">
+                    @foreach ($list as $item)
+                        @php($stay = $item['stay'])
+                        <li>
+                            <a href="{{ $this->stayUrl($stay) }}">
+                                <span style="font-weight: 600;">{{ $stay->customer?->name ?? $stay->reference }}</span>
+                                <x-filament::badge :color="\App\Filament\Host\Resources\Bookings\BookingResource::statusColour($stay->status)">{{ \App\Filament\Host\Resources\Bookings\BookingResource::statusLabel($stay->status) }}</x-filament::badge>
+                                <span class="rihla-cal-detail" style="flex-basis: 100%;">{{ $stay->check_in->format('D j M') }} → {{ $stay->check_out->format('D j M') }} · {{ $item['room'] }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            {{-- A night is never narrower than 2.25rem: with a fixed layout
+                 and no minimum width, a month on a phone came out 3px a night. --}}
             <div class="rihla-cal" style="overflow-x: auto;">
-                <table style="border-collapse: collapse; font-size: 0.75rem; width: 100%; table-layout: fixed;">
+                <table style="border-collapse: collapse; font-size: 0.75rem; width: 100%; min-width: calc(8rem + {{ count($nights) }} * 2.25rem); table-layout: fixed;">
                     <thead>
                         <tr>
                             <th scope="col" style="width: 8rem; text-align: start; padding: 0.25rem 0.5rem; position: sticky; inset-inline-start: 0;" class="rihla-cal-side">Room</th>
                             @foreach ($nights as $night)
-                                <th scope="col" style="padding: 0.15rem 0; min-width: 1.6rem; text-align: center; font-weight: {{ $night->toDateString() === $today ? '700' : '400' }}; {{ $night->toDateString() === $today ? 'box-shadow: inset 0 -2px 0 var(--primary-500);' : '' }}">
+                                <th scope="col" style="padding: 0.15rem 0; width: 2.25rem; text-align: center; font-weight: {{ $night->toDateString() === $today ? '700' : '400' }}; {{ $night->toDateString() === $today ? 'box-shadow: inset 0 -2px 0 var(--primary-500);' : '' }}">
                                     <div>{{ $night->format('D')[0] }}</div>
                                     <div>{{ $night->day }}</div>
                                 </th>

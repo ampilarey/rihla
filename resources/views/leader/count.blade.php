@@ -10,7 +10,7 @@
         data-sync-url="{{ route('leader.sync') }}"
     >
         <p class="mb-2">
-            <a href="{{ route('leader.departure', $departure) }}" class="text-ink-muted underline">
+            <a href="{{ route('leader.departure', $departure) }}" class="inline-block py-1 text-ink-muted underline">
                 Back to the group
             </a>
         </p>

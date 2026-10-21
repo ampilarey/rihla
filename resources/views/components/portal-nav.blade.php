@@ -12,7 +12,7 @@
 <nav class="mb-6 flex flex-wrap items-center gap-2" aria-label="{{ __('messages.Your booking') }}">
     <a href="{{ route('portal.home', ['locale' => app()->getLocale()]) }}"
        @class([
-           'rounded-xl px-4 py-2 text-sm font-medium',
+           'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',
            'bg-wine-600 text-cream' => $current === 'home',
            'bg-cream text-ink hover:bg-cream-deep' => $current !== 'home',
        ])
@@ -23,7 +23,7 @@
 
     <a href="{{ route('portal.documents', ['locale' => app()->getLocale()]) }}"
        @class([
-           'rounded-xl px-4 py-2 text-sm font-medium',
+           'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',
            'bg-wine-600 text-cream' => $current === 'documents',
            'bg-cream text-ink hover:bg-cream-deep' => $current !== 'documents',
        ])
@@ -34,7 +34,7 @@
 
     <a href="{{ route('portal.family', ['locale' => app()->getLocale()]) }}"
        @class([
-           'rounded-xl px-4 py-2 text-sm font-medium',
+           'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',
            'bg-wine-600 text-cream' => $current === 'family',
            'bg-cream text-ink hover:bg-cream-deep' => $current !== 'family',
        ])
@@ -49,7 +49,7 @@
          anybody meets. --}}
     <a href="{{ route('learning.index', ['locale' => app()->getLocale()]) }}"
        @class([
-           'rounded-xl px-4 py-2 text-sm font-medium',
+           'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',
            'bg-wine-600 text-cream' => $current === 'learning',
            'bg-cream text-ink hover:bg-cream-deep' => $current !== 'learning',
        ])
@@ -62,7 +62,7 @@
          prefetcher can do to you. --}}
     <form method="POST" action="{{ route('portal.leave', ['locale' => app()->getLocale()]) }}" class="ms-auto">
         @csrf
-        <button type="submit" dir="auto" class="rounded-xl px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink">
+        <button type="submit" dir="auto" class="min-h-11 rounded-xl px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink">
             {{ __('messages.Sign out') }}
         </button>
     </form>

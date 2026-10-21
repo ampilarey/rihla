@@ -78,12 +78,16 @@ class BookingResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('reference')->searchable(),
+                // On a phone: who, which nights, and where it stands, with the
+                // reference from 640px. The rest is one tap away on the
+                // booking; shown here, it pushed the table off the screen.
+                TextColumn::make('reference')->visibleFrom('sm')->searchable(),
                 TextColumn::make('customer.name')->label('Guest')->searchable()->wrap(),
-                TextColumn::make('property.name')->label('Listing')->wrap()->toggleable(),
-                TextColumn::make('roomType.name')->label('Room')->wrap(),
+                TextColumn::make('property.name')->visibleFrom('md')->label('Listing')->wrap()->toggleable(),
+                TextColumn::make('roomType.name')->visibleFrom('md')->label('Room')->wrap(),
                 TextColumn::make('check_in')
                     ->label('Nights')
+                    ->wrap()
                     ->formatStateUsing(fn (Stay $record): string => sprintf(
                         '%s → %s (%d)',
                         $record->check_in->format('j M'),
@@ -97,11 +101,13 @@ class BookingResource extends Resource
                     ->formatStateUsing(fn (string $state): string => self::statusLabel($state))
                     ->sortable(),
                 TextColumn::make('source')
+                    ->visibleFrom('md')
                     ->label('From')
                     ->formatStateUsing(fn (?string $state): string => self::sourceLabel($state))
                     ->placeholder('Rihla')
                     ->toggleable(),
                 TextColumn::make('total_minor')
+                    ->visibleFrom('md')
                     ->label('Balance')
                     ->state(fn (Stay $record): string => StayBill::for($record)->balance()->format())
                     ->toggleable(),

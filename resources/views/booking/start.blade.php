@@ -5,7 +5,7 @@
 @section('content')
     <div class="container mx-auto max-w-3xl px-4 section-y-tight">
         <nav class="mb-6 text-sm">
-            <a href="{{ route('packages.show', $package->slug) }}" class="text-wine-600 hover:text-wine-700">
+            <a href="{{ route('packages.show', $package->slug) }}" class="inline-block py-1 text-wine-600 hover:text-wine-700">
                 &larr; {{ $package->title }}
             </a>
         </nav>

@@ -325,4 +325,59 @@ class HostDeskTest extends TestCase
             ->assertSee('Arriving today')
             ->assertSee('Rooms to clean');
     }
+
+    /**
+     * A month of nights across a phone was 3px a night: names were ellipses
+     * and a free night could not be tapped. The page now leads with the
+     * month's stays as a list, and the grid keeps a night 2.25rem wide and
+     * scrolls instead of squeezing.
+     */
+    public function test_on_a_phone_the_calendar_lists_the_months_stays_and_the_grid_scrolls(): void
+    {
+        $this->room->update(['quantity' => 3]);
+        $placed = Stay::factory()->confirmed()->create([
+            'property_id' => $this->property->id, 'room_type_id' => $this->room->id, 'unit_id' => $this->unit->id,
+            'check_in' => '2027-02-12', 'check_out' => '2027-02-15',
+        ]);
+        $loose = Stay::factory()->create([
+            'property_id' => $this->property->id, 'room_type_id' => $this->room->id,
+            'check_in' => '2027-02-20', 'check_out' => '2027-02-22', 'status' => Stay::REQUESTED,
+        ]);
+        Stay::factory()->create([
+            'property_id' => $this->property->id, 'room_type_id' => $this->room->id,
+            'check_in' => '2027-02-20', 'check_out' => '2027-02-22', 'status' => Stay::DECLINED,
+        ]);
+
+        $this->inPanel();
+        $list = Livewire::actingAs($this->owner)->test(Calendar::class)->instance()->stayList();
+
+        $this->assertCount(2, $list, 'A declined stay is not on the list either.');
+        $this->assertTrue($list[0]['stay']->is($placed));
+        $this->assertSame('Room 4', $list[0]['room']);
+        $this->assertTrue($list[1]['stay']->is($loose));
+        $this->assertSame('Garden Double · not yet in a room', $list[1]['room']);
+
+        $this->actingAs($this->owner)
+            ->get(Calendar::getUrl(panel: 'host', tenant: $this->host))
+            ->assertOk()
+            ->assertSee('class="rihla-cal-list"', false)
+            ->assertSee('min-width: calc(8rem + 28 * 2.25rem)', false)
+            ->assertSee('@media (min-width: 768px)', false);
+    }
+
+    /** Two labelled actions a row pushed themselves off a phone's screen. */
+    public function test_housekeeping_actions_are_icons_on_a_phone(): void
+    {
+        $this->inPanel();
+
+        $table = Livewire::actingAs($this->owner)->test(Housekeeping::class)->instance()->getTable();
+
+        foreach (['markClean', 'markInspected', 'markDirty'] as $name) {
+            $this->assertSame('md', $table->getAction($name)->getLabeledFromBreakpoint());
+        }
+
+        foreach (['roomType.name', 'property.name', 'leaving'] as $wider) {
+            $this->assertSame('md', $table->getColumn($wider)->getVisibleFrom());
+        }
+    }
 }

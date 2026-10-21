@@ -129,6 +129,30 @@ class Calendar extends Page
     }
 
     /**
+     * The month's stays one after another, for a phone.
+     *
+     * A month of nights across a 360px screen is a column 3px wide — the
+     * names were ellipses and the free nights could not be tapped. On a
+     * phone the page leads with this list instead, and the grid below it
+     * scrolls sideways at a width a finger can use.
+     *
+     * @return list<array{stay: Stay, room: string}>
+     */
+    public function stayList(): array
+    {
+        $nights = $this->nights();
+
+        return $this->stays($this->host(), $nights[0], end($nights)->addDay())
+            ->map(fn (Stay $stay): array => [
+                'stay' => $stay,
+                'room' => $stay->unit->label
+                    ?? ($stay->roomType?->getTranslation('name', 'en') ?? 'A room').' · not yet in a room',
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
      * A row's nights as runs: one cell per stay, spanning its nights, so a
      * guest's name has the width of their whole stay; free nights one each.
      *
@@ -203,7 +227,7 @@ class Calendar extends Page
     private function stays(Partner $host, CarbonImmutable $from, CarbonImmutable $until): Collection
     {
         return Stay::query()
-            ->with('customer')
+            ->with(['customer', 'unit', 'roomType'])
             ->whereIn('status', self::SHOWN)
             ->whereHas('property', fn ($query) => $query->where('partner_id', $host->getKey()))
             ->overlapping($from, $until)

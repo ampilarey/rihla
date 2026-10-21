@@ -396,4 +396,21 @@ class PaymentAdminTest extends TestCase
             ->assertDontSee('claimed but not checked')
             ->assertSee('Nothing is typed into this figure');
     }
+
+    /** On a phone: which payment, how much, and its state. */
+    public function test_on_a_phone_the_payments_table_keeps_three_columns(): void
+    {
+        $table = Livewire::actingAs($this->staff(Access::FINANCE))
+            ->test(ListPayments::class)
+            ->instance()
+            ->getTable();
+
+        foreach (['reference', 'amount_minor', 'status'] as $always) {
+            $this->assertNull($table->getColumn($always)->getVisibleFrom());
+        }
+
+        foreach (['method', 'payer_name', 'slip_original_filename', 'paid_at', 'reviewer.name'] as $wider) {
+            $this->assertSame('md', $table->getColumn($wider)->getVisibleFrom());
+        }
+    }
 }

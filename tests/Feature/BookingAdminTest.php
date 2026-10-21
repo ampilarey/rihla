@@ -519,4 +519,27 @@ class BookingAdminTest extends TestCase
             ->callTableAction('edit', $departure, data: ['capacity_total' => 3])
             ->assertHasTableActionErrors(['capacity_total']);
     }
+
+    /**
+     * On a phone the list keeps who, which booking and where it stands; the
+     * departure comes back from 640px and the figures from 768px. All seven
+     * columns pushed the table past the screen, sideways.
+     */
+    public function test_on_a_phone_the_bookings_table_keeps_three_columns(): void
+    {
+        $table = Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(ListBookings::class)
+            ->instance()
+            ->getTable();
+
+        foreach (['reference', 'customer.name', 'status'] as $always) {
+            $this->assertNull($table->getColumn($always)->getVisibleFrom(), "{$always} is the point of the row.");
+        }
+
+        $this->assertSame('sm', $table->getColumn('departure.date_start')->getVisibleFrom());
+
+        foreach (['seats', 'total_minor', 'created_at'] as $wider) {
+            $this->assertSame('md', $table->getColumn($wider)->getVisibleFrom());
+        }
+    }
 }

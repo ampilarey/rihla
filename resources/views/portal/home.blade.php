@@ -142,7 +142,7 @@
                 @endif
 
                 <a dir="auto"
-                   class="mt-4 inline-block text-sm font-medium text-wine-700 underline"
+                   class="mt-4 inline-block py-1 text-sm font-medium text-wine-700 underline"
                    href="{{ route('portal.invoice') }}">
                     {{ __('messages.Download the invoice') }}
                 </a>
