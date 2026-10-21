@@ -24,6 +24,9 @@ class BookingsTable
     public static function configure(Table $table): Table
     {
         return $table
+            // On a phone: the reference, who, and where it stands; the
+            // departure from 640px, the figures from 768px. Every column is
+            // on the booking itself.
             ->columns([
                 TextColumn::make('reference')
                     ->label('Reference')
@@ -39,12 +42,14 @@ class BookingsTable
                     ->description(fn (Booking $record): ?string => $record->customer->phone),
 
                 TextColumn::make('departure.date_start')
+                    ->visibleFrom('sm')
                     ->label('Departure')
                     ->date('j M Y')
                     ->sortable()
                     ->description(fn (Booking $record): ?string => $record->departure->package?->title),
 
                 TextColumn::make('seats')
+                    ->visibleFrom('md')
                     ->alignCenter()
                     ->sortable(),
 
@@ -56,12 +61,14 @@ class BookingsTable
                 // Formatted through Money, never by dividing by 100 here:
                 // [R-7] keeps that conversion in exactly one place.
                 TextColumn::make('total_minor')
+                    ->visibleFrom('md')
                     ->label('Total')
                     ->formatStateUsing(fn (int $state, Booking $record): string => Money::ofMinor($state, $record->currency)->format())
                     ->alignEnd()
                     ->sortable(),
 
                 TextColumn::make('created_at')
+                    ->visibleFrom('md')
                     ->label('Booked')
                     ->since()
                     ->sortable()

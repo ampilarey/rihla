@@ -33,6 +33,8 @@ class PaymentsTable
     public static function configure(Table $table): Table
     {
         return $table
+            // On a phone: which payment, how much, and its state. The rest
+            // is on the payment itself.
             ->columns([
                 TextColumn::make('reference')
                     ->label('Payment')
@@ -54,6 +56,7 @@ class PaymentsTable
                         : null),
 
                 TextColumn::make('method')
+                    ->visibleFrom('md')
                     ->badge()
                     ->color('gray')
                     ->formatStateUsing(fn (string $state): string => (string) config("payments.methods.{$state}.label", $state)),
@@ -65,17 +68,20 @@ class PaymentsTable
                     ->sortable(),
 
                 TextColumn::make('payer_name')
+                    ->visibleFrom('md')
                     ->label('Sent by')
                     ->placeholder('—')
                     ->searchable()
                     ->description(fn (Payment $record): ?string => $record->payer_reference),
 
                 TextColumn::make('slip_original_filename')
+                    ->visibleFrom('md')
                     ->label('Slip')
                     ->formatStateUsing(fn (?string $state): string => $state === null ? '—' : 'attached')
                     ->color(fn (Payment $record): string => $record->hasSlip() ? 'success' : 'gray'),
 
                 TextColumn::make('paid_at')
+                    ->visibleFrom('md')
                     ->label('Paid')
                     ->date('j M Y')
                     ->placeholder('—')
@@ -87,6 +93,7 @@ class PaymentsTable
                         : null),
 
                 TextColumn::make('reviewer.name')
+                    ->visibleFrom('md')
                     ->label('Checked by')
                     ->placeholder('—')
                     ->toggleable(),

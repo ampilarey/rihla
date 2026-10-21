@@ -474,4 +474,25 @@ class HostBookingsTest extends TestCase
         $this->inPanel();
         $this->booking($stay->fresh())->assertSee('C01X00T47');
     }
+
+    /** On a phone: the guest, their nights and where it stands. */
+    public function test_on_a_phone_the_bookings_table_keeps_guest_nights_and_status(): void
+    {
+        $this->inPanel();
+
+        $table = Livewire::actingAs($this->owner)
+            ->test(ListBookings::class)
+            ->instance()
+            ->getTable();
+
+        foreach (['customer.name', 'check_in', 'status'] as $always) {
+            $this->assertNull($table->getColumn($always)->getVisibleFrom());
+        }
+
+        $this->assertSame('sm', $table->getColumn('reference')->getVisibleFrom());
+
+        foreach (['property.name', 'roomType.name', 'source', 'total_minor'] as $wider) {
+            $this->assertSame('md', $table->getColumn($wider)->getVisibleFrom());
+        }
+    }
 }
