@@ -9,6 +9,7 @@ use App\Models\DepartureFlight;
 use App\Models\ModuleCompletion;
 use App\Models\Traveller;
 use App\Models\WaitlistEntry;
+use App\Services\Operations\Buses;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -94,6 +95,7 @@ final class DepartureReadiness
             self::learningConcerns($departure),
             self::flightConcerns($departure),
             self::transportConcerns($departure),
+            self::busConcerns($departure),
             self::checklistConcerns($departure),
         );
     }
@@ -516,6 +518,36 @@ final class DepartureReadiness
             'severity' => self::ATTENTION,
             'headline' => 'No ground transport recorded',
             'detail' => 'No coach, car or train is recorded — not even the airport transfer. Add them under Travel → Flights & transport.',
+        ]];
+    }
+
+    /**
+     * Buses — Hijaz's bus groups. Attention only, and silent until the
+     * office has made a bus: a confirmed traveller on no coach, a coach
+     * with more people than seats, a booking split across two, a bus with
+     * nobody named at its door. {@see Buses::problemsWith()} finds them;
+     * this says so on the board.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
+    private static function busConcerns(Departure $departure): array
+    {
+        $problems = app(Buses::class)->problemsWith($departure);
+
+        if ($problems === []) {
+            return [];
+        }
+
+        return [[
+            'area' => self::TRANSPORT,
+            'severity' => self::ATTENTION,
+            'headline' => count($problems) === 1
+                ? 'A bus needs attention'
+                : count($problems).' things to fix on the buses',
+            'detail' => implode(' ', array_map(
+                fn (array $problem): string => ($problem['bus'] !== null ? $problem['bus'].': ' : '').$problem['detail'],
+                $problems,
+            )).' Fix them under Travel → Buses.',
         ]];
     }
 

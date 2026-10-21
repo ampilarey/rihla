@@ -76,6 +76,25 @@ final class Contact
         return '+'.$number;
     }
 
+    /**
+     * A tel: link for somebody else's number — the person who booked, on
+     * the Scan page a tour leader holds at the coach door. Built here for
+     * the reason `whatsappUrlFor()` is: every dialling link on the site is
+     * written in one place, and the leading + is never forgotten. Null when
+     * there are no digits to dial; a Maldivian number with no country code
+     * is given one, as the rest of this class assumes.
+     */
+    public static function telUrlFor(?string $number): ?string
+    {
+        $digits = self::digits($number);
+
+        if ($digits === '') {
+            return null;
+        }
+
+        return 'tel:+'.(strlen($digits) === 7 ? '960'.$digits : $digits);
+    }
+
     public static function telUrl(): string
     {
         // The leading + was missing everywhere but one call site. Without it

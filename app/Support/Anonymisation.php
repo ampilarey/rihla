@@ -172,6 +172,9 @@ final class Anonymisation
         // transfer's contact number is usually a driver's own phone.
         'departure_flights' => ['notes' => 'text'],
         'departure_transfers' => ['contact_phone' => 'phone', 'notes' => 'text'],
+        // A coach on a departure — Hijaz's bus groups. Whoever is named at
+        // its door has a phone number, and the note is free text.
+        'bus_groups' => ['leader_name' => 'name', 'leader_phone' => 'phone', 'notes' => 'text'],
         'departure_checklist_items' => ['notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],
         // Site audit: thirteen of the names here did not exist — `title`
@@ -237,6 +240,11 @@ final class Anonymisation
         'booking_lines',
         'booking_status_transitions',
         'booking_travellers',
+        // A card or tag: a serial, a random token and a print count. The
+        // person is on the booking traveller it hangs off, and the token
+        // opens nothing on its own — the Scan page needs a staff login
+        // and `card.scan` before it resolves one.
+        'cards',
         // An amount and a date; the person is on the booking.
         'payment_schedules',
         'departure_costs',

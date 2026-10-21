@@ -8,8 +8,11 @@ use App\Filament\Host\Pages\Housekeeping;
 use App\Filament\Host\Pages\Messages;
 use App\Filament\Host\Resources\Bookings\BookingResource as HostBookingResource;
 use App\Filament\Pages\DepartureBoard;
+use App\Filament\Pages\Lists;
+use App\Filament\Pages\Scan;
 use App\Filament\Pages\Today;
 use App\Filament\Resources\Bookings\BookingResource;
+use App\Filament\Resources\BusGroups\BusGroupResource;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Filament\Resources\Documents\DocumentResource;
 use App\Filament\Resources\Payments\PaymentResource;
@@ -128,6 +131,12 @@ final class BottomNav
             ['Departures', DepartureBoard::class, 'trips'],
             ['Documents', DocumentResource::class, 'documents'],
             ['Customers', CustomerResource::class, 'people'],
+            // Last, so they only reach the bar for somebody with little
+            // else on it — the tour leader at the coach door, whose bar is
+            // exactly these three.
+            ['Buses', BusGroupResource::class, 'bus'],
+            ['Lists', Lists::class, 'lists'],
+            ['Scan', Scan::class, 'scan'],
         ];
     }
 

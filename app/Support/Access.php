@@ -311,6 +311,33 @@ final class Access
         'attendance.update',
         'attendance.delete',
 
+        // Buses — Hijaz's bus groups. Who sits on which coach, and who has
+        // boarded it. `assign` is the seating, decided in the office;
+        // `checkIn` is the tick at the coach door, and it is separate
+        // because the tour leader does the second and not the first.
+        'bus.viewAny',
+        'bus.view',
+        'bus.create',
+        'bus.update',
+        'bus.delete',
+        'bus.assign',
+        'bus.checkIn',
+
+        // The printed lists a departure runs on: the manifest in the shape
+        // each reader wants, bus lists, rooming lists. One verb, because
+        // every list is a print of personal data and the same people print
+        // them all — but it is only the names. A list that says who owes
+        // what needs `payment.viewAny` as well, and one that says who is
+        // missing which paper needs `document.viewAny`; a tour leader
+        // prints the bus list and never learns who is behind.
+        'list.view',
+
+        // Customer cards and luggage tags, and the page that scans one.
+        // `create` issues and prints; `scan` reads a tag back into the
+        // person standing at the coach door.
+        'card.create',
+        'card.scan',
+
         // The daily operations log (§8.3). What happened ordinarily — the
         // coach was late, the hotel moved the group. Things that went
         // *wrong* are incidents and carry a severity and an owner.
@@ -731,6 +758,21 @@ final class Access
 
         $attendanceReadOnly = ['attendance.viewAny', 'attendance.view'];
 
+        $buses = array_values(array_filter(
+            self::PERMISSIONS,
+            fn (string $permission) => strtok($permission, '.') === 'bus',
+        ));
+
+        $busesReadOnly = ['bus.viewAny', 'bus.view'];
+
+        // Reads the seating and ticks people onto the coach. Deciding who
+        // sits where is the office's.
+        $busesFromTheCoach = ['bus.viewAny', 'bus.view', 'bus.checkIn'];
+
+        $lists = ['list.view'];
+
+        $cards = ['card.create', 'card.scan'];
+
         $opsLog = array_values(array_filter(
             self::PERMISSIONS,
             fn (string $permission) => strtok($permission, '.') === 'opslog',
@@ -858,6 +900,9 @@ final class Access
                 $checklists,
                 $incidents,
                 $attendance,
+                $buses,
+                $lists,
+                $cards,
                 $opsLog,
                 $announcements,
                 $broadcasts,
@@ -929,6 +974,12 @@ final class Access
                 // not, because a count deleted from the coach is a count
                 // nobody can check.
                 ['attendance.viewAny', 'attendance.view', 'attendance.create', 'attendance.update'],
+                // The bus list is the document they stand at the coach
+                // door with, and scanning a tag is how they know who has
+                // boarded. Putting people on buses is the office's.
+                $busesFromTheCoach,
+                $lists,
+                ['card.scan'],
                 // And they write the day up.
                 $opsLog,
                 // They draft what the families should hear; the office
@@ -983,6 +1034,12 @@ final class Access
                 // And "what time is the flight?".
                 $logisticsReadOnly,
                 $checklistsTickOnly,
+                // Prints the lists and the cards: office work. Reads the
+                // seating to answer "which bus am I on?"; deciding it is
+                // operations' job, as the rooming is.
+                $busesReadOnly,
+                $lists,
+                $cards,
             ),
 
             // Reads the review queue and signs articles off. Nothing else
@@ -1023,6 +1080,9 @@ final class Access
                 $quotationsReadOnly,
                 // §16 Phase 16: the transfers to hosts are Finance's.
                 ['payout.viewAny', 'payout.create'],
+                // The payment-status list is the half of the manifest that
+                // is theirs.
+                $lists,
             ),
 
             // Answers the phone. Needs to find a booking and read it back to
@@ -1058,6 +1118,8 @@ final class Access
                 ['announcement.viewAny', 'announcement.view'],
                 ['broadcast.viewAny', 'broadcast.view'],
                 $notices,
+                // Answers "which bus am I on?".
+                $busesReadOnly,
             ),
 
             // The documents are the job: collecting them, checking them and
@@ -1076,6 +1138,9 @@ final class Access
                 // The visa and permit lines on the checklist are this
                 // role's to tick.
                 $checklistsTickOnly,
+                // The ministry list and the airline list are this role's
+                // to print.
+                $lists,
             ),
         ];
     }

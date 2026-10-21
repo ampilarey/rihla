@@ -101,6 +101,16 @@ class Departure extends Model
     }
 
     /**
+     * The coaches it rides, in the office's order (Hijaz's bus groups).
+     *
+     * @return HasMany<BusGroup, $this>
+     */
+    public function busGroups(): HasMany
+    {
+        return $this->hasMany(BusGroup::class)->orderBy('sort_order')->orderBy('name');
+    }
+
+    /**
      * The legs it flies, in the order they leave (§8.3).
      *
      * @return HasMany<DepartureFlight, $this>

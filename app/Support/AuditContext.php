@@ -68,6 +68,7 @@ final class AuditContext
         'stays.review' => self::GUEST,
         'admin.' => self::STAFF,
         'staff.' => self::STAFF,
+        'lists.' => self::STAFF,
         'mfa.' => self::STAFF,
         'devices.' => self::STAFF,
         'profile.' => self::STAFF,

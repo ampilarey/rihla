@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `bus_groups` hangs off `departures`, `cards` off
+        // `booking_travellers`, and `booking_travellers` gains two columns
+        // the re-created table would otherwise come back without.
+        __DIR__.'/../../database/migrations/2026_10_21_120000_create_bus_groups_and_cards.php',
         // Newest of all: `payment_schedules` and `discounts` hang off
         // `bookings`, and `discounts` off `booking_lines` and `users`.
         __DIR__.'/../../database/migrations/2026_10_21_110000_create_instalments_and_discounts.php',
