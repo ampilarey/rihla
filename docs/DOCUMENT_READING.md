@@ -62,6 +62,30 @@ countries, `male`/`female`), and sets the document's expiry. **Ignore
 reading** sets the proposal aside and writes nothing. **Read again** proposes
 afresh — after switching readers, say.
 
+## Visas in bulk
+
+The agent sends the departure's visas as one PDF with a page per pilgrim,
+or as a folder of files. **Travel → Visas in bulk** takes the departure and
+the files, takes the PDF apart with poppler (`pdfseparate`, which comes
+with `pdftotext`), reads every page — the text layer when it has one, the
+configured reader when it is a scan or a photo — and offers each page to
+the traveller on that departure whose **passport number** it carries, or
+failing that the one whose **name** it nearly is (four words in five, and
+no other traveller as close). A page matched by name is marked as a guess;
+a page nobody matched has nobody chosen.
+
+The person changes or clears any match, then **File the visas**. Each page
+left matched goes into that traveller's documents as their visa, verified,
+with the reading accepted; the traveller's visa application on that
+departure is marked **issued** with the document as evidence, opened first
+if none existed. A page left out files nothing. A visa never renames
+anybody or writes a passport number: the match was the person's decision.
+
+Until it is filed or thrown away the batch sits on the documents disk,
+encrypted like everything else there, under its own token; a batch nobody
+came back to is swept after a day. Without poppler the page still takes
+photos and one PDF per visa, matched by hand.
+
 ## The cross-check and the board
 
 When both an ID card and a passport have been accepted for the same

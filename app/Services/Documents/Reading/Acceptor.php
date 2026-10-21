@@ -137,6 +137,19 @@ class Acceptor
             return;
         }
 
+        $this->issue($application, $document, $fields);
+    }
+
+    /**
+     * Issue one application on the strength of a visa copy: the reference
+     * and expiry it carries, and the walk to issued with the document as
+     * evidence. The batch filer uses it for the application on a named
+     * departure; the accept screen for the traveller's open one.
+     *
+     * @param  array<string, mixed>  $fields
+     */
+    public function issue(VisaApplication $application, Document $document, array $fields): void
+    {
         $application->forceFill(array_filter([
             'reference' => isset($fields['number']) ? mb_substr((string) $fields['number'], 0, 60) : null,
             'expires_at' => $fields['expires_on'] ?? null,

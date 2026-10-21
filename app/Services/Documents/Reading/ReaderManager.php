@@ -66,7 +66,7 @@ class ReaderManager
     }
 
     /** Write a proposal against a version. Staff who may verify documents are told, by chat, when there is something to accept. */
-    public function record(DocumentVersion $version, Extraction $x): DocumentExtraction
+    public function record(DocumentVersion $version, Extraction $x, bool $notify = true): DocumentExtraction
     {
         $extraction = $version->extractions()->create([
             'reader' => $x->reader,
@@ -80,7 +80,9 @@ class ReaderManager
             'created_at' => now(),
         ]);
 
-        if ($extraction->hasProposal()) {
+        // Not for a reading about to be accepted in the same breath (a visa
+        // batch): forty "to accept" messages for nothing to accept.
+        if ($notify && $extraction->hasProposal()) {
             app(Notifier::class)->readingProposed($extraction);
         }
 
