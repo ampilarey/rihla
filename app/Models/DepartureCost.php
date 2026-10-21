@@ -49,12 +49,18 @@ class DepartureCost extends Model
 
     public const FOOD = 'food';
 
+    /** The agent's fees — batch C from Hijaz, where it is its own line. */
+    public const AGENT = 'agent';
+
+    /** Rent, software, salaries: the company's, belonging to no departure. */
+    public const OFFICE = 'office';
+
     public const OTHER = 'other';
 
     /** @var list<string> */
     public const CATEGORIES = [
         self::HOTEL, self::FLIGHT, self::TRANSPORT, self::VISA,
-        self::PERMIT, self::STAFF, self::FOOD, self::OTHER,
+        self::PERMIT, self::STAFF, self::FOOD, self::AGENT, self::OFFICE, self::OTHER,
     ];
 
     /** A plan. Somebody's best guess, and it will move. */
@@ -129,6 +135,8 @@ class DepartureCost extends Model
             self::PERMIT => 'Permits',
             self::STAFF => 'Leader and scholar',
             self::FOOD => 'Food',
+            self::AGENT => 'Agent fees',
+            self::OFFICE => 'Office and running costs',
             self::OTHER => 'Everything else',
             default => 'Unknown',
         };
@@ -136,7 +144,24 @@ class DepartureCost extends Model
 
     public function basisLabel(): string
     {
-        return $this->is_per_person ? 'Per person' : 'Whole departure';
+        return $this->is_per_person ? 'Per person' : ($this->isCompany() ? 'The company' : 'Whole departure');
+    }
+
+    /** Belongs to the company rather than to one departure — batch C from Hijaz. */
+    public function isCompany(): bool
+    {
+        return $this->departure_id === null;
+    }
+
+    /**
+     * What the company spent outside any departure.
+     *
+     * @param  Builder<DepartureCost>  $query
+     * @return Builder<DepartureCost>
+     */
+    public function scopeForCompany(Builder $query): Builder
+    {
+        return $query->whereNull('departure_id');
     }
 
     /**

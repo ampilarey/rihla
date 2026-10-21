@@ -21,9 +21,12 @@ class DepartureCostForm
             Section::make()->columns(2)->schema([
                 Select::make('departure_id')
                     ->label('Which departure')
-                    ->required()
+                    ->placeholder('The company — no departure')
                     ->searchable()
+                    // A settled departure's books are closed: it is not
+                    // offered, and the policy refuses the edit anyway.
                     ->options(fn (): array => Departure::query()
+                        ->whereNotIn('status', [Departure::SETTLED, Departure::CANCELLED])
                         ->with('package')
                         ->orderByDesc('date_start')
                         ->limit(100)
@@ -31,7 +34,8 @@ class DepartureCostForm
                         ->mapWithKeys(fn (Departure $d): array => [
                             $d->getKey() => ($d->package->title ?? 'Departure').' — '.$d->date_start->format('j M Y'),
                         ])
-                        ->all()),
+                        ->all())
+                    ->helperText('Leave it empty for a cost of the company\'s own — rent, software, the agent\'s annual fee. It then shows in the books under the company, in no journey\'s margin.'),
 
                 Select::make('category')
                     ->required()

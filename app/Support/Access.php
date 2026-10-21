@@ -257,6 +257,11 @@ final class Access
         'cost.update',
         'profit.view',
 
+        // The company books (batch C from Hijaz): the cash book, the month
+        // by month figures, what is still owed and what came in. Finance
+        // writes the costs; this is reading the whole.
+        'books.view',
+
         // The executive dashboard — §8.5, §10.5. One verb, because the
         // screen is a single disclosure: whoever may read the conversion
         // rate may read the seat-fill rate. The margin row on it is gated
@@ -915,7 +920,7 @@ final class Access
                 $tasks,
                 ['customer.tag'],
                 $costs,
-                ['profit.view', 'kpi.view', 'draft.use'],
+                ['profit.view', 'kpi.view', 'books.view', 'draft.use'],
                 $rooming,
                 $logistics,
                 $checklists,
@@ -969,7 +974,9 @@ final class Access
                 // an analyst reading conversion and seat-fill rates has no
                 // need of the margin, and §8.5's board says so on the screen
                 // rather than leaving a blank where a row would be.
-                ['admin.access', 'audit.viewAny', 'booking.viewAny', 'kpi.view', 'telegram.link'],
+                // The books are figures, not margins: what came in, what
+                // went out, what is owed. Reporting reads them.
+                ['admin.access', 'audit.viewAny', 'booking.viewAny', 'kpi.view', 'books.view', 'telegram.link'],
                 $readOnly,
             ),
 
@@ -1098,7 +1105,7 @@ final class Access
                 // profitability is the report this operator does not have
                 // today — so this is the role that owns it.
                 $costs,
-                ['profit.view', 'kpi.view'],
+                ['profit.view', 'kpi.view', 'books.view'],
                 // Reads what was quoted, to reconcile against what came in.
                 $quotationsReadOnly,
                 // §16 Phase 16: the transfers to hosts are Finance's.

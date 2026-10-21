@@ -57,6 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `departure_costs.departure_id` becomes nullable,
+        // which the re-created table would otherwise come back without.
+        __DIR__.'/../../database/migrations/2026_10_25_100000_let_costs_belong_to_the_company.php',
         // Newest of all: `exchange_rates` hangs off `users`, and `payments`
         // gains three columns the re-created table would otherwise come
         // back without.
