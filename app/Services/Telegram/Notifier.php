@@ -3,6 +3,8 @@
 namespace App\Services\Telegram;
 
 use App\Models\Booking;
+use App\Models\Document;
+use App\Models\DocumentExtraction;
 use App\Models\Payment;
 use App\Models\TelegramLink;
 use App\Models\User;
@@ -76,6 +78,36 @@ final class Notifier
             ]]), $payment->recorded_by === null ? null : (int) $payment->recorded_by);
         } catch (Throwable $e) {
             Log::warning('Telegram payment alert failed', ['payment_id' => $payment->getKey(), 'error' => $e->getMessage()]);
+
+            return 0;
+        }
+    }
+
+    /** A scan was read and its fields wait to be accepted: told to whoever verifies documents. */
+    public function readingProposed(DocumentExtraction $extraction): int
+    {
+        if (! Bot::isConfigured()) {
+            return 0;
+        }
+
+        try {
+            $document = $extraction->version->document;
+            $fields = $extraction->fields ?? [];
+
+            $text = implode("\n", array_filter([
+                '<b>Reading to accept</b>',
+                e($document->typeLabel()).' of <b>'.e((string) $document->traveller->full_name).'</b> · read by '.e($extraction->reader),
+                count($fields).' field'.(count($fields) === 1 ? '' : 's').' proposed'.($extraction->lowConfidenceFields() !== [] ? ', '.count($extraction->lowConfidenceFields()).' unsure' : '').'.',
+                $document->type === Document::PASSPORT
+                    ? ($extraction->mrz_valid === true ? 'MRZ check digits pass.' : ($extraction->mrz_valid === false ? '⚠ MRZ check digits FAIL.' : 'No MRZ read.'))
+                    : null,
+                '',
+                'Panel: '.e(self::panelUrl('documents')),
+            ]));
+
+            return $this->tell('document.update', $text, [], $extraction->version->uploaded_by === null ? null : (int) $extraction->version->uploaded_by);
+        } catch (Throwable $e) {
+            Log::warning('Telegram reading alert failed', ['extraction_id' => $extraction->getKey(), 'error' => $e->getMessage()]);
 
             return 0;
         }

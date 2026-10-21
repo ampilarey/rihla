@@ -7,6 +7,7 @@ use App\Models\CrmTask;
 use App\Models\Departure;
 use App\Models\DepartureChecklistItem;
 use App\Models\Document;
+use App\Models\DocumentExtraction;
 use App\Models\Payment;
 use App\Models\PaymentSchedule;
 use App\Models\User;
@@ -54,6 +55,11 @@ class DailySummary
         if ($user->can('document.update')) {
             $n = Document::query()->pending()->count();
             $queue[] = $n > 0 ? self::count($n, 'document copy', 'document copies').' to verify' : null;
+
+            $n = DocumentExtraction::query()->where('status', DocumentExtraction::PROPOSED)->whereNotNull('fields')
+                ->whereHas('version', fn ($version) => $version->whereNull('superseded_at'))
+                ->count();
+            $queue[] = $n > 0 ? self::count($n, 'scan reading').' to accept' : null;
         }
 
         if ($user->can('checklist.viewAny')) {

@@ -80,6 +80,15 @@ class PaymentsTable
                     ->formatStateUsing(fn (?string $state): string => $state === null ? '—' : 'attached')
                     ->color(fn (Payment $record): string => $record->hasSlip() ? 'success' : 'gray'),
 
+                // What the reader made of the slip (batch B from Hijaz), so
+                // Finance compares it with the claim without opening the file.
+                TextColumn::make('slip_says')
+                    ->label('Slip says')
+                    ->state(fn (Payment $record): ?string => self::slipWords($record))
+                    ->placeholder('—')
+                    ->visibleFrom('md')
+                    ->toggleable(),
+
                 TextColumn::make('paid_at')
                     ->visibleFrom('md')
                     ->label('Paid')
@@ -203,7 +212,8 @@ class PaymentsTable
             ->visible(fn (Payment $record): bool => ! $record->isSettled()
                 && auth()->user()?->can('payment.reconcile') === true)
             ->requiresConfirmation()
-            ->modalDescription('This adds the amount to the booking\'s paid total. Only do it once the money is actually in the account — this is the decision, and your name goes on it.')
+            ->modalDescription(fn (Payment $record): string => 'This adds the amount to the booking\'s paid total. Only do it once the money is actually in the account — this is the decision, and your name goes on it.'
+                .(self::slipWords($record) === null ? '' : ' The slip reads: '.self::slipWords($record).'.'))
             ->schema([
                 Textarea::make('note')
                     ->label('Note for the record')
@@ -302,5 +312,23 @@ class PaymentsTable
                     ->title('Refund recorded: '.$refund->money()->format())
                     ->send();
             });
+    }
+
+    /** "MVR 10,000 · ref ABC123 · 2026-10-20", from what the reader made of the slip. */
+    private static function slipWords(Payment $record): ?string
+    {
+        $reading = $record->slip_reading ?? [];
+
+        if ($reading === []) {
+            return null;
+        }
+
+        $parts = array_filter([
+            isset($reading['amount']) ? trim((string) ($reading['currency'] ?? '').' '.number_format((float) $reading['amount'], 2)) : null,
+            isset($reading['reference']) ? 'ref '.$reading['reference'] : null,
+            $reading['paid_on'] ?? null,
+        ]);
+
+        return $parts === [] ? null : implode(' · ', $parts);
     }
 }

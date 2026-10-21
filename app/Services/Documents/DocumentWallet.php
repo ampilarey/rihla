@@ -3,15 +3,20 @@
 namespace App\Services\Documents;
 
 use App\Models\Document;
+use App\Models\DocumentExtraction;
 use App\Models\DocumentVersion;
 use App\Models\Traveller;
+use App\Services\Documents\Reading\PhotoCheck;
+use App\Services\Documents\Reading\ReaderManager;
 use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Everything that writes to the document wallet.
@@ -40,6 +45,8 @@ use Illuminate\Support\Str;
  */
 final class DocumentWallet
 {
+    public function __construct(private readonly ReaderManager $readers) {}
+
     /**
      * Put a file in the wallet, as a new version if it differs from the last.
      *
@@ -54,7 +61,7 @@ final class DocumentWallet
     ): DocumentVersion {
         $checksum = hash_file('sha256', $file->getRealPath()) ?: null;
 
-        return DB::transaction(function () use ($traveller, $file, $category, $type, $attributes, $checksum): DocumentVersion {
+        $version = DB::transaction(function () use ($traveller, $file, $category, $type, $attributes, $checksum): DocumentVersion {
             $document = Document::firstOrCreate(
                 ['traveller_id' => $traveller->getKey(), 'type' => $type],
                 ['category' => $category] + $attributes,
@@ -130,6 +137,49 @@ final class DocumentWallet
 
             return $version;
         });
+
+        // After the transaction, not inside it: reading a scan takes
+        // seconds, and a row lock held for seconds is a queue at the
+        // counter. Only a file that is new; the same bytes again were read
+        // the first time.
+        if ($version->wasRecentlyCreated) {
+            $this->propose($version, $file, $type);
+        }
+
+        return $version;
+    }
+
+    /**
+     * What the readers make of a new file — batch B from Hijaz. A passport,
+     * an ID card or a visa is read and the fields proposed for staff to
+     * accept; a photograph is checked against the passport-photo spec and
+     * the problems written down as a reading with nothing to accept.
+     * Never an exception: an upload that stored is an upload that worked,
+     * whatever the reader did afterwards.
+     */
+    private function propose(DocumentVersion $version, UploadedFile $file, string $type): void
+    {
+        try {
+            if ($type === Document::PHOTO) {
+                $problems = PhotoCheck::problems((string) file_get_contents((string) $file->getRealPath()), $file->getMimeType() ?: '');
+
+                $version->extractions()->create([
+                    'reader' => 'photo-check',
+                    'status' => DocumentExtraction::ACCEPTED,
+                    'raw_text' => $problems === [] ? 'Looks like a passport photo.' : implode(' ', $problems),
+                    'error' => $problems === [] ? null : mb_substr(implode(' ', $problems), 0, 255),
+                    'created_at' => now(),
+                ]);
+
+                return;
+            }
+
+            if (ReaderManager::readable($type) && $this->readers->proposes()) {
+                $this->readers->read($version, $type);
+            }
+        } catch (Throwable $e) {
+            Log::warning('Document reading failed after upload', ['version_id' => $version->getKey(), 'error' => $e->getMessage()]);
+        }
     }
 
     /**

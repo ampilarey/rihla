@@ -60,6 +60,7 @@ final class Anonymisation
             // A birth date and a passport's expiry and issuer identify a
             // person as surely as the number does (site audit).
             'date_of_birth' => 'null', 'passport_expiry' => 'null', 'passport_issuing_country' => 'null',
+            'national_id' => 'null', 'identity_mismatches' => 'null',
         ],
         'people' => ['name' => 'name', 'bio' => 'text'],
         // A partner is a real guesthouse owner, and their record holds the
@@ -148,6 +149,7 @@ final class Anonymisation
             'payer_name' => 'name', 'payer_bank' => 'text', 'payer_reference' => 'text',
             'notes' => 'text', 'rejection_reason' => 'text',
             'slip_path' => 'null', 'slip_original_filename' => 'null', 'slip_checksum' => 'null',
+            'slip_reading' => 'null',
         ],
         'documents' => ['notes' => 'text', 'rejection_reason' => 'text'],
         // `path` and `original_filename` are NOT NULL, so they take the
@@ -155,6 +157,9 @@ final class Anonymisation
         // the whole run on the first database that had a single document
         // in it, which is every real one.
         'document_versions' => ['path' => 'gone', 'original_filename' => 'gone', 'checksum' => 'null'],
+        // What a reader proposed and staff accepted — the scan's words,
+        // including the passport number and the name (batch B from Hijaz).
+        'document_extractions' => ['fields' => 'null', 'confidence' => 'null', 'raw_text' => 'null', 'accepted_fields' => 'null', 'error' => 'null'],
         'incidents' => ['summary' => 'text', 'detail' => 'text', 'location' => 'text', 'resolution' => 'text'],
         'incident_notes' => ['body' => 'text'],
         'scholar_questions' => ['body' => 'text', 'answer' => 'text', 'declined_reason' => 'text'],

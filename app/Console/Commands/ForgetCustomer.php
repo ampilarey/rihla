@@ -111,6 +111,7 @@ class ForgetCustomer extends Command
             ->pluck('id')->map(fn ($id): int => (int) $id)->unique()->values()->all();
         $stayIds = DB::table('stays')->where('customer_id', $customer->getKey())->pluck('id')->all();
         $documentIds = $travellerIds === [] ? [] : DB::table('documents')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
+        $versionIds = $documentIds === [] ? [] : DB::table('document_versions')->whereIn('document_id', $documentIds)->pluck('id')->all();
         $incidentIds = $travellerIds === [] ? [] : DB::table('incidents')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
         $visaIds = $travellerIds === [] ? [] : DB::table('visa_applications')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
         $permitIds = $travellerIds === [] ? [] : DB::table('nusuk_permits')->whereIn('traveller_id', $travellerIds)->pluck('id')->all();
@@ -123,6 +124,7 @@ class ForgetCustomer extends Command
             'enquiry' => $enquiryIds,
             'stay' => $stayIds,
             'document' => $documentIds,
+            'version' => $versionIds,
             'incident' => $incidentIds,
             'visa' => $visaIds,
             'permit' => $permitIds,
@@ -130,7 +132,7 @@ class ForgetCustomer extends Command
 
         $columns = [
             'self' => 'id', 'customer' => 'customer_id', 'traveller' => 'traveller_id',
-            'booking' => 'booking_id', 'enquiry' => 'enquiry_id', 'document' => 'document_id',
+            'booking' => 'booking_id', 'enquiry' => 'enquiry_id', 'document' => 'document_id', 'version' => 'document_version_id',
             'incident' => 'incident_id', 'visa' => 'visa_application_id', 'permit' => 'nusuk_permit_id',
             'stay' => 'stay_id',
         ];

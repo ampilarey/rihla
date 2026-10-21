@@ -2,15 +2,19 @@
 
 namespace App\Services\Payments;
 
+use App\Models\Document;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
+use App\Services\Documents\Reading\ReaderManager;
 use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * The transfer slip attached to a payment.
@@ -34,8 +38,9 @@ final class SlipVault
     public function attach(Payment $payment, UploadedFile $file): Payment
     {
         $checksum = hash_file('sha256', $file->getRealPath()) ?: null;
+        $before = $payment->slip_checksum;
 
-        return DB::transaction(function () use ($payment, $file, $checksum): Payment {
+        $payment = DB::transaction(function () use ($payment, $file, $checksum): Payment {
             // Byte-for-byte what is already on the payment. Nothing has
             // changed, so nothing is recorded: a history full of identical
             // "replacements" makes the real one unreadable.
@@ -89,6 +94,36 @@ final class SlipVault
 
             return $payment->refresh();
         });
+
+        // After the transaction: what the slip says, in words beside
+        // Finance's decision (batch B from Hijaz). Never an exception —
+        // the slip is stored and waiting whatever the reader made of it.
+        if ($checksum !== null && $checksum !== $before) {
+            $this->readSlip($payment, (string) file_get_contents((string) $file->getRealPath()), $file->getMimeType() ?: 'application/octet-stream');
+        }
+
+        return $payment;
+    }
+
+    private function readSlip(Payment $payment, string $bytes, string $mime): void
+    {
+        try {
+            $readers = app(ReaderManager::class);
+
+            if (! $readers->proposes() && $mime !== 'application/pdf') {
+                return;
+            }
+
+            $reading = $readers->run($readers->reader(), $bytes, $mime, Document::BANK_SLIP);
+
+            if ($reading->fields === []) {
+                return;
+            }
+
+            $payment->forceFill(['slip_reading' => $reading->fields + ['read_by' => $reading->reader]])->save();
+        } catch (Throwable $e) {
+            Log::warning('Slip reading failed', ['payment_id' => $payment->getKey(), 'error' => $e->getMessage()]);
+        }
     }
 
     /**
