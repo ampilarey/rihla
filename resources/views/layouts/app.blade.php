@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- Lets a stylesheet tell "script will run" from "script cannot run", so
+         something script reveals can start hidden without being lost to a
+         browser that never runs it. --}}
+    <script nonce="@cspNonce">document.documentElement.classList.add('js')</script>
 
     <title>{{ config('app.name', 'Rihla Travels') }} - @yield('title', 'Islamic Travel & Umrah Services')</title>
     <meta name="description" content="@yield('description', 'Rihla Travels offers Islamic travel services, Umrah packages, and spiritual journeys to Makkah and Madinah. Professional travel services for Muslims.')">
@@ -160,21 +164,24 @@
 
     <div class="min-h-screen bg-gray-50 overflow-x-hidden">
         <!-- Topbar -->
-        <div class="bg-ink text-white py-2 overflow-x-hidden">
+        {{-- Every control up here is a 44px target: the language links were
+             19px and the two buttons 32px, small enough that a thumb aiming
+             for one landed on its neighbour. --}}
+        <div class="bg-ink text-white py-1 overflow-x-hidden" data-top-bar>
             <div class="container mx-auto px-4 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium">REG NO: C11452023</span>
+                    <span class="text-xs sm:text-sm font-medium">REG NO: C11452023</span>
                 </div>
                 <div class="flex items-center gap-2 md:gap-4">
                     <!-- Language Toggle -->
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1">
                         <a href="{{ route('locale.switch', 'en') }}" 
-                           class="text-sm hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded {{ app()->getLocale() === 'en' ? 'text-gold-500 font-medium' : '' }}">
+                           class="inline-flex min-h-11 items-center px-2 text-sm hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded {{ app()->getLocale() === 'en' ? 'text-gold-500 font-medium' : '' }}">
                             EN
                         </a>
                         <span class="text-gray-400">|</span>
                         <a href="{{ route('locale.switch', 'dv') }}" 
-                           class="text-sm hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded {{ app()->getLocale() === 'dv' ? 'text-gold-500 font-medium' : '' }}">
+                           class="inline-flex min-h-11 items-center px-2 text-sm hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded {{ app()->getLocale() === 'dv' ? 'text-gold-500 font-medium' : '' }}">
                             ދިވެހި
                         </a>
                     </div>
@@ -185,7 +192,7 @@
                            target="_blank"
                            rel="noopener"
                            aria-label="{{ __('Message us') }}"
-                           class="bg-gold-500 hover:bg-gold-600 text-ink text-sm px-2 md:px-4 py-2 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink">
+                           class="bg-gold-500 hover:bg-gold-600 text-ink text-sm min-h-11 min-w-11 px-2 md:px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink">
                             <svg aria-hidden="true" focusable="false" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
                             </svg>
@@ -195,7 +202,7 @@
                         <!-- Call CTA - Always visible -->
                         <a href="{{ \App\Support\Contact::telUrl() }}"
                            aria-label="{{ __('Call us') }}"
-                           class="bg-wine-500 hover:bg-wine-600 text-white text-sm px-2 md:px-4 py-2 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 focus:ring-offset-ink">
+                           class="bg-wine-500 hover:bg-wine-600 text-white text-sm min-h-11 min-w-11 px-2 md:px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 focus:ring-offset-ink">
                             <svg aria-hidden="true" focusable="false" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
@@ -209,7 +216,10 @@
 
         <!-- Header -->
         <header class="bg-white shadow-sm overflow-x-hidden">
-            <div class="container mx-auto px-4 py-6">
+            {{-- Half the padding and a smaller lockup on a phone: the top bar and
+                 header took 250px, nearly a third of the first screen, before
+                 a word of the page. --}}
+            <div class="container mx-auto px-4 py-3 md:py-6">
                 <div class="flex items-center justify-between">
                     <!-- Logo -->
                     <div class="flex items-center">
@@ -219,7 +229,7 @@
                                  so `w-50` compiled to nothing at all and the logo
                                  fell back to its intrinsic width. `w-auto` is what
                                  it was already doing, said out loud. --}}
-                            <x-brand-logo class="w-20" />
+                            <x-brand-logo class="w-16 md:w-20" />
                         </a>
                     </div>
 
@@ -322,7 +332,7 @@
 
                     <!-- Mobile menu button -->
                     <button type="button" 
-                            class="{{ $navToggle }} p-2 rounded-md text-ink hover:text-wine-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2"
+                            class="{{ $navToggle }} p-2.5 rounded-md text-ink hover:text-wine-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2"
                             data-click="toggleMobileMenu"
                             aria-label="{{ __('Menu') }}"
                             aria-controls="mobile-menu"
@@ -541,13 +551,13 @@
                         <ul class="space-y-2">
                             <li>
                                 <a href="{{ route('packages.index') }}"
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ __('Packages') }}
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('trips.index') }}" 
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ __('Our Trips') }}
                                 </a>
                             </li>
@@ -558,7 +568,7 @@
                                  gain one page. --}}
                             <li>
                                 <a href="{{ route('people.index') }}"
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ __('messages.Who travels with you') }}
                                 </a>
                             </li>
@@ -566,19 +576,19 @@
                                  seven. See NavigationFitTest. --}}
                             <li>
                                 <a href="{{ route('articles.index') }}"
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ __('messages.Articles') }}
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('gallery') }}" 
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ __('Gallery') }}
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('contact') }}" 
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ __('Contact Us') }}
                                 </a>
                             </li>
@@ -595,7 +605,7 @@
                                 @foreach ($staysNavItems as $item)
                                     <li>
                                         <a href="{{ route($item['route']) }}"
-                                           class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                           class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                             {{ __($item['label']) }}
                                         </a>
                                     </li>
@@ -626,7 +636,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                 </svg>
                                 <a href="{{ \App\Support\Contact::telUrl() }}"
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ \App\Support\Contact::displayNumber() }}
                                 </a>
                             </div>
@@ -637,7 +647,7 @@
                                 <a href="{{ \App\Support\Contact::whatsappUrl() }}"
                                    target="_blank"
                                    rel="noopener"
-                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1">
+                                   class="text-gray-300 hover:text-gold-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-600 focus:ring-offset-2 focus:ring-offset-ink rounded px-1 py-1 inline-block">
                                     {{ __('WhatsApp') }}
                                 </a>
                             </div>
@@ -720,6 +730,28 @@
                 button.setAttribute('aria-expanded', 'false');
             }
         });
+
+        // The floating call and WhatsApp buttons repeat the two in the top
+        // bar, and on a phone they sat over the first screen's content — the
+        // contact page's email address, the portal's flight details. So they
+        // stay out of the way until the top bar has scrolled off.
+        (function () {
+            const fab = document.querySelector('[data-floating-contact]');
+            const bar = document.querySelector('[data-top-bar]');
+
+            if (! fab) {
+                return;
+            }
+
+            if (! bar || ! ('IntersectionObserver' in window)) {
+                fab.setAttribute('data-shown', '');
+                return;
+            }
+
+            new IntersectionObserver(function (entries) {
+                fab.toggleAttribute('data-shown', ! entries[0].isIntersecting);
+            }).observe(bar);
+        })();
 
         // Close mobile menu on escape key
         document.addEventListener('keydown', function(event) {

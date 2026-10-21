@@ -184,7 +184,7 @@
 
     @if(! in_array($stay->status, [\App\Models\Stay::DECLINED, \App\Models\Stay::EXPIRED, \App\Models\Stay::CANCELLED], true))
         <p class="mb-6 text-center">
-            <a href="{{ route('my-stay.confirmation') }}" class="text-sm text-wine-700 underline hover:no-underline">
+            <a href="{{ route('my-stay.confirmation') }}" class="inline-block py-1 text-sm text-wine-700 underline hover:no-underline">
                 {{ __('messages.Download your stay summary (PDF)') }}
             </a>
         </p>

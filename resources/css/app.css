@@ -45,97 +45,52 @@
         overflow-x: hidden;
     }
 
-    /* Fix floating buttons on mobile */
-    @media (max-width: 768px) {
-        .fixed {
-            right: 0.5rem !important; /* Adjusted from 1rem to 0.5rem */
-        }
-        
-        /* Prevent horizontal scrolling on mobile */
-        .max-w-screen-xl {
-            max-width: 100% !important;
-        }
-        
-        /* Ensure proper padding on mobile */
-        .px-4 {
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-        }
-        
-        /* Mobile-specific grid adjustments */
-        .grid {
-            grid-template-columns: 1fr !important;
-        }
-        
-        /* Mobile-friendly button sizes */
-        button, 
-        .btn-primary, 
+    /* Touch first. A finger needs a 44px target, and an iPhone zooms into
+       any field whose text is under 16px, so a touch screen gets both. This
+       is keyed on the pointer rather than the width: a phone held sideways is
+       wider than 768px and is still a finger, and a narrow desktop window is
+       still a mouse.
+
+       It replaces a block of `max-width: 768px` overrides, all `!important`,
+       which undid the pages' own phone layouts: `.grid` was forced to one
+       column, so every photo grid designed as two-up stacked one per row;
+       `.fixed` was pulled in from the right, which left an 8px strip beside
+       every full-screen overlay; and shadows and large text were stripped on
+       small screens. The pages are written phone-first already — they need
+       no correcting at phone width.
+
+       The field size keeps `!important` because a field is often given
+       `text-sm`, and a utility would otherwise win. */
+    @media (pointer: coarse) {
+        button,
+        .btn-primary,
         .btn-secondary {
-            min-height: 44px !important; /* iOS minimum touch target */
+            min-height: 44px;
             touch-action: manipulation;
         }
-        
-        /* Override for hero dots to prevent stretching */
-        .hero-dot {
-            min-height: 0.75rem !important;
-            height: 0.75rem !important;
-            width: 0.75rem !important;
-        }
-        
-        /* Mobile-friendly input sizes */
+
         input, select, textarea {
-            font-size: 16px !important; /* Prevents zoom on iOS */
-        }
-        
-        /* Mobile-friendly spacing */
-        .space-y-6 > * + * {
-            margin-top: 1.5rem !important;
-        }
-        
-        .space-y-8 > * + * {
-            margin-top: 2rem !important;
-        }
-        
-        /* Mobile-friendly shadows */
-        .shadow-sm, .shadow-lg {
-            box-shadow: none !important;
-        }
-        
-        /* Mobile-friendly borders */
-        .border {
-            border-width: 1px !important;
+            font-size: 16px !important;
         }
     }
-    
-    /* Extra small mobile devices */
-    @media (max-width: 480px) {
-        .px-4 {
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-        }
-        
-        .py-6:not(.hero-slider *) {
-            padding-top: 1.5rem !important;
-            padding-bottom: 1.5rem !important;
-        }
-        
-        .py-8:not(.hero-slider *) {
-            padding-top: 2rem !important;
-            padding-bottom: 2rem !important;
-        }
-        
-        /* Smaller text on very small screens - but exclude hero slider */
-        .text-lg:not(.hero-slider *) {
-            font-size: 1rem !important;
-        }
-        
-        .text-xl:not(.hero-slider *) {
-            font-size: 1.125rem !important;
-        }
-        
-        .text-2xl:not(.hero-slider *) {
-            font-size: 1.25rem !important;
-        }
+}
+
+/* The floating call and WhatsApp buttons wait until the top bar, which
+   carries the same two, has scrolled away (see the script at the foot of the
+   layout). Only when script runs: without it they are simply always there. */
+.js [data-floating-contact]:not([data-shown]) {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(1rem);
+}
+
+[data-floating-contact] {
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-floating-contact] {
+        transition: none;
     }
 }
 

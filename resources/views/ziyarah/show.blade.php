@@ -6,7 +6,7 @@
     <div class="container mx-auto px-4 section-y-tight">
         <article class="mx-auto max-w-3xl">
             <nav class="mb-6 text-sm">
-                <a href="{{ route('ziyarah.index') }}" class="text-wine-600 hover:underline">
+                <a href="{{ route('ziyarah.index') }}" class="inline-block py-1 text-wine-600 hover:underline">
                     &larr; {{ __('messages.Ziyarah Guide') }}
                 </a>
             </nav>

@@ -36,9 +36,14 @@
      flex-row-reverse keeps WhatsApp in the corner the thumb reaches.
      FloatingButtonClearanceTest reads this line to derive the footer's
      padding, direction included. --}}
-<div class="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50 flex flex-row-reverse gap-3 md:flex-col">
+{{-- Hidden while the top bar is on screen, because it carries the same two
+     buttons; the script at the foot of the layout reveals the stack once the
+     bar scrolls away. A page can set the WhatsApp message with
+     @section('whatsapp_message'). --}}
+@php($whatsappMessage = trim(\Illuminate\Support\Facades\View::yieldContent('whatsapp_message')) ?: null)
+<div data-floating-contact class="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50 flex flex-row-reverse gap-3 md:flex-col whatsapp-fab">
     <!-- WhatsApp Button -->
-    <a href="{{ \App\Support\Contact::whatsappUrl() }}"
+    <a href="{{ \App\Support\Contact::whatsappUrl($whatsappMessage) }}"
        target="_blank" 
        rel="noopener"
        class="bg-whatsapp hover:brightness-95 text-white shadow-soft ring-2 ring-cream w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 transform hover:scale-105"
