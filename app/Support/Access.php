@@ -107,14 +107,20 @@ final class Access
         'article.update',
         'article.delete',
 
-        // Bookings. Deliberately no `booking.create` and no
-        // `booking.delete`: a booking is created by the checkout flow, and a
-        // booking is a financial record that is cancelled — a status, with a
-        // row saying who and why — never deleted. Defining verbs for neither
-        // would produce permissions that look enforced and gate nothing.
+        // Bookings. `booking.create` is the desk: a walk-in or a phone
+        // call taken in the panel, through the same allocator and prices
+        // as the checkout (App\Services\Booking\BookingDesk). Deliberately
+        // no `booking.delete`: a booking is a financial record that is
+        // cancelled — a status, with a row saying who and why — never
+        // deleted, and a verb for it would look enforced and gate nothing.
         'booking.viewAny',
         'booking.view',
+        'booking.create',
         'booking.update',
+        // A discount is a money decision, held apart from taking the
+        // booking: the person on the phone commits to the list price, and
+        // knocking something off it is Finance's call.
+        'booking.discount',
 
         // The people who book and pay. No delete for the same reason: a
         // customer with bookings cannot be removed, and the database refuses
@@ -599,7 +605,9 @@ final class Access
         // and money live, and nobody gets it by editing the website.
         $bookings = array_values(array_filter(
             self::PERMISSIONS,
-            fn (string $permission) => in_array(strtok($permission, '.'), ['booking', 'customer'], true),
+            fn (string $permission) => in_array(strtok($permission, '.'), ['booking', 'customer'], true)
+                // Given by name below, to the roles that decide money.
+                && $permission !== 'booking.discount',
         ));
 
         $documents = array_values(array_filter(
@@ -834,6 +842,7 @@ final class Access
             self::OPERATIONS_MANAGER => array_merge(
                 ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny'],
                 $bookings,
+                ['booking.discount'],
                 $documents,
                 $visas,
                 $permits,
@@ -1001,6 +1010,8 @@ final class Access
             self::FINANCE => array_merge(
                 ['admin.access', 'departure.board'],
                 $bookingsReadOnly,
+                // Knocks something off a price, with a reason on the record.
+                ['booking.discount'],
                 $payments,
                 // The other half of the arithmetic. Finance is the role
                 // that knows what was paid out, and §8.4's per-journey

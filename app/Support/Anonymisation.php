@@ -95,6 +95,8 @@ final class Anonymisation
         ],
         'enquiry_notes' => ['body' => 'text'],
         'bookings' => ['notes' => 'text', 'cancellation_reason' => 'text'],
+        // "Returning pilgrim, Aishath's mother" names somebody.
+        'discounts' => ['reason' => 'text'],
         // A stay's free text is written by or about the guest — "we are on
         // honeymoon", "my mother uses a wheelchair", why a partner declined
         // them. The dates, the room and the money stay legible, because a
@@ -235,6 +237,8 @@ final class Anonymisation
         'booking_lines',
         'booking_status_transitions',
         'booking_travellers',
+        // An amount and a date; the person is on the booking.
+        'payment_schedules',
         'departure_costs',
         'departure_hotels',
         'departures',

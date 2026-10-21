@@ -3,17 +3,24 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\Bookings\BookingResource;
+use App\Filament\Resources\Bookings\Pages\CreateBooking;
 use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Bookings\Pages\ListBookings;
+use App\Filament\Resources\Bookings\Pages\ViewBooking;
+use App\Filament\Resources\Bookings\RelationManagers\LinesRelationManager;
+use App\Filament\Resources\Bookings\RelationManagers\ScheduleRelationManager;
 use App\Filament\Resources\Packages\Pages\EditPackage;
 use App\Filament\Resources\Packages\RelationManagers\DeparturesRelationManager;
 use App\Models\Booking;
+use App\Models\BookingLine;
 use App\Models\Customer;
 use App\Models\Departure;
+use App\Models\Discount;
 use App\Models\Package;
 use App\Models\PriceTier;
 use App\Models\Traveller;
 use App\Models\User;
+use App\Services\Booking\BookingDesk;
 use App\Services\Booking\SeatAllocator;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -129,7 +136,11 @@ class BookingAdminTest extends TestCase
     }
 
     /** A booking is created by the checkout and never deleted. */
-    public function test_nobody_may_create_or_delete_a_booking(): void
+    /**
+     * The desk opens bookings; nobody deletes one. A discount is a money
+     * decision and is held apart from taking the booking.
+     */
+    public function test_booking_staff_open_bookings_finance_discounts_and_nobody_deletes(): void
     {
         foreach (Access::ROLES as $role) {
             if ($role === Access::SUPER_ADMIN) {
@@ -138,7 +149,16 @@ class BookingAdminTest extends TestCase
 
             $user = $this->staff($role);
 
-            $this->assertFalse($user->can('booking.create'), "[{$role}] may create bookings.");
+            $this->assertSame(
+                in_array($role, [Access::BOOKING_STAFF, Access::OPERATIONS_MANAGER], true),
+                $user->can('booking.create'),
+                "[{$role}] and booking.create.",
+            );
+            $this->assertSame(
+                in_array($role, [Access::FINANCE, Access::OPERATIONS_MANAGER], true),
+                $user->can('booking.discount'),
+                "[{$role}] and booking.discount.",
+            );
             $this->assertFalse($user->can('booking.delete'), "[{$role}] may delete bookings.");
         }
     }
@@ -365,12 +385,157 @@ class BookingAdminTest extends TestCase
             ->assertDontSee(' ago');
     }
 
-    public function test_the_list_has_no_create_action(): void
+    public function test_the_list_offers_a_new_booking_to_the_desk_and_not_to_finance(): void
     {
         Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
             ->test(ListBookings::class)
             ->assertOk()
+            ->assertSee('New booking');
+
+        Livewire::actingAs($this->staff(Access::FINANCE))
+            ->test(ListBookings::class)
+            ->assertOk()
             ->assertDontSee('New booking');
+
+        $this->actingAs($this->staff(Access::FINANCE))->get(BookingResource::getUrl('create'))->assertForbidden();
+        $this->actingAs($this->staff(Access::BOOKING_STAFF))->get(BookingResource::getUrl('create'))->assertOk();
+    }
+
+    // ── The desk ──────────────────────────────────────────────────────────
+
+    /** @return array{0: Departure, 1: Customer, 2: Traveller, 3: Traveller} */
+    private function pricedDeparture(): array
+    {
+        $departure = $this->departure();
+        $departure->priceTiers()->create(['occupancy' => 'double', 'pax_type' => 'adult', 'amount_minor' => 3_200_000]);
+        $departure->priceTiers()->create(['occupancy' => 'quad', 'pax_type' => 'child', 'amount_minor' => 2_000_000]);
+
+        $customer = Customer::factory()->create(['name' => 'Aminath Ali', 'phone' => '7771234']);
+        $adult = Traveller::factory()->for($customer)->create(['full_name' => 'Aminath Ali', 'date_of_birth' => now()->subYears(40)]);
+        $child = Traveller::factory()->for($customer)->create(['full_name' => 'Yusuf Ali', 'date_of_birth' => now()->subYears(8)]);
+
+        return [$departure, $customer, $adult, $child];
+    }
+
+    public function test_booking_staff_open_a_booking_from_the_form(): void
+    {
+        [$departure, $customer, $adult, $child] = $this->pricedDeparture();
+
+        Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(CreateBooking::class)
+            ->fillForm([
+                'departure_id' => $departure->getKey(),
+                'customer_id' => $customer->getKey(),
+                'party' => [
+                    ['traveller_id' => $adult->getKey(), 'occupancy' => 'double'],
+                    ['traveller_id' => $child->getKey(), 'occupancy' => 'quad'],
+                ],
+                'notes' => 'Lower floor please',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $booking = Booking::query()->sole();
+        $this->assertSame(Booking::HELD, $booking->status);
+        $this->assertSame(2, $booking->seats);
+        $this->assertSame(3_200_000 + 2_000_000, $booking->total_minor);
+        $this->assertSame('Lower floor please', $booking->notes);
+        $this->assertSame(2, $departure->fresh()->capacity_held);
+    }
+
+    public function test_a_full_departure_refuses_the_booking_on_the_form(): void
+    {
+        [$departure, $customer, $adult, $child] = $this->pricedDeparture();
+        $departure->forceFill(['capacity_total' => 1])->save();
+
+        Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(CreateBooking::class)
+            ->fillForm([
+                'departure_id' => $departure->getKey(),
+                'customer_id' => $customer->getKey(),
+                'party' => [
+                    ['traveller_id' => $adult->getKey(), 'occupancy' => 'double'],
+                    ['traveller_id' => $child->getKey(), 'occupancy' => 'quad'],
+                ],
+            ])
+            ->call('create')
+            ->assertNotified();
+
+        $this->assertSame(0, Booking::query()->count());
+        $this->assertSame(0, $departure->fresh()->capacity_held);
+    }
+
+    public function test_finance_gives_a_discount_and_the_desk_cannot(): void
+    {
+        [$departure, $customer, $adult] = $this->pricedDeparture();
+        $booking = app(BookingDesk::class)->open($departure, $customer, [['traveller_id' => $adult->getKey(), 'occupancy' => 'double']]);
+
+        Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(EditBooking::class, ['record' => $booking->getKey()])
+            ->assertActionHidden('discount');
+
+        // Finance may not edit a booking, so it opens the view page — and
+        // until that page existed it could open none at all.
+        $this->actingAs($this->staff(Access::FINANCE))->get(BookingResource::getUrl('view', ['record' => $booking]))->assertOk();
+        $this->actingAs($this->staff(Access::REPORTING))->get(BookingResource::getUrl('view', ['record' => $booking]))->assertForbidden();
+
+        Livewire::actingAs($this->staff(Access::FINANCE))
+            ->test(ViewBooking::class, ['record' => $booking->getKey()])
+            ->callAction('discount', data: ['kind' => Discount::PERCENT, 'value' => 10, 'reason' => 'Returning pilgrim'])
+            ->assertHasNoActionErrors()
+            ->assertSee('MVR 28,800');
+
+        $this->assertSame(2_880_000, $booking->fresh()->total_minor);
+        $this->assertSame('Returning pilgrim', Discount::query()->sole()->reason);
+    }
+
+    public function test_charges_and_instalments_are_managed_from_the_booking(): void
+    {
+        [$departure, $customer, $adult] = $this->pricedDeparture();
+        $booking = app(BookingDesk::class)->open($departure, $customer, [['traveller_id' => $adult->getKey(), 'occupancy' => 'double']]);
+        $staff = $this->staff(Access::BOOKING_STAFF);
+
+        Livewire::actingAs($staff)
+            ->test(LinesRelationManager::class, ['ownerRecord' => $booking, 'pageClass' => EditBooking::class])
+            ->assertCanSeeTableRecords($booking->lines)
+            ->callTableAction('addLine', data: ['type' => BookingLine::FEE, 'description' => 'Visa fee', 'amount' => 1200, 'quantity' => 2])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame(3_200_000 + 240_000, $booking->fresh()->total_minor);
+
+        $fee = $booking->lines()->where('type', BookingLine::FEE)->sole();
+
+        Livewire::actingAs($staff)
+            ->test(LinesRelationManager::class, ['ownerRecord' => $booking->fresh(), 'pageClass' => EditBooking::class])
+            ->callTableAction('remove', $fee)
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame(3_200_000, $booking->fresh()->total_minor);
+
+        Livewire::actingAs($staff)
+            ->test(ScheduleRelationManager::class, ['ownerRecord' => $booking->fresh(), 'pageClass' => EditBooking::class])
+            ->callTableAction('create', data: ['label' => 'Deposit', 'amount_minor' => 10000, 'due_on' => now()->addWeek()->toDateString()])
+            ->assertHasNoTableActionErrors();
+
+        $instalment = $booking->schedule()->sole();
+        $this->assertSame(1_000_000, $instalment->amount_minor, 'Typed in rufiyaa, stored in laari.');
+        $this->assertSame('Deposit', $instalment->label);
+
+        // Taking a discount back is Finance's, like giving one.
+        $this->actingAs($this->staff(Access::FINANCE));
+        $discount = app(BookingDesk::class)->discount($booking->fresh(), Discount::FIXED, '200', 'Agreed by the owner');
+
+        Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(LinesRelationManager::class, ['ownerRecord' => $booking->fresh(), 'pageClass' => EditBooking::class])
+            ->assertTableActionHidden('takeBack', $discount->line);
+
+        Livewire::actingAs($this->staff(Access::FINANCE))
+            ->test(LinesRelationManager::class, ['ownerRecord' => $booking->fresh(), 'pageClass' => ViewBooking::class])
+            ->callTableAction('takeBack', $discount->line)
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame(3_200_000, $booking->fresh()->total_minor);
+        $this->assertNotNull($discount->fresh()->reversed_at);
     }
 
     // ── Site audit ────────────────────────────────────────────────────────

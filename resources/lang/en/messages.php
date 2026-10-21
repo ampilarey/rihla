@@ -960,4 +960,8 @@ return [
     'Own a guesthouse or a flat? Take bookings from our guests and run your whole business here.' => 'Own a guesthouse or a flat? Take bookings from our guests and run your whole business here.',
     'I would like to list my property on Rihla.' => 'I would like to list my property on Rihla.',
     'Includes :name — :percent% off' => 'Includes :name — :percent% off',
+
+    // The invoice's instalments
+    'Payment schedule' => 'Payment schedule',
+    'Due' => 'Due',
 ];

@@ -44,7 +44,7 @@ final class Documents
     public function invoice(Booking $booking): PdfDocument
     {
         return Pdf::loadView('pdf.invoice', [
-            'booking' => $booking->load(['customer', 'departure.package', 'lines', 'travellers.traveller']),
+            'booking' => $booking->load(['customer', 'departure.package', 'lines', 'travellers.traveller', 'schedule']),
             'payments' => $booking->payments()->succeeded()->get(),
             'issuer' => $this->issuer(),
             'locale' => app()->getLocale(),

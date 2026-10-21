@@ -105,6 +105,29 @@
     </table>
 @endif
 
+{{-- Instalments, when the office set any: what was expected by when.
+     Information, not a demand — the balance above is what is owed. --}}
+@if($booking->schedule->isNotEmpty())
+    <table class="lines" style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>{{ __('messages.Payment schedule') }}</th>
+                <th class="num">{{ __('messages.Due') }}</th>
+                <th class="num">{{ __('messages.Amount') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($booking->schedule as $instalment)
+                <tr>
+                    <td>{{ $instalment->label }}</td>
+                    <td class="num ltr">{{ $instalment->due_on->format('j M Y') }}</td>
+                    <td class="num ltr">{{ $instalment->money()->format() }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
+
 @if($balance->minor > 0)
     <div class="note">
         {{ __('messages.Quote :reference when you pay, so we can match it to your booking.', ['reference' => $booking->reference]) }}

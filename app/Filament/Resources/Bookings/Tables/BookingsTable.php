@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Bookings\Tables;
 
+use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
 use App\Support\Money;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -88,7 +90,11 @@ class BookingsTable
                     ->preload(),
             ])
             ->recordActions([
+                // One "Open" each: the edit page for whoever may change the
+                // booking, the view page for whoever may only read it.
                 EditAction::make()->label('Open'),
+                ViewAction::make()->label('Open')
+                    ->visible(fn (Booking $record): bool => ! BookingResource::canEdit($record)),
             ])
             ->emptyStateHeading('No bookings yet')
             ->emptyStateDescription('Bookings made through the website appear here the moment somebody holds a seat.');

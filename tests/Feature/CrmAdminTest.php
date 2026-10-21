@@ -239,6 +239,30 @@ class CrmAdminTest extends TestCase
         $this->assertCount(1, $page->instance()->getEverybodyElse());
     }
 
+    public function test_today_flags_an_instalment_that_has_fallen_behind(): void
+    {
+        $booking = Booking::factory()->create([
+            'customer_id' => Customer::factory()->create(['name' => 'Aminath Ali'])->getKey(),
+            'total_minor' => 2_850_000,
+        ]);
+        $booking->transitionTo(Booking::HELD);
+        $booking->schedule()->create(['label' => 'Deposit', 'amount_minor' => 1_000_000, 'due_on' => now()->subDays(3)->toDateString()]);
+        $booking->schedule()->create(['label' => 'Balance', 'amount_minor' => 1_850_000, 'due_on' => now()->addDays(30)->toDateString()]);
+
+        Livewire::actingAs($this->staff(Access::BOOKING_STAFF))
+            ->test(Today::class)
+            ->assertOk()
+            ->assertSee('One instalment has fallen behind')
+            ->assertSee($booking->reference.' — Deposit')
+            ->assertSee('MVR 10,000 still owed')
+            ->assertDontSee('Balance');
+
+        // Reporting may count bookings but has no business with a customer's money.
+        Livewire::actingAs($this->staff(Access::CONTENT_MANAGER))
+            ->test(Today::class)
+            ->assertForbidden();
+    }
+
     public function test_today_says_so_when_nothing_is_due(): void
     {
         Livewire::actingAs($this->staff(Access::BOOKING_STAFF))

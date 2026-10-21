@@ -4,17 +4,24 @@ namespace App\Filament\Resources\Bookings\Pages;
 
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * No create action: bookings come from the checkout, which takes the seats
- * under a row lock. See BookingResource.
+ * "New booking" is the desk — see BookingResource — and is offered only to
+ * somebody holding `booking.create`; everything else here comes from the
+ * checkout.
  */
 class ListBookings extends ListRecords
 {
     protected static string $resource = BookingResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [CreateAction::make()->label('New booking')->icon('heroicon-o-plus')];
+    }
 
     /**
      * Tabs in the order somebody working through the day would want them:

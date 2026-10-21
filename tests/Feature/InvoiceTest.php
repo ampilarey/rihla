@@ -192,6 +192,18 @@ class InvoiceTest extends TestCase
         $this->assertPdfSays($pdf, 'Quad room, adult', 'MVR 28,500');
     }
 
+    public function test_the_instalments_print_when_the_office_set_any(): void
+    {
+        $booking = $this->booking();
+        $booking->schedule()->create(['label' => 'Deposit', 'amount_minor' => 1_000_000, 'due_on' => '2027-01-15']);
+        $booking->schedule()->create(['label' => 'Balance', 'amount_minor' => 1_850_000, 'due_on' => '2027-02-15']);
+
+        $pdf = app(Documents::class)->invoice($booking->refresh())->output();
+
+        // Table headings print in capitals; the rows as typed.
+        $this->assertPdfSays($pdf, 'PAYMENT SCHEDULE', 'Deposit', '15 Jan 2027', 'MVR 10,000', 'Balance', '15 Feb 2027', 'MVR 18,500');
+    }
+
     // ── The receipt ──────────────────────────────────────────────────────
 
     public function test_a_receipt_renders(): void
