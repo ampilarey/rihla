@@ -2,9 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Booking;
 use App\Models\CrmTask;
 use App\Models\Customer;
 use App\Models\Departure;
+use App\Models\PaymentSchedule;
 use App\Support\Reengagement;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -99,6 +101,29 @@ class Today extends Page
             ->with(['about', 'owner'])
             ->orderBy('due_on')
             ->get();
+    }
+
+    /**
+     * Instalments that have fallen behind: due, on a booking that is still
+     * live, and not covered by the money checked in so far. The nudge the
+     * schedule exists to give — nothing is sent, somebody rings.
+     *
+     * @return Collection<int, PaymentSchedule>
+     */
+    public function getOverdueInstalments(): Collection
+    {
+        if (auth()->user()?->can('booking.viewAny') !== true) {
+            return new Collection;
+        }
+
+        return PaymentSchedule::query()
+            ->whereDate('due_on', '<', now()->toDateString())
+            ->whereHas('booking', fn ($query) => $query->whereIn('status', [Booking::HELD, Booking::CONFIRMED]))
+            ->with('booking.customer')
+            ->orderBy('due_on')
+            ->get()
+            ->filter(fn (PaymentSchedule $instalment): bool => $instalment->isOverdue())
+            ->values();
     }
 
     /**

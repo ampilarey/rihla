@@ -178,6 +178,27 @@ class Booking extends Model implements TakesPayments
         return $this->hasMany(SeatHold::class);
     }
 
+    /**
+     * Instalments: this much by this date, in due order. Information for
+     * the invoice and a nudge for Today, never a rule the ledger enforces.
+     *
+     * @return HasMany<PaymentSchedule, $this>
+     */
+    public function schedule(): HasMany
+    {
+        return $this->hasMany(PaymentSchedule::class)->orderBy('due_on')->orderBy('sort_order')->orderBy('id');
+    }
+
+    /**
+     * The reasons behind the negative lines, taken back or not.
+     *
+     * @return HasMany<Discount, $this>
+     */
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(Discount::class)->orderBy('id');
+    }
+
     /** @return MorphMany<CrmTask, $this> */
     public function tasks(): MorphMany
     {
@@ -286,6 +307,16 @@ class Booking extends Model implements TakesPayments
     {
         return $this->travellers->firstWhere('is_lead', true)
             ?? $this->travellers->first();
+    }
+
+    /**
+     * Still a booking somebody can act on: draft, held or confirmed. Money
+     * can be charged to it and a discount given; once it has expired, been
+     * cancelled or come home, it is a record.
+     */
+    public function isLive(): bool
+    {
+        return in_array($this->status, [self::DRAFT, self::HELD, self::CONFIRMED], true);
     }
 
     /** Seats held or confirmed — what this booking is costing the departure. */

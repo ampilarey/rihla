@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Bookings\Pages;
 use App\Exceptions\IllegalBookingTransition;
 use App\Exceptions\NoSeatsAvailable;
 use App\Filament\Resources\Bookings\BookingResource;
+use App\Filament\Resources\Bookings\Pages\Concerns\HasInvoiceAndDiscountActions;
 use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\NusukPermit;
@@ -40,6 +41,8 @@ use Illuminate\Support\Facades\DB;
  */
 class EditBooking extends EditRecord
 {
+    use HasInvoiceAndDiscountActions;
+
     protected static string $resource = BookingResource::class;
 
     protected function getHeaderActions(): array
@@ -47,6 +50,7 @@ class EditBooking extends EditRecord
         return [
             $this->recordPaymentAction(),
             $this->invoiceAction(),
+            $this->discountAction(),
             $this->ticketsAction(),
             $this->portalLinkAction(),
             $this->confirmAction(),
@@ -147,15 +151,6 @@ class EditBooking extends EditRecord
      * truth that drifts the moment a line changes. What is immutable is
      * already in `booking_lines` and `payments`.
      */
-    private function invoiceAction(): Action
-    {
-        return Action::make('invoice')
-            ->label('Invoice')
-            ->icon('heroicon-o-document-arrow-down')
-            ->color('gray')
-            ->url(fn (): string => route('staff.invoice', ['booking' => $this->booking()]), shouldOpenInNewTab: true);
-    }
-
     /**
      * Hand the customer a way into the Pilgrim Portal (§6.1).
      *

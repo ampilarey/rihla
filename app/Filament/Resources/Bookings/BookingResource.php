@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources\Bookings;
 
+use App\Filament\Resources\Bookings\Pages\CreateBooking;
 use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Bookings\Pages\ListBookings;
+use App\Filament\Resources\Bookings\Pages\ViewBooking;
+use App\Filament\Resources\Bookings\RelationManagers\LinesRelationManager;
+use App\Filament\Resources\Bookings\RelationManagers\ScheduleRelationManager;
 use App\Filament\Resources\Bookings\Schemas\BookingForm;
 use App\Filament\Resources\Bookings\Tables\BookingsTable;
 use App\Models\Booking;
@@ -21,16 +25,15 @@ use UnitEnum;
  * Rihla could see: a customer got a reference and a WhatsApp message, and
  * finding out what they had actually booked meant a database client.
  *
- * **No create page.** A booking is made by the checkout, which takes the
- * seats under a row lock and freezes what was sold. A staff form that
- * inserted one directly would bypass both, and the departure would oversell
- * the first time two people used it at once. Booking by phone belongs in a
- * later slice that goes through the same allocator.
+ * **The create page is the desk** (App\Services\Booking\BookingDesk): a
+ * walk-in or a phone call, through the same allocator and the same prices
+ * as the checkout, in one transaction. Filament never inserts the row
+ * itself — a form that did would bypass the row lock, and the departure
+ * would oversell the first time two people used it at once.
  *
- * **No delete action either.** A booking is a financial record; cancelling
- * is a status with a row saying who and why. Neither `booking.create` nor
- * `booking.delete` exists as a permission, so the inherited policy methods
- * deny everybody.
+ * **No delete action.** A booking is a financial record; cancelling is a
+ * status with a row saying who and why. `booking.delete` does not exist as
+ * a permission, so the inherited policy method denies everybody.
  */
 class BookingResource extends Resource
 {
@@ -64,10 +67,18 @@ class BookingResource extends Resource
         return $held > 0 ? (string) $held : null;
     }
 
+    /** What it comes to, line by line, and when the parts were expected. */
+    public static function getRelations(): array
+    {
+        return [LinesRelationManager::class, ScheduleRelationManager::class];
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListBookings::route('/'),
+            'create' => CreateBooking::route('/create'),
+            'view' => ViewBooking::route('/{record}'),
             'edit' => EditBooking::route('/{record}/edit'),
         ];
     }

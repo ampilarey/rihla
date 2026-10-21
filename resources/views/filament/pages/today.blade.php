@@ -4,6 +4,7 @@
     @php($others = $this->getEverybodyElse())
     @php($soon = $this->getSoon())
     @php($quiet = $this->getQuietCustomers())
+    @php($instalments = $this->getOverdueInstalments())
 
     <x-filament::section>
         <x-slot name="heading">
@@ -33,6 +34,33 @@
             />
         @endforelse
     </x-filament::section>
+
+    @if ($instalments->isNotEmpty())
+        <x-filament::section>
+            <x-slot name="heading">{{ $instalments->count() === 1 ? 'One instalment has fallen behind' : $instalments->count() . ' instalments have fallen behind' }}</x-slot>
+
+            <x-slot name="description">
+                Due, and not covered by the money checked in so far. Nothing is sent from here — somebody rings.
+            </x-slot>
+
+            @foreach ($instalments as $instalment)
+                <x-filament::callout
+                    color="danger"
+                    icon="heroicon-o-banknotes"
+                    :heading="$instalment->booking->reference . ' — ' . $instalment->label"
+                    :description="($instalment->booking->customer->name ?? 'Unknown customer')
+                        . ' · due ' . $instalment->due_on->format('j M Y')
+                        . ' · ' . $instalment->outstanding()->format() . ' still owed'"
+                >
+                    <x-slot name="footer">
+                        <x-filament::link :href="\App\Filament\Resources\Bookings\BookingResource::getUrl('edit', ['record' => $instalment->booking])" size="sm">
+                            Open the booking
+                        </x-filament::link>
+                    </x-slot>
+                </x-filament::callout>
+            @endforeach
+        </x-filament::section>
+    @endif
 
     @if ($soon->isNotEmpty())
         <x-filament::section collapsed>
