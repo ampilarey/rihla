@@ -50,7 +50,7 @@ class HomeController extends Controller
         // The three soonest departures anyone can still join, with
         // everything the cards need: price, hotels and seats. Additive — the
         // trip sections above are untouched and still render.
-        $upcomingDepartures = Departure::published()
+        $upcomingDepartures = Departure::open()
             ->upcoming()
             ->whereHas('package', function ($package): void {
                 /** @var Builder<Package> $package */

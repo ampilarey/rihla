@@ -118,6 +118,7 @@ class DailySummary
     public static function upcoming()
     {
         return Departure::query()
+            ->notHistory()
             ->where('date_end', '>=', today())
             ->with('package')
             ->orderBy('date_start')

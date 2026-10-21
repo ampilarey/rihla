@@ -184,7 +184,10 @@ class LeaderController extends Controller
         $query = Departure::query()
             ->with('package')
             // On the ground now, or about to be. A trip that came home last
-            // March is not what somebody opens this on a phone for.
+            // March is not what somebody opens this on a phone for, and
+            // neither is a draft or one that was cancelled.
+            ->notHistory()
+            ->where('status', '!=', Departure::DRAFT)
             ->where('date_end', '>=', now()->subDays(3))
             ->where('date_start', '<=', now()->addDays(30))
             ->orderBy('date_start');

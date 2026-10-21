@@ -38,11 +38,11 @@ class PackageComparisonController extends Controller
 
         $departures = $ids->isEmpty()
             ? new Collection
-            // Departure::published(), not Departure::query()->published():
-            // the static call is typed as a builder for this model, so the
-            // local scope resolves. query() is typed as a builder for the
-            // base Model, which has no published().
-            : Departure::published()
+            // Departure::open(), not Departure::query()->open(): the static
+            // call is typed as a builder for this model, so the local scope
+            // resolves. query() is typed as a builder for the base Model,
+            // which has no open().
+            : Departure::open()
                 // Upcoming only, matching the package page. A comparison
                 // link saved last season would otherwise resurrect
                 // departures that have already left and show them as

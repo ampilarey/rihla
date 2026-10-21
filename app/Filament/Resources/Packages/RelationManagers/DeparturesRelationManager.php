@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Packages\RelationManagers;
 
+use App\Exceptions\IllegalDepartureTransition;
 use App\Filament\Concerns\EditsTranslations;
 use App\Models\Departure;
 use App\Models\DepartureHotel;
@@ -13,24 +14,25 @@ use App\Support\Money;
 use App\Support\TravelReadiness;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 /**
@@ -51,6 +53,17 @@ class DeparturesRelationManager extends RelationManager
 
     protected static ?string $title = 'Departures';
 
+    /** @var array<string, string> */
+    public const STAGE_COLOURS = [
+        Departure::DRAFT => 'gray',
+        Departure::OPEN => 'success',
+        Departure::CLOSED => 'warning',
+        Departure::DEPARTED => 'info',
+        Departure::RETURNED => 'info',
+        Departure::SETTLED => 'gray',
+        Departure::CANCELLED => 'danger',
+    ];
+
     public function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -59,12 +72,14 @@ class DeparturesRelationManager extends RelationManager
                 DatePicker::make('date_end')->label('Returns')->required()->native(false)
                     ->afterOrEqual('date_start'),
                 TextInput::make('airline')->maxLength(255),
-                Select::make('status')
-                    ->options(array_combine(Departure::STATUSES, array_map('ucfirst', Departure::STATUSES)))
-                    ->default(Departure::STATUS_UPCOMING)
-                    ->required(),
-                Toggle::make('is_published')
-                    ->helperText('Hidden on the site until this is on, even if the package is published.'),
+                // The stage is moved from the list, with a reason on the
+                // record, never typed here: a form that could set "departed"
+                // by accident would take the departure off sale by accident.
+                Placeholder::make('stage')
+                    ->label('Stage')
+                    ->content(fn (?Departure $record): string => $record === null
+                        ? 'A new departure is a draft: hidden and unbookable until you open it for booking from the list.'
+                        : $record->statusLabel().self::stageWords($record)),
             ]),
 
             Section::make('Seats')
@@ -272,7 +287,7 @@ class DeparturesRelationManager extends RelationManager
             ->modalDescription(fn (Departure $record): string => DepartureCopier::carries($record) === []
                 ? 'The dates, airline, seats and people travelling with the party are copied. Nothing else is set up on this departure yet.'
                 : 'Copied with every date moved by the same number of days: '.implode(', ', DepartureCopier::carries($record))
-                    .'. Bookings, seat holds, airline booking references and checklist ticks are not copied, and the copy is not live until you publish it.')
+                    .'. Bookings, seat holds, airline booking references and checklist ticks are not copied, and the copy is a draft until you open it for booking.')
             ->schema([
                 DatePicker::make('date_start')
                     ->label('New departure date')
@@ -287,8 +302,82 @@ class DeparturesRelationManager extends RelationManager
                 Notification::make()
                     ->success()
                     ->title('Departure copied')
-                    ->body('Departs '.$copy->date_start->format('j M Y').', returns '.$copy->date_end->format('j M Y').'. It is not published yet.')
+                    ->body('Departs '.$copy->date_start->format('j M Y').', returns '.$copy->date_end->format('j M Y').'. It is a draft until you open it for booking.')
                     ->send();
+            });
+    }
+
+    /** "— closed by Aminath on 3 Nov: flights full", or nothing when nothing has moved it. */
+    private static function stageWords(Departure $record): string
+    {
+        $event = $record->latestEvent();
+
+        if ($event === null) {
+            return '';
+        }
+
+        return ' — '.strtolower(Departure::label($event->to_status))
+            .($event->user?->name ? ' by '.$event->user->name : '')
+            .($event->created_at ? ' on '.$event->created_at->format('j M Y') : '')
+            .($event->reason ? ': '.$event->reason : '');
+    }
+
+    /**
+     * The moves along the lifecycle, each shown only where it is allowed
+     * from and to somebody allowed to make it. The model refuses what the
+     * list did not foresee and says why.
+     */
+    private static function stageActions(): ActionGroup
+    {
+        return ActionGroup::make([
+            self::move(Departure::OPEN, 'Open for booking', 'heroicon-o-play', 'success',
+                'It goes on the site and seats can be sold. Look at the prices, the seats and the dates first.'),
+            self::move(Departure::CLOSED, 'Close bookings', 'heroicon-o-lock-closed', 'warning',
+                'No more bookings; the ones it has carry on, and it comes off the site. Open it again if that changes.', reason: true),
+            self::move(Departure::DEPARTED, 'Mark departed', 'heroicon-o-paper-airplane', 'info',
+                'The party has flown. The board and the leader\'s tools follow the stage, not the date.'),
+            self::move(Departure::RETURNED, 'Mark returned', 'heroicon-o-home', 'info',
+                'The party is home. Finance settles it once the books are closed.'),
+            self::move(Departure::SETTLED, 'Settle', 'heroicon-o-check-badge', 'success',
+                'Its books are closed and nothing on it is anybody\'s work any more. It leaves the board.', permission: 'departure.settle'),
+            self::move(Departure::CANCELLED, 'Cancel the departure', 'heroicon-o-x-circle', 'danger',
+                'It is not running. Only possible once no booking on it is held or confirmed.', reason: true),
+        ])
+            ->label('Stage')
+            ->icon('heroicon-o-arrow-right-circle')
+            ->button()
+            ->color('gray')
+            ->size('sm');
+    }
+
+    private static function move(string $to, string $label, string $icon, string $colour, string $description, bool $reason = false, string $permission = 'departure.lifecycle'): Action
+    {
+        return Action::make('move_'.$to)
+            ->label($label)
+            ->icon($icon)
+            ->color($colour)
+            ->visible(fn (Departure $record): bool => $record->canBecome($to) && auth()->user()?->can($permission) === true)
+            ->requiresConfirmation()
+            ->modalHeading(fn (Departure $record): string => $label.' · '.$record->date_start->format('j M Y'))
+            ->modalDescription($description)
+            ->modalSubmitActionLabel($label)
+            ->schema([
+                Textarea::make('reason')
+                    ->label($reason ? 'Why' : 'Note (optional)')
+                    ->rows(2)
+                    ->maxLength(255)
+                    ->required($reason),
+            ])
+            ->action(function (Departure $record, array $data) use ($to, $label): void {
+                try {
+                    $record->transitionTo($to, isset($data['reason']) ? (string) $data['reason'] : null);
+                } catch (IllegalDepartureTransition $e) {
+                    Notification::make()->danger()->title('Not moved')->body($e->getMessage())->persistent()->send();
+
+                    return;
+                }
+
+                Notification::make()->success()->title($label)->body('It is now '.strtolower($record->statusLabel()).'.')->send();
             });
     }
 
@@ -297,6 +386,13 @@ class DeparturesRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('date_start')->label('Departs')->date('d M Y')->sortable(),
+                // Second, so a phone sees the stage without scrolling the
+                // table sideways: it is the column that says what to do.
+                TextColumn::make('status')
+                    ->label('Stage')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => Departure::label($state))
+                    ->color(fn (string $state): string => self::STAGE_COLOURS[$state] ?? 'gray'),
                 TextColumn::make('nights')->alignCenter()->badge(),
                 TextColumn::make('airline')->placeholder('—')->toggleable(),
                 TextColumn::make('lead_price')
@@ -318,11 +414,13 @@ class DeparturesRelationManager extends RelationManager
                         : 'warning')
                     ->toggleable(),
 
-                IconColumn::make('is_published')->label('Live')->boolean(),
             ])
             ->defaultSort('date_start')
+            ->filters([
+                SelectFilter::make('status')->label('Stage')->options(Departure::LABELS)->multiple(),
+            ])
             ->headerActions([CreateAction::make()])
-            ->recordActions([self::readinessAction(), self::copyAction(), EditAction::make(), DeleteAction::make()])
+            ->recordActions([self::stageActions(), self::readinessAction(), self::copyAction(), EditAction::make(), DeleteAction::make()])
             ->emptyStateHeading('No departures yet')
             ->emptyStateDescription('A departure is one dated run of this package.');
     }

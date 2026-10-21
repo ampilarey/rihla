@@ -173,6 +173,13 @@ final class Access
         // Reading the departure record is not the same disclosure.
         'departure.board',
 
+        // Moving a departure along its lifecycle — open for booking, closed,
+        // departed, returned, cancelled — and settling its books. Neither is
+        // content: opening sales is an operations decision and settling is
+        // Finance's, so neither falls to whoever edits the website.
+        'departure.lifecycle',
+        'departure.settle',
+
         // Money received against a booking (§5.3). `download` is a separate
         // verb for the same reason it is on documents: a bank slip carries
         // an account number and a name, and seeing that a payment exists is
@@ -630,7 +637,11 @@ final class Access
                 // are missing documents; editing the website is not a
                 // reason to see either. Inclusion by prefix would have
                 // handed it over silently.
-                && $permission !== 'departure.board',
+                && $permission !== 'departure.board'
+                // And a third and fourth time: the lifecycle is operations,
+                // settling is Finance.
+                && $permission !== 'departure.lifecycle'
+                && $permission !== 'departure.settle',
         ));
 
         // Bookings and the customers attached to them. A separate set from
@@ -917,7 +928,7 @@ final class Access
                 array_diff($ziyarah, ['ziyarah.review']),
                 array_diff($learning, ['learning.review']),
                 array_diff($questions, ['question.answer']),
-                ['departure.nusuk', 'departure.board'],
+                ['departure.nusuk', 'departure.board', 'departure.lifecycle', 'departure.settle'],
                 $stays,
                 $content,
             ),
@@ -1071,7 +1082,8 @@ final class Access
             // The board's money line is this role's job: which departures
             // are flying with a balance outstanding, and how much.
             self::FINANCE => array_merge(
-                ['admin.access', 'departure.board', 'telegram.link'],
+                // Settles a departure once its books are closed.
+                ['admin.access', 'departure.board', 'departure.settle', 'telegram.link'],
                 $bookingsReadOnly,
                 // Knocks something off a price, with a reason on the record.
                 ['booking.discount'],

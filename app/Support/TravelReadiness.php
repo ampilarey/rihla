@@ -176,7 +176,10 @@ final class TravelReadiness
      *
      * Verified rather than merely uploaded: an unread scan is a file, not a
      * document. The validity window is configuration (§5.4b) and is measured
-     * from the departure, not from today.
+     * from the journey, not from today — from the day it comes home by
+     * default (batch C from Hijaz: a passport that expires between the
+     * outbound and the return flight is the one an airline refuses), or
+     * from the day it leaves when `documents.passport_validity_from` says so.
      */
     private static function hasUsablePassport(Traveller $traveller, ?Departure $departure): bool
     {
@@ -190,7 +193,19 @@ final class TravelReadiness
             return false;
         }
 
-        return ! $passport->expiresWithinWindow($departure?->date_start);
+        return ! $passport->expiresWithinWindow(self::validityAnchor($departure));
+    }
+
+    /** The day the passport must still be valid six months beyond. */
+    public static function validityAnchor(?Departure $departure): ?\DateTimeInterface
+    {
+        if ($departure === null) {
+            return null;
+        }
+
+        return config('documents.passport_validity_from', 'return') === 'departure'
+            ? $departure->date_start
+            : $departure->date_end;
     }
 
     private static function hasIssuedVisa(Booking $booking, Traveller $traveller): bool

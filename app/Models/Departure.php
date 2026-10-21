@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\IllegalDepartureTransition;
 use App\Support\Audience;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * One dated run of a Package.
@@ -24,7 +26,10 @@ class Departure extends Model
         'package_id', 'trip_id', 'date_start', 'date_end', 'airline',
         'tour_leader_id', 'scholar_id',
         'capacity_total', 'capacity_held', 'capacity_confirmed',
-        'status', 'is_published',
+        // The state is set on creation (a draft, an open copy of a test
+        // fixture) and moved afterwards only through transitionTo();
+        // `is_published` is derived from it and no longer assignable.
+        'status',
         // Recorded in Nusuk, and the gate every permit on this departure
         // waits behind (§5.4b). Mass-assignable because the admin form
         // writes them through update(): left out of this list they are
@@ -40,17 +45,178 @@ class Departure extends Model
         'capacity_held' => 'integer',
         'capacity_confirmed' => 'integer',
         'is_published' => 'boolean',
+        'status_changed_at' => 'datetime',
         'nusuk_accommodation_recorded_at' => 'datetime',
         'nusuk_transport_recorded_at' => 'datetime',
     ];
 
-    public const STATUS_UPCOMING = 'upcoming';
+    // ── Lifecycle ────────────────────────────────────────────────────────
+    //
+    // Moved by hand, by somebody with `departure.lifecycle` (batch C from
+    // Hijaz). The state decides what the dates used to: only an open
+    // departure is listed and sells seats, a closed one keeps its bookings
+    // and takes no more, departed and returned drive the board and the
+    // leader's tools, and settled closes its books. The dates say when a
+    // state looks overdue; they never move it.
 
-    public const STATUS_CURRENT = 'current';
+    public const DRAFT = 'draft';
 
-    public const STATUS_PAST = 'past';
+    public const OPEN = 'open';
 
-    public const STATUSES = [self::STATUS_UPCOMING, self::STATUS_CURRENT, self::STATUS_PAST];
+    public const CLOSED = 'closed';
+
+    public const DEPARTED = 'departed';
+
+    public const RETURNED = 'returned';
+
+    public const SETTLED = 'settled';
+
+    public const CANCELLED = 'cancelled';
+
+    public const STATUSES = [self::DRAFT, self::OPEN, self::CLOSED, self::DEPARTED, self::RETURNED, self::SETTLED, self::CANCELLED];
+
+    /** @var array<string, string> */
+    public const LABELS = [
+        self::DRAFT => 'Draft',
+        self::OPEN => 'Open for booking',
+        self::CLOSED => 'Closed to booking',
+        self::DEPARTED => 'Departed',
+        self::RETURNED => 'Returned',
+        self::SETTLED => 'Settled',
+        self::CANCELLED => 'Cancelled',
+    ];
+
+    /**
+     * Where each state may go. Open may be marked departed directly — a
+     * departure that left while still on sale is the overdue case the
+     * board flags, and the office should not need two taps to say so.
+     *
+     * @var array<string, list<string>>
+     */
+    public const TRANSITIONS = [
+        self::DRAFT => [self::OPEN, self::CANCELLED],
+        self::OPEN => [self::CLOSED, self::DEPARTED, self::CANCELLED],
+        self::CLOSED => [self::OPEN, self::DEPARTED, self::CANCELLED],
+        self::DEPARTED => [self::RETURNED],
+        self::RETURNED => [self::SETTLED],
+        self::SETTLED => [],
+        self::CANCELLED => [],
+    ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => self::DRAFT,
+    ];
+
+    protected static function booted(): void
+    {
+        // `is_published` is what the public site and the older code read;
+        // it is now a shadow of the state, kept true so nothing that still
+        // reads it is lied to, and never set by hand.
+        static::saving(function (Departure $departure): void {
+            $departure->is_published = $departure->status === self::OPEN;
+        });
+    }
+
+    public static function label(string $status): string
+    {
+        return self::LABELS[$status] ?? ucfirst($status);
+    }
+
+    public function statusLabel(): string
+    {
+        return self::label((string) $this->status);
+    }
+
+    /** Whether seats may be sold at all in this state: open, and only open. */
+    public function acceptsBookings(): bool
+    {
+        return $this->status === self::OPEN;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === self::CANCELLED;
+    }
+
+    public function isSettled(): bool
+    {
+        return $this->status === self::SETTLED;
+    }
+
+    /** Over and done with, one way or the other: nothing on it is anybody's work. */
+    public function isHistory(): bool
+    {
+        return in_array($this->status, [self::SETTLED, self::CANCELLED], true);
+    }
+
+    /** @return list<string> */
+    public function nextStates(): array
+    {
+        return self::TRANSITIONS[$this->status] ?? [];
+    }
+
+    public function canBecome(string $status): bool
+    {
+        return in_array($status, $this->nextStates(), true);
+    }
+
+    /**
+     * Move the departure along, with a line in its history saying who and
+     * why.
+     *
+     * @throws IllegalDepartureTransition when the move is not allowed from here, or something stands in its way
+     */
+    public function transitionTo(string $status, ?string $reason = null, ?User $actor = null): void
+    {
+        if (! $this->canBecome($status)) {
+            throw IllegalDepartureTransition::from($this, $status);
+        }
+
+        if ($status === self::OPEN && $this->date_start->isPast()) {
+            throw IllegalDepartureTransition::because('A departure that left on '.$this->date_start->format('j M Y').' cannot be opened for booking.');
+        }
+
+        if ($status === self::OPEN && $this->capacity_total < 1) {
+            throw IllegalDepartureTransition::because('Set the seats before opening it for booking: with none, nothing can be sold.');
+        }
+
+        if ($status === self::CANCELLED) {
+            $live = $this->bookings()->whereIn('status', [Booking::HELD, Booking::CONFIRMED])->count();
+
+            if ($live > 0) {
+                throw IllegalDepartureTransition::because(sprintf(
+                    'Cancel or move the %d live %s first. A held or confirmed seat is money and a place on an aircraft.',
+                    $live,
+                    $live === 1 ? 'booking' : 'bookings',
+                ));
+            }
+        }
+
+        $from = (string) $this->status;
+
+        $this->forceFill(['status' => $status, 'status_changed_at' => now()])->save();
+
+        $this->events()->create([
+            'from_status' => $from,
+            'to_status' => $status,
+            'user_id' => ($actor ?? Auth::user())?->getKey(),
+            'reason' => $reason === null ? null : mb_substr(trim($reason), 0, 255),
+            'created_at' => now(),
+        ]);
+    }
+
+    /** @return HasMany<DepartureEvent, $this> */
+    public function events(): HasMany
+    {
+        return $this->hasMany(DepartureEvent::class)->orderBy('id');
+    }
+
+    /** The latest move, for "closed by Aminath on 3 Nov: flights full". */
+    public function latestEvent(): ?DepartureEvent
+    {
+        return $this->events()->latest('id')->first();
+    }
 
     /** @return BelongsTo<Package, $this> */
     public function package(): BelongsTo
@@ -215,7 +381,7 @@ class Departure extends Model
      */
     public function getIsBookableAttribute(): bool
     {
-        return $this->is_published
+        return $this->acceptsBookings()
             && $this->has_capacity
             && ! $this->is_sold_out
             && $this->date_start->isFuture();
@@ -290,10 +456,26 @@ class Departure extends Model
         return (int) now()->startOfDay()->diffInDays($this->date_start->startOfDay(), false);
     }
 
-    /** @param Builder<$this> $query */
-    public function scopePublished($query)
+    /**
+     * On sale: the one state the public site lists and sells. Named for
+     * what it is rather than `published`, so a closed departure — which
+     * once was "published" and is still real — is never mistaken for one.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeOpen($query)
     {
-        return $query->where('is_published', true);
+        return $query->where('status', self::OPEN);
+    }
+
+    /**
+     * Still somebody's work: everything but settled and cancelled.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeNotHistory($query)
+    {
+        return $query->whereNotIn('status', [self::SETTLED, self::CANCELLED]);
     }
 
     /** @param Builder<$this> $query */

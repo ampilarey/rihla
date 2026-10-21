@@ -21,6 +21,11 @@ return [
 
     'passport_validity_months' => (int) env('PASSPORT_VALIDITY_MONTHS', 6),
 
+    // Measured from the day the journey comes home (`return`) or the day it
+    // leaves (`departure`). The return by default: a passport that runs out
+    // between the two flights is the one an airline refuses at the gate.
+    'passport_validity_from' => env('PASSPORT_VALIDITY_FROM', 'return') === 'departure' ? 'departure' : 'return',
+
     /*
     |--------------------------------------------------------------------------
     | Uploads

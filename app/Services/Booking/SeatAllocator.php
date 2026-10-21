@@ -56,6 +56,7 @@ final class SeatAllocator
      * Take seats off a departure and start the clock.
      *
      * @throws NoSeatsAvailable
+     * @throws \InvalidArgumentException when the departure is not open for booking
      */
     public function hold(
         Departure $departure,
@@ -69,6 +70,13 @@ final class SeatAllocator
 
         return DB::transaction(function () use ($departure, $seats, $booking, $expiresAt): SeatHold {
             $locked = $this->lock($departure);
+
+            // The one gate every path to a seat passes — the checkout, the
+            // desk, a waitlist offer: a departure that is not open sells
+            // nothing, whatever its dates and seats say.
+            if (! $locked->acceptsBookings()) {
+                throw new \InvalidArgumentException('This departure is '.strtolower($locked->statusLabel()).'; no seat can be taken on it.');
+            }
 
             $this->reclaimLapsedOn($locked);
 

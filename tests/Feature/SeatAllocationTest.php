@@ -150,7 +150,7 @@ class SeatAllocationTest extends TestCase
             'capacity_total' => 2,
             'capacity_held' => 0,
             'capacity_confirmed' => 3,
-            'status' => Departure::STATUS_UPCOMING,
+            'status' => Departure::OPEN,
             'is_published' => true,
             'created_at' => now(),
             'updated_at' => now(),

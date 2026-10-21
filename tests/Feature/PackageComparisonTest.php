@@ -125,7 +125,7 @@ class PackageComparisonTest extends TestCase
     public function test_an_unpublished_departure_cannot_be_compared(): void
     {
         $visible = $this->departure('Visible', 20_000);
-        $hidden = $this->departure('Hidden', 20_000, ['is_published' => false]);
+        $hidden = $this->departure('Hidden', 20_000, ['status' => Departure::DRAFT]);
 
         $this->get($this->compareUrl([$visible->id, $hidden->id]))
             ->assertOk()

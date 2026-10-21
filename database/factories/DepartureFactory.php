@@ -24,8 +24,9 @@ class DepartureFactory extends Factory
             'capacity_total' => 24,
             'capacity_held' => 0,
             'capacity_confirmed' => $this->faker->numberBetween(0, 20),
-            'status' => Departure::STATUS_UPCOMING,
-            'is_published' => true,
+            // Open for booking: what nearly every test wants, and what the
+            // publish switch used to say. The model derives is_published.
+            'status' => Departure::OPEN,
         ];
     }
 

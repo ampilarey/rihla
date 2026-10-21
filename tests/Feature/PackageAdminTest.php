@@ -148,7 +148,7 @@ class PackageAdminTest extends TestCase
             ->callTableAction('create', data: [
                 'date_start' => '2027-03-01',
                 'date_end' => '2027-03-15',
-                'status' => Departure::STATUS_UPCOMING,
+                'status' => Departure::OPEN,
                 'itinerary' => [
                     ['day_number' => 1, 'title' => ['en' => 'Arrive in Madinah']],
                 ],
@@ -221,7 +221,7 @@ class PackageAdminTest extends TestCase
             ->callTableAction('create', data: [
                 'date_start' => '2027-03-01',
                 'date_end' => '2027-03-15',
-                'status' => Departure::STATUS_UPCOMING,
+                'status' => Departure::OPEN,
                 'priceTiers' => [
                     ['occupancy' => 'quad', 'pax_type' => 'adult', 'amount_minor' => 28_500],
                 ],
@@ -247,7 +247,7 @@ class PackageAdminTest extends TestCase
             ->callTableAction('create', data: [
                 'date_start' => '2027-03-01',
                 'date_end' => '2027-03-03',
-                'status' => Departure::STATUS_UPCOMING,
+                'status' => Departure::OPEN,
                 'priceTiers' => [
                     ['audience' => 'local', 'occupancy' => 'double', 'pax_type' => 'adult', 'amount_minor' => 3_000],
                     ['audience' => 'tourist', 'occupancy' => 'double', 'pax_type' => 'adult', 'amount_minor' => 250],
@@ -293,7 +293,7 @@ class PackageAdminTest extends TestCase
             ->callTableAction('create', data: [
                 'date_start' => '2027-03-01',
                 'date_end' => '2027-03-15',
-                'status' => Departure::STATUS_UPCOMING,
+                'status' => Departure::OPEN,
                 'itinerary' => [
                     [
                         'day_number' => 1,

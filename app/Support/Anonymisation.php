@@ -169,6 +169,8 @@ final class Anonymisation
         'quotations' => ['includes' => 'text', 'excludes' => 'text', 'decline_reason' => 'text'],
         'visa_applications' => ['reference' => 'name', 'rejection_reason' => 'text', 'notes' => 'text'],
         'visa_application_events' => ['reason' => 'text'],
+        // Why a departure was closed or cancelled can name a person.
+        'departure_events' => ['reason' => 'text'],
         'nusuk_permits' => ['reference' => 'name', 'refusal_reason' => 'text', 'notes' => 'text'],
         'nusuk_permit_events' => ['reason' => 'text'],
         'operations_log_entries' => ['body' => 'text'],
