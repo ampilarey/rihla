@@ -12,12 +12,14 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class RoomsTable
 {
@@ -107,12 +109,15 @@ class RoomsTable
     }
 
     /**
-     * Put somebody in this room.
+     * Put somebody in this room — and, unless that is switched off, the
+     * rest of their family with them (batch C: families are roomed
+     * together by default).
      *
      * The list offers only travellers confirmed on this departure who are
      * not already in a room in this hotel — which is most of the way to
      * preventing the double-booking the conflict report otherwise has to
-     * catch after the fact.
+     * catch after the fact — and the family brought along is drawn from
+     * the same list, so nobody already roomed here is moved.
      */
     private static function assignAction(): Action
     {
@@ -127,20 +132,40 @@ class RoomsTable
                     ->required()
                     ->searchable()
                     ->options(fn (Room $record): array => self::unroomedOptions($record)),
+
+                Toggle::make('with_family')
+                    ->label('Bring the rest of their family')
+                    ->default(true)
+                    ->helperText('Everyone else the same person booked who has no room in this hotel yet. Switch it off to room somebody apart on purpose — a grown son with the men, say.'),
             ])
             ->action(function (Room $record, array $data): void {
                 $traveller = Traveller::find($data['traveller_id']);
+                $ids = [(int) $data['traveller_id']];
 
-                RoomAssignment::create([
-                    'room_id' => $record->getKey(),
-                    'traveller_id' => $data['traveller_id'],
-                    'booking_id' => self::bookingIdFor($record, (int) $data['traveller_id']),
-                    'assigned_by' => auth()->id(),
-                ]);
+                if ($traveller instanceof Traveller && (bool) ($data['with_family'] ?? true)) {
+                    foreach (self::unroomed($record) as $other) {
+                        if ((int) $other->customer_id === (int) $traveller->customer_id && ! in_array((int) $other->getKey(), $ids, true)) {
+                            $ids[] = (int) $other->getKey();
+                        }
+                    }
+                }
+
+                foreach ($ids as $id) {
+                    RoomAssignment::create([
+                        'room_id' => $record->getKey(),
+                        'traveller_id' => $id,
+                        'booking_id' => self::bookingIdFor($record, $id),
+                        'assigned_by' => auth()->id(),
+                    ]);
+                }
+
+                $others = count($ids) - 1;
 
                 Notification::make()
                     ->success()
-                    ->title(($traveller->full_name ?? 'They').' is in room '.$record->label)
+                    ->title(($traveller->full_name ?? 'They')
+                        .($others === 0 ? ' is' : ' and '.$others.' of their family are')
+                        .' in room '.$record->label)
                     // Said rather than blocked: over capacity is sometimes
                     // deliberate for a night, and refusing it outright is
                     // how staff go round the system with a spreadsheet.
@@ -201,7 +226,7 @@ class RoomsTable
                     Rooming::OVER_CAPACITY => 'More people than beds',
                     Rooming::MIXED_GENDER => 'Men and women in one room',
                     Rooming::UNDESIGNATED => 'Nobody has said who the room is for',
-                    Rooming::UNACCOMPANIED_CHILD => 'A child with no adult',
+                    Rooming::UNACCOMPANIED_CHILD => 'A child with no adult of their family',
                     Rooming::DOUBLE_BOOKED => 'In two rooms at once',
                     Rooming::UNROOMED => 'No room at all',
                 ],
@@ -211,11 +236,26 @@ class RoomsTable
     }
 
     /**
-     * Travellers on this departure with no room in this hotel yet.
+     * Travellers on this departure with no room in this hotel yet, each
+     * with the family they travel in, so the right Mariyam is picked.
      *
      * @return array<int, string>
      */
     private static function unroomedOptions(Room $room): array
+    {
+        return self::unroomed($room)
+            ->mapWithKeys(fn (Traveller $traveller): array => [
+                $traveller->getKey() => $traveller->full_name.' · '.$traveller->customer->name.'\'s family',
+            ])
+            ->all();
+    }
+
+    /**
+     * Who is owed a bed on this departure and has none in this hotel.
+     *
+     * @return EloquentCollection<int, Traveller>
+     */
+    private static function unroomed(Room $room): EloquentCollection
     {
         $hotel = $room->hotel;
 
@@ -223,10 +263,11 @@ class RoomsTable
             fn (Room $other): array => $other->assignments->pluck('traveller_id')->all(),
         )->unique();
 
-        return Rooming::travellersOwedABed($hotel->departure)
+        return EloquentCollection::make(Rooming::travellersOwedABed($hotel->departure)
             ->reject(fn (Traveller $traveller): bool => $alreadyRoomed->contains($traveller->getKey()))
-            ->pluck('full_name', 'id')
-            ->all();
+            ->values()
+            ->all())
+            ->load('customer');
     }
 
     /** Which booking put this traveller on this departure. */

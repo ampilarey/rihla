@@ -61,6 +61,8 @@ final class Anonymisation
             // person as surely as the number does (site audit).
             'date_of_birth' => 'null', 'passport_expiry' => 'null', 'passport_issuing_country' => 'null',
             'national_id' => 'null', 'identity_mismatches' => 'null',
+            // The head of a family's own number (families, batch C).
+            'phone' => 'phone',
         ],
         'people' => ['name' => 'name', 'bio' => 'text'],
         // A partner is a real guesthouse owner, and their record holds the

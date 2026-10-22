@@ -6,6 +6,7 @@ use App\Filament\Resources\Bookings\Tables\BookingsTable;
 use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\SeatHold;
+use App\Services\Operations\Families;
 use App\Support\Money;
 use App\Support\TravelReadiness;
 use Filament\Forms\Components\Textarea;
@@ -52,29 +53,31 @@ class BookingForm
                 TextEntry::make('customer.email')->label('Email')->placeholder('—')->copyable(),
             ]),
 
-            Section::make('Travellers')->schema([
-                // A repeater would invite editing; this is a list. Passport
-                // details are changed where they are collected, not here.
-                TextEntry::make('travellers')
-                    // Screen-reader only, not removed: the section heading
-                    // above already says "Travellers", and a sighted reader
-                    // seeing it twice is noise while a screen reader needs
-                    // the entry named. label('') would not do this — it
-                    // falls back to the generated headline and renders it.
-                    ->hiddenLabel()
-                    ->state(fn (Booking $record): array => $record->travellers
-                        ->map(fn (BookingTraveller $line): string => sprintf(
-                            '%s — %s, %s — %s%s',
-                            $line->traveller->full_name,
-                            ucfirst($line->occupancy),
-                            $line->pax_type,
-                            $line->money()->format(),
-                            self::ticket($line),
-                        ))
-                        ->all())
-                    ->listWithLineBreaks()
-                    ->bulleted(),
-            ]),
+            // Families, batch C from Hijaz: everybody the same person booked
+            // onto this departure, this booking's people and any on another
+            // of theirs, head first. Changed with the Family button.
+            Section::make('Family')
+                ->description('Everyone the same person booked onto this departure travels as one family: roomed and bussed together unless somebody decides otherwise. The head holds the family\'s documents and is the one we call.')
+                ->schema([
+                    TextEntry::make('family_contact')
+                        ->label('Who we call')
+                        ->state(fn (Booking $record): ?string => app(Families::class)->forBooking($record)?->contactWords())
+                        ->placeholder('No phone on file for the head or for the person who booked.'),
+
+                    // A repeater would invite editing; this is a list. Passport
+                    // details are changed where they are collected, not here.
+                    TextEntry::make('travellers')
+                        // Screen-reader only, not removed: the section heading
+                        // above already names the list, and a sighted reader
+                        // seeing it twice is noise while a screen reader needs
+                        // the entry named. label('') would not do this — it
+                        // falls back to the generated headline and renders it.
+                        ->hiddenLabel()
+                        ->state(fn (Booking $record): array => self::family($record))
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->placeholder('No travellers entered yet.'),
+                ]),
 
             Section::make('Can they actually go?')
                 ->description('A passport, a visa and an Umrah permit are three separate authorisations from three different bodies [R-4]. Computed here on every read (§5.4a) and never stored, because a stored "ready" is wrong from the moment any of the three changes — and the one time that matters is the morning somebody leaves for the airport.')
@@ -150,6 +153,46 @@ class BookingForm
                     ->helperText('What was said on the phone. Visible to staff only.'),
             ]),
         ]);
+    }
+
+    /**
+     * The family, one line each, head first: this booking's people with
+     * their room, price and ticket, and anybody on the booker's other
+     * bookings for the same departure with the booking they are on.
+     *
+     * @return list<string>
+     */
+    private static function family(Booking $booking): array
+    {
+        $family = app(Families::class)->forBooking($booking);
+
+        if ($family === null) {
+            return [];
+        }
+
+        return $family->members
+            ->map(function (BookingTraveller $line) use ($family, $booking): string {
+                $who = array_values(array_filter([
+                    $family->isHead($line) ? 'head of the family' : null,
+                    $family->relationOf($line),
+                ]));
+
+                $name = $line->traveller->full_name.($who === [] ? '' : ' ('.implode(' · ', $who).')');
+
+                if ((int) $line->booking_id !== (int) $booking->getKey()) {
+                    return $name.' — on booking '.$line->booking->reference;
+                }
+
+                return sprintf(
+                    '%s — %s, %s — %s%s',
+                    $name,
+                    ucfirst($line->occupancy),
+                    $line->pax_type,
+                    $line->money()->format(),
+                    self::ticket($line),
+                );
+            })
+            ->all();
     }
 
     /** " — ticket 2201234567, seat 12A", or nothing until the airline has issued one. */

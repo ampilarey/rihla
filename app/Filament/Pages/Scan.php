@@ -10,6 +10,7 @@ use App\Models\Document;
 use App\Models\RoomAssignment;
 use App\Services\Operations\Buses;
 use App\Services\Operations\Cards;
+use App\Services\Operations\Families;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -116,11 +117,22 @@ class Scan extends Page
         $member = $this->getMember();
         $booking = $member?->booking;
         $user = auth()->user();
+        // A lost child's tag is scanned by somebody who needs one number:
+        // the child's own, else the family head's, else the booker's.
+        $family = $member === null ? null : app(Families::class)->of($member);
 
         return [
             'card' => $this->getCard(),
             'member' => $member,
             'booking' => $booking,
+            'family' => $family,
+            'phone' => $member === null ? null : $family?->phoneFor($member),
+            'phoneSource' => match ($member === null ? null : $family?->phoneSourceFor($member)) {
+                'own' => 'their own',
+                'head' => 'family head',
+                'booker' => 'booker',
+                default => null,
+            },
             'rooms' => $member === null ? [] : $member->booking->departure->hotels
                 ->map(fn (DepartureHotel $hotel): array => ['city' => $hotel->cityLabel(), 'room' => self::roomIn($hotel, $member)])
                 ->all(),

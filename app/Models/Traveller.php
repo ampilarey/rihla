@@ -31,6 +31,10 @@ class Traveller extends Model
         // The national ID card's number (batch B from Hijaz). Written from an
         // accepted reading of the card, or typed; redacted in the audit trail.
         'national_id',
+        // A number that reaches them on the journey (families, batch C from
+        // Hijaz). Mostly the head's: the lists ring a member's own phone,
+        // else their family head's, else the booker's.
+        'phone',
     ];
 
     protected $casts = [
@@ -60,6 +64,49 @@ class Traveller extends Model
      * @var list<string>
      */
     public const RELATIONSHIPS = ['self', 'spouse', 'child', 'parent', 'sibling', 'relative', 'other'];
+
+    /**
+     * What the form says for each, to the person typing: the relationship
+     * is to whoever booked, which is how a family is grouped.
+     *
+     * @var array<string, string>
+     */
+    public const RELATIONSHIP_LABELS = [
+        'self' => 'The person who booked',
+        'spouse' => 'Their husband or wife',
+        'child' => 'Their son or daughter',
+        'parent' => 'Their father or mother',
+        'sibling' => 'Their brother or sister',
+        'relative' => 'Another relative',
+        'other' => 'Not related',
+    ];
+
+    /** @var array<string, array<string, string>> */
+    private const RELATIONSHIP_WORDS = [
+        'spouse' => [self::MALE => 'husband', self::FEMALE => 'wife'],
+        'child' => [self::MALE => 'son', self::FEMALE => 'daughter'],
+        'parent' => [self::MALE => 'father', self::FEMALE => 'mother'],
+        'sibling' => [self::MALE => 'brother', self::FEMALE => 'sister'],
+    ];
+
+    /**
+     * How this person stands to whoever booked them, in words: "the person
+     * who booked", "Aminath Ali's son", "a relative of Aminath Ali". Null
+     * while nobody has said. The gender picks the word where English has
+     * two, and falls back to the plain one where it is not recorded.
+     */
+    public function relationTo(string $booker): ?string
+    {
+        $relationship = trim((string) $this->relationship);
+
+        return match ($relationship) {
+            '' => null,
+            'self' => 'the person who booked',
+            'relative' => 'a relative of '.$booker,
+            'other' => 'travelling with '.$booker,
+            default => $booker.'\'s '.(self::RELATIONSHIP_WORDS[$relationship][(string) $this->gender] ?? $relationship),
+        };
+    }
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo

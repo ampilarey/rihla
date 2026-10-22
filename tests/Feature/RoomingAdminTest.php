@@ -158,9 +158,11 @@ class RoomingAdminTest extends TestCase
         [$hotel, $travellers] = $this->hotelWithParty();
         $room = Room::factory()->beds(2)->create(['departure_hotel_id' => $hotel->getKey()]);
 
+        // Just this person: the rest of the family is brought by default,
+        // which FamiliesTest covers.
         Livewire::actingAs($this->staff(Access::OPERATIONS_MANAGER))
             ->test(ListRooms::class)
-            ->callTableAction('assign', $room, ['traveller_id' => $travellers->first()->getKey()]);
+            ->callTableAction('assign', $room, ['traveller_id' => $travellers->first()->getKey(), 'with_family' => false]);
 
         $assignment = RoomAssignment::sole();
 

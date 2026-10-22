@@ -7,12 +7,14 @@ use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\BusGroup;
 use App\Services\Operations\Buses;
+use App\Services\Operations\Families;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -104,10 +106,12 @@ class BusGroupsTable
      * Put people on this bus.
      *
      * Offers everybody holding a seat on the departure who is not already
-     * on it, saying which bus they are on now; the service refuses anybody
-     * on another departure and reports a coach over capacity or a booking
-     * split across two, rather than blocking either — over capacity is
-     * sometimes deliberate for a short leg.
+     * on it, saying which bus they are on now. The rest of each chosen
+     * person's family comes too unless that is switched off — families
+     * travel together by default (batch C) — including from another bus.
+     * The service refuses anybody on another departure and reports a coach
+     * over capacity or a family split across two, rather than blocking
+     * either: over capacity is sometimes deliberate for a short leg.
      */
     private static function assignAction(): Action
     {
@@ -128,14 +132,26 @@ class BusGroupsTable
                         ->reject(fn (BookingTraveller $member): bool => $member->bus_group_id === $record->getKey())
                         ->mapWithKeys(fn (BookingTraveller $member): array => [
                             $member->getKey() => $member->traveller->full_name
-                                .' · '.$member->booking->customer->name
+                                .' · '.$member->booking->customer->name.'\'s family'
                                 .($member->busGroup ? ' · now on '.$member->busGroup->name : '')
                                 .($member->booking->status === Booking::HELD ? ' · not yet confirmed' : ''),
                         ])
                         ->all()),
+
+                Toggle::make('with_family')
+                    ->label('Bring the rest of their family')
+                    ->default(true)
+                    ->helperText('Everyone else the same person booked onto this departure, from whichever bus they are on now. Switch it off to split a family on purpose.'),
             ])
             ->action(function (BusGroup $record, array $data): void {
-                $result = app(Buses::class)->assign($record, array_values(array_map('intval', (array) $data['ids'])));
+                $ids = array_values(array_map('intval', (array) $data['ids']));
+
+                if ((bool) ($data['with_family'] ?? true)) {
+                    $ids = app(Families::class)->widen($ids, app(Buses::class)->candidates($record->departure)
+                        ->reject(fn (BookingTraveller $member): bool => $member->bus_group_id === $record->getKey()));
+                }
+
+                $result = app(Buses::class)->assign($record, $ids);
 
                 Notification::make()
                     ->success()

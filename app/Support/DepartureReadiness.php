@@ -579,15 +579,6 @@ final class DepartureReadiness
     }
 
     /**
-     * Buses — Hijaz's bus groups. Attention only, and silent until the
-     * office has made a bus: a confirmed traveller on no coach, a coach
-     * with more people than seats, a booking split across two, a bus with
-     * nobody named at its door. {@see Buses::problemsWith()} finds them;
-     * this says so on the board.
-     *
-     * @return list<array{area: string, severity: string, headline: string, detail: string}>
-     */
-    /**
      * Where the departure sits against its dates — batch C from Hijaz. The
      * state is moved by hand, so the dates say when a move looks overdue
      * and never make it. A departure leaving today is not late until
@@ -641,6 +632,15 @@ final class DepartureReadiness
         return [['area' => self::LIFECYCLE, 'severity' => $severity, 'headline' => $headline, 'detail' => $detail]];
     }
 
+    /**
+     * Buses — Hijaz's bus groups. Attention only, and silent until the
+     * office has made a bus: a confirmed traveller on no coach, a coach
+     * with more people than seats, a family split across two, a bus with
+     * nobody named at its door. {@see Buses::problemsWith()} finds them;
+     * this says so on the board.
+     *
+     * @return list<array{area: string, severity: string, headline: string, detail: string}>
+     */
     private static function busConcerns(Departure $departure): array
     {
         $problems = app(Buses::class)->problemsWith($departure);
