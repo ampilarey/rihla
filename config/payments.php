@@ -67,6 +67,7 @@ return [
         'accounts' => array_filter([
             'MVR' => env('PAYMENTS_BANK_ACCOUNT_MVR'),
             'USD' => env('PAYMENTS_BANK_ACCOUNT_USD'),
+            'SAR' => env('PAYMENTS_BANK_ACCOUNT_SAR'),
         ]),
     ],
 

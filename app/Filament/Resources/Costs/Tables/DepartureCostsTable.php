@@ -18,7 +18,8 @@ class DepartureCostsTable
                     ->label('Departure')
                     ->date('j M Y')
                     ->sortable()
-                    ->description(fn (DepartureCost $record): string => $record->departure->package->title ?? '—'),
+                    ->placeholder('The company')
+                    ->description(fn (DepartureCost $record): string => $record->departure->package->title ?? ($record->isCompany() ? 'no departure' : '—')),
 
                 TextColumn::make('category')
                     ->label('What for')

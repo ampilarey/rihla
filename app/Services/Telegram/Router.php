@@ -18,6 +18,7 @@ use App\Services\Payments\SlipVault;
 use App\Support\AuditContext;
 use App\Support\DepartureReadiness;
 use App\Support\Money;
+use App\Support\Rates;
 use Closure;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -689,15 +690,40 @@ class Router
 
         $rest = (string) preg_replace('/RIH-?B-?\d{4}-?\d{4}/i', '', $caption);
         $amount = null;
+        $details = ['notes' => 'Slip sent to the Telegram bot by '.$link->user->name.'.'];
 
-        if (preg_match('/\b(\d[\d,]*)\b/', $rest, $digits) === 1) {
-            $amount = Money::ofMajor((int) str_replace(',', '', $digits[1]), $booking->currency);
+        // "RIH-B-2026-0001 650 USD": money in another currency is credited
+        // at the day's rate from the table — never a rate made up here.
+        if (preg_match('/\b(\d[\d,]*)\b\s*([A-Za-z]{3})?/', $rest, $digits) === 1) {
+            $receivedIn = strtoupper((string) ($digits[2] ?? '')) ?: $booking->currency;
+
+            if (! in_array($receivedIn, Rates::currencies(), true)) {
+                $this->bot->sendMessage($chat, e($receivedIn).' is not a currency this office takes. '.e(implode(', ', Rates::currencies())).'.');
+
+                return;
+            }
+
+            $received = Money::ofMajor((int) str_replace(',', '', $digits[1]), $receivedIn);
+
+            if ($receivedIn === $booking->currency) {
+                $amount = $received;
+            } else {
+                try {
+                    $amount = Rates::toBase($received);
+                } catch (InvalidArgumentException $e) {
+                    $this->bot->sendMessage($chat, 'Not recorded: '.e($e->getMessage()));
+
+                    return;
+                }
+
+                $details += ['received_currency' => $receivedIn, 'received_minor' => $received->minor, 'exchange_rate' => Rates::rate($receivedIn)];
+            }
         } elseif ($booking->balance()->minor > 0) {
             $amount = $booking->balance();
         }
 
         if ($amount === null || $amount->minor < 1) {
-            $this->bot->sendMessage($chat, 'How much was sent? Put it after the reference, like <b>'.e((string) $booking->reference).' 10000</b>.');
+            $this->bot->sendMessage($chat, 'How much was sent? Put it after the reference, like <b>'.e((string) $booking->reference).' 10000</b> (or <b>650 USD</b>).');
 
             return;
         }
@@ -721,9 +747,7 @@ class Router
         file_put_contents($temporary, $bytes);
 
         try {
-            $payment = app(BankTransfer::class)->start($booking, $amount, [
-                'notes' => 'Slip sent to the Telegram bot by '.$link->user->name.'.',
-            ]);
+            $payment = app(BankTransfer::class)->start($booking, $amount, $details);
             app(SlipVault::class)->attach($payment, new UploadedFile($temporary, $name, $mime, null, true));
         } catch (InvalidArgumentException $e) {
             $this->bot->sendMessage($chat, 'Not recorded: '.e($e->getMessage()));
@@ -734,7 +758,7 @@ class Router
         }
 
         $this->bot->sendMessage($chat, implode("\n", [
-            '✅ <b>'.e((string) $payment->fresh()?->reference).'</b> recorded: '.e($amount->format()).' for '.e((string) $booking->reference).' · '.e((string) $booking->customer->name).'.',
+            '✅ <b>'.e((string) $payment->fresh()?->reference).'</b> recorded: '.e($amount->format()).($payment->receivedWords() ? ' (received '.e($payment->receivedWords()).')' : '').' for '.e((string) $booking->reference).' · '.e((string) $booking->customer->name).'.',
             'Finance verifies it next.',
         ]));
     }

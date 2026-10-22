@@ -62,7 +62,7 @@ final class Notifier
 
             $text = implode("\n", array_filter([
                 '<b>Payment to verify</b>',
-                e((string) $payment->reference).' · '.e($payment->money()->format()).' · '.e(str_replace('_', ' ', (string) $payment->method)),
+                e((string) $payment->reference).' · '.e($payment->money()->format()).($payment->receivedWords() ? ' (received '.e($payment->receivedWords()).')' : '').' · '.e(str_replace('_', ' ', (string) $payment->method)),
                 $booking instanceof Booking
                     ? 'For '.e((string) $booking->reference).' · '.e((string) $booking->customer->name)
                     : 'For a guesthouse stay',

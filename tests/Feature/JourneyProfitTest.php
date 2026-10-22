@@ -231,7 +231,7 @@ class JourneyProfitTest extends TestCase
         $this->assertSame(9_589_000, $profit->margin()->minor);
         $this->assertSame('MVR', $profit->margin()->currency);
         $this->assertSame(958_900, $profit->marginPerTraveller()->minor);
-        $this->assertStringContainsString('2026-09-01', (string) $profit->rateNote());
+        $this->assertStringContainsString('SAR 4.1100 from 1 Sep 2026', (string) $profit->rateNote());
     }
 
     /** A rate with no date is a rate nobody knows the age of. */
@@ -244,7 +244,7 @@ class JourneyProfitTest extends TestCase
         DepartureCost::factory()->inCurrency('SAR', 10_000)->create(['departure_id' => $departure->getKey()]);
 
         $this->assertStringContainsString(
-            'nobody has recorded when they were last checked',
+            'nobody has recorded when it was last checked',
             (string) JourneyProfit::build($departure)->rateNote(),
         );
     }

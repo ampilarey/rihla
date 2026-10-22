@@ -256,7 +256,12 @@
                                                         <span class="text-ink-muted">({{ __($tier->pax_type) }})</span>
                                                     @endif
                                                 </dt>
-                                                <dd class="font-semibold text-ink" dir="ltr">{{ $tier->formatted }}</dd>
+                                                <dd class="text-end font-semibold text-ink" dir="ltr">
+                                                    {{ $tier->formatted }}
+                                                    @if($equivalents = \App\Support\Rates::equivalentsWords($tier->money()))
+                                                        <span class="block text-xs font-normal text-ink-muted">{{ $equivalents }}</span>
+                                                    @endif
+                                                </dd>
                                             </div>
                                         @endforeach
                                     </dl>

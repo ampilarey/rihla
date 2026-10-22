@@ -22,6 +22,11 @@ return [
     | MVR is 1542.
     |
     */
+    // The currencies money may arrive in — batch C from Hijaz. Prices and
+    // balances stay in the base currency; a payment in another is credited
+    // at the rate in the exchange rate table (App\Support\Rates).
+    'currencies' => ['MVR', 'USD', 'SAR'],
+
     'rates' => [
         'to' => env('FINANCE_BASE_CURRENCY', 'MVR'),
 

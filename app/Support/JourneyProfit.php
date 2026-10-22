@@ -145,17 +145,15 @@ final class JourneyProfit
             .', and no exchange rate has been set for '
             .($missing->count() === 1 ? 'it' : 'them')
             .'. Adding those to '.$this->baseCurrency()
-            .' without a rate would be a made-up number, so the figures are kept apart. Set the rate in config/finance.php and this becomes one total.';
+            .' without a rate would be a made-up number, so the figures are kept apart. Set the rate under Bookings → Exchange rates and this becomes one total.';
     }
 
     /** @return Collection<int, string> */
     private function currenciesWithoutARate(): Collection
     {
-        $rates = (array) config('finance.rates', []);
-
         return $this->currencies()
             ->reject(fn (string $currency): bool => $currency === $this->baseCurrency()
-                || isset($rates[$currency]))
+                || Rates::rate($currency) !== null)
             ->values();
     }
 
@@ -198,10 +196,18 @@ final class JourneyProfit
             return null;
         }
 
-        $asOf = config('finance.rates.as_of');
+        $dates = $this->currencies()
+            ->reject(fn (string $currency): bool => $currency === $this->baseCurrency())
+            ->map(function (string $currency): string {
+                $asOf = Rates::asOf($currency);
 
-        return 'Converted to '.$this->baseCurrency().' at the rates in config/finance.php'
-            .($asOf ? ', set on '.$asOf : ', which carry no date — nobody has recorded when they were last checked').'.';
+                return $currency.' '.number_format((float) Rates::rate($currency), 4)
+                    .($asOf === null
+                        ? ', which carries no date — nobody has recorded when it was last checked'
+                        : ' from '.$asOf->format('j M Y'));
+            });
+
+        return 'Converted to '.$this->baseCurrency().' at '.$dates->join(', ', ' and ').' — the exchange rate table, or config/finance.php where it is silent.';
     }
 
     public function countingLabel(): string
@@ -223,9 +229,11 @@ final class JourneyProfit
         // foreign minor units are divided back out once. Integer division
         // throughout: a float here is the [R-7] mistake in the one place
         // it would be read as a margin.
-        $rate = (int) (config('finance.rates', [])[$money->currency] ?? 0);
-
-        return intdiv($money->minor * $rate, 100);
+        // The table Finance keeps, or config behind it, through the one
+        // place that reads either; a whole number of minor units, rounded
+        // once, because a float here is the [R-7] mistake in the one place
+        // it would be read as a margin.
+        return Rates::toBase($money)->minor;
     }
 
     /**

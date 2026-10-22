@@ -181,6 +181,19 @@ class Departure extends Model
             throw IllegalDepartureTransition::because('Set the seats before opening it for booking: with none, nothing can be sold.');
         }
 
+        if ($status === self::SETTLED) {
+            $estimates = DepartureCost::query()->where('departure_id', $this->getKey())->where('status', DepartureCost::ESTIMATED)->count();
+
+            if ($estimates > 0) {
+                throw IllegalDepartureTransition::because(sprintf(
+                    'Settling closes the books, and %d %s still %s. Mark each agreed or paid, or remove it, first.',
+                    $estimates,
+                    $estimates === 1 ? 'cost is' : 'costs are',
+                    $estimates === 1 ? 'an estimate' : 'estimates',
+                ));
+            }
+        }
+
         if ($status === self::CANCELLED) {
             $live = $this->bookings()->whereIn('status', [Booking::HELD, Booking::CONFIRMED])->count();
 
@@ -204,6 +217,12 @@ class Departure extends Model
             'reason' => $reason === null ? null : mb_substr(trim($reason), 0, 255),
             'created_at' => now(),
         ]);
+    }
+
+    /** @return HasMany<DepartureCost, $this> */
+    public function costs(): HasMany
+    {
+        return $this->hasMany(DepartureCost::class);
     }
 
     /** @return HasMany<DepartureEvent, $this> */

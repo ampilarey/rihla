@@ -259,6 +259,8 @@ final class Anonymisation
         // opens nothing on its own — the Scan page needs a staff login
         // and `card.scan` before it resolves one.
         'cards',
+        // What a dollar was worth on a day; set by staff, about nobody.
+        'exchange_rates',
         // An amount and a date; the person is on the booking.
         'payment_schedules',
         'departure_costs',

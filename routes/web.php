@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BooksController;
 use App\Http\Controllers\DevicesController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
@@ -393,6 +394,12 @@ Route::middleware(['auth', 'mfa'])->group(function () {
         Route::get('/hotel/{departureHotel}/rooms', 'roomList')->name('rooms');
         Route::get('/cards/{kind}', 'cards')->name('cards')->whereIn('kind', ['customer', 'luggage']);
     });
+
+    // The company books as CSV (batch C from Hijaz): the same door as the
+    // lists, for the same reasons, gated by `books.view` in the controller.
+    Route::get('/staff-books/{report}', [BooksController::class, 'csv'])
+        ->name('books.csv')
+        ->whereIn('report', ['cash', 'months', 'owed', 'collections']);
 });
 
 // Admin routes (require authentication and admin privileges)

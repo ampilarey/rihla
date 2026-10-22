@@ -53,7 +53,7 @@ class PaymentsTable
                     ->color(fn (Payment $record): string => $record->isRefund() ? 'danger' : 'gray')
                     ->description(fn (Payment $record): ?string => $record->isRefund()
                         ? 'Refund of '.($record->refundOf->reference ?? 'an earlier payment')
-                        : null),
+                        : $record->receivedWords()),
 
                 TextColumn::make('method')
                     ->visibleFrom('md')

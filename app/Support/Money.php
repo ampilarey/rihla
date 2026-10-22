@@ -21,6 +21,7 @@ final class Money
     private const MINOR_UNITS = [
         'MVR' => 100,   // laari
         'USD' => 100,   // cents
+        'SAR' => 100,   // halalas — batch C from Hijaz: what the Saudi side is paid in
     ];
 
     private function __construct(
