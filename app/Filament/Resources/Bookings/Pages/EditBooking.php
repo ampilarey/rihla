@@ -12,8 +12,10 @@ use App\Models\NusukPermit;
 use App\Models\Payment;
 use App\Models\PortalAccess;
 use App\Models\SeatHold;
+use App\Models\Traveller;
 use App\Services\Booking\SeatAllocator;
 use App\Services\Nusuk\PermitDesk;
+use App\Services\Operations\Families;
 use App\Services\Payments\Gateways;
 use App\Services\Payments\SlipVault;
 use App\Services\Portal\Gatekeeper;
@@ -35,7 +37,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
- * One booking, and the eight things staff can do to it.
+ * One booking, and the things staff can do to it.
  *
  * Every action goes through the domain rather than writing a column:
  * {@see Booking::transitionTo()} refuses an illegal move and records who and
@@ -56,6 +58,7 @@ class EditBooking extends EditRecord
             $this->invoiceAction(),
             $this->discountAction(),
             $this->ticketsAction(),
+            $this->familyAction(),
             $this->portalLinkAction(),
             $this->confirmAction(),
             $this->openVisasAction(),
@@ -466,6 +469,117 @@ class EditBooking extends EditRecord
 
                 Notification::make()->success()->title('Tickets saved')->send();
             });
+    }
+
+    /**
+     * The family, batch C from Hijaz: who heads it, how each traveller is
+     * related to the person who booked, and a phone that works on the
+     * journey. One small form for the whole party, like the tickets.
+     *
+     * The head may be anybody in the family, including somebody on the
+     * booker's other booking for this departure; the relationships and
+     * phones are this booking's people, and the other booking's are set
+     * from that booking.
+     */
+    private function familyAction(): Action
+    {
+        return Action::make('family')
+            ->label('Family')
+            ->icon('heroicon-o-user-group')
+            ->color('gray')
+            ->visible(fn (): bool => auth()->user()?->can('booking.update') === true
+                && $this->booking()->travellers->isNotEmpty())
+            ->modalHeading('The family')
+            ->modalDescription('The head holds the family\'s documents and is the one we call, so give them a phone that works on the journey. Each relationship is to the person who booked.')
+            ->fillForm(fn (): array => [
+                'head' => app(Families::class)->forBooking($this->booking())?->head->getKey(),
+                'people' => $this->booking()->travellers
+                    ->mapWithKeys(fn (BookingTraveller $line): array => [
+                        $line->getKey() => [
+                            'relationship' => $line->traveller->relationship,
+                            'phone' => $line->traveller->phone,
+                        ],
+                    ])
+                    ->all(),
+            ])
+            ->schema(fn (): array => [
+                Select::make('head')
+                    ->label('Head of the family')
+                    ->required()
+                    ->native(false)
+                    ->options(fn (): array => $this->familyOptions())
+                    ->helperText('Holds the passports, tickets and papers for everybody, and is who the office and the tour leader ring.'),
+
+                ...$this->booking()->travellers
+                    ->map(fn (BookingTraveller $line): Section => Section::make($line->traveller->full_name)
+                        ->columns(2)
+                        ->schema([
+                            Select::make('people.'.$line->getKey().'.relationship')
+                                ->label('To the person who booked')
+                                ->native(false)
+                                ->options(Traveller::RELATIONSHIP_LABELS),
+                            TextInput::make('people.'.$line->getKey().'.phone')
+                                ->label('Phone on the journey')
+                                ->tel()
+                                ->maxLength(40),
+                        ]))
+                    ->all(),
+            ])
+            ->action(function (array $data): void {
+                $booking = $this->booking();
+
+                foreach ($booking->travellers as $line) {
+                    $typed = $data['people'][$line->getKey()] ?? [];
+                    $relationship = $typed['relationship'] ?? null;
+                    $current = $line->traveller->relationship;
+
+                    $line->traveller->update([
+                        // The column is free-form and the form offers a list:
+                        // a value the list does not have is kept, not blanked
+                        // because the select could not show it.
+                        'relationship' => match (true) {
+                            in_array($relationship, Traveller::RELATIONSHIPS, true) => $relationship,
+                            $current !== null && ! in_array($current, Traveller::RELATIONSHIPS, true) => $current,
+                            default => null,
+                        },
+                        'phone' => trim((string) ($typed['phone'] ?? '')) ?: null,
+                    ]);
+                }
+
+                $families = app(Families::class);
+                $head = $families->forBooking($booking)?->members
+                    ->first(fn (BookingTraveller $member): bool => (int) $member->getKey() === (int) ($data['head'] ?? 0));
+
+                if ($head instanceof BookingTraveller) {
+                    $families->makeHead($head);
+                }
+
+                Notification::make()->success()->title('Family saved')->send();
+            });
+    }
+
+    /**
+     * Everybody in this booking's family, for the head select: this
+     * booking's people by name, anybody on another of the booker's
+     * bookings with the booking they are on.
+     *
+     * @return array<int, string>
+     */
+    private function familyOptions(): array
+    {
+        $booking = $this->booking();
+        $family = app(Families::class)->forBooking($booking);
+
+        if ($family === null) {
+            return [];
+        }
+
+        return $family->members
+            ->mapWithKeys(fn (BookingTraveller $member): array => [
+                $member->getKey() => $member->traveller->full_name
+                    .((int) $member->booking_id === (int) $booking->getKey() ? '' : ' · on '.$member->booking->reference),
+            ])
+            ->all();
     }
 
     private function booking(): Booking

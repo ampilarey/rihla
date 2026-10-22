@@ -89,7 +89,7 @@ class BookingDeskForm
                 ]),
 
             Section::make('Who is travelling')
-                ->description('Everyone on the booking, with the room they share. The price comes from the departure\'s list by room and by age on the departure day; a child is priced as an adult where the departure has no child price, exactly as the website does.')
+                ->description('Everyone on the booking, with the room they share. The price comes from the departure\'s list by room and by age on the departure day; a child is priced as an adult where the departure has no child price, exactly as the website does. The first person is the head of the family: they hold its documents and are the one we call, and the booking\'s Family button changes it later.')
                 ->schema([
                     Repeater::make('party')
                         ->hiddenLabel()
@@ -107,6 +107,8 @@ class BookingDeskForm
                                     Select::make('gender')->options(array_combine(Traveller::GENDERS, array_map('ucfirst', Traveller::GENDERS)))->native(false),
                                     TextInput::make('passport_number')->label('Passport number')->maxLength(40),
                                     DatePicker::make('passport_expiry')->label('Passport expires')->native(false),
+                                    Select::make('relationship')->label('To the person who booked')->options(Traveller::RELATIONSHIP_LABELS)->native(false),
+                                    TextInput::make('phone')->label('Phone on the journey')->tel()->maxLength(40),
                                 ])
                                 ->createOptionUsing(function (array $data, Get $get): ?int {
                                     $customerId = $get('../../customer_id');

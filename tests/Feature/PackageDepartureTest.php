@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `travellers.phone` (families). No foreign key, but
+        // left recorded while the booking domain is dropped and re-created
+        // below, the table would come back without it.
+        __DIR__.'/../../database/migrations/2026_10_26_100000_give_travellers_a_phone.php',
         // Newest of all: `departure_costs.departure_id` becomes nullable,
         // which the re-created table would otherwise come back without.
         __DIR__.'/../../database/migrations/2026_10_25_100000_let_costs_belong_to_the_company.php',

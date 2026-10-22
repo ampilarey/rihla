@@ -41,7 +41,7 @@ class RetentionReport extends Command
     /** @var array<string, string> table => what it holds, in plain words */
     private const CATEGORIES = [
         'customers' => 'names, contacts, national IDs',
-        'travellers' => 'passport numbers, dates of birth, medical notes',
+        'travellers' => 'passport numbers, dates of birth, medical notes, phones',
         'documents' => 'identity documents (the files are on disk)',
         'enquiries' => 'people who asked and may never have booked',
         'assistant_exchanges' => 'questions put to the assistant',

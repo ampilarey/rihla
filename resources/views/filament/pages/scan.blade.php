@@ -36,8 +36,11 @@
                     <div><dt class="fi-color-gray" style="font-size:.75rem;">Money</dt><dd style="margin:0;">{{ $balance }}</dd></div>
                 @endif
                 <div><dt class="fi-color-gray" style="font-size:.75rem;">Passport</dt><dd style="margin:0;">{{ $passport }}{{ $member->traveller->passport_expiry ? ' · expires '.$member->traveller->passport_expiry->format('j M Y') : '' }}</dd></div>
-                @if ($booking->customer->phone)
-                    <div><dt class="fi-color-gray" style="font-size:.75rem;">Phone (booker)</dt><dd style="margin:0;"><a href="{{ \App\Support\Contact::telUrlFor($booking->customer->phone) }}">{{ $booking->customer->phone }}</a></dd></div>
+                @if ($family)
+                    <div><dt class="fi-color-gray" style="font-size:.75rem;">Family head</dt><dd style="margin:0;">{{ $family->isHead($member) ? 'This person' : $family->head->traveller->full_name }}</dd></div>
+                @endif
+                @if ($phone)
+                    <div><dt class="fi-color-gray" style="font-size:.75rem;">Phone ({{ $phoneSource }})</dt><dd style="margin:0;"><a href="{{ \App\Support\Contact::telUrlFor($phone) }}">{{ $phone }}</a></dd></div>
                 @endif
                 @if ($member->traveller->medical_notes)
                     <div><dt class="fi-color-gray" style="font-size:.75rem;">Needs</dt><dd style="margin:0;">{{ $member->traveller->medical_notes }}</dd></div>

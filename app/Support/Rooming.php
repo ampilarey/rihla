@@ -29,9 +29,13 @@ use Illuminate\Support\Collection;
  * - **Mixed gender** in a room not designated `family`. A `family` room is
  *   mixed on purpose; a room with no designation at all is reported as
  *   undesignated rather than assumed either way.
- * - **A child with no adult in the room.** Age at the departure date, not
- *   today. The threshold is configuration because it is a safeguarding
- *   judgement rather than a fact.
+ * - **A child with no adult of their family in the room.** Age at the
+ *   departure date, not today. The threshold is configuration because it
+ *   is a safeguarding judgement rather than a fact. Their family, because a
+ *   stranger's company is not supervision (families, batch C): a family is
+ *   whoever one person booked, and a traveller belongs to the customer who
+ *   books them — BookingDesk refuses anything else — so a child's family
+ *   is the adults who share their `customer_id`.
  * - **Somebody in two rooms in the same hotel.** The database forbids the
  *   same room twice; two different rooms is a separate mistake and the
  *   commonest one after a re-plan.
@@ -183,21 +187,28 @@ final class Rooming
             return [];
         }
 
-        $adults = $occupants->filter(function (Traveller $traveller) use ($under, $travelDate): bool {
-            $age = $traveller->ageOn($travelDate);
+        $familiesWithAnAdult = $occupants
+            ->filter(function (Traveller $traveller) use ($under, $travelDate): bool {
+                $age = $traveller->ageOn($travelDate);
 
-            return $age === null || $age >= $under;
-        });
+                return $age === null || $age >= $under;
+            })
+            ->map(fn (Traveller $traveller): int => (int) $traveller->customer_id)
+            ->unique();
 
-        if ($adults->isNotEmpty()) {
+        // Child by child: two families' children in one room with one
+        // family's mother leaves the other family's children alone.
+        $alone = $children->reject(fn (Traveller $child): bool => $familiesWithAnAdult->contains((int) $child->customer_id));
+
+        if ($alone->isEmpty()) {
             return [];
         }
 
         return [[
             'type' => self::UNACCOMPANIED_CHILD,
             'room' => $room->label,
-            'who' => $children->pluck('full_name')->implode(', '),
-            'detail' => sprintf('Under %d, with no adult in the room.', $under),
+            'who' => $alone->pluck('full_name')->implode(', '),
+            'detail' => sprintf('Under %d, with no adult of their family in the room.', $under),
         ]];
     }
 

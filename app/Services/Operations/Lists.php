@@ -42,6 +42,9 @@ final class Lists
         'ministry' => 'Ministry list (passport, date of birth, nationality)',
     ];
 
+    /** Said under every list that prints a phone, because the column falls back. */
+    private const PHONE_NOTE = 'Phone is the traveller\'s own, or else their family head\'s, or else the person who booked.';
+
     /**
      * Bookings whose people are on a list: holding a seat while the money
      * comes in, confirmed, or home. A draft is a checkout somebody walked
@@ -51,7 +54,10 @@ final class Lists
      */
     public const LISTED = [Booking::HELD, Booking::CONFIRMED, Booking::COMPLETED];
 
-    public function __construct(private readonly Documents $documents) {}
+    public function __construct(
+        private readonly Documents $documents,
+        private readonly Families $families,
+    ) {}
 
     /**
      * @param  Collection<int, BookingTraveller>|null  $only  a selection of the departure's travellers, or everybody
@@ -79,13 +85,13 @@ final class Lists
         $rows = [];
 
         foreach ($travellers->values() as $i => $member) {
-            $rows[] = $this->row($member, $i + 1, $context, $withMoney);
+            $rows[] = $this->row($member, $i + 1, $context, $withMoney, markHead: $preset === 'office');
         }
 
         $notes = [];
 
         if ($preset === 'office') {
-            $notes[] = 'A booking not yet confirmed is marked *. Phone is the person who booked.';
+            $notes[] = 'A booking not yet confirmed is marked *. (head) marks the head of each family, who holds its documents. '.self::PHONE_NOTE;
 
             if ($withMoney) {
                 $notes[] = 'Paid shows what is still owed on the booking.';
@@ -109,14 +115,12 @@ final class Lists
         $departure = $bus->departure;
         $context = $this->context($departure);
 
-        $members = $bus->members()->with(['traveller', 'booking.customer', 'busGroup'])->get()
-            ->sortBy(fn (BookingTraveller $member): string => $member->booking->customer->name.' '.$member->traveller->full_name)
-            ->values();
+        $members = $this->inFamilies($bus->members()->with(['traveller', 'booking.customer', 'busGroup'])->get(), $context);
 
         $rows = [];
 
         foreach ($members as $i => $member) {
-            $rows[] = $this->row($member, $i + 1, $context, false) + [
+            $rows[] = $this->row($member, $i + 1, $context, false, markHead: true) + [
                 'tick' => $member->isCheckedIn() ? '☑' : '☐',
                 'needs' => $this->needs($member),
             ];
@@ -130,15 +134,16 @@ final class Lists
             columns: ['tick' => '✓', 'n' => '#', 'name' => 'Name', 'phone' => 'Phone', 'booked_by' => 'Booked by', ...$this->roomColumns($context['hotels']), 'needs' => 'Needs / emergency'],
             rows: $rows,
             landscape: true,
-            notes: ['Tick the box as each person boards. Phone is the person who booked.'],
+            notes: ['Tick the box as each person boards. (head) marks the head of each family, who holds its documents. '.self::PHONE_NOTE],
             filename: $this->slug($departure).'-'.Str::slug($bus->name),
         );
     }
 
-    /** The hotel's copy has no phone numbers and no booker; the office copy has both. */
+    /** The hotel's copy has no phone numbers and no booker; the office copy has both, and marks each family's head. */
     public function roomList(DepartureHotel $hotel, bool $forHotel = false): ListDocument
     {
         $rows = [];
+        $families = $this->families->onDeparture($hotel->departure);
 
         foreach ($hotel->rooms()->with(['assignments.traveller.customer'])->get() as $room) {
             $occupants = $room->occupants();
@@ -150,14 +155,26 @@ final class Lists
             }
 
             foreach ($occupants as $traveller) {
+                // A traveller belongs to the customer who books them, so
+                // their family is the one booked under that customer.
+                $family = $families->get((int) $traveller->customer_id);
+                $member = $family?->memberFor((int) $traveller->getKey());
+                $isHead = false;
+                $phone = trim((string) $traveller->phone) !== '' ? (string) $traveller->phone : (string) $traveller->customer->phone;
+
+                if ($family !== null && $member !== null) {
+                    $isHead = $family->isHead($member);
+                    $phone = (string) ($family->phoneFor($member) ?? $phone);
+                }
+
                 $rows[] = [
                     'room' => $room->label,
                     'beds' => $room->capacity,
                     'type' => $room->genderLabel(),
-                    'name' => $traveller->full_name,
+                    'name' => $traveller->full_name.(! $forHotel && $isHead ? ' (head)' : ''),
                     'passport' => (string) $traveller->passport_number,
                     'nationality' => (string) $traveller->nationality,
-                    'phone' => (string) $traveller->customer->phone,
+                    'phone' => $phone,
                     'booked_by' => (string) $traveller->customer->name,
                 ];
             }
@@ -175,6 +192,7 @@ final class Lists
             columns: $columns,
             rows: $rows,
             landscape: false,
+            notes: $forHotel ? [] : ['(head) marks the head of each family, who holds its documents. '.self::PHONE_NOTE],
             filename: $this->slug($departure).'-'.Str::slug((string) $hotel->city).'-rooms'.($forHotel ? '-hotel' : ''),
         );
     }
@@ -233,11 +251,12 @@ final class Lists
         foreach ($travellers as $i => $member) {
             $passport = $passports->get($member->traveller_id);
             $key = $member->booking_id.'-'.$member->traveller_id;
+            $family = $context['families']->get((int) $member->booking->customer_id);
 
             $rows[] = [
                 'n' => $i + 1,
-                'name' => $member->traveller->full_name,
-                'phone' => (string) $member->booking->customer->phone,
+                'name' => $member->traveller->full_name.($family?->isHead($member) === true ? ' (head)' : ''),
+                'phone' => $this->phoneOf($member, $context),
                 'passport_copy' => match (true) {
                     ! $passport instanceof Document || $passport->currentVersion() === null => 'missing',
                     $passport->status === Document::VERIFIED => 'verified',
@@ -257,6 +276,7 @@ final class Lists
             columns: ['n' => '#', 'name' => 'Name', 'phone' => 'Phone', 'passport_copy' => 'Passport copy', 'expiry' => 'Expiry', 'visa' => 'Visa', 'permit' => 'Umrah permit', 'ticket' => 'Ticket'],
             rows: $rows,
             landscape: true,
+            notes: ['(head) marks the head of each family, who holds its documents: ask them for what the family still owes. '.self::PHONE_NOTE],
             filename: $this->slug($departure).'-documents',
         );
     }
@@ -269,21 +289,21 @@ final class Lists
 
     /**
      * Everybody on this departure's listed bookings, confirmed first, then
-     * by who booked them.
+     * by who booked them, each family together with its head first.
      *
      * @return Collection<int, BookingTraveller>
      */
     public function travellers(Departure $departure): Collection
     {
-        return BookingTraveller::query()
+        $members = BookingTraveller::query()
             ->whereIn(
                 'booking_id',
                 Booking::query()->where('departure_id', $departure->getKey())->whereIn('status', self::LISTED)->select('id'),
             )
             ->with(['traveller', 'booking.customer', 'busGroup'])
-            ->get()
-            ->sortBy(fn (BookingTraveller $member): string => ($member->booking->status === Booking::HELD ? '1' : '0').$member->booking->customer->name.' '.$member->traveller->full_name)
-            ->values();
+            ->get();
+
+        return $this->inFamilies($members, ['families' => $this->families->group($members)]);
     }
 
     // ── Internals ────────────────────────────────────────────────────────
@@ -292,7 +312,7 @@ final class Lists
      * What every row needs and no row should query for itself: the hotels,
      * who is in which room, and where each visa and permit stands.
      *
-     * @return array{hotels: Collection<int, DepartureHotel>, rooms: array<int, array<int, string>>, visas: array<string, string>, permits: array<string, string>}
+     * @return array{hotels: Collection<int, DepartureHotel>, rooms: array<int, array<int, string>>, visas: array<string, string>, permits: array<string, string>, families: Collection<int, TravellingFamily>}
      */
     private function context(Departure $departure): array
     {
@@ -320,7 +340,49 @@ final class Lists
             $permits[$permit->booking_id.'-'.$permit->traveller_id] = str_replace('_', ' ', (string) $permit->status);
         }
 
-        return ['hotels' => $hotels, 'rooms' => $rooms, 'visas' => $visas, 'permits' => $permits];
+        return [
+            'hotels' => $hotels,
+            'rooms' => $rooms,
+            'visas' => $visas,
+            'permits' => $permits,
+            // Every family on the departure, not only those on the page, so
+            // a selection or one bus still knows who heads each family.
+            'families' => $this->families->onDeparture($departure),
+        ];
+    }
+
+    /**
+     * Members in list order: unconfirmed last, then by who booked them,
+     * each family together with its head first.
+     *
+     * @param  Collection<int, BookingTraveller>  $members  with traveller and booking.customer loaded
+     * @param  array{families: Collection<int, TravellingFamily>}  $context
+     * @return Collection<int, BookingTraveller>
+     */
+    private function inFamilies(Collection $members, array $context): Collection
+    {
+        return $members
+            ->sortBy(fn (BookingTraveller $member): string => implode("\0", [
+                $member->booking->status === Booking::HELD ? '1' : '0',
+                $member->booking->customer->name,
+                sprintf('%012d', $member->booking->customer_id),
+                $context['families']->get((int) $member->booking->customer_id)?->isHead($member) === true ? '0' : '1',
+                $member->traveller->full_name,
+            ]))
+            ->values();
+    }
+
+    /**
+     * The number to ring about somebody: their own, or else their family
+     * head's, or else the person who booked them.
+     *
+     * @param  array{families: Collection<int, TravellingFamily>}  $context
+     */
+    private function phoneOf(BookingTraveller $member, array $context): string
+    {
+        $family = $context['families']->get((int) $member->booking->customer_id);
+
+        return (string) ($family?->phoneFor($member) ?? $member->booking->customer->phone);
     }
 
     /**
@@ -335,24 +397,29 @@ final class Lists
     /**
      * Every fact a list might print about one person; the columns choose.
      *
-     * @param  array{hotels: Collection<int, DepartureHotel>, rooms: array<int, array<int, string>>, visas: array<string, string>, permits: array<string, string>}  $context
+     * `$markHead` adds "(head)" to the name, for the lists the office and
+     * the leader read; never for the airline, hotel or ministry, whose
+     * name column must be the name as on the passport.
+     *
+     * @param  array{hotels: Collection<int, DepartureHotel>, rooms: array<int, array<int, string>>, visas: array<string, string>, permits: array<string, string>, families: Collection<int, TravellingFamily>}  $context
      * @return array<string, string|int|null>
      */
-    private function row(BookingTraveller $member, int $n, array $context, bool $withMoney): array
+    private function row(BookingTraveller $member, int $n, array $context, bool $withMoney, bool $markHead = false): array
     {
         $traveller = $member->traveller;
         $booking = $member->booking;
         $key = $booking->getKey().'-'.$traveller->getKey();
+        $isHead = $markHead && $context['families']->get((int) $booking->customer_id)?->isHead($member) === true;
 
         $row = [
             'n' => $n,
-            'name' => $traveller->full_name.($booking->status === Booking::HELD ? ' *' : ''),
+            'name' => $traveller->full_name.($isHead ? ' (head)' : '').($booking->status === Booking::HELD ? ' *' : ''),
             'passport' => (string) $traveller->passport_number,
             'nationality' => (string) $traveller->nationality,
             'expiry' => $traveller->passport_expiry?->format('d/m/Y') ?? '',
             'dob' => $traveller->date_of_birth?->format('d/m/Y') ?? '',
             'gender' => $traveller->gender === null ? '' : strtoupper(substr((string) $traveller->gender, 0, 1)),
-            'phone' => (string) $booking->customer->phone,
+            'phone' => $this->phoneOf($member, $context),
             'booked_by' => (string) $booking->customer->name,
             'booking' => (string) $booking->reference,
             'bus' => (string) $member->busGroup?->name,

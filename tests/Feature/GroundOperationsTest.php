@@ -106,15 +106,15 @@ class GroundOperationsTest extends TestCase
         $this->assertSame(['Mariyam Waheed 1: on another departure'], $result['skipped']);
         $this->assertNull($elsewhere->travellers->first()->fresh()->bus_group_id);
 
-        // Moving one of Ali's party splits the booking across two coaches.
+        // Moving one of Ali's party splits the family across two coaches.
         $third = $ali->travellers->last();
         $result = $buses->assign($bus2, [$third->getKey()]);
         $this->assertSame(1, $result['assigned']);
-        $this->assertContains("Aminath Ali's booking is split across Bus 1 and Bus 2.", $result['warnings']);
+        $this->assertContains("Aminath Ali's family is split across Bus 1 and Bus 2.", $result['warnings']);
         $this->assertSame($bus2->getKey(), $third->fresh()->bus_group_id);
 
         $types = array_column($buses->problemsWith($departure), 'type');
-        $this->assertContains(Buses::SPLIT_BOOKING, $types);
+        $this->assertContains(Buses::SPLIT_FAMILY, $types);
         $this->assertContains(Buses::NO_LEADER, $types, 'Bus 2 has nobody at its door and the departure has no tour leader.');
         $this->assertContains(Buses::UNASSIGNED, $types, 'Hassan\'s party is on no bus.');
         $this->assertNotContains(Buses::OVER_CAPACITY, $types, 'Bus 1 is back to two of two.');
@@ -129,7 +129,7 @@ class GroundOperationsTest extends TestCase
         $types = array_column($buses->problemsWith($departure), 'type');
         $this->assertContains(Buses::OVER_CAPACITY, $types);
         $this->assertNotContains(Buses::NO_LEADER, $types);
-        $this->assertNotContains(Buses::SPLIT_BOOKING, $types);
+        $this->assertNotContains(Buses::SPLIT_FAMILY, $types);
 
         // Taking people off, and deleting a bus, leave nobody on a coach that is gone.
         $this->assertSame(1, $buses->unassign([$third->getKey()]));
@@ -187,8 +187,8 @@ class GroundOperationsTest extends TestCase
 
         $office = $lists->manifest($departure, 'office');
         $this->assertCount(3, $office->rows, 'Two confirmed, one held; the cancelled booking is nobody travelling.');
-        $this->assertSame('Aminath Ali 1', $office->rows[0]['name']);
-        $this->assertSame('Hassan Ibrahim 1 *', $office->rows[2]['name'], 'Held is listed last and marked.');
+        $this->assertSame('Aminath Ali 1 (head)', $office->rows[0]['name'], 'Each family\'s head is marked on the office list.');
+        $this->assertSame('Hassan Ibrahim 1 (head) *', $office->rows[2]['name'], 'Held is listed last and marked.');
         $this->assertSame('176-1234567890', $office->rows[0]['ticket']);
         $this->assertSame('Bus 1', $office->rows[0]['bus']);
         $this->assertSame('1204', $office->rows[0]['room_'.$hotel->getKey()]);
@@ -202,6 +202,7 @@ class GroundOperationsTest extends TestCase
         $airline = $lists->manifest($departure, 'airline');
         $this->assertSame(['n', 'name', 'passport', 'nationality', 'dob', 'gender', 'expiry', 'ticket', 'seat'], array_keys($airline->columns));
         $this->assertSame('14A', $airline->rows[0]['seat']);
+        $this->assertSame('Aminath Ali 1', $airline->rows[0]['name'], 'The airline is handed the name as on the passport.');
 
         $csv = $office->csv();
         $this->assertStringStartsWith("\xEF\xBB\xBF", $csv, 'A byte-order mark, so Excel reads the names as letters.');
@@ -219,7 +220,8 @@ class GroundOperationsTest extends TestCase
         $office = $lists->roomList($hotel);
         $hotelCopy = $lists->roomList($hotel, forHotel: true);
         $this->assertSame('1204', $office->rows[0]['room']);
-        $this->assertSame('Aminath Ali 1', $office->rows[0]['name']);
+        $this->assertSame('Aminath Ali 1 (head)', $office->rows[0]['name']);
+        $this->assertSame('Aminath Ali 1', $hotelCopy->rows[0]['name'], 'The hotel copy carries no family markers.');
         $this->assertArrayHasKey('phone', $office->columns);
         $this->assertArrayNotHasKey('phone', $hotelCopy->columns, 'The hotel is handed names and passports, not phone numbers.');
         $this->assertArrayNotHasKey('booked_by', $hotelCopy->columns);
