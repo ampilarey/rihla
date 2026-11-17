@@ -16,7 +16,6 @@ use App\Services\Stays\Commission;
 use App\Support\HostRole;
 use Carbon\CarbonImmutable;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -186,10 +185,14 @@ class HostStatementsTest extends TestCase
         $owner = $this->owner();
         $this->inPanel($owner);
 
-        $this->expectException(ModelNotFoundException::class);
+        // Livewire answers a record outside the tenant with a 404 rather than
+        // letting ModelNotFoundException escape (it changed in 4.4.8); either
+        // way nothing of the other host's is rendered or downloaded.
         Livewire::actingAs($owner)->test(Earnings::class)
             ->assertDontSee($statement->reference)
-            ->call('downloadStatement', $statement->id);
+            ->call('downloadStatement', $statement->id)
+            ->assertNotFound()
+            ->assertNoFileDownloaded();
     }
 
     public function test_reception_never_reaches_a_statement(): void

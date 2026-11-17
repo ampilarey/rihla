@@ -19,7 +19,6 @@ use App\Support\Access;
 use App\Support\HostRole;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -94,8 +93,12 @@ class HostListingsTest extends TestCase
 
         $this->inPanel($this->host);
 
-        $this->expectException(ModelNotFoundException::class);
-        Livewire::actingAs($this->owner)->test(EditListing::class, ['record' => $theirs->getRouteKey()]);
+        // Livewire answers a record outside the tenant with a 404 rather than
+        // letting ModelNotFoundException escape (it changed in 4.4.8); either
+        // way nothing of the other host's is rendered or downloaded.
+        Livewire::actingAs($this->owner)->test(EditListing::class, ['record' => $theirs->getRouteKey()])
+            ->assertNotFound()
+            ->assertDontSee($theirs->name);
     }
 
     /** Even a record that reached the policy by some other route is refused. */
