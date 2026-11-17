@@ -80,6 +80,20 @@ class ContentSecurityPolicyTest extends TestCase
     }
 
     /** Each of these closes a way around script-src. */
+    /**
+     * The site's Inter comes from Bunny Fonts, whose stylesheet now points
+     * its font files at jsdelivr's Fontsource mirror. Blocked, every weight
+     * fell back to the system face and Lighthouse failed on console errors.
+     */
+    public function test_the_font_hosts_the_stylesheets_name_are_allowed(): void
+    {
+        preg_match('/font-src ([^;]+)/', $this->policy('/en'), $fontSrc);
+
+        foreach (['https://fonts.bunny.net', 'https://cdn.jsdelivr.net'] as $host) {
+            $this->assertStringContainsString($host, $fontSrc[1] ?? '');
+        }
+    }
+
     public function test_the_policy_closes_the_usual_side_doors(): void
     {
         $policy = $this->policy();
@@ -160,8 +174,13 @@ class ContentSecurityPolicyTest extends TestCase
         $this->assertSame([], $offenders);
         $this->assertFileExists(public_path('vendor/sortablejs/Sortable.min.js'));
 
-        $this->assertStringNotContainsString('cdn.jsdelivr.net', $this->policy('/en'),
+        // Script origins only: jsdelivr is allowed for fonts, because Bunny
+        // Fonts serves its files from there, and that is no script origin.
+        preg_match('/script-src ([^;]+)/', $this->policy('/en'), $scriptSrc);
+        $this->assertStringNotContainsString('cdn.jsdelivr.net', $scriptSrc[1] ?? '',
             'No third-party script origin should be needed.');
+        $this->assertStringNotContainsString('https:', $scriptSrc[1] ?? '',
+            'No third-party script origin of any kind.');
     }
 
     /**
