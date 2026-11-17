@@ -75,6 +75,21 @@ function audit(url, file) {
   }
 }
 
+// What a failing audit actually saw — the console line, the DevTools
+// issue, the URL — so a red run says what to fix. Without it the log said
+// only "Browser errors were logged to the console" and the cause could not
+// be told from a runner quirk.
+function detailOf(audit) {
+  return (audit.details?.items ?? []).slice(0, 5).map((item) => {
+    const text = [item.source, item.description ?? item.issueType ?? item.url, item.url && item.description ? item.url : null]
+      .filter(Boolean)
+      .join(' · ')
+    const sub = (item.subItems?.items ?? []).slice(0, 2).map((s) => JSON.stringify(s)).join(' ')
+
+    return `          ${String(text).slice(0, 300)}${sub ? ' ' + sub.slice(0, 300) : ''}`
+  })
+}
+
 const failures = []
 const warnings = []
 const rows = []
@@ -102,7 +117,7 @@ for (const path of budget.urls) {
       .filter((ref) => (ref.weight ?? 0) > 0)
       .map((ref) => report.audits[ref.id])
       .filter((audit) => audit.score !== null && audit.score < 1)
-      .map((audit) => `      ${audit.id}: ${audit.title}`)
+      .flatMap((audit) => [`      ${audit.id}: ${audit.title}`, ...detailOf(audit)])
 
     const message = [
       `${path} — ${name} scored ${Math.round(score * 100)}, below ${Math.round(rule.min * 100)}`,
