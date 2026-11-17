@@ -163,6 +163,9 @@
     @php($hidesVisitorCallsToAction = request()->routeIs('admin.*') || request()->routeIs('leader.*'))
 
     <div class="min-h-screen bg-gray-50 overflow-x-hidden">
+        {{-- The test site only, naming the build it runs; never on rihla.mv. --}}
+        <x-test-site-banner />
+
         <!-- Topbar -->
         {{-- Every control up here is a 44px target: the language links were
              19px and the two buttons 32px, small enough that a thumb aiming

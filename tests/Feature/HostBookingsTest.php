@@ -28,7 +28,6 @@ use App\Support\Audience;
 use App\Support\HostRole;
 use App\Support\Money;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -147,8 +146,9 @@ class HostBookingsTest extends TestCase
 
         $this->inPanel();
 
-        $this->expectException(ModelNotFoundException::class);
-        $this->booking($theirs);
+        // Livewire answers a missing record with a 404 rather than letting
+        // the exception out (since 4.4.8); either way nothing of theirs shows.
+        $this->booking($theirs)->assertNotFound()->assertDontSee($theirs->reference);
     }
 
     public function test_reception_runs_the_desk(): void
