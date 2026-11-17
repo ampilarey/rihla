@@ -19,7 +19,6 @@ use App\Support\Access;
 use App\Support\HostRole;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -94,8 +93,11 @@ class HostListingsTest extends TestCase
 
         $this->inPanel($this->host);
 
-        $this->expectException(ModelNotFoundException::class);
-        Livewire::actingAs($this->owner)->test(EditListing::class, ['record' => $theirs->getRouteKey()]);
+        // Livewire answers a missing record with a 404 rather than letting
+        // the exception out (since 4.4.8); either way nothing of theirs shows.
+        Livewire::actingAs($this->owner)->test(EditListing::class, ['record' => $theirs->getRouteKey()])
+            ->assertNotFound()
+            ->assertDontSee($theirs->name);
     }
 
     /** Even a record that reached the policy by some other route is refused. */
