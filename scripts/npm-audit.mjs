@@ -11,14 +11,15 @@
 import { execFileSync } from 'node:child_process';
 
 const ACCEPTED = {
-    // braces: stack-exhaustion DoS through deeply nested glob patterns.
-    // Every published version is affected and none is patched. It reaches
-    // this project only through Tailwind 3's build tooling (chokidar,
-    // micromatch, fast-glob), which runs on a developer's machine or CI over
-    // patterns this repository writes, and never in a browser or on the
-    // server. npm's only fix is Tailwind 4, a breaking upgrade; remove this
-    // entry when that lands. Accepted by the owner, October 2026.
-    'GHSA-vfj7-8cjw-p6xm': 'braces, via Tailwind 3 build tooling only',
+    // picomatch: ReDoS through single-branch repeated extglobs. Every
+    // published version up to 4.0.7 is affected and none is patched; npm's
+    // only "fix" is a semver-major move of Vite to 6.2.7, a downgrade. It
+    // reaches this project only through build tooling (Vite, Tailwind 3's
+    // chokidar and micromatch, laravel-vite-plugin), which runs on a
+    // developer's machine or CI over patterns this repository writes, and
+    // never in a browser or on the server. Remove this entry when a patched
+    // picomatch is published. Accepted by the owner, November 2026.
+    'GHSA-fc5q-39xc-vjpf': 'picomatch, via build tooling only',
 };
 
 const FAILS_AT = new Set(['high', 'critical']);
