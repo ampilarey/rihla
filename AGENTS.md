@@ -51,6 +51,7 @@ playlist that reached the live site.
 - Server script: `scripts/pull-deploy-test.sh` (path `/home/rihla/test.rihla.mv`). Production is never auto-deployed.
 - Setup: `docs/TEST_AUTO_DEPLOY.md`. Requires GitHub environment `test` secret `TEST_DEPLOY_WEBHOOK_SECRET` and the same value in TEST `.env`. Cron fallback: `scripts/install-self-update-cron-test.sh`.
 - Webhook needs public DNS for `test.rihla.mv`; cron works on-server without it.
+- **The test site wears a red bar naming the build it runs** (`<x-test-site-banner />` in the public layout, `App\Support\TestSite`). It is decided by the same host rule the webhook uses to refuse production, so it rides `main` to rihla.mv and stays hidden there; `TestSiteBannerTest` asserts the negative on `rihla.mv`, `www.rihla.mv` and localhost. Check a deploy by reading the build on test.rihla.mv, not by assuming the webhook's 202 meant anything.
 
 - Blade layouts use `@vite`, so views require either the Vite dev server running OR a prior `npm run build`. Without one of these, page rendering (and any feature test that renders a view) throws "Vite manifest not found".
 - Admin users are NOT seeded. Create one with `php artisan admin:create <email> <password>` (sets `is_admin=true`). `/admin` is gated by an admin check and redirects to `/login` when unauthenticated.

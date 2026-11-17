@@ -63,8 +63,10 @@ bash /home/rihla/test.rihla.mv/scripts/install-self-update-cron-test.sh
 ## After a push to `main`
 
 1. Open Actions → **Deploy TEST (immediate)** — should go green within ~1 minute
-2. Refresh https://test.rihla.mv/
+2. Refresh https://test.rihla.mv/ — the red bar across the top names the build the site is running; it should match the merge's commit
 3. Optional: `tail -f ~/self-update-test.log` on the server
+
+The red bar shows on the test site only (`App\Support\TestSite`, the same host rule the webhook uses to refuse production), so it rides `main` to rihla.mv and never appears there.
 
 ## Disable webhook
 
