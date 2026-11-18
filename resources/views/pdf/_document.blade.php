@@ -108,8 +108,8 @@
     @if(config('invoices.tax.note'))
         <p>{{ config('invoices.tax.note') }}</p>
     @endif
-    @if(config('invoices.terms.note'))
-        <p>{{ config('invoices.terms.note') }}</p>
+    @if(filled(\App\Support\CompanyDetails::terms()))
+        <p>{{ \App\Support\CompanyDetails::terms() }}</p>
     @endif
     <p>{{ __('messages.Questions about this document? Message us on :number.', ['number' => $issuer['phone']]) }}</p>
     {{-- A host's bill carries Rihla's line under the host's own — §16.10. --}}

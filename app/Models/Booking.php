@@ -7,6 +7,7 @@ use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasNotices;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\TakesPayments;
+use App\Support\CompanyDetails;
 use App\Support\Money;
 use App\Support\PackageSnapshot;
 use Illuminate\Database\Eloquent\Builder;
@@ -125,7 +126,7 @@ class Booking extends Model implements TakesPayments
     {
         return sprintf(
             '%s-%s-%s',
-            config('booking.reference.prefix', 'RIH-B'),
+            CompanyDetails::referencePrefix($this->company_id, 'B', (string) config('booking.reference.prefix', 'RIH-B')),
             ($this->created_at ?? now())->format('Y'),
             str_pad((string) $this->getKey(), (int) config('booking.reference.pad', 4), '0', STR_PAD_LEFT),
         );
