@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Partner;
 use App\Models\TelegramUpdate;
 use App\Services\Telegram\Bot;
 use App\Services\Telegram\Router;
+use App\Support\CompanyContext;
+use App\Support\CompanyRequest;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +23,24 @@ use Throwable;
  */
 class TelegramWebhookController extends Controller
 {
+    /**
+     * A company's own bot (companies plan, Phase 2d). Everything after this
+     * works for that company: its links, its staff's roles there, its
+     * records, its bot's token for every reply. A slug that is not an Umrah
+     * company with a bot answers exactly as no bot at all does.
+     */
+    public function forCompany(Request $request, Router $router, string $company): JsonResponse
+    {
+        $partner = Partner::where('slug', $company)->where('is_umrah_company', true)->where('is_rihla', false)->first();
+
+        abort_if($partner === null || blank($partner->telegram_bot_token), 404);
+
+        app(CompanyContext::class)->use((int) $partner->getKey());
+        $request->attributes->set(CompanyRequest::ATTRIBUTE, $partner);
+
+        return $this->__invoke($request, $router);
+    }
+
     public function __invoke(Request $request, Router $router): JsonResponse
     {
         if (! Bot::isConfigured()) {

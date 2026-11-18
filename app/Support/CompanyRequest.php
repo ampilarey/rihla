@@ -32,7 +32,14 @@ final class CompanyRequest
 
         $company = request()->attributes->get(self::ATTRIBUTE);
 
-        return $company instanceof Partner ? $company : null;
+        if ($company instanceof Partner) {
+            return $company;
+        }
+
+        // Work done for a company outside any panel or link: its own bot's
+        // webhook, or a scheduled command working through companies in turn
+        // (Phase 2d). Working for a company means holding your role there.
+        return CompanyDetails::company();
     }
 
     /**

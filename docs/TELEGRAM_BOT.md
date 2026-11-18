@@ -73,3 +73,22 @@ next message as it.
 `data:anonymise` empties the three Telegram tables, so a restored copy of
 production starts with nobody linked and a test bot cannot message real
 staff.
+
+## Each Umrah company's own bot (companies plan, Phase 2d)
+
+A company connects its own bot from its panel: **Company details →
+Telegram bot**. The owner creates a bot with @BotFather and pastes the
+token. On save, the site asks Telegram to send that bot's messages to the
+company's own webhook (`/api/telegram/company/{company}/webhook`), with a
+secret derived from the company. A token Telegram refuses is not kept.
+
+- The token is encrypted at rest, never shown again, and scrubbed by
+  `data:anonymise`.
+- Everything that bot does works for that company only. A chat links to a
+  company's staff member through that company's bot. Their permissions
+  are their role at the company, and the replies and the morning summary
+  come from the company's own bot.
+- A company with no bot sends nothing. It never borrows Rihla's.
+- The "one bot per site" rule above applies to company bots too. Paste a
+  company's token on **one** site only (production), or the test server's
+  save would take the webhook from production.

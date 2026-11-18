@@ -173,6 +173,7 @@ class CompanyRecordsTest extends TestCase
         // slugs (1e) and customer login (1c) index this column, and MySQL refuses to
         // drop a column an index still names.
         $later = [
+            require __DIR__.'/../../database/migrations/2026_11_19_120000_give_each_company_its_own_bot.php',
             require __DIR__.'/../../database/migrations/2026_11_18_120000_make_public_slugs_per_company.php',
             require __DIR__.'/../../database/migrations/2026_11_18_110000_make_a_customer_login_per_company.php',
         ];

@@ -89,6 +89,9 @@ final class Anonymisation
             // An Umrah company's own details (companies plan, Phase 2c): its
             // street address and the account pilgrims pay into.
             'address' => 'text', 'bank_account_name' => 'name', 'bank_accounts' => 'null',
+            // Its own bot's token (Phase 2d): a restored copy of production
+            // must never be able to message a company's real staff.
+            'telegram_bot_token' => 'null',
         ],
         // Every account, the administrators included. The password hash is
         // left alone rather than set to something known: nobody should be

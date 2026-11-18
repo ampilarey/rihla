@@ -3,6 +3,7 @@
 namespace App\Filament\Company\Pages;
 
 use App\Models\Partner;
+use App\Services\Telegram\Bot;
 use App\Support\CompanyRole;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -13,6 +14,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Throwable;
 
 /**
  * What the company's own documents and payment instructions say about it —
@@ -74,6 +76,8 @@ class CompanySettings extends Page
             'bank_account_name' => $company->bank_account_name,
             'bank_accounts' => $company->bank_accounts ?? [],
             'invoice_terms' => $company->invoice_terms,
+            // Never sent to the browser.
+            'telegram_bot_token' => null,
         ]);
     }
 
@@ -121,6 +125,21 @@ class CompanySettings extends Page
                         ),
                     ]),
 
+                Section::make('Telegram bot')
+                    ->description('Your own bot, so your team gets alerts and answers from your company\'s name. Create one with @BotFather in Telegram and paste the token it gives you. Leave it empty to keep it as it is.')
+                    ->schema([
+                        TextInput::make('telegram_bot_token')
+                            ->label('Bot token')
+                            ->password()
+                            ->revealable()
+                            ->maxLength(100)
+                            ->regex('/^\d+:[A-Za-z0-9_-]{30,}$/')
+                            ->validationMessages(['regex' => 'That does not look like a token from BotFather (numbers, a colon, then letters).'])
+                            ->helperText(fn (): string => filled($this->company()->telegram_bot_token)
+                                ? 'A bot is connected. Paste a new token only to replace it.'
+                                : 'No bot connected yet.'),
+                    ]),
+
                 Section::make('Terms')
                     ->schema([
                         Textarea::make('invoice_terms')
@@ -159,6 +178,41 @@ class CompanySettings extends Page
             'invoice_terms' => $data['invoice_terms'] ?: null,
         ])->save();
 
+        // A token is never sent back to the browser, so an empty box means
+        // "keep the one we have" (companies plan, Phase 2d).
+        if (filled($data['telegram_bot_token'] ?? null)) {
+            $this->connectBot($company, (string) $data['telegram_bot_token']);
+            $this->form->fill([...$this->form->getRawState(), 'telegram_bot_token' => null]);
+
+            return;
+        }
+
         Notification::make()->success()->title('Saved')->send();
+    }
+
+    /**
+     * Store the company's bot token and point the bot at this company's own
+     * webhook. Telegram is asked first: a token it does not accept is not
+     * stored, so the panel never claims a bot that cannot answer.
+     */
+    private function connectBot(Partner $company, string $token): void
+    {
+        $previous = $company->telegram_bot_token;
+        $company->forceFill(['telegram_bot_token' => $token])->save();
+
+        $url = rtrim((string) config('app.url'), '/').route('api.telegram.company.webhook', ['company' => $company->slug], false);
+
+        try {
+            app(Bot::class)->setWebhook($url);
+        } catch (Throwable $e) {
+            $company->forceFill(['telegram_bot_token' => $previous])->save();
+            Notification::make()->danger()->title('Saved, but the bot was not connected')
+                ->body('Telegram did not accept that token. Check it in @BotFather and paste it again.')
+                ->send();
+
+            return;
+        }
+
+        Notification::make()->success()->title('Saved, and your bot is connected')->send();
     }
 }

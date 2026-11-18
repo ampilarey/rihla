@@ -16,6 +16,7 @@ use App\Support\Access;
 use App\Support\CompanyContext;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
@@ -101,8 +102,18 @@ class CompanyWallTest extends TestCase
         $this->assertFalse(Gate::forUser($admin)->allows('view', $theirs));
         $this->assertFalse(Gate::forUser($admin)->allows('update', $theirs));
 
-        // Their own context lets it through to the normal checks.
-        $this->assertTrue(app(CompanyContext::class)->as($coral->id, fn () => Gate::forUser($admin)->allows('update', $theirs)));
+        // In their own context the record is no longer refused as another
+        // company's, and the normal checks decide, from each person's role
+        // *at that company* (Phase 2d): their own booking staff may, and
+        // Rihla's Super Admin, who works there in no role, may not.
+        $theirStaff = User::factory()->create();
+        DB::table('company_memberships')->insert([
+            'company_id' => $coral->id, 'user_id' => $theirStaff->id, 'role' => Access::BOOKING_STAFF,
+            'accepted_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $inTheirs = fn (User $user): bool => app(CompanyContext::class)->as($coral->id, fn () => Gate::forUser($user)->allows('update', $theirs));
+        $this->assertTrue($inTheirs($theirStaff));
+        $this->assertFalse($inTheirs($admin));
     }
 
     public function test_rihlas_operator_tools_see_every_company(): void

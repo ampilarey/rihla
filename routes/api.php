@@ -21,3 +21,9 @@ Route::post('/deploy/test-pull', TestDeployWebhookController::class)
 Route::post('/telegram/webhook', TelegramWebhookController::class)
     ->middleware('throttle:120,1')
     ->name('api.telegram.webhook');
+
+// Each Umrah company's own bot (companies plan, Phase 2d): the same
+// handler, working for that company only. 404 for a company with no bot.
+Route::post('/telegram/company/{company}/webhook', [TelegramWebhookController::class, 'forCompany'])
+    ->middleware('throttle:120,1')
+    ->name('api.telegram.company.webhook');

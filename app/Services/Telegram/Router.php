@@ -16,6 +16,7 @@ use App\Services\Operations\Lists;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Services\Payments\SlipVault;
 use App\Support\AuditContext;
+use App\Support\CompanyRequest;
 use App\Support\DepartureReadiness;
 use App\Support\Money;
 use App\Support\Rates;
@@ -153,7 +154,10 @@ class Router
             '/me' => $this->bot->sendMessage($chat, implode("\n", [
                 '<b>'.e($user->name).'</b>',
                 e($user->email),
-                'Role: '.e($user->getRoleNames()->implode(', ') ?: 'none'),
+                // At a company's own bot, the person's role there (Phase 2d).
+                'Role: '.e(($company = CompanyRequest::current()) !== null
+                    ? ($user->roleAtCompany($company) ?? 'none')
+                    : ($user->getRoleNames()->implode(', ') ?: 'none')),
                 'Linked '.e($link->linked_at->diffForHumans()).'.',
             ])),
             '/today' => $this->bot->sendMessage($chat, $this->summary->for($user)),
