@@ -11,6 +11,7 @@ use App\Models\Stay;
 use App\Models\Traveller;
 use App\Support\Anonymisation;
 use App\Support\AuditContext;
+use App\Support\CompanyContext;
 use App\Support\Forgetting;
 use App\Support\PhoneNumber;
 use Illuminate\Console\Command;
@@ -56,7 +57,16 @@ class ForgetCustomer extends Command
     /** Booking statuses that mean the journey is not finished with. */
     private const LIVE = [Booking::DRAFT, Booking::HELD, Booking::CONFIRMED];
 
+    /**
+     * Rihla's operator tool, so it sees every company's rows by design
+     * (companies plan, Phase 1b); nothing a company's staff can start.
+     */
     public function handle(): int
+    {
+        return app(CompanyContext::class)->acrossEveryCompany(fn (): int => $this->work());
+    }
+
+    private function work(): int
     {
         $unreached = Forgetting::unreached();
 

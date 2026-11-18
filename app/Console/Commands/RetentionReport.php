@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\CompanyContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -48,7 +49,16 @@ class RetentionReport extends Command
         'audit_logs' => 'who did what in the staff panel',
     ];
 
+    /**
+     * Rihla's operator tool, so it sees every company's rows by design
+     * (companies plan, Phase 1b); nothing a company's staff can start.
+     */
     public function handle(): int
+    {
+        return app(CompanyContext::class)->acrossEveryCompany(fn (): int => $this->work());
+    }
+
+    private function work(): int
     {
         $rows = [];
         $anyPolicy = false;

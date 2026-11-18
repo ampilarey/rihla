@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use App\Models\Article;
 use App\Models\AuditLog;
 use App\Models\Booking;
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\DepartureChecklistItem;
@@ -67,7 +68,9 @@ use App\Policies\WaitlistEntryPolicy;
 use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
 use App\Support\Access;
+use App\Support\CompanyContext;
 use App\Support\HostContext;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -113,6 +116,25 @@ class AuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // A record of another company is refused before anything else can
+        // answer, the Super Admin grant below included (companies plan,
+        // Phase 1b). The global scope already hides such a record from
+        // every query; this is the second wall, for one reached some other
+        // way (a scope removed, a model built by hand). Null otherwise, so
+        // every other check runs as before.
+        Gate::before(function ($user, string $ability, array $arguments) {
+            foreach ($arguments as $argument) {
+                if ($argument instanceof Model
+                    && in_array(BelongsToCompany::class, class_uses_recursive($argument), true)
+                    && $argument->exists
+                    && ! app(CompanyContext::class)->owns($argument->getAttribute('company_id') === null ? null : (int) $argument->getAttribute('company_id'))) {
+                    return false;
+                }
+            }
+
+            return null;
+        });
+
         // Super Admin is granted everything here rather than by holding every
         // permission. A permission added later is then covered automatically,
         // instead of silently locking out the one role that must never be

@@ -43,16 +43,54 @@ class CompanyContext
         return $this->id;
     }
 
-    /** Work for one company for the length of a callback, then go back. */
-    public function as(int $companyId, callable $callback): mixed
+    private bool $everyCompany = false;
+
+    /**
+     * The company every Umrah query is narrowed to, or null for none: on a
+     * schema with no Rihla record, and inside {@see acrossEveryCompany()}.
+     */
+    public function scopeId(): ?int
     {
-        [$id, $resolved] = [$this->id, $this->resolved];
-        [$this->id, $this->resolved] = [$companyId, true];
+        return $this->everyCompany ? null : $this->id();
+    }
+
+    /**
+     * Run a callback with no company scope at all.
+     *
+     * For Rihla's operator tools that must see every company's rows by
+     * design: `data:forget`, `data:anonymise`, backups. Never for a page,
+     * and never for anything a company's staff can start.
+     */
+    public function acrossEveryCompany(callable $callback): mixed
+    {
+        $was = $this->everyCompany;
+        $this->everyCompany = true;
 
         try {
             return $callback();
         } finally {
-            [$this->id, $this->resolved] = [$id, $resolved];
+            $this->everyCompany = $was;
+        }
+    }
+
+    /** Whether a record belongs to the current company, or there is no scope to break. */
+    public function owns(?int $companyId): bool
+    {
+        $scope = $this->scopeId();
+
+        return $scope === null || $companyId === $scope;
+    }
+
+    /** Work for one company for the length of a callback, then go back. */
+    public function as(int $companyId, callable $callback): mixed
+    {
+        [$id, $resolved, $every] = [$this->id, $this->resolved, $this->everyCompany];
+        [$this->id, $this->resolved, $this->everyCompany] = [$companyId, true, false];
+
+        try {
+            return $callback();
+        } finally {
+            [$this->id, $this->resolved, $this->everyCompany] = [$id, $resolved, $every];
         }
     }
 }

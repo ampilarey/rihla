@@ -5,6 +5,7 @@ namespace App\Models\Concerns;
 use App\Exceptions\CompanyMismatch;
 use App\Models\Partner;
 use App\Support\CompanyContext;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -49,6 +50,17 @@ trait BelongsToCompany
 
     public static function bootBelongsToCompany(): void
     {
+        // Phase 1b: every query, a record reached by id included, sees the
+        // current company's rows only. Qualified, so a join cannot make the
+        // column ambiguous; skipped when there is no scope to apply.
+        static::addGlobalScope('company', function (Builder $query): void {
+            $company = app(CompanyContext::class)->scopeId();
+
+            if ($company !== null) {
+                $query->where($query->qualifyColumn('company_id'), $company);
+            }
+        });
+
         static::creating(function (self $row): void {
             $row->settleCompany();
         });
