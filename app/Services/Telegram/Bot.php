@@ -2,6 +2,7 @@
 
 namespace App\Services\Telegram;
 
+use App\Support\CompanyDetails;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -13,14 +14,38 @@ use RuntimeException;
  */
 class Bot
 {
-    public static function isConfigured(): bool
+    /**
+     * The token of the bot that speaks for the current company: Rihla's
+     * from configuration, or another company's own (companies plan, Phase
+     * 2d). A company with no bot has none; it never borrows Rihla's, which
+     * would message its staff from somebody else's name.
+     */
+    public static function token(): ?string
     {
-        return filled(config('telegram.bot_token'));
+        $company = CompanyDetails::company();
+        $token = $company === null ? config('telegram.bot_token') : $company->telegram_bot_token;
+
+        return filled($token) ? (string) $token : null;
     }
 
-    /** The secret Telegram echoes back on every webhook call. */
+    public static function isConfigured(): bool
+    {
+        return self::token() !== null;
+    }
+
+    /**
+     * The secret Telegram echoes back on every webhook call. Each company's
+     * bot has its own, derived from the company, so one company's secret
+     * opens no other company's webhook.
+     */
     public static function webhookSecret(): string
     {
+        $company = CompanyDetails::company();
+
+        if ($company !== null) {
+            return substr(hash('sha256', 'telegram-webhook|company|'.$company->getKey().'|'.config('app.key')), 0, 48);
+        }
+
         $configured = config('telegram.webhook_secret');
 
         if (filled($configured)) {
@@ -119,7 +144,7 @@ class Bot
     public function download(string $filePath): string
     {
         return Http::timeout(60)
-            ->get(rtrim((string) config('telegram.api_base'), '/').'/file/bot'.config('telegram.bot_token').'/'.$filePath)
+            ->get(rtrim((string) config('telegram.api_base'), '/').'/file/bot'.self::token().'/'.$filePath)
             ->throw()
             ->body();
     }
@@ -132,7 +157,8 @@ class Bot
     /** The bot's username, from config or from Telegram, cached for a day. */
     public function username(): ?string
     {
-        $configured = config('telegram.bot_username');
+        $company = CompanyDetails::company();
+        $configured = $company === null ? config('telegram.bot_username') : null;
 
         if (filled($configured)) {
             return ltrim((string) $configured, '@');
@@ -142,7 +168,10 @@ class Bot
             return null;
         }
 
-        return cache()->remember('telegram.bot_username', now()->addDay(), function (): ?string {
+        // Cached per bot, so one company's name is never shown for another.
+        $key = 'telegram.bot_username'.($company === null ? '' : '.'.$company->getKey().'.'.substr(hash('sha256', (string) self::token()), 0, 12));
+
+        return cache()->remember($key, now()->addDay(), function (): ?string {
             $username = $this->getMe()->json('result.username');
 
             return is_string($username) ? $username : null;
@@ -153,7 +182,7 @@ class Bot
     private function call(string $method, array $params): Response
     {
         if (! self::isConfigured()) {
-            throw new RuntimeException('TELEGRAM_BOT_TOKEN is not set.');
+            throw new RuntimeException('No Telegram bot token is set for this company.');
         }
 
         return Http::timeout(15)->asJson()->post($this->url($method), $params)->throw();
@@ -161,6 +190,6 @@ class Bot
 
     private function url(string $method): string
     {
-        return rtrim((string) config('telegram.api_base'), '/').'/bot'.config('telegram.bot_token').'/'.$method;
+        return rtrim((string) config('telegram.api_base'), '/').'/bot'.self::token().'/'.$method;
     }
 }

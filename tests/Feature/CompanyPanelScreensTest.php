@@ -105,15 +105,20 @@ class CompanyPanelScreensTest extends TestCase
         $this->get(route('lists.manifest', ['departure' => $booking->departure_id] + $as))->assertOk();
         $this->get(route('staff.invoice', ['booking' => $booking->id] + $as))->assertOk();
 
-        // Without it the request is Rihla's, and a company member is nobody there.
-        $this->get(route('lists.manifest', ['departure' => $booking->departure_id]))->assertForbidden();
+        // Without it the request is Rihla's, where their departure does not
+        // exist at all. Each production request starts with a fresh context;
+        // a test making several requests in a row has to say so.
+        $this->app->forgetScopedInstances();
+        $this->get(route('lists.manifest', ['departure' => $booking->departure_id]))->assertNotFound();
 
         // Naming their own company does not reach Rihla's departure.
+        $this->app->forgetScopedInstances();
         $this->get(route('lists.manifest', ['departure' => $rihlas->departure_id] + $as))->assertNotFound();
 
         // A company slug is not a credential: Rihla's own Super Admin, who is
         // no member, is answered as if the company did not exist.
         $admin = User::factory()->create()->assignRole(Access::SUPER_ADMIN);
+        $this->app->forgetScopedInstances();
         $this->actingAs($admin)->get(route('lists.manifest', ['departure' => $booking->departure_id] + $as))->assertNotFound();
 
         // A link made on a company's screen carries the company itself.

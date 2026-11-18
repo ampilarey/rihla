@@ -122,6 +122,9 @@ class Partner extends Model
     /** @var list<string> */
     public const GREEN_TAX_MODES = [self::GREEN_TAX_INCLUDED, self::GREEN_TAX_AT_PROPERTY];
 
+    /** Never serialised: a bot token is a credential. */
+    protected $hidden = ['telegram_bot_token'];
+
     /** @var array<string, string> */
     protected $casts = [
         'commission_pct' => 'integer',
@@ -129,6 +132,10 @@ class Partner extends Model
         'is_rihla' => 'boolean',
         'is_umrah_company' => 'boolean',
         'bank_accounts' => 'array',
+        // A company's own Telegram bot (companies plan, Phase 2d). A
+        // credential, so ciphertext at rest; scrubbed to null by
+        // data:anonymise, which the cast reads back as null.
+        'telegram_bot_token' => 'encrypted',
         'registration_expires_on' => 'date',
         'verified_at' => 'datetime',
         'terms_accepted_at' => 'datetime',

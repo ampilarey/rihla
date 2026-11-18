@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\TelegramLink;
 use App\Services\Telegram\Bot;
 use App\Services\Telegram\DailySummary;
+use App\Support\CompanyContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -16,10 +17,27 @@ class TelegramDaily extends Command
 
     protected $description = 'Send the morning summary to every linked staff member';
 
-    public function handle(Bot $bot, DailySummary $summary): int
+    public function handle(Bot $bot, DailySummary $summary, CompanyContext $companies): int
+    {
+        // Each company's linked staff, from that company's own bot and with
+        // that company's numbers (companies plan, Phase 2d); Rihla's first,
+        // as before. A company with no bot of its own sends nothing.
+        $rihla = $companies->rihlaId();
+        $withLinks = $companies->acrossEveryCompany(fn () => TelegramLink::query()->active()->distinct()->pluck('company_id'))
+            ->prepend($rihla);
+
+        $sent = array_sum($companies->eachCompany($withLinks, fn (): int => $this->sendFor($bot, $summary)));
+
+        $this->info("Sent {$sent} summaries.");
+
+        return self::SUCCESS;
+    }
+
+    /** The current company's summaries, one per linked person. */
+    private function sendFor(Bot $bot, DailySummary $summary): int
     {
         if (! Bot::isConfigured()) {
-            return self::SUCCESS;
+            return 0;
         }
 
         $sent = 0;
@@ -33,8 +51,6 @@ class TelegramDaily extends Command
             }
         });
 
-        $this->info("Sent {$sent} summaries.");
-
-        return self::SUCCESS;
+        return $sent;
     }
 }

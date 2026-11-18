@@ -28,7 +28,10 @@ final class CompanyDetails
             return null;
         }
 
-        return once(fn (): ?Partner => Partner::find($id));
+        // Not memoised: `once()` keys on the call site, not on $id, so a
+        // command working through companies in turn would be handed the
+        // first one's details for all of them.
+        return Partner::find($id);
     }
 
     /**

@@ -13,6 +13,7 @@ use App\Filament\Pages\NusukGate;
 use App\Filament\Pages\Performance;
 use App\Filament\Pages\Profitability;
 use App\Filament\Pages\Scan;
+use App\Filament\Pages\Telegram;
 use App\Filament\Pages\Today;
 use App\Filament\Pages\VisaBatch;
 use App\Filament\Pages\WhoSendsUsPeople;
@@ -123,8 +124,7 @@ class CompanyPanelProvider extends PanelProvider
 
     /**
      * Rihla's Umrah pages, served here too. Not the AI drafting page (it
-     * spends Rihla's API key), not the Telegram link page (each company's
-     * own bot is Phase 2d), and nothing behind `admin.access`.
+     * spends Rihla's API key), and nothing behind `admin.access`.
      *
      * @var list<class-string<Page>>
      */
@@ -140,6 +140,8 @@ class CompanyPanelProvider extends PanelProvider
         Forecast::class,
         Performance::class,
         WhoSendsUsPeople::class,
+        // Linking a phone to the company's own bot (Phase 2d).
+        Telegram::class,
     ];
 
     public function panel(Panel $panel): Panel

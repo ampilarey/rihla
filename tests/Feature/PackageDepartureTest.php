@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `telegram_updates` unique on `(update_id,
+        // company_id)` (companies plan, Phase 2d). It names `company_id`, so
+        // it must roll back before the company column below can go.
+        __DIR__.'/../../database/migrations/2026_11_19_120000_give_each_company_its_own_bot.php',
         // Newest of all: `packages.slug` and `people.slug` unique per company
         // (companies plan, Phase 1e). Left recorded while `packages` is
         // re-created below, it would come back with the old rule.
