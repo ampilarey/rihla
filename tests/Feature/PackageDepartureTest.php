@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `customers.user_id` unique per company (companies
+        // plan, Phase 1c). Left recorded while the booking domain is
+        // re-created below, `customers` would come back with the old rule.
+        __DIR__.'/../../database/migrations/2026_11_18_110000_make_a_customer_login_per_company.php',
         // Newest of all: `company_id` on every Umrah table (companies plan,
         // Phase 1a). No foreign key, but left recorded while the booking
         // domain is dropped and re-created below, the tables would come

@@ -168,6 +168,12 @@ class CompanyRecordsTest extends TestCase
         // (AGENTS.md: a fresh-database assertion never sees this state).
         $package = Package::factory()->create();
         $migration = require self::MIGRATION;
+
+        // Rolled back in the order migrate:rollback would: the per-company
+        // customer login (1c) indexes this column, and MySQL refuses to
+        // drop a column an index still names.
+        $later = require __DIR__.'/../../database/migrations/2026_11_18_110000_make_a_customer_login_per_company.php';
+        $later->down();
         $migration->down();
         $this->assertFalse(Schema::hasColumn('packages', 'company_id'));
 
@@ -175,6 +181,7 @@ class CompanyRecordsTest extends TestCase
         DB::table('partners')->where('is_rihla', true)->update(['id' => 77]);
 
         $migration->up();
+        $later->up();
 
         $this->assertSame(77, (int) DB::table('packages')->where('id', $package->id)->value('company_id'));
     }

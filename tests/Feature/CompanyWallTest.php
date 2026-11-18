@@ -4,11 +4,17 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
+use App\Models\BookingTraveller;
+use App\Models\Card;
 use App\Models\Customer;
 use App\Models\Partner;
+use App\Models\Traveller;
 use App\Models\User;
+use App\Services\Documents\Reading\Duplicates;
+use App\Services\Operations\Cards;
 use App\Support\Access;
 use App\Support\CompanyContext;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -106,6 +112,50 @@ class CompanyWallTest extends TestCase
 
         $this->assertSame(2, app(CompanyContext::class)->acrossEveryCompany(fn () => Booking::count()));
         $this->assertSame(1, Booking::count(), 'And the scope comes straight back afterwards.');
+    }
+
+    public function test_one_login_can_be_a_customer_of_two_companies_but_twice_of_none(): void
+    {
+        $coral = $this->coral();
+        $user = User::factory()->create();
+
+        $ours = Customer::factory()->create(['user_id' => $user->id]);
+        $theirs = app(CompanyContext::class)->as($coral->id, fn () => Customer::factory()->create(['user_id' => $user->id]));
+
+        $this->assertNotSame($ours->id, $theirs->id);
+
+        $this->expectException(UniqueConstraintViolationException::class);
+        Customer::factory()->create(['user_id' => $user->id]);
+    }
+
+    public function test_another_companys_card_does_not_resolve(): void
+    {
+        $member = app(CompanyContext::class)->as($this->coral()->id, function (): BookingTraveller {
+            $booking = Booking::factory()->create();
+            $traveller = Traveller::create(['customer_id' => $booking->customer_id, 'full_name' => 'Aminath Ali']);
+
+            return BookingTraveller::create([
+                'booking_id' => $booking->id, 'traveller_id' => $traveller->id,
+                'occupancy' => 'double', 'pax_type' => 'adult', 'amount_minor' => 100,
+            ]);
+        });
+        $card = app(CompanyContext::class)->as($member->company_id, fn () => app(Cards::class)->issue($member, Card::LUGGAGE));
+
+        $this->assertNotNull(app(CompanyContext::class)->as($member->company_id, fn () => app(Cards::class)->resolve($card->qr_token)));
+        $this->assertNull(app(Cards::class)->resolve($card->qr_token), 'Rihla scanning their tag finds nobody.');
+        $this->assertNull(app(Cards::class)->resolve($card->serial));
+    }
+
+    public function test_the_duplicate_id_check_compares_within_the_company(): void
+    {
+        $coral = $this->coral();
+        $customer = app(CompanyContext::class)->as($coral->id, fn () => Customer::factory()->create());
+        app(CompanyContext::class)->as($coral->id, fn () => Traveller::create([
+            'customer_id' => $customer->id, 'full_name' => 'Aminath Ali', 'national_id' => 'A123456',
+        ]));
+
+        $this->assertCount(0, Duplicates::find('A123456', null, null, null), "Their pilgrim is not Rihla's duplicate.");
+        $this->assertCount(1, app(CompanyContext::class)->as($coral->id, fn () => Duplicates::find('A123456', null, null, null)));
     }
 
     public function test_a_deletion_request_reaches_a_customer_of_any_company(): void
