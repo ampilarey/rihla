@@ -213,7 +213,11 @@ class SecurityHeaders
 
             'script-src' => $script,
             'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://fonts.googleapis.com'],
-            'font-src' => ["'self'", 'data:', 'https://fonts.bunny.net', 'https://fonts.gstatic.com'],
+            // Bunny Fonts' stylesheet now serves its files from jsdelivr's
+            // Fontsource mirror (November 2026); without it every Inter
+            // weight is blocked, visitors get the fallback face, and the
+            // console errors cost Lighthouse best-practices.
+            'font-src' => ["'self'", 'data:', 'https://fonts.bunny.net', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
 
             // data: is here for the inline SVG and the PWA icons; the YouTube
             // hosts serve video thumbnails on the gallery; OpenStreetMap
