@@ -127,6 +127,7 @@ class Partner extends Model
         'commission_pct' => 'integer',
         'is_active' => 'boolean',
         'is_rihla' => 'boolean',
+        'is_umrah_company' => 'boolean',
         'registration_expires_on' => 'date',
         'verified_at' => 'datetime',
         'terms_accepted_at' => 'datetime',

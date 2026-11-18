@@ -2,6 +2,7 @@
 
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
+use App\Providers\Filament\CompanyPanelProvider;
 use App\Providers\Filament\HostPanelProvider;
 use App\Providers\Filament\StaffPanelProvider;
 use App\Providers\ViewServiceProvider;
@@ -11,5 +12,6 @@ return [
     AuthServiceProvider::class,
     StaffPanelProvider::class,
     HostPanelProvider::class,
+    CompanyPanelProvider::class,
     ViewServiceProvider::class,
 ];

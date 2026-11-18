@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Exceptions\LastSuperAdmin;
 use App\Support\Access;
 use Database\Factories\UserFactory;
+use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -17,6 +18,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -71,6 +73,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         // staff who also runs a guesthouse simply has both.
         return match ($panel->getId()) {
             'host' => $this->hosts()->exists(),
+            // Companies plan, Phase 2: a company's staff are let in by an
+            // accepted membership and hold no spatie role, so `/staff`
+            // stays closed to them, as `/host` does to a guesthouse.
+            'company' => $this->companies()->exists(),
             default => $this->can('admin.access'),
         };
     }
@@ -91,6 +97,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
     /** @return Collection<int, Partner> */
     public function getTenants(Panel $panel): Collection
     {
+        if ($panel->getId() === 'company') {
+            return $this->companies()->orderBy('name')->get();
+        }
+
         return $this->hosts()
             ->where('status', '!=', Partner::STATUS_SUSPENDED)
             ->orderBy('name')
@@ -104,9 +114,56 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
      */
     public function canAccessTenant(Model $tenant): bool
     {
+        if (Filament::getCurrentPanel()?->getId() === 'company') {
+            return $tenant instanceof Partner
+                && ! $tenant->isSuspended()
+                && $this->companies()->whereKey($tenant->getKey())->exists();
+        }
+
         return $tenant instanceof Partner
             && ! $tenant->isSuspended()
             && $this->hosts()->whereKey($tenant->getKey())->exists();
+    }
+
+    /**
+     * The Umrah companies this person works for, accepted memberships only —
+     * companies plan, Phase 2a.
+     *
+     * @return BelongsToMany<Partner, $this>
+     */
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Partner::class, 'company_memberships', 'user_id', 'company_id')
+            ->withPivot(['role', 'accepted_at'])
+            ->withTimestamps()
+            ->wherePivotNotNull('accepted_at')
+            ->where('is_umrah_company', true);
+    }
+
+    /**
+     * Roles already looked up in this request, by company id. A page asks
+     * the gate dozens of times; the answer does not change mid-request.
+     *
+     * @var array<int, string|null>
+     */
+    private array $companyRoles = [];
+
+    /** This person's role at an Umrah company, or null when they have none there. */
+    public function roleAtCompany(Partner $company): ?string
+    {
+        $key = (int) $company->getKey();
+
+        if (array_key_exists($key, $this->companyRoles)) {
+            return $this->companyRoles[$key];
+        }
+
+        $role = DB::table('company_memberships')
+            ->where('company_id', $company->getKey())
+            ->where('user_id', $this->getKey())
+            ->whereNotNull('accepted_at')
+            ->value('role');
+
+        return $this->companyRoles[$key] = is_string($role) ? $role : null;
     }
 
     /** This person's role at a host, or null when they have none there. */

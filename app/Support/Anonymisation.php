@@ -307,6 +307,9 @@ final class Anonymisation
         // Who works for which host, and in which role — §16.13. The people
         // are `users`, scrubbed above; the join names nobody.
         'host_memberships',
+        // Who works for which Umrah company, and in which role (companies
+        // plan, Phase 2a). The people are `users`, scrubbed above.
+        'company_memberships',
         // A host's month in figures — §16.9. A business's takings and
         // Rihla's commission; no guest is named in a row.
         'host_statements',

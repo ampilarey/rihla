@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Providers\Filament\CompanyPanelProvider;
 use App\Providers\Filament\HostPanelProvider;
 use App\Providers\Filament\StaffPanelProvider;
 use App\Services\Family\Doorkeeper;
@@ -167,6 +168,8 @@ class SecurityHeaders
             // The host panel is the same Filament, with the same needs —
             // §16.6. Behind its own login; the public site is unchanged.
             || $request->is(HostPanelProvider::PATH, HostPanelProvider::PATH.'/*')
+            // And each Umrah company's panel (companies plan, Phase 2a).
+            || $request->is(CompanyPanelProvider::PATH, CompanyPanelProvider::PATH.'/*')
             || ($pulse !== '' && $request->is($pulse, $pulse.'/*'));
     }
 
