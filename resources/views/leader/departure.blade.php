@@ -83,6 +83,31 @@
             @endif
         </section>
 
+        @if ($route !== [])
+            <section class="card mb-6">
+                <h2 class="mb-3 text-lg font-bold text-ink">Route</h2>
+
+                <ol class="space-y-2">
+                    @foreach ($route as $stop)
+                        <li class="border-b border-cream-deep pb-2 last:border-0">
+                            <span class="font-medium text-ink">{{ $stop['place'] }}</span>
+                            @if ($stop['hotel'])
+                                <span class="text-ink-muted">· {{ $stop['hotel'] }}</span>
+                            @endif
+                            <span class="block text-sm text-ink-muted" dir="ltr">
+                                @if ($stop['arrives'])
+                                    {{ $stop['arrives']->format('j M') }}@if ($stop['leaves'] && ! $stop['leaves']->isSameDay($stop['arrives']))&ndash;{{ $stop['leaves']->format('j M') }}@endif
+                                @else
+                                    Date to be set
+                                @endif
+                                · then {{ $stop['by'] }}
+                            </span>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
+        @endif
+
         <section class="card">
             <h2 class="mb-3 text-lg font-bold text-ink">
                 Who is on this trip ({{ $travellers->count() }})

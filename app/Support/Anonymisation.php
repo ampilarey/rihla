@@ -51,7 +51,7 @@ final class Anonymisation
     public const SCRUB = [
         'customers' => [
             'name' => 'name', 'email' => 'email', 'phone' => 'phone',
-            'national_id' => 'name', 'address' => 'text', 'notes' => 'text',
+            'national_id' => 'name', 'address' => 'text', 'island_id' => 'null', 'notes' => 'text',
         ],
         'travellers' => [
             'full_name' => 'name', 'passport_number' => 'name',
@@ -63,6 +63,8 @@ final class Anonymisation
             'national_id' => 'null', 'identity_mismatches' => 'null',
             // The head of a family's own number (families, batch C).
             'phone' => 'phone',
+            // Where they live narrows a person down (Phase 3d).
+            'island_id' => 'null',
         ],
         'people' => ['name' => 'name', 'bio' => 'text'],
         // A partner is a real guesthouse owner, and their record holds the
@@ -272,6 +274,8 @@ final class Anonymisation
         'cards',
         // What a dollar was worth on a day; set by staff, about nobody.
         'exchange_rates',
+        // The inhabited islands (Phase 3d): reference data, about nobody.
+        'islands',
         // An amount and a date; the person is on the booking.
         'payment_schedules',
         'departure_costs',

@@ -32,6 +32,8 @@ class Traveller extends Model
         // The national ID card's number (batch B from Hijaz). Written from an
         // accepted reading of the card, or typed; redacted in the audit trail.
         'national_id',
+        // Where they live (Phase 3d), when it is not the booker's island.
+        'island_id',
         // A number that reaches them on the journey (families, batch C from
         // Hijaz). Mostly the head's: the lists ring a member's own phone,
         // else their family head's, else the booker's.
@@ -107,6 +109,12 @@ class Traveller extends Model
             'other' => 'travelling with '.$booker,
             default => $booker.'\'s '.(self::RELATIONSHIP_WORDS[$relationship][(string) $this->gender] ?? $relationship),
         };
+    }
+
+    /** @return BelongsTo<Island, $this> */
+    public function island(): BelongsTo
+    {
+        return $this->belongsTo(Island::class);
     }
 
     /** @return BelongsTo<Customer, $this> */

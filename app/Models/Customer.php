@@ -29,12 +29,18 @@ class Customer extends Model
     use BelongsToCompany, HasFactory;
 
     protected $fillable = [
-        'user_id', 'name', 'email', 'phone', 'national_id', 'address', 'notes',
+        'user_id', 'name', 'email', 'phone', 'national_id', 'address', 'island_id', 'notes',
         // §8.1's referral tracking. Mass-assignable because the admin form
         // writes them through update(): left out of this list they are
         // dropped without a word, which is the trap AGENTS.md records.
         'referred_by_customer_id', 'referral_source',
     ];
+
+    /** @return BelongsTo<Island, $this> */
+    public function island(): BelongsTo
+    {
+        return $this->belongsTo(Island::class);
+    }
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo

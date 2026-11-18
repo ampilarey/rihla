@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use App\Filament\Support\IslandSelect;
 use App\Models\Customer;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -19,7 +20,8 @@ class CustomerForm
                 TextInput::make('phone')->tel()->maxLength(40),
                 TextInput::make('email')->email()->maxLength(255),
                 TextInput::make('national_id')->label('ID number')->maxLength(40),
-                Textarea::make('address')->rows(2)->columnSpanFull(),
+                Textarea::make('address')->rows(2),
+                IslandSelect::make(),
                 Textarea::make('notes')->rows(3)->columnSpanFull(),
             ]),
 

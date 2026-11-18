@@ -57,6 +57,15 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `departure_hotels.leaves_by` (companies plan,
+        // Phase 3d). Left recorded while the table is re-created below, it
+        // would come back without the column.
+        __DIR__.'/../../database/migrations/2026_11_19_180000_say_how_a_departure_moves_on.php',
+        // Newest of all: `customers.island_id` and `travellers.island_id`
+        // (companies plan, Phase 3d). No foreign key, but left recorded
+        // while both tables are re-created below, they would come back
+        // without the column.
+        __DIR__.'/../../database/migrations/2026_11_19_170000_create_islands.php',
         // Newest of all: `flight_groups` hangs off `departures` and
         // `departure_flights`, and `booking_travellers` and `bus_groups`
         // gain columns the re-created tables would otherwise come back

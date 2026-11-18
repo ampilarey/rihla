@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Bookings\Schemas;
 
 use App\Filament\Support\DepartureOptions;
+use App\Filament\Support\IslandSelect;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\PriceTier;
@@ -82,6 +83,7 @@ class BookingDeskForm
                             TextInput::make('name')->required()->maxLength(255),
                             TextInput::make('phone')->required()->maxLength(40)->tel(),
                             TextInput::make('email')->email()->maxLength(255),
+                            IslandSelect::make(),
                         ])
                         ->createOptionUsing(fn (array $data): int => Customer::query()->create($data)->getKey())
                         ->createOptionModalHeading('New customer')
@@ -109,6 +111,7 @@ class BookingDeskForm
                                     DatePicker::make('passport_expiry')->label('Passport expires')->native(false),
                                     Select::make('relationship')->label('To the person who booked')->options(Traveller::RELATIONSHIP_LABELS)->native(false),
                                     TextInput::make('phone')->label('Phone on the journey')->tel()->maxLength(40),
+                                    IslandSelect::make()->helperText('Where they live, if not the person who booked.'),
                                 ])
                                 ->createOptionUsing(function (array $data, Get $get): ?int {
                                     $customerId = $get('../../customer_id');

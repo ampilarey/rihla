@@ -22,6 +22,8 @@ class DepartureHotel extends Model
     protected $fillable = [
         'departure_id', 'city', 'name', 'rating',
         'distance_metres', 'walk_minutes', 'nights', 'sort_order',
+        // How the hotel is left for the next place (Phase 3d); see DepartureRoute.
+        'leaves_by',
     ];
 
     protected $casts = [
