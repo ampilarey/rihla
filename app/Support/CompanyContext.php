@@ -81,6 +81,51 @@ class CompanyContext
         return $scope === null || $companyId === $scope;
     }
 
+    /** Rihla's own company, whatever the current one is. */
+    public function rihlaId(): ?int
+    {
+        return Partner::rihla()?->getKey();
+    }
+
+    /**
+     * Run a callback once per company, each inside its own context — for
+     * scheduled work that has to reach every company's rows without ever
+     * mixing them (companies plan, Phase 1d).
+     *
+     * @param  iterable<int|string|null>  $companyIds  usually a distinct pluck taken inside {@see acrossEveryCompany()}
+     * @param  callable(int): mixed  $callback
+     * @return array<int, mixed> each company's result, by company id
+     */
+    public function eachCompany(iterable $companyIds, callable $callback): array
+    {
+        $results = [];
+
+        foreach ($companyIds as $id) {
+            if ($id === null || isset($results[(int) $id])) {
+                continue;
+            }
+
+            $results[(int) $id] = $this->as((int) $id, fn () => $callback((int) $id));
+        }
+
+        return $results;
+    }
+
+    /**
+     * Where a company's private files go under a base folder.
+     *
+     * Rihla's stay exactly where they always were: moving live passport
+     * scans is a risk with no reader. Any other company's sit under
+     * `{base}/company-{id}/`, named so they can never be mistaken for
+     * one of Rihla's numbered folders beside them.
+     */
+    public function folder(string $base, ?int $companyId): string
+    {
+        return $companyId === null || $companyId === $this->rihlaId()
+            ? $base
+            : $base.'/company-'.$companyId;
+    }
+
     /** Work for one company for the length of a callback, then go back. */
     public function as(int $companyId, callable $callback): mixed
     {

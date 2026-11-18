@@ -57,7 +57,7 @@ final class Sweep
      *
      * @return array<string, int> how many of each kind were raised
      */
-    public function run(): array
+    public function run(bool $includeStays = true): array
     {
         $raised = array_fill_keys(Notice::KINDS, 0);
 
@@ -73,6 +73,12 @@ final class Sweep
                     $raised[$kind]++;
                 }
             }
+        }
+
+        // Stays are Rihla's alone (companies plan, Phase 1d): another
+        // company's pass reaches its bookings and stops here.
+        if (! $includeStays) {
+            return $raised;
         }
 
         // The stays half — §15.7. Live means requested, held or confirmed and not yet

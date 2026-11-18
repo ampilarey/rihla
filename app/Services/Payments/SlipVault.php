@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Services\Documents\Reading\ReaderManager;
+use App\Support\CompanyContext;
 use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +58,7 @@ final class SlipVault
             // Ciphertext on disk — §10.4. A transfer slip carries a bank
             // account and a name, which is the same class of thing as a
             // passport scan.
-            $path = 'payment-slips/'.$payment->getKey()
+            $path = app(CompanyContext::class)->folder('payment-slips', $payment->company_id).'/'.$payment->getKey()
                 .'/'.Str::random(40).'.'.($file->extension() ?: 'bin');
 
             EncryptedFile::put($this->disk(), $path, (string) file_get_contents($file->getRealPath()));
