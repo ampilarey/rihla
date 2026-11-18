@@ -7,6 +7,7 @@ use App\Models\Departure;
 use App\Models\DepartureCost;
 use App\Models\DepartureExcursion;
 use App\Models\ExcursionBooking;
+use App\Models\LedgerEntry;
 use App\Models\Payment;
 use App\Services\Operations\ListDocument;
 use App\Support\JourneyProfit;
@@ -92,6 +93,20 @@ final class Books
             ];
         }
 
+        // Income and spending that is not a booking's or a departure's cost
+        // (Phase 3f): on this departure, or the company's own when none.
+        foreach ($this->ledgerEntries($departure) as $entry) {
+            $lines[] = [
+                'on' => CarbonImmutable::instance($entry->occurred_on),
+                'kind' => $entry->direction === LedgerEntry::IN ? 'in' : 'out',
+                'words' => ($entry->category->name ?? $entry->kindLabel()).' · '.$entry->description.($entry->counterparty ? ' · '.$entry->counterparty : ''),
+                'detail' => $entry->account->name,
+                'currency' => $entry->currency,
+                'in' => $entry->direction === LedgerEntry::IN ? $entry->amount_minor : 0,
+                'out' => $entry->direction === LedgerEntry::OUT ? $entry->amount_minor : 0,
+            ];
+        }
+
         if ($month !== null) {
             $start = CarbonImmutable::instance($month)->startOfMonth();
             $end = $start->endOfMonth();
@@ -155,6 +170,19 @@ final class Books
 
             $amount = $cost->totalFor($travellers);
             $rows[$key]['out'][$amount->currency] = ($rows[$key]['out'][$amount->currency] ?? 0) + $amount->minor;
+        }
+
+        // The ledger's income and spending (Phase 3f); a transfer moves money
+        // the company already had, so it is not in or out.
+        foreach (LedgerEntry::query()->live()->whereIn('kind', [LedgerEntry::INCOME, LedgerEntry::EXPENSE])->get() as $entry) {
+            $key = $entry->occurred_on->format('Y-m');
+
+            if (! isset($rows[$key])) {
+                continue;
+            }
+
+            $bucket = $entry->direction === LedgerEntry::IN ? 'in' : 'out';
+            $rows[$key][$bucket][$entry->currency] = ($rows[$key][$bucket][$entry->currency] ?? 0) + $entry->amount_minor;
         }
 
         $result = [];
@@ -431,6 +459,17 @@ final class Books
     private static function umrahPayables(): array
     {
         return [(new Booking)->getMorphClass(), (new ExcursionBooking)->getMorphClass()];
+    }
+
+    /** @return Collection<int, LedgerEntry> */
+    private function ledgerEntries(?Departure $departure): Collection
+    {
+        return LedgerEntry::query()
+            ->live()
+            ->whereIn('kind', [LedgerEntry::INCOME, LedgerEntry::EXPENSE])
+            ->when($departure === null, fn ($query) => $query->whereNull('departure_id'), fn ($query) => $query->where('departure_id', $departure?->getKey()))
+            ->with(['account', 'category'])
+            ->get();
     }
 
     /** @return Collection<int, DepartureCost> */

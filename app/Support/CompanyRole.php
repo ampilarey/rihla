@@ -44,7 +44,7 @@ final class CompanyRole
      */
     public const UMRAH_AREAS = [
         'package', 'departure', 'person', 'booking', 'customer', 'document', 'visa', 'permit',
-        'payment', 'rate', 'enquiry', 'quotation', 'task', 'cost', 'profit', 'books', 'kpi',
+        'payment', 'rate', 'ledger', 'enquiry', 'quotation', 'task', 'cost', 'profit', 'books', 'kpi',
         'draft', 'rooming', 'logistics', 'checklist', 'incident', 'attendance', 'bus', 'list',
         'card', 'telegram', 'opslog', 'announcement', 'broadcast', 'notice', 'question',
     ];

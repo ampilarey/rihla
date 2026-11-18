@@ -160,6 +160,8 @@ final class Forgetting
         'bus_groups' => 'A coach a whole departure rides; whoever is named at its door is staff or a volunteer, not a customer.',
         'islands' => 'The inhabited islands, a list of places. Nothing in a row is about anybody.',
         'departure_excursions' => 'An additional trip a whole departure may take; the provider is a business, not a customer.',
+        'accounts' => 'Where the company keeps money: its own bank account or cash box, not a customer\'s.',
+        'ledger_entries' => 'The company\'s own income and spending. A customer\'s money is a payment, reached through its payable.',
         'flight_groups' => 'The people of a departure on one flight out and home; the group is a timetable fact, not one customer.',
         'departure_events' => 'A departure\'s own moves along its lifecycle; whoever moved it is staff.',
         'telegram_links' => 'A staff account\'s own Telegram chat. A member of staff leaving is a different procedure.',

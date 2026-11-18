@@ -17,6 +17,7 @@ use App\Filament\Pages\Telegram;
 use App\Filament\Pages\Today;
 use App\Filament\Pages\VisaBatch;
 use App\Filament\Pages\WhoSendsUsPeople;
+use App\Filament\Resources\Accounts\AccountResource;
 use App\Filament\Resources\Announcements\AnnouncementResource;
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Filament\Resources\Broadcasts\EmergencyBroadcastResource;
@@ -32,6 +33,8 @@ use App\Filament\Resources\Excursions\ExcursionResource;
 use App\Filament\Resources\FlightGroups\FlightGroupResource;
 use App\Filament\Resources\Flights\DepartureFlightResource;
 use App\Filament\Resources\Incidents\IncidentResource;
+use App\Filament\Resources\LedgerCategories\LedgerCategoryResource;
+use App\Filament\Resources\LedgerEntries\LedgerEntryResource;
 use App\Filament\Resources\Notices\NoticeResource;
 use App\Filament\Resources\OperationsLog\OperationsLogEntryResource;
 use App\Filament\Resources\Packages\PackageResource;
@@ -117,6 +120,9 @@ class CompanyPanelProvider extends PanelProvider
         FlightGroupResource::class,
         ExcursionResource::class,
         ExcursionBookingResource::class,
+        AccountResource::class,
+        LedgerEntryResource::class,
+        LedgerCategoryResource::class,
         DepartureFlightResource::class,
         DepartureTransferResource::class,
         DepartureChecklistItemResource::class,

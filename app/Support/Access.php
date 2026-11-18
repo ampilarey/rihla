@@ -202,6 +202,11 @@ final class Access
         // riyal is credited at. Finance's, and the Operations Manager's.
         'rate.manage',
 
+        // Accounts and the ledger (companies plan, Phase 3f): where the
+        // money sits, and income or spending that is not a booking's
+        // payment or a departure's cost. Read under `books.view`.
+        'ledger.manage',
+
         // Enquiries — §8.1's minimal CRM. No delete: an enquiry that was
         // lost is the record of a customer this operator did not win, and
         // that is the most useful thing in the table.
@@ -937,7 +942,7 @@ final class Access
                 array_diff($ziyarah, ['ziyarah.review']),
                 array_diff($learning, ['learning.review']),
                 array_diff($questions, ['question.answer']),
-                ['departure.nusuk', 'departure.board', 'departure.lifecycle', 'departure.settle', 'rate.manage'],
+                ['departure.nusuk', 'departure.board', 'departure.lifecycle', 'departure.settle', 'rate.manage', 'ledger.manage'],
                 $stays,
                 $content,
             ),
@@ -1095,7 +1100,7 @@ final class Access
             self::FINANCE => array_merge(
                 // Settles a departure once its books are closed, and keeps
                 // the exchange rate table.
-                ['admin.access', 'departure.board', 'departure.settle', 'rate.manage', 'telegram.link'],
+                ['admin.access', 'departure.board', 'departure.settle', 'rate.manage', 'ledger.manage', 'telegram.link'],
                 $bookingsReadOnly,
                 // Knocks something off a price, with a reason on the record.
                 ['booking.discount'],
