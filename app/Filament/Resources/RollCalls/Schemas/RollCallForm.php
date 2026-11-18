@@ -33,7 +33,7 @@ class RollCallForm
                             $departure->getKey() => sprintf(
                                 '%s (%s)',
                                 $departure->package->title ?? 'Departure',
-                                $departure->date_start->format('j M Y'),
+                                $departure->startLabel('j M Y'),
                             ),
                         ])
                         ->all()),

@@ -27,7 +27,7 @@
         <x-filament::section>
             <x-slot name="heading">
                 {{ $forecast->departure->package->title ?? 'Departure' }} —
-                {{ $forecast->departure->date_start->format('j M Y') }}
+                {{ $forecast->departure->startLabel('j M Y') }}
             </x-slot>
 
             {{-- `afterHeader`, not `headerEnd`: Blade discards a slot the

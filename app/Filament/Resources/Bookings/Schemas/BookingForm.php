@@ -196,7 +196,8 @@ class BookingForm
                     $name,
                     ucfirst($line->occupancy),
                     $line->pax_type,
-                    $line->money()->format(),
+                    // Registered before a price (Phase 3b): said, not "MVR 0".
+                    $line->awaits_price ? 'price not set yet' : $line->money()->format(),
                     self::ticket($line),
                 );
             })

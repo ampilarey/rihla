@@ -458,11 +458,11 @@ final class Lists
 
     private function subtitle(Departure $departure): string
     {
-        return ($departure->package->title ?? 'Departure').' · '.$departure->date_start->format('j M').' – '.$departure->date_end->format('j M Y');
+        return ($departure->package->title ?? 'Departure').' · '.$departure->startLabel('j M').' – '.$departure->endLabel('j M Y');
     }
 
     private function slug(Departure $departure): string
     {
-        return Str::slug(($departure->package->title ?? 'departure').'-'.$departure->date_start->format('Y-m-d'));
+        return Str::slug(($departure->package->title ?? 'departure').'-'.$departure->startLabel('Y-m-d'));
     }
 }

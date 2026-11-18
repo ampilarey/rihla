@@ -111,7 +111,7 @@ class DailySummary
     /** "#12 · Shawwal Umrah 2027 · 20 Dec" */
     public static function label(Departure $departure): string
     {
-        return '#'.$departure->getKey().' · '.($departure->package->title ?? 'Departure').' · '.$departure->date_start->format('j M');
+        return '#'.$departure->getKey().' · '.($departure->package->title ?? 'Departure').' · '.$departure->startLabel('j M');
     }
 
     /** @return Collection<int, Departure> */

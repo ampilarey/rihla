@@ -65,9 +65,9 @@ final class Reengagement
             ->map(function (Customer $customer) use ($cutoff): ?array {
                 $last = $customer->lastDeparted();
 
-                // No `date_start === null` check: the column is not
-                // nullable, and `lastDeparted()` already filters on it.
-                if ($last === null) {
+                // `lastDeparted()` filters on a past date, so a departure
+                // whose dates are not set yet is never the last journey.
+                if ($last?->date_start === null) {
                     return null;
                 }
 

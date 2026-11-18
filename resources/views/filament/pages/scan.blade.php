@@ -23,7 +23,7 @@
     @if ($member)
         <x-filament::section>
             <x-slot name="heading">{{ $member->traveller->full_name }}</x-slot>
-            <x-slot name="description">{{ $card->kindLabel() }} {{ $card->serial }} · {{ $booking->departure->package->title ?? 'Departure' }} · {{ $booking->departure->date_start->format('j M Y') }}</x-slot>
+            <x-slot name="description">{{ $card->kindLabel() }} {{ $card->serial }} · {{ $booking->departure->package->title ?? 'Departure' }} · {{ $booking->departure->startLabel('j M Y') }}</x-slot>
             <dl style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin:0;">
                 <div><dt class="fi-color-gray" style="font-size:.75rem;">Bus</dt><dd style="font-weight:600; font-size:1.25rem; margin:0;">{{ $member->busGroup?->name ?? '—' }}</dd></div>
                 <div><dt class="fi-color-gray" style="font-size:.75rem;">On the bus</dt><dd style="font-weight:600; font-size:1.25rem; margin:0;">{{ $member->isCheckedIn() ? 'Yes · '.$member->checked_in_at->format('H:i') : 'Not yet' }}</dd></div>

@@ -314,14 +314,15 @@ final class Sweep
             }
         }
 
-        $daysAway = (int) now()->startOfDay()->diffInDays($booking->departure->date_start->startOfDay(), false);
+        // No reminder to travel until there is a day to travel on (Phase 3b).
+        $daysAway = $booking->departure->days_until;
 
         if ($daysAway >= 0 && $daysAway <= $this->remindDaysBefore()) {
             $notices[Notice::DEPARTURE_SOON] = [
                 'headline' => $daysAway === 0
                     ? 'You travel today'
                     : ($daysAway === 1 ? 'You travel tomorrow' : "You travel in {$daysAway} days"),
-                'body' => 'Departure is '.$booking->departure->date_start->format('j F Y').'.',
+                'body' => 'Departure is '.$booking->departure->startLabel('j F Y').'.',
             ];
         }
 

@@ -141,7 +141,7 @@ final class Alerts
                 : $short->count().' departures are not on course to fill',
             detail: 'On the pace of past journeys, '.($short->count() === 1 ? 'it lands' : 'they land')
                 .' short by '.$seats.' '.($seats === 1 ? 'seat' : 'seats').' in total, and there is still time to sell them. '
-                .'Soonest: '.$short->sortBy(fn (SeatForecast $f): int => $f->daysToGo)->first()?->departure->date_start->format('j M Y').'.',
+                .'Soonest: '.$short->sortBy(fn (SeatForecast $f): int => $f->daysToGo)->first()?->departure->startLabel('j M Y').'.',
             action: 'Open the forecast to see which, and by how much.',
             url: route('filament.staff.pages.forecast'),
             permission: 'kpi.view',
@@ -288,7 +288,7 @@ final class Alerts
                 ? 'A departure flying within a month still has a blocker'
                 : $blocked->count().' departures flying within a month still have blockers',
             detail: 'Something on '.($blocked->count() === 1 ? 'it' : 'them').' would stop somebody travelling — a permit, a visa, '
-                .'a passport. The soonest leaves on '.$soonest?->date_start->format('j M Y')
+                .'a passport. The soonest leaves on '.$soonest?->startLabel('j M Y')
                 .'. The board says exactly what; this only says that nobody has opened it.',
             action: 'Open the departure board.',
             url: route('filament.staff.pages.departure-board'),

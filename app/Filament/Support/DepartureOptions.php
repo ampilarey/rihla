@@ -34,6 +34,6 @@ final class DepartureOptions
             return '—';
         }
 
-        return sprintf('%s (%s)', $departure->package->title ?? 'Departure', $departure->date_start->format('j M Y'));
+        return sprintf('%s (%s)', $departure->package->title ?? 'Departure', $departure->startLabel('j M Y'));
     }
 }

@@ -5,6 +5,7 @@ namespace App\Services\Booking;
 use App\Exceptions\NoSeatsAvailable;
 use App\Models\Booking;
 use App\Models\BookingLine;
+use App\Models\BookingTraveller;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Discount;
@@ -233,6 +234,64 @@ final class BookingDesk
         });
     }
 
+    /**
+     * Price everybody registered on a departure before it had a price for
+     * their room (companies plan, Phase 3b, Hijaz parity), by room and by
+     * their age on the departure day, or today while it has no date. A fare
+     * already set is never touched. Returns how many were priced.
+     */
+    public function priceWaiting(Departure $departure): int
+    {
+        $departure->unsetRelation('priceTiers');
+        $departure->loadMissing('priceTiers');
+        $priced = 0;
+
+        $waiting = BookingTraveller::query()
+            ->where('awaits_price', true)
+            ->whereHas('booking', fn ($query) => $query->where('departure_id', $departure->getKey())->whereIn('status', [Booking::HELD, Booking::CONFIRMED]))
+            ->with(['booking', 'traveller'])
+            ->get();
+
+        foreach ($waiting as $line) {
+            $booking = $line->booking;
+            $audience = (string) ($line->awaits_audience ?? Audience::LOCAL);
+            $paxType = PriceTier::paxTypeForAge($line->traveller->ageOn($departure->date_start ?? today()));
+            $tier = $this->tierFor($departure, (string) $line->occupancy, $paxType, $audience);
+
+            if ($tier === null) {
+                continue;
+            }
+
+            DB::transaction(function () use ($booking, $line, $tier, &$priced): void {
+                // The booking's currency follows its first price.
+                if (! $booking->travellers()->where('awaits_price', false)->exists()) {
+                    $booking->forceFill(['currency' => $tier->currency])->save();
+                }
+
+                $line->forceFill([
+                    'pax_type' => $tier->pax_type,
+                    'price_tier_id' => $tier->getKey(),
+                    'amount_minor' => $tier->amount_minor,
+                    'awaits_price' => false,
+                ])->save();
+
+                $booking->lines()->create([
+                    'booking_traveller_id' => $line->getKey(),
+                    'type' => BookingLine::SEAT,
+                    'description' => $line->traveller->full_name,
+                    'unit_amount_minor' => $tier->amount_minor,
+                    'amount_minor' => $tier->amount_minor,
+                    'currency' => $booking->currency,
+                ]);
+
+                $booking->recalculateTotal();
+                $priced++;
+            });
+        }
+
+        return $priced;
+    }
+
     // ── Internals ────────────────────────────────────────────────────────
 
     private function seat(Booking $booking, Departure $departure, Traveller $traveller, string $occupancy, string $audience, bool $isLead): void
@@ -241,8 +300,27 @@ final class BookingDesk
             throw new InvalidArgumentException('Choose a room for '.$traveller->full_name.'.');
         }
 
-        $paxType = PriceTier::paxTypeForAge($traveller->ageOn($departure->date_start));
+        $paxType = PriceTier::paxTypeForAge($traveller->ageOn($departure->date_start ?? today()));
         $tier = $this->tierFor($departure, $occupancy, $paxType, $audience);
+
+        // Registration before a price (companies plan, Phase 3b, Hijaz
+        // parity): a departure with no price at all yet for this audience
+        // takes the name and prices it when the price is set. One that has
+        // prices but not this room still refuses, so a mistyped room is
+        // never silently left unpriced.
+        if ($tier === null && ! $departure->priceTiers->contains(fn (PriceTier $t): bool => $t->audience === $audience)) {
+            $booking->travellers()->create([
+                'traveller_id' => $traveller->getKey(),
+                'occupancy' => $occupancy,
+                'pax_type' => $paxType,
+                'amount_minor' => 0,
+                'is_lead' => $isLead,
+                'awaits_price' => true,
+                'awaits_audience' => $audience,
+            ]);
+
+            return;
+        }
 
         if ($tier === null) {
             throw new InvalidArgumentException(sprintf(

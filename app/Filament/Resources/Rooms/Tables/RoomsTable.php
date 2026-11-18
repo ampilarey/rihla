@@ -34,7 +34,7 @@ class RoomsTable
                     ->description(fn (Room $record): string => sprintf(
                         '%s · %s',
                         $record->hotel->cityLabel(),
-                        $record->hotel->departure->date_start->format('j M Y'),
+                        $record->hotel->departure->startLabel('j M Y'),
                     )),
 
                 TextColumn::make('label')->label('Room')->searchable()->sortable(),
@@ -82,7 +82,7 @@ class RoomsTable
                                 '%s — %s (%s)',
                                 $hotel->cityLabel(),
                                 $hotel->name,
-                                $hotel->departure->date_start->format('j M Y'),
+                                $hotel->departure->startLabel('j M Y'),
                             ),
                         ])
                         ->all()),

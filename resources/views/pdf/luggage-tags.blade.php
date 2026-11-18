@@ -33,7 +33,7 @@
                 <tr>
                     <td>
                         <div class="brand">{{ $issuer['name'] }}</div>
-                        <div class="trip">{{ $item['departure']->package->title ?? 'Departure' }} · {{ $item['departure']->date_start->format('j M Y') }}</div>
+                        <div class="trip">{{ $item['departure']->package->title ?? 'Departure' }} · {{ $item['departure']->startLabel('j M Y') }}</div>
                     </td>
                     <td style="width: 42mm; text-align: center;">
                         <img class="qr" src="{{ $item['qr'] }}" alt="">

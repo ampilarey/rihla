@@ -122,7 +122,7 @@ class LeaderController extends Controller
             'departure' => [
                 'id' => $departure->getKey(),
                 'title' => $departure->package->title ?? 'Departure',
-                'starts' => $departure->date_start->toDateString(),
+                'starts' => $departure->date_start?->toDateString(),
             ],
             'travellers' => $travellers,
             'roll_calls' => RollCall::where('departure_id', $departure->getKey())

@@ -100,7 +100,7 @@
             <a href="{{ \App\Support\Contact::whatsappUrl(
                     __('messages.Hello, I would like to ask about :package departing :date.', [
                         'package' => $departure->package->getTranslation('title', 'en'),
-                        'date' => $departure->date_start->format('j M Y'),
+                        'date' => $departure->startLabel('j M Y'),
                     ]),
                 ) }}"
                class="btn-primary w-full" target="_blank" rel="noopener noreferrer">

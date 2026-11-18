@@ -269,7 +269,7 @@ class Router
 
             $lines = [
                 '<b>'.e(DailySummary::label($departure)).'</b>',
-                e($departure->date_start->format('j M')).' – '.e($departure->date_end->format('j M Y')).' · '.e(ucfirst((string) $departure->status)),
+                e($departure->startLabel('j M')).' – '.e($departure->endLabel('j M Y')).' · '.e(ucfirst((string) $departure->status)),
                 'Seats: '.($departure->capacity_total - $departure->seats_remaining).' of '.$departure->capacity_total.' taken',
             ];
 
@@ -444,7 +444,7 @@ class Router
         }
 
         $concerns = DepartureReadiness::concerns($departure);
-        $lines = ['<b>'.e(DailySummary::label($departure)).'</b> · leaves '.e($departure->date_start->diffForHumans())];
+        $lines = ['<b>'.e(DailySummary::label($departure)).'</b> · leaves '.e($departure->date_start?->diffForHumans() ?? 'on dates not set yet')];
 
         if ($concerns === []) {
             $lines[] = 'Ready. Nothing stands in the way.';

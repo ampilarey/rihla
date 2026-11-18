@@ -386,7 +386,7 @@ final class Books
     {
         return $departure === null
             ? 'The company'
-            : ($departure->package->title ?? 'Departure').' · '.$departure->date_start->format('j M Y');
+            : ($departure->package->title ?? 'Departure').' · '.$departure->startLabel('j M Y');
     }
 
     /** @return Collection<int, Payment> */

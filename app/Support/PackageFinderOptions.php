@@ -62,8 +62,8 @@ final class PackageFinderOptions
         return $departures
             ->sortBy('date_start')
             ->map(fn (Departure $departure): array => [
-                'value' => $departure->date_start->format('Y-m'),
-                'label' => $departure->date_start->translatedFormat('F Y'),
+                'value' => $departure->startLabel('Y-m'),
+                'label' => $departure->startLabel('F Y', true),
             ])
             ->unique('value')
             ->values();

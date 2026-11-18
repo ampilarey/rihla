@@ -44,7 +44,7 @@
                                 </td>
                                 <td>
                                     <div class="brand">{{ $issuer['name'] }}</div>
-                                    <div class="trip">{{ $item['departure']->package->title ?? 'Departure' }} · {{ $item['departure']->date_start->format('j M Y') }}</div>
+                                    <div class="trip">{{ $item['departure']->package->title ?? 'Departure' }} · {{ $item['departure']->startLabel('j M Y') }}</div>
                                     <div class="name">{{ $item['traveller']->full_name }}</div>
                                     <div class="line"><span class="k">Bus</span> {{ $item['member']->busGroup?->name ?? '—' }} <span class="k">· Booking</span> {{ $item['member']->booking->reference }}</div>
                                     <div class="line">

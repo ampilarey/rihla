@@ -27,7 +27,7 @@ class BookingTraveller extends Model
 
     protected $fillable = [
         'booking_id', 'traveller_id', 'occupancy', 'pax_type',
-        'price_tier_id', 'amount_minor', 'is_lead', 'room_reference',
+        'price_tier_id', 'amount_minor', 'is_lead', 'room_reference', 'awaits_price', 'awaits_audience',
         // The airline's two facts about the person, typed once the tickets
         // are issued and printed on the manifest the airline is handed.
         'ticket_number', 'seat_number',
@@ -40,6 +40,7 @@ class BookingTraveller extends Model
     protected $casts = [
         'amount_minor' => 'integer',
         'is_lead' => 'boolean',
+        'awaits_price' => 'boolean',
         'bus_group_id' => 'integer',
         'checked_in_at' => 'datetime',
     ];

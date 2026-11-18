@@ -349,7 +349,7 @@ class BookingController extends Controller
             'passport_expiry' => $details['passport_expiry'] ?? null,
         ]);
 
-        $paxType = PriceTier::paxTypeForAge($traveller->ageOn($departure->date_start));
+        $paxType = PriceTier::paxTypeForAge($traveller->ageOn($departure->date_start ?? today()));
         $tier = $departure->tierFor($occupancy, $paxType, $audience) ?? $departure->tierFor($occupancy, audience: $audience);
 
         // The price was there when the seats were held; if staff removed it

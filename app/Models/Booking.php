@@ -125,6 +125,16 @@ class Booking extends Model implements TakesPayments
         });
     }
 
+    /**
+     * Somebody on it was registered before the departure had their price
+     * (companies plan, Phase 3b). Nothing is owed, and no money is taken,
+     * until everybody is priced.
+     */
+    public function awaitsPrice(): bool
+    {
+        return $this->travellers()->where('awaits_price', true)->exists();
+    }
+
     public function makeReference(): string
     {
         return sprintf(

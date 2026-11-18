@@ -466,9 +466,10 @@ final class Kpis
         // permit issued at nine in the morning on the day they flew was
         // issued in time, and comparing against a date cast at 00:00 would
         // record it as late.
-        $lastMoment = $departures->mapWithKeys(
+        // A departure with no dates yet has no last moment (Phase 3b).
+        $lastMoment = $departures->filter(fn (Departure $departure): bool => $departure->date_start !== null)->mapWithKeys(
             fn (Departure $departure): array => [
-                $departure->getKey() => Carbon::parse($departure->date_start->toDateString())->endOfDay(),
+                $departure->getKey() => Carbon::parse($departure->date_start?->toDateString())->endOfDay(),
             ],
         );
 

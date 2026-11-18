@@ -163,7 +163,9 @@ class Package extends Model
     /** @return HasMany<Departure, $this> */
     public function publishedDepartures(): HasMany
     {
-        return $this->departures()->where('status', Departure::OPEN);
+        // Never one whose dates are not fixed yet (companies plan, Phase
+        // 3b): it takes registrations at the office, not on the website.
+        return $this->departures()->where('status', Departure::OPEN)->whereNotNull('date_start');
     }
 
     /**
