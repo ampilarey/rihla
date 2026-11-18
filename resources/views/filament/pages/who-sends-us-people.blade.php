@@ -48,7 +48,7 @@
                             : 'the last follow-up recorded against them was ' . $credit->lastNoted->format('j M Y') . ', before that.')"
                 >
                     <x-slot name="footer">
-                        <x-filament::link :href="route('filament.staff.resources.customers.view', $credit->referrer)">
+                        <x-filament::link :href="\App\Filament\Resources\Customers\CustomerResource::getUrl('view', ['record' => $credit->referrer])">
                             Open their record and add a follow-up
                         </x-filament::link>
                     </x-slot>

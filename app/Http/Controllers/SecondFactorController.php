@@ -117,7 +117,7 @@ class SecondFactorController extends Controller
             $request->session()->regenerate();
             $request->session()->put(RequireSecondFactor::VERIFIED_AT, now()->toDateTimeString());
 
-            return redirect()->intended(route('filament.staff.pages.dashboard'));
+            return redirect()->intended($user->homeUrl());
         }
 
         RateLimiter::hit($key, 60);

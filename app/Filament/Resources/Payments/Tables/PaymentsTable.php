@@ -9,6 +9,7 @@ use App\Models\Stay;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\SlipVault;
 use App\Services\Stays\StayBooking;
+use App\Support\CompanyRequest;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -155,7 +156,7 @@ class PaymentsTable
                 && auth()->user()?->can('payment.view') === true)
             ->label(fn (Payment $record): string => $record->isRefund() ? 'Refund note' : 'Receipt')
             ->icon('heroicon-o-document-arrow-down')
-            ->url(fn (Payment $record): string => route('staff.receipt', ['payment' => $record]), shouldOpenInNewTab: true);
+            ->url(fn (Payment $record): string => CompanyRequest::route('staff.receipt', ['payment' => $record]), shouldOpenInNewTab: true);
     }
 
     /**

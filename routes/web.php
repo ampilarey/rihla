@@ -343,7 +343,7 @@ Route::get('/lang/{code}', [PageController::class, 'setLocale'])->name('locale.s
 // one of those flows threw RouteNotFoundException and returned a 500. Admins
 // are forwarded to the admin panel; everyone else gets the plain dashboard,
 // which is why this is not simply an alias for the admin route.
-Route::middleware(['auth', 'mfa'])->group(function () {
+Route::middleware(['auth', 'mfa', 'company.request'])->group(function () {
     Route::get('/dashboard', function () {
         return Gate::allows('admin')
             ? redirect()->route('admin.dashboard')

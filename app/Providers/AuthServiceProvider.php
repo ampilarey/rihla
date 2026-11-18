@@ -24,7 +24,6 @@ use App\Models\Notice;
 use App\Models\NusukPermit;
 use App\Models\OperationsLogEntry;
 use App\Models\Package;
-use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Person;
 use App\Models\RollCall;
@@ -70,9 +69,9 @@ use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
 use App\Support\Access;
 use App\Support\CompanyContext;
+use App\Support\CompanyRequest;
 use App\Support\CompanyRole;
 use App\Support\HostContext;
-use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -145,13 +144,11 @@ class AuthServiceProvider extends ServiceProvider
         // Policy abilities ('update', 'view') fall through to the policies,
         // which ask for permissions by name and so land back here.
         Gate::before(function ($user, string $ability) {
-            if (Filament::getCurrentPanel()?->getId() !== 'company') {
-                return null;
-            }
+            // The panel's tenant, or the company a print or download opened
+            // from that panel names (Phase 2b); null for Rihla's requests.
+            $company = CompanyRequest::current();
 
-            $company = Filament::getTenant();
-
-            if (! $company instanceof Partner || ! in_array($ability, Access::PERMISSIONS, true)) {
+            if ($company === null || ! in_array($ability, Access::PERMISSIONS, true)) {
                 return null;
             }
 
@@ -168,7 +165,7 @@ class AuthServiceProvider extends ServiceProvider
             // (site audit): the grant below answered before the host
             // policies could, so a reception member who was also staff
             // held every host ability at that host.
-            if (HostContext::current() !== null || Filament::getCurrentPanel()?->getId() === 'company') {
+            if (HostContext::current() !== null || CompanyRequest::current() !== null) {
                 return null;
             }
 

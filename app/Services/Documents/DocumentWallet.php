@@ -9,6 +9,7 @@ use App\Models\Traveller;
 use App\Services\Documents\Reading\PhotoCheck;
 use App\Services\Documents\Reading\ReaderManager;
 use App\Support\CompanyContext;
+use App\Support\CompanyRequest;
 use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -232,7 +233,8 @@ final class DocumentWallet
         return URL::temporarySignedRoute(
             'documents.download',
             now()->addMinutes((int) config('documents.download_link_minutes', 5)),
-            ['version' => $version->getKey()],
+            // Carries the company when made on a company's screen (Phase 2b).
+            ['version' => $version->getKey()] + CompanyRequest::parameter(),
         );
     }
 

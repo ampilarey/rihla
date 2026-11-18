@@ -29,7 +29,7 @@
             @endforeach
         </ul>
 
-        <a href="{{ route('filament.staff.pages.dashboard') }}" class="btn-primary">
+        <a href="{{ auth()->user()?->homeUrl() ?? url('/') }}" class="btn-primary">
             {{ __('messages.I have written them down') }}
         </a>
     </div>

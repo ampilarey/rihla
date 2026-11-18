@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Support\DepartureOptions;
 use App\Models\Departure;
 use App\Services\Finance\Books as Ledgers;
+use App\Support\CompanyRequest;
 use App\Support\JourneyProfit;
 use BackedEnum;
 use Carbon\CarbonImmutable;
@@ -133,7 +134,7 @@ class Books extends Page
     {
         [$from, $to] = $this->range();
 
-        return route('books.csv', ['report' => $this->tab] + match ($this->tab) {
+        return CompanyRequest::route('books.csv', ['report' => $this->tab] + match ($this->tab) {
             Ledgers::CASH => ['departure' => $this->departureId ?? 0, 'month' => $this->month],
             Ledgers::MONTHS => ['months' => $this->months],
             Ledgers::COLLECTIONS => ['from' => $from->toDateString(), 'to' => $to->toDateString()],

@@ -146,7 +146,7 @@
                     :heading="'Sent to us by ' . $referrer->name"
                 >
                     <x-slot name="footer">
-                        <x-filament::link :href="route('filament.staff.resources.customers.view', $referrer)">
+                        <x-filament::link :href="\App\Filament\Resources\Customers\CustomerResource::getUrl('view', ['record' => $referrer])">
                             Open their record
                         </x-filament::link>
                     </x-slot>

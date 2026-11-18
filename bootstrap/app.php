@@ -7,10 +7,12 @@ use App\Http\Middleware\RequireSecondFactor;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\StaySession;
+use App\Http\Middleware\UseRequestedCompany;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,6 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // The company a print or download names must be in place before
+        // route model binding looks the record up, or the lookup runs for
+        // Rihla and a company's own departure answers 404 (Phase 2b). After
+        // authentication, which the default priority already puts first.
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: UseRequestedCompany::class);
+
         $middleware->web(append: [
             SetLocale::class,
         ]);
@@ -36,6 +44,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // panels: the leader portal, the old admin screens, profile,
             // devices, staff documents (site audit).
             'mfa' => RequireSecondFactor::class,
+            // A print or download opened from a company's panel works for
+            // that company (companies plan, Phase 2b).
+            'company.request' => UseRequestedCompany::class,
             'portal' => PortalSession::class,
             'family' => FamilySession::class,
             // A guest's own stay — §16.7. Its own session, never the portal's.
