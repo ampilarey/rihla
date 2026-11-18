@@ -609,10 +609,53 @@ class Departure extends Model
         return $query->whereNotIn('status', [self::SETTLED, self::CANCELLED]);
     }
 
-    /** @param Builder<$this> $query */
+    /**
+     * Dated and still to fly. The public site's view: a departure with no
+     * dates is never offered there.
+     *
+     * @param  Builder<$this>  $query
+     */
     public function scopeUpcoming($query)
     {
         return $query->where('date_start', '>=', now()->startOfDay());
+    }
+
+    /**
+     * Still to fly, or not yet dated — the office's view. A departure
+     * waiting for its dates (companies plan, Phase 3b) is ahead, not gone,
+     * and a screen that asks for `date_start >= today` silently loses it.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeAheadOrUndated($query)
+    {
+        return $query->where(self::aheadOrUndatedFilter());
+    }
+
+    /**
+     * The same, as a closure for `whereHas('departure', …)`, where the
+     * scope is out of Larastan's sight.
+     */
+    public static function aheadOrUndatedFilter(): \Closure
+    {
+        return fn ($q) => $q->where(fn ($w) => $w->whereNull('date_start')->orWhere('date_start', '>=', now()->startOfDay()));
+    }
+
+    /**
+     * Not over by the given day: it ends on or after it, or has no dates
+     * yet. For the office's "recent and upcoming" lists.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeNotOverBy($query, \DateTimeInterface $day)
+    {
+        return $query->where(self::notOverByFilter($day));
+    }
+
+    /** The same, as a closure for `whereHas('departure', …)`. */
+    public static function notOverByFilter(\DateTimeInterface $day): \Closure
+    {
+        return fn ($q) => $q->where(fn ($w) => $w->whereNull('date_end')->orWhere('date_end', '>=', $day));
     }
 
     /** @return list<string> */

@@ -27,7 +27,7 @@ class EmergencyBroadcastForm
                     ->live()
                     ->options(fn (): array => Departure::query()
                         ->with('package')
-                        ->where('date_end', '>=', now()->subWeek())
+                        ->notOverBy(now()->subWeek())
                         ->orderBy('date_start')
                         ->get()
                         ->mapWithKeys(fn (Departure $departure): array => [

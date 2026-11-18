@@ -26,7 +26,7 @@ class RollCallForm
                         // A count is taken on the trip, so the list runs
                         // from a little before departure to a little after
                         // the return.
-                        ->where('date_end', '>=', now()->subWeeks(2))
+                        ->notOverBy(now()->subWeeks(2))
                         ->orderBy('date_start')
                         ->get()
                         ->mapWithKeys(fn (Departure $departure): array => [

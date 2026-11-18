@@ -53,7 +53,7 @@ final class Reengagement
             ->active()
             ->whereIn(
                 'departure_id',
-                Departure::query()->whereDate('date_start', '>=', now()->toDateString())->select('id'),
+                Departure::query()->aheadOrUndated()->select('id'),
             )
             ->pluck('customer_id')
             ->unique();

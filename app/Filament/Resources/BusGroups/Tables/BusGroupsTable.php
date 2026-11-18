@@ -6,6 +6,7 @@ use App\Filament\Support\DepartureOptions;
 use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\BusGroup;
+use App\Models\Departure;
 use App\Services\Operations\Buses;
 use App\Services\Operations\Families;
 use App\Support\CompanyRequest;
@@ -84,7 +85,7 @@ class BusGroupsTable
                     ->default()
                     ->query(fn (Builder $query): Builder => $query->whereHas(
                         'departure',
-                        fn ($q) => $q->where('date_end', '>=', now()->startOfDay()),
+                        Departure::notOverByFilter(now()->startOfDay()),
                     )),
             ])
             ->recordActions([

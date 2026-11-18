@@ -67,7 +67,7 @@ class DailySummary
                 ->open()
                 ->whereNotNull('due_on')
                 ->whereDate('due_on', '<', today())
-                ->whereHas('departure', fn ($departure) => $departure->where('date_end', '>=', today()))
+                ->whereHas('departure', Departure::notOverByFilter(today()))
                 ->count();
             $queue[] = $n > 0 ? self::count($n, 'checklist item').' overdue (/checklist)' : null;
         }
@@ -119,8 +119,10 @@ class DailySummary
     {
         return Departure::query()
             ->notHistory()
-            ->where('date_end', '>=', today())
+            ->notOverBy(today())
             ->with('package')
+            // Undated last: "the next departure" is one with a date.
+            ->orderByRaw('date_start is null')
             ->orderBy('date_start')
             ->get();
     }

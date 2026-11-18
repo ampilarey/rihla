@@ -6,6 +6,7 @@ use App\Filament\Resources\Announcements\Pages\ListAnnouncements;
 use App\Filament\Resources\Announcements\Schemas\AnnouncementForm;
 use App\Filament\Resources\Announcements\Tables\AnnouncementsTable;
 use App\Models\Announcement;
+use App\Models\Departure;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -57,7 +58,7 @@ class AnnouncementResource extends Resource
     {
         $waiting = Announcement::query()
             ->whereNull('published_at')
-            ->whereHas('departure', fn ($query) => $query->where('date_end', '>=', now()->subDays(7)))
+            ->whereHas('departure', Departure::notOverByFilter(now()->subDays(7)))
             ->count();
 
         return $waiting > 0 ? (string) $waiting : null;

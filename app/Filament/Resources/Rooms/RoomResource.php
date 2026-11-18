@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Rooms;
 use App\Filament\Resources\Rooms\Pages\ListRooms;
 use App\Filament\Resources\Rooms\Schemas\RoomForm;
 use App\Filament\Resources\Rooms\Tables\RoomsTable;
+use App\Models\Departure;
 use App\Models\DepartureHotel;
 use App\Models\Room;
 use App\Support\Rooming;
@@ -62,7 +63,7 @@ class RoomResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $unsettled = DepartureHotel::query()
-            ->whereHas('departure', fn ($query) => $query->where('date_start', '>=', now()->startOfDay()))
+            ->whereHas('departure', Departure::aheadOrUndatedFilter())
             ->with(['rooms.assignments.traveller', 'departure'])
             ->get()
             ->filter(fn (DepartureHotel $hotel): bool => ! Rooming::isSettled($hotel))

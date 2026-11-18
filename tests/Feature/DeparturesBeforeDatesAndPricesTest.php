@@ -13,6 +13,7 @@ use App\Filament\Resources\Bookings\BookingResource;
 use App\Filament\Resources\Packages\PackageResource;
 use App\Filament\Resources\Packages\Pages\EditPackage;
 use App\Filament\Resources\Packages\RelationManagers\DeparturesRelationManager;
+use App\Filament\Support\DepartureOptions;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
@@ -21,6 +22,7 @@ use App\Models\Payment;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Booking\BookingDesk;
+use App\Services\Telegram\DailySummary;
 use App\Support\Access;
 use App\Support\DepartureReadiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -168,5 +170,29 @@ class DeparturesBeforeDatesAndPricesTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $this->party($departure, 'double');
+    }
+
+    /**
+     * The office's lists of "upcoming" departures asked for a date on or
+     * after today, which an undated departure never matches: it could not
+     * be picked at the booking desk, for a bus, a room or a broadcast. The
+     * public site's `upcoming()` still leaves it out.
+     */
+    public function test_the_office_lists_offer_a_departure_without_dates_and_the_website_does_not(): void
+    {
+        $departure = $this->dateless();
+        $past = Departure::factory()->withSeats(20)->create(['date_start' => now()->subYear(), 'date_end' => now()->subYear()->addDays(14)]);
+
+        $this->assertArrayHasKey($departure->id, DepartureOptions::all(recentOnly: true));
+        $this->assertArrayNotHasKey($past->id, DepartureOptions::all(recentOnly: true));
+        $this->assertTrue(Departure::query()->aheadOrUndated()->whereKey($departure->id)->exists());
+        $this->assertFalse(Departure::query()->aheadOrUndated()->whereKey($past->id)->exists());
+        $this->assertFalse(Departure::query()->upcoming()->whereKey($departure->id)->exists());
+
+        $dated = Departure::factory()->withSeats(20)->create(['date_start' => now()->addMonth(), 'date_end' => now()->addMonth()->addDays(14)]);
+        $this->assertSame([$dated->id, $departure->id], DailySummary::upcoming()->pluck('id')->all(), 'Undated after dated.');
+
+        $this->actingAs(User::factory()->create()->assignRole(Access::SUPER_ADMIN));
+        $this->get(BookingResource::getUrl('create'))->assertOk()->assertSee(DepartureOptions::label($departure->load('package')));
     }
 }

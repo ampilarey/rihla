@@ -68,7 +68,7 @@ class NusukGate extends Page implements HasTable
 
         $open = Departure::query()
             ->notHistory()
-            ->where('date_end', '>=', today())
+            ->notOverBy(today())
             ->get()
             ->filter(fn (Departure $departure): bool => NusukPermit::missingPrerequisites($departure) !== [])
             ->count();
@@ -84,7 +84,7 @@ class NusukGate extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(Departure::query()->notHistory()->where('date_end', '>=', today())->with('package'))
+            ->query(Departure::query()->notHistory()->notOverBy(today())->with('package'))
             ->defaultSort('date_start')
             ->columns([
                 TextColumn::make('label')

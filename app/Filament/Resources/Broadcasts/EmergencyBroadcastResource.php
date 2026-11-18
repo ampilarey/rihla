@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Broadcasts;
 use App\Filament\Resources\Broadcasts\Pages\ListEmergencyBroadcasts;
 use App\Filament\Resources\Broadcasts\Schemas\EmergencyBroadcastForm;
 use App\Filament\Resources\Broadcasts\Tables\EmergencyBroadcastsTable;
+use App\Models\Departure;
 use App\Models\EmergencyBroadcast;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -48,7 +49,7 @@ class EmergencyBroadcastResource extends Resource
     {
         $unsent = EmergencyBroadcast::query()
             ->whereNull('sent_at')
-            ->whereHas('departure', fn ($query) => $query->where('date_end', '>=', now()->subDays(7)))
+            ->whereHas('departure', Departure::notOverByFilter(now()->subDays(7)))
             ->count();
 
         return $unsent > 0 ? (string) $unsent : null;
