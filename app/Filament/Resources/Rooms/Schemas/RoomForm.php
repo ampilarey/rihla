@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Rooms\Schemas;
 
+use App\Models\Departure;
 use App\Models\DepartureHotel;
 use App\Models\Room;
 use Filament\Forms\Components\Select;
@@ -24,7 +25,7 @@ class RoomForm
                     // Upcoming departures only: adding a room to a trip
                     // that came home last March is always a mis-click.
                     ->options(fn (): array => DepartureHotel::query()
-                        ->whereHas('departure', fn ($query) => $query->where('date_start', '>=', now()->startOfDay()))
+                        ->whereHas('departure', Departure::aheadOrUndatedFilter())
                         ->with('departure.package')
                         ->get()
                         ->mapWithKeys(fn (DepartureHotel $hotel): array => [

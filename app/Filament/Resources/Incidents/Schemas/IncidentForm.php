@@ -29,7 +29,7 @@ class IncidentForm
                         ->with('package')
                         // Not upcoming-only: an incident is typed up on the
                         // trip, and often on the last day or after landing.
-                        ->where('date_end', '>=', now()->subMonths(3))
+                        ->notOverBy(now()->subMonths(3))
                         ->orderByDesc('date_start')
                         ->get()
                         ->mapWithKeys(fn (Departure $departure): array => [

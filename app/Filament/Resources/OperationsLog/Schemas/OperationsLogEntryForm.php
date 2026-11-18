@@ -22,7 +22,7 @@ class OperationsLogEntryForm
                     ->preload()
                     ->options(fn (): array => Departure::query()
                         ->with('package')
-                        ->where('date_end', '>=', now()->subMonths(3))
+                        ->notOverBy(now()->subMonths(3))
                         ->orderByDesc('date_start')
                         ->get()
                         ->mapWithKeys(fn (Departure $departure): array => [

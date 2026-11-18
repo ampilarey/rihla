@@ -22,7 +22,7 @@ class AnnouncementForm
                     ->preload()
                     ->options(fn (): array => Departure::query()
                         ->with('package')
-                        ->where('date_end', '>=', now()->subMonth())
+                        ->notOverBy(now()->subMonth())
                         ->orderBy('date_start')
                         ->get()
                         ->mapWithKeys(fn (Departure $departure): array => [

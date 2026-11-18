@@ -5,6 +5,7 @@ namespace App\Filament\Resources\RollCalls;
 use App\Filament\Resources\RollCalls\Pages\ListRollCalls;
 use App\Filament\Resources\RollCalls\Schemas\RollCallForm;
 use App\Filament\Resources\RollCalls\Tables\RollCallsTable;
+use App\Models\Departure;
 use App\Models\RollCall;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -58,7 +59,7 @@ class RollCallResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $unsettled = RollCall::query()
-            ->whereHas('departure', fn ($query) => $query->where('date_end', '>=', now()->startOfDay()))
+            ->whereHas('departure', Departure::notOverByFilter(now()->startOfDay()))
             ->with(['marks.traveller', 'departure'])
             ->get()
             ->filter(fn (RollCall $rollCall): bool => ! $rollCall->isSettled())

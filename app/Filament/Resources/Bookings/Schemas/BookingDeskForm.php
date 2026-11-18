@@ -153,7 +153,7 @@ class BookingDeskForm
     {
         return Departure::query()
             ->with('package')
-            ->upcoming()
+            ->aheadOrUndated()
             ->where('capacity_total', '>', 0)
             ->orderBy('date_start')
             ->get()

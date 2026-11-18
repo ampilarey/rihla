@@ -20,7 +20,7 @@ final class DepartureOptions
     {
         return Departure::query()
             ->with('package')
-            ->when($recentOnly, fn ($query) => $query->where('date_end', '>=', now()->subMonths(3)))
+            ->when($recentOnly, Departure::notOverByFilter(now()->subMonths(3)))
             ->orderByDesc('date_start')
             ->get()
             ->mapWithKeys(fn (Departure $departure): array => [$departure->getKey() => self::label($departure)])

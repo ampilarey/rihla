@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Rooms\Tables;
 
+use App\Models\Departure;
 use App\Models\DepartureHotel;
 use App\Models\Room;
 use App\Models\RoomAssignment;
@@ -92,7 +93,7 @@ class RoomsTable
                     ->default()
                     ->query(fn (Builder $query): Builder => $query->whereHas(
                         'hotel.departure',
-                        fn ($q) => $q->where('date_start', '>=', now()->startOfDay()),
+                        Departure::aheadOrUndatedFilter(),
                     )),
             ])
             ->recordActions([

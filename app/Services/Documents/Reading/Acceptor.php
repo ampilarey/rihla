@@ -3,6 +3,7 @@
 namespace App\Services\Documents\Reading;
 
 use App\Models\Booking;
+use App\Models\Departure;
 use App\Models\Document;
 use App\Models\DocumentExtraction;
 use App\Models\Traveller;
@@ -123,7 +124,7 @@ class Acceptor
             ->whereIn('status', [VisaApplication::NOT_STARTED, VisaApplication::PREPARING, VisaApplication::SUBMITTED])
             ->whereHas('booking', fn ($booking) => $booking
                 ->whereIn('status', [Booking::HELD, Booking::CONFIRMED])
-                ->whereHas('departure', fn ($departure) => $departure->where('date_end', '>=', today())))
+                ->whereHas('departure', Departure::notOverByFilter(today())))
             ->orderByDesc('id')
             ->first();
     }

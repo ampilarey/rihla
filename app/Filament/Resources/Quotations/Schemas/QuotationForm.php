@@ -55,7 +55,7 @@ class QuotationForm
                     ->label('Departure')
                     ->searchable()
                     ->options(fn (): array => Departure::query()
-                        ->whereDate('date_start', '>=', now()->toDateString())
+                        ->aheadOrUndated()
                         ->orderBy('date_start')
                         ->with('package')
                         ->get()
