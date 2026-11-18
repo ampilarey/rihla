@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\DocumentVersion;
 use App\Models\Payment;
+use App\Support\CompanyContext;
 use App\Support\EncryptedFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -28,7 +29,16 @@ class EncryptStoredFiles extends Command
 
     protected $description = 'Encrypt identity documents and payment slips written before encryption at rest';
 
+    /**
+     * Rihla's operator tool, so it sees every company's rows by design
+     * (companies plan, Phase 1b); nothing a company's staff can start.
+     */
     public function handle(): int
+    {
+        return app(CompanyContext::class)->acrossEveryCompany(fn (): int => $this->work());
+    }
+
+    private function work(): int
     {
         if (! EncryptedFile::enabled()) {
             $this->error('Refusing to run: documents.encrypt_at_rest is off.');

@@ -102,7 +102,7 @@ class CompanyRecordsTest extends TestCase
         $departure = app(CompanyContext::class)->as($coral->id, fn () => Departure::factory()->create());
 
         // Outside the context: the child copies its parent, not the default.
-        $this->assertSame($coral->id, $departure->package->company_id);
+        $this->assertSame($coral->id, app(CompanyContext::class)->as($coral->id, fn () => $departure->package?->company_id));
         $this->assertSame($coral->id, $departure->company_id);
         $this->assertSame($coral->id, $departure->priceTiers()->create([
             'occupancy' => 'double', 'pax_type' => 'adult', 'amount_minor' => 100, 'currency' => 'MVR',
