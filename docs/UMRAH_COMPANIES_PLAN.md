@@ -191,7 +191,15 @@ Decided (13, 14): **a registration fee, then features one by one.**
 Every phase goes to test.rihla.mv first and is promoted to production by
 hand, as now. Rihla's own Umrah business keeps working throughout.
 
-### Phase 1: the Umrah side becomes company-aware (largest)
+### Phase 1: the Umrah side becomes company-aware (largest) — done
+
+**Done, November 2026,** in #187 (1a), #188 (1b), #189 (1c), #190 (1d),
+#191 (1e) and the pull request carrying 1f. The mechanism is recorded in
+[ADR 0009](adr/0009-one-database-every-umrah-record-tagged.md), and the
+release gate is `CompanyIsolationTest`. Rihla's staff see no difference.
+A second company created by hand is walled off from every staff list,
+record page, download, printable list and portal link.
+
 - `company_id` on every Umrah table (see the inventory below for why not
   `partner_id`); existing rows backfilled to Rihla's
   own partner record, in reversible migrations with literals, rehearsed on
