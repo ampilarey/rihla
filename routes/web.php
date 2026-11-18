@@ -380,6 +380,8 @@ Route::middleware(['auth', 'mfa', 'company.request'])->group(function () {
         ->name('staff.invoice');
     Route::get('/staff-documents/payment/{payment}/receipt', [StaffInvoiceController::class, 'receipt'])
         ->name('staff.receipt');
+    Route::get('/staff-documents/excursion/{excursionBooking}/invoice', [StaffInvoiceController::class, 'excursion'])
+        ->name('staff.excursion-invoice');
 
     // The lists a departure runs on, the cards and the tags — Hijaz's
     // ground operations. Authenticated and authorised by permission, not

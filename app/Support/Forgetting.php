@@ -94,6 +94,9 @@ final class Forgetting
         // A stay belongs to one customer and is reached straight from them,
         // the same way a booking is — §15.4.
         'stays' => 'customer',
+        // An additional trip's places (Phase 3e): the booker's own record, and
+        // a payable whose payments the command reaches by type.
+        'excursion_bookings' => 'customer',
 
         // The people on a stay's register. Reached through the stay, the
         // way a traveller's records are reached through the traveller.
@@ -156,6 +159,7 @@ final class Forgetting
         'departure_transfers' => 'A coach or car a whole departure takes; the contact is the driver or the company, not a customer.',
         'bus_groups' => 'A coach a whole departure rides; whoever is named at its door is staff or a volunteer, not a customer.',
         'islands' => 'The inhabited islands, a list of places. Nothing in a row is about anybody.',
+        'departure_excursions' => 'An additional trip a whole departure may take; the provider is a business, not a customer.',
         'flight_groups' => 'The people of a departure on one flight out and home; the group is a timetable fact, not one customer.',
         'departure_events' => 'A departure\'s own moves along its lifecycle; whoever moved it is staff.',
         'telegram_links' => 'A staff account\'s own Telegram chat. A member of staff leaving is a different procedure.',

@@ -27,6 +27,8 @@ use App\Filament\Resources\Customers\CustomerResource;
 use App\Filament\Resources\Documents\DocumentResource;
 use App\Filament\Resources\Enquiries\EnquiryResource;
 use App\Filament\Resources\ExchangeRates\ExchangeRateResource;
+use App\Filament\Resources\ExcursionBookings\ExcursionBookingResource;
+use App\Filament\Resources\Excursions\ExcursionResource;
 use App\Filament\Resources\FlightGroups\FlightGroupResource;
 use App\Filament\Resources\Flights\DepartureFlightResource;
 use App\Filament\Resources\Incidents\IncidentResource;
@@ -113,6 +115,8 @@ class CompanyPanelProvider extends PanelProvider
         RoomResource::class,
         BusGroupResource::class,
         FlightGroupResource::class,
+        ExcursionResource::class,
+        ExcursionBookingResource::class,
         DepartureFlightResource::class,
         DepartureTransferResource::class,
         DepartureChecklistItemResource::class,
