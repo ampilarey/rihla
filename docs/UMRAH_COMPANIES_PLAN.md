@@ -249,6 +249,17 @@ hand, as now. Rihla's own Umrah business keeps working throughout.
 
 ## Hosting notes
 
+- **Wildcard subdomains: confirmed, November 2026.** A made-up name
+  (`zz-wildcard-check-7319.rihla.mv`) resolves through Cloudflare to the
+  same addresses as `test.rihla.mv`, loads over HTTPS with a valid
+  certificate (Cloudflare's covers first-level names such as
+  `coral.rihla.mv`), and reaches the cPanel server, which serves its default
+  page because nothing is attached yet. **Left for Phase 4:** add a wildcard
+  subdomain `*.rihla.mv` in cPanel pointing at the app's document root, so
+  every company's address reaches the app, which maps the name to the
+  company. A name two levels deep (`a.b.rihla.mv`) is not covered by the
+  free certificate, so company names stay one level.
+
 - **Wildcard**: `*.rihla.mv` needs a DNS record and a certificate covering
   it. If the host cannot issue one, each company's subdomain is added by
   hand in cPanel, as `hijaz.rihla.mv` was. Guesthouse hosts and Umrah
@@ -275,19 +286,16 @@ hand, as now. Rihla's own Umrah business keeps working throughout.
 Answered November 2026 (decisions 13 to 18): the registration fee and
 paid features, no card payments through Rihla's BML, each company's own
 admin panel, licences checked by Rihla's admin, and each company's own app.
+Wildcard subdomains were checked and work (see "Hosting notes").
 
 Still open:
 
-1. **Wildcard subdomains.** The owner believes the host supports
-   `*.rihla.mv` with a certificate; it must be confirmed in cPanel (a
-   wildcard DNS record and a wildcard or auto-issued certificate) before
-   Phase 4. If not, each company's subdomain is added by hand.
-2. **The registration fee's amount** and each feature's price, set by
+1. **The registration fee's amount** and each feature's price, set by
    Rihla's admin when the tools exist (Phase 5).
-3. **Where the company admin panel lives:** at `company.rihla.mv/admin`
+2. **Where the company admin panel lives:** at `company.rihla.mv/admin`
    (on the company's own address), or one shared login page. The plan
    assumes the company's own address.
-4. **Which register a licence is checked against** (the Ministry of
+3. **Which register a licence is checked against** (the Ministry of
    Islamic Affairs' list of Hajj and Umrah operators, or another), and
    whether the licence number and expiry are stored and shown.
 
