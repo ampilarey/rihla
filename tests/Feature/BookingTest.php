@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\DeskRefusal;
 use App\Exceptions\IllegalBookingTransition;
 use App\Models\Booking;
 use App\Models\BookingLine;
@@ -14,6 +15,7 @@ use App\Models\Traveller;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -326,7 +328,17 @@ class BookingTest extends TestCase
         $departure = Departure::factory()->withSeats(10)->create();
         $this->booking(['departure_id' => $departure->getKey()]);
 
-        $this->expectException(QueryException::class);
+        // The database still refuses underneath, for anything that goes
+        // round the model.
+        try {
+            DB::table('departures')->where('id', $departure->getKey())->delete();
+            $this->fail('The restrict on bookings.departure_id is gone.');
+        } catch (QueryException) {
+            // As it should.
+        }
+
+        // And the model says so in words first (companies plan, Phase 3a).
+        $this->expectException(DeskRefusal::class);
 
         $departure->delete();
     }

@@ -420,7 +420,10 @@ class DeparturesRelationManager extends RelationManager
                 SelectFilter::make('status')->label('Stage')->options(Departure::LABELS)->multiple(),
             ])
             ->headerActions([CreateAction::make()])
-            ->recordActions([self::stageActions(), self::readinessAction(), self::copyAction(), EditAction::make(), DeleteAction::make()])
+            ->recordActions([self::stageActions(), self::readinessAction(), self::copyAction(), EditAction::make(), DeleteAction::make()
+                // Only while nobody has booked it (Phase 3a); the policy
+                // and the model refuse too.
+                ->visible(fn (Departure $record): bool => ! $record->bookings()->exists())])
             ->emptyStateHeading('No departures yet')
             ->emptyStateDescription('A departure is one dated run of this package.');
     }
