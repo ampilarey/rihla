@@ -25,6 +25,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
 
 class FlightGroupsTable
@@ -185,9 +186,9 @@ class FlightGroupsTable
     /**
      * Everybody on the departure who is not in this group yet.
      *
-     * @return \Illuminate\Support\Collection<int, BookingTraveller>
+     * @return Collection<int, BookingTraveller>
      */
-    private static function pool(FlightGroup $record): \Illuminate\Support\Collection
+    private static function pool(FlightGroup $record): Collection
     {
         return app(Buses::class)->candidates($record->departure)
             ->reject(fn (BookingTraveller $member): bool => $member->flight_group_id === $record->getKey());
