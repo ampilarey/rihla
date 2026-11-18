@@ -48,6 +48,9 @@ use App\Filament\Resources\Tasks\CrmTaskResource;
 use App\Filament\Resources\Transfers\DepartureTransferResource;
 use App\Filament\Resources\Visas\VisaApplicationResource;
 use App\Filament\Resources\Waitlist\WaitlistEntryResource;
+use App\Filament\Widgets\DashboardStats;
+use App\Filament\Widgets\MoneyChart;
+use App\Filament\Widgets\SeatsChart;
 use App\Http\Middleware\RequireSecondFactor;
 use App\Http\Middleware\UseTenantCompany;
 use App\Models\Partner;
@@ -175,6 +178,8 @@ class CompanyPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Company/Pages'), for: 'App\Filament\Company\Pages')
             ->resources(self::RESOURCES)
             ->pages([Dashboard::class, ...self::PAGES])
+            // The home page's cards and charts (Phase 3g), each behind its permission.
+            ->widgets([DashboardStats::class, MoneyChart::class, SeatsChart::class])
             ->renderHook(PanelsRenderHook::BODY_END, fn (): string => BottomNav::render())
             ->middleware([
                 EncryptCookies::class,
