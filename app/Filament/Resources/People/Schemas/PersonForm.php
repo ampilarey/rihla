@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\People\Schemas;
 
 use App\Models\Person;
+use App\Support\CompanyContext;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -14,6 +15,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 
 class PersonForm
 {
@@ -34,7 +36,7 @@ class PersonForm
                         }
                     }),
 
-                TextInput::make('slug')->required()->maxLength(255)->unique(ignoreRecord: true),
+                TextInput::make('slug')->required()->maxLength(255)->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => CompanyContext::uniqueWithin($rule)),
 
                 Select::make('role')
                     ->options([

@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `packages.slug` and `people.slug` unique per company
+        // (companies plan, Phase 1e). Left recorded while `packages` is
+        // re-created below, it would come back with the old rule.
+        __DIR__.'/../../database/migrations/2026_11_18_120000_make_public_slugs_per_company.php',
         // Newest of all: `customers.user_id` unique per company (companies
         // plan, Phase 1c). Left recorded while the booking domain is
         // re-created below, `customers` would come back with the old rule.

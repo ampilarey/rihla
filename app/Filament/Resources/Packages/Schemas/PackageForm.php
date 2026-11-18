@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Packages\Schemas;
 
 use App\Models\Package;
+use App\Support\CompanyContext;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -14,6 +15,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * The package form, in both languages.
@@ -46,7 +48,7 @@ class PackageForm
                 TextInput::make('slug')
                     ->required()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true)
+                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => CompanyContext::uniqueWithin($rule))
                     ->helperText('The public URL. Changing it breaks existing links.')
                     // Only on create: a slug that follows the title around
                     // would silently change a live package's URL every time
