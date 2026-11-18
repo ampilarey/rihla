@@ -25,6 +25,12 @@ Rihla. Hijaz Hajj & Umrah will be one of them.
 | 10 | **Hosting starts on cPanel** and moves when it grows (ADR 0002 already names the triggers) |
 | 11 | **Any company may be the pilot.** Hijaz moves in after the build is complete |
 | 12 | **A company must be able to leave:** its data exported in full, and a dedicated installation on its own hosting kept possible |
+| 13 | **A registration fee, set by Rihla's admin.** Once it is paid, the company can set up its **basic website** |
+| 14 | **Everything beyond the basic website is a paid feature,** switched on by Rihla's admin when it is paid for |
+| 15 | **No card payments through Rihla's BML gateway** for other companies. They take bank transfer and cash, or bring their own merchant account later |
+| 16 | **Each company has its own admin panel** |
+| 17 | **Rihla's admin checks each company's licence** before it is added |
+| 18 | **Each company gets its own installable app (PWA)** under its own name, icon and colours. A native mobile app is planned later |
 
 ## What already exists here (read before planning any phase)
 
@@ -106,8 +112,22 @@ not claim a technical guarantee it cannot give.
 
 ## Features a company pays for
 
-- A **plan** is a named set of features; a company has one plan plus
-  optional add-ons. Three or four plans, not a price per feature.
+Decided (13, 14): **a registration fee, then features one by one.**
+
+- **Registration fee.** Set by Rihla's admin, per company or as a default.
+  Until it is marked paid, the company exists but cannot publish anything.
+  Once paid, the company can set up its **basic website**: theme, logo,
+  colours, words, photographs, trips shown, contact and enquiry form.
+- **Every other feature is paid and switched on by Rihla's admin** when the
+  company has paid for it: bookings and payments, pilgrims and documents,
+  visas, buses and rooms, lists, cards and Scan, the books, the customer
+  portal, the Telegram bot, document reading, the installable app, own
+  domain, extra staff seats, and the rest.
+- **Rihla's admin sets every price.** The product records what is on and
+  what was paid; it does not take card payments from companies (billing is
+  by hand at first, see "Later").
+- Grouping features into named plans stays possible later, as a
+  convenience for the admin; the rule is still one switch per feature.
 - `Services` grows from one row for the site to **a set per company**; the
   owner sets it when adding or changing a company. Rihla's own company has
   everything.
@@ -115,9 +135,28 @@ not claim a technical guarantee it cannot give.
   commands are absent for that company, not merely hidden.
 - **Downgrade keeps the data** and makes that area read-only. Nothing is
   deleted by a plan change.
-- Candidate add-ons (the owner decides): Telegram bot, document reading,
-  card payments, the books, the ground pages, the installable apps, own
-  domain, extra staff seats.
+- **Card payments are not a feature Rihla can sell (15).** Rihla's BML
+  gateway is for Rihla only. A company's customers pay by bank transfer
+  (slip uploaded and verified, as here) or cash. A company that later has
+  its own merchant account could have its own gateway credentials stored
+  on the company; that is a later decision, not in the first version.
+
+## Each company's installable app (18)
+
+- **Yes, each company gets its own installable app** (a PWA, as rihla.mv's
+  is today): its own name, icon, colours and start page, served from its
+  own address, so a pilgrim installs "Coral Umrah", not Rihla. The
+  manifest, icons and service worker are generated per company, and the
+  offline cache is kept per company so two companies' apps on one phone
+  never mix.
+- It is a paid feature (14) unless the owner decides it comes with the
+  basic website.
+- **A native mobile app later.** To keep that cheap, the customer and
+  leader screens are built on the same company-scoped data the web uses,
+  so a future app reads an API rather than needing a second system. One
+  native app can serve every company (the pilgrim picks or is linked to
+  theirs) or each company can have its own store listing; that is decided
+  when the app is built.
 
 ## Each company's website and theme
 
@@ -233,14 +272,24 @@ hand, as now. Rihla's own Umrah business keeps working throughout.
 
 ## Open questions for the owner
 
-1. The plans: what is in each, and the prices.
-2. Which features are add-ons.
-3. May a company take card payments through Rihla's BML account, or only
-   bank transfer and cash until it has its own merchant account? (ADR 0008:
-   BML pays one account and cannot split.)
-4. What the company panel is called and where it lives (`/company`?).
-5. Does the host allow a wildcard subdomain with a certificate?
-6. Who checks a company's licence, and against which register?
+Answered November 2026 (decisions 13 to 18): the registration fee and
+paid features, no card payments through Rihla's BML, each company's own
+admin panel, licences checked by Rihla's admin, and each company's own app.
+
+Still open:
+
+1. **Wildcard subdomains.** The owner believes the host supports
+   `*.rihla.mv` with a certificate; it must be confirmed in cPanel (a
+   wildcard DNS record and a wildcard or auto-issued certificate) before
+   Phase 4. If not, each company's subdomain is added by hand.
+2. **The registration fee's amount** and each feature's price, set by
+   Rihla's admin when the tools exist (Phase 5).
+3. **Where the company admin panel lives:** at `company.rihla.mv/admin`
+   (on the company's own address), or one shared login page. The plan
+   assumes the company's own address.
+4. **Which register a licence is checked against** (the Ministry of
+   Islamic Affairs' list of Hajj and Umrah operators, or another), and
+   whether the licence number and expiry are stored and shown.
 
 ## For the session that builds this
 
