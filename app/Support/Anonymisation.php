@@ -195,6 +195,11 @@ final class Anonymisation
         // The people of a departure on one flight (companies plan, Phase
         // 3c). Its name and flights are timetable facts; the note is free text.
         'flight_groups' => ['notes' => 'text'],
+        // Additional trips (Phase 3e). The trip's notes and a family's
+        // booking notes are free text; the amounts are what makes test data
+        // behave like the real thing.
+        'departure_excursions' => ['notes' => 'text'],
+        'excursion_bookings' => ['notes' => 'text'],
         'departure_checklist_items' => ['notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],
         // Site audit: thirteen of the names here did not exist — `title`
@@ -267,6 +272,8 @@ final class Anonymisation
         'booking_lines',
         'booking_status_transitions',
         'booking_travellers',
+        // A place on an additional trip: two ids and an amount (Phase 3e).
+        'excursion_participants',
         // A card or tag: a serial, a random token and a print count. The
         // person is on the booking traveller it hangs off, and the token
         // opens nothing on its own — the Scan page needs a staff login

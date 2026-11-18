@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\ExcursionBooking;
 use App\Models\Payment;
 use App\Services\Invoices\Documents;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +31,15 @@ class StaffInvoiceController extends Controller
 
         return $this->documents->invoice($booking)
             ->download($this->documents->invoiceFilename($booking));
+    }
+
+    /** An additional trip's own invoice (companies plan, Phase 3e). */
+    public function excursion(ExcursionBooking $excursionBooking): Response
+    {
+        $this->authorize('view', $excursionBooking);
+
+        return $this->documents->excursionInvoice($excursionBooking)
+            ->download('invoice-'.strtolower((string) $excursionBooking->reference).'.pdf');
     }
 
     public function receipt(Payment $payment): Response

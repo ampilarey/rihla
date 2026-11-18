@@ -5,6 +5,8 @@ namespace App\Services\Finance;
 use App\Models\Booking;
 use App\Models\Departure;
 use App\Models\DepartureCost;
+use App\Models\DepartureExcursion;
+use App\Models\ExcursionBooking;
 use App\Models\Payment;
 use App\Services\Operations\ListDocument;
 use App\Support\JourneyProfit;
@@ -66,8 +68,7 @@ final class Books
                     'on' => self::paymentDate($payment),
                     'kind' => $money->minor < 0 ? 'refund' : 'in',
                     'words' => ($money->minor < 0 ? 'Refund · ' : 'Payment · ').(string) $payment->reference
-                        .' · '.(string) ($payment->booking()->reference ?? '')
-                        .' · '.(string) ($payment->booking()?->customer->name ?? ''),
+                        .' · '.implode(' · ', self::whose($payment)),
                     'detail' => $payment->receivedWords() ?? str_replace('_', ' ', (string) $payment->method),
                     'currency' => $money->currency,
                     'in' => $money->minor > 0 ? $money->minor : 0,
@@ -121,7 +122,7 @@ final class Books
         }
 
         $payments = Payment::query()->succeeded()
-            ->where('payable_type', (new Booking)->getMorphClass())
+            ->whereIn('payable_type', self::umrahPayables())
             ->get();
 
         foreach ($payments as $payment) {
@@ -219,7 +220,7 @@ final class Books
         $to = CarbonImmutable::instance($to)->endOfDay();
 
         $payments = Payment::query()->succeeded()
-            ->where('payable_type', (new Booking)->getMorphClass())
+            ->whereIn('payable_type', self::umrahPayables())
             ->with(['payable.customer', 'reviewer'])
             ->get()
             ->filter(fn (Payment $payment): bool => self::paymentDate($payment)->between($from, $to))
@@ -237,8 +238,8 @@ final class Books
             $rows[] = [
                 'on' => self::paymentDate($payment),
                 'reference' => (string) $payment->reference,
-                'booking' => (string) ($payment->booking()->reference ?? ''),
-                'customer' => (string) ($payment->booking()?->customer->name ?? ''),
+                'booking' => self::whose($payment)[0],
+                'customer' => self::whose($payment)[1],
                 'method' => str_replace('_', ' ', (string) $payment->method),
                 'received' => $payment->receivedWords() ?? $money->format(),
                 'credited' => $money,
@@ -393,10 +394,43 @@ final class Books
     private function paymentsOn(Departure $departure): Collection
     {
         return Payment::query()->succeeded()
-            ->where('payable_type', (new Booking)->getMorphClass())
-            ->whereIn('payable_id', Booking::query()->where('departure_id', $departure->getKey())->select('id'))
+            ->where(fn ($query) => $query
+                ->where(fn ($q) => $q->where('payable_type', (new Booking)->getMorphClass())
+                    ->whereIn('payable_id', Booking::query()->where('departure_id', $departure->getKey())->select('id')))
+                // An additional trip's money is the departure's money too (Phase 3e).
+                ->orWhere(fn ($q) => $q->where('payable_type', (new ExcursionBooking)->getMorphClass())
+                    ->whereIn('payable_id', ExcursionBooking::query()->whereIn('departure_excursion_id', DepartureExcursion::query()->where('departure_id', $departure->getKey())->select('id'))->select('id'))))
             ->with(['payable.customer'])
             ->get();
+    }
+
+    /**
+     * Whose money it was: the booking's or the additional trip's reference,
+     * and the customer's name.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private static function whose(Payment $payment): array
+    {
+        $payable = $payment->payable;
+
+        if ($payable instanceof Booking || $payable instanceof ExcursionBooking) {
+            return [(string) $payable->reference, (string) ($payable->customer->name ?? '')];
+        }
+
+        return ['', ''];
+    }
+
+    /**
+     * What the cash book counts as the Umrah business's money: bookings, and
+     * the additional trips sold on them (Phase 3e). A guesthouse stay's
+     * money is the stays strand's, kept apart as it always was.
+     *
+     * @return list<string>
+     */
+    private static function umrahPayables(): array
+    {
+        return [(new Booking)->getMorphClass(), (new ExcursionBooking)->getMorphClass()];
     }
 
     /** @return Collection<int, DepartureCost> */

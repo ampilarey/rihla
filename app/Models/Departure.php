@@ -370,6 +370,16 @@ class Departure extends Model
     }
 
     /**
+     * Its additional trips, in the office's order (companies plan, Phase 3e).
+     *
+     * @return HasMany<DepartureExcursion, $this>
+     */
+    public function excursions(): HasMany
+    {
+        return $this->hasMany(DepartureExcursion::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /**
      * The legs it flies, in the order they leave (§8.3).
      *
      * @return HasMany<DepartureFlight, $this>

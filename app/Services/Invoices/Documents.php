@@ -3,6 +3,7 @@
 namespace App\Services\Invoices;
 
 use App\Models\Booking;
+use App\Models\ExcursionBooking;
 use App\Models\Payment;
 use App\Support\CompanyDetails;
 use App\Support\Contact;
@@ -59,6 +60,15 @@ final class Documents
             'booking' => $payment->booking(),
             'issuer' => $this->issuer(),
             'locale' => app()->getLocale(),
+        ]);
+    }
+
+    /** One family's places on an additional trip, in the trip's currency (Phase 3e). */
+    public function excursionInvoice(ExcursionBooking $excursionBooking): PdfDocument
+    {
+        return Pdf::loadView('pdf.excursion-invoice', [
+            'excursionBooking' => $excursionBooking->load(['customer', 'booking', 'excursion', 'participants.bookingTraveller.traveller']),
+            'issuer' => $this->issuer(),
         ]);
     }
 

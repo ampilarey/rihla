@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Payments\Tables;
 
 use App\Exceptions\RoomNotAvailable;
 use App\Models\Booking;
+use App\Models\ExcursionBooking;
 use App\Models\Payment;
 use App\Models\Stay;
 use App\Services\Payments\Ledger;
@@ -41,7 +42,10 @@ class PaymentsTable
                     ->label('Payment')
                     ->searchable()
                     ->copyable()
-                    ->description(fn (Payment $record): ?string => $record->booking()?->reference),
+                    ->description(fn (Payment $record): ?string => $record->payable instanceof ExcursionBooking
+                        // An additional trip's money says whose places it is for (Phase 3e).
+                        ? $record->payable->reference.' · '.$record->payable->excursion->title
+                        : $record->booking()?->reference),
 
                 TextColumn::make('amount_minor')
                     ->label('Amount')

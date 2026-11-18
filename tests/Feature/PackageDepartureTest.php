@@ -57,6 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `excursion_bookings` hangs off `bookings` and
+        // `customers`, `excursion_participants` off `booking_travellers`,
+        // and `departure_excursions` off `departures` (companies plan,
+        // Phase 3e).
+        __DIR__.'/../../database/migrations/2026_11_19_190000_create_excursions.php',
         // Newest of all: `departure_hotels.leaves_by` (companies plan,
         // Phase 3d). Left recorded while the table is re-created below, it
         // would come back without the column.
