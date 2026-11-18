@@ -4,6 +4,7 @@ namespace App\Services\Invoices;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Support\CompanyDetails;
 use App\Support\Contact;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as PdfDocument;
@@ -82,12 +83,13 @@ final class Documents
      */
     public function issuer(): array
     {
-        return [
+        // Another company's own details when printed for it (Phase 2c).
+        return CompanyDetails::issuer([
             'name' => (string) config('invoices.issuer.name'),
             'registration' => config('invoices.issuer.registration'),
             'address' => config('invoices.issuer.address'),
             'email' => config('invoices.issuer.email'),
             'phone' => Contact::displayNumber(),
-        ];
+        ]);
     }
 }

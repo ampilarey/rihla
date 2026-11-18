@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\EditorialStandardNotMet;
 use App\Models\Concerns\BelongsToCompany;
+use App\Support\CompanyDetails;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -139,9 +140,14 @@ class Quotation extends Model
      */
     public function makeReference(): string
     {
+        $prefix = CompanyDetails::referencePrefix($this->company_id, 'Q', 'RIH-Q');
+
+        // Checked across every company: the index is global, and the
+        // company scope would otherwise hide another company's quotation
+        // holding the same random number (Phase 2c).
         do {
-            $reference = 'RIH-Q-'.now()->format('Y').'-'.str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
-        } while (static::where('reference', $reference)->exists());
+            $reference = $prefix.'-'.now()->format('Y').'-'.str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        } while (static::withoutGlobalScope('company')->where('reference', $reference)->exists());
 
         return $reference;
     }

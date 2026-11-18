@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\TakesPayments;
+use App\Support\CompanyDetails;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -66,12 +67,13 @@ final class BankTransfer implements PaymentGateway
      */
     public function instructions(Money $amount): array
     {
-        $accounts = (array) config('payments.bank.accounts', []);
+        // Rihla's account, or the current company's own (Phase 2c).
+        $bank = CompanyDetails::bank();
 
         return [
-            'bank' => config('payments.bank.name'),
-            'account_name' => config('payments.bank.account_name'),
-            'account' => $accounts[$amount->currency] ?? null,
+            'bank' => $bank['bank'],
+            'account_name' => $bank['account_name'],
+            'account' => $bank['accounts'][$amount->currency] ?? null,
             'amount' => $amount->format(),
         ];
     }
@@ -79,9 +81,7 @@ final class BankTransfer implements PaymentGateway
     /** Whether there is enough on file to tell a customer where to send money. */
     public function hasAccountFor(string $currency): bool
     {
-        $accounts = (array) config('payments.bank.accounts', []);
-
-        return filled($accounts[strtoupper($currency)] ?? null);
+        return filled(CompanyDetails::bank()['accounts'][strtoupper($currency)] ?? null);
     }
 
     /**

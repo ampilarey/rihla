@@ -6,6 +6,7 @@ use App\Exceptions\IllegalPaymentTransition;
 use App\Models\Concerns\BelongsToCompany;
 use App\Services\Payments\Ledger;
 use App\Services\Telegram\Notifier;
+use App\Support\CompanyDetails;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -140,7 +141,7 @@ class Payment extends Model
     {
         return sprintf(
             '%s-%s-%s',
-            'RIH-P',
+            CompanyDetails::referencePrefix($this->company_id, 'P', 'RIH-P'),
             ($this->created_at ?? now())->format('Y'),
             str_pad((string) $this->getKey(), 4, '0', STR_PAD_LEFT),
         );

@@ -128,6 +128,7 @@ class Partner extends Model
         'is_active' => 'boolean',
         'is_rihla' => 'boolean',
         'is_umrah_company' => 'boolean',
+        'bank_accounts' => 'array',
         'registration_expires_on' => 'date',
         'verified_at' => 'datetime',
         'terms_accepted_at' => 'datetime',

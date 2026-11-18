@@ -86,6 +86,9 @@ final class Anonymisation
             // cleared, not replaced — a stand-in account would look like
             // somewhere a payout could be sent.
             'payout_account_name' => 'name', 'payout_account_number' => 'null',
+            // An Umrah company's own details (companies plan, Phase 2c): its
+            // street address and the account pilgrims pay into.
+            'address' => 'text', 'bank_account_name' => 'name', 'bank_accounts' => 'null',
         ],
         // Every account, the administrators included. The password hash is
         // left alone rather than set to something known: nobody should be
