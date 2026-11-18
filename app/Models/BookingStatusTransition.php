@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class BookingStatusTransition extends Model
 {
+    use BelongsToCompany;
+
     public const UPDATED_AT = null;
 
     protected $guarded = [];
@@ -38,5 +41,11 @@ class BookingStatusTransition extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking'];
     }
 }

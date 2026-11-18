@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Audience;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class PriceTier extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['departure_id', 'audience', 'occupancy', 'pax_type', 'amount_minor', 'currency', 'sort_order'];
 
@@ -105,5 +106,11 @@ class PriceTier extends Model
     public function getFormattedAttribute(): string
     {
         return $this->money()->format();
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure'];
     }
 }

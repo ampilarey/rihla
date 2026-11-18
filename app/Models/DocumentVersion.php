@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\EncryptedFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class DocumentVersion extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     protected $casts = [
@@ -72,5 +75,11 @@ class DocumentVersion extends Model
         }
 
         return $this->size_bytes.' B';
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['document'];
     }
 }

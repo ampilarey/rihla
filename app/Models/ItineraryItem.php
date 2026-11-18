@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class ItineraryItem extends Model
 {
-    use HasFactory, HasTranslations;
+    use BelongsToCompany, HasFactory, HasTranslations;
 
     protected $fillable = ['departure_id', 'day_number', 'title', 'description', 'city'];
 
@@ -28,5 +29,11 @@ class ItineraryItem extends Model
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure'];
     }
 }

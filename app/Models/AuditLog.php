@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class AuditLog extends Model
 {
+    use BelongsToCompany;
+
     public const CREATED = 'created';
 
     public const UPDATED = 'updated';
@@ -83,5 +86,11 @@ class AuditLog extends Model
     public function getActorAttribute(): string
     {
         return $this->user_name ?? __('System');
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['auditable'];
     }
 }

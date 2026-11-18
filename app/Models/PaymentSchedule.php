@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
  */
 class PaymentSchedule extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['booking_id', 'label', 'amount_minor', 'due_on', 'sort_order'];
 
@@ -88,5 +89,11 @@ class PaymentSchedule extends Model
         $left = $booking->paid_minor - $dueBefore;
 
         return Money::ofMinor(max(0, $this->amount_minor - max(0, $left)), $booking->currency);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking'];
     }
 }

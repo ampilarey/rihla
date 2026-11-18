@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,8 @@ use Illuminate\Support\Carbon;
  */
 class TelegramLink extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = ['user_id', 'chat_id', 'telegram_username', 'telegram_name', 'linked_at', 'revoked_at', 'last_seen_at', 'pending'];
 
     protected $casts = [
@@ -42,5 +45,15 @@ class TelegramLink extends Model
     public function scopeActive(Builder $query): void
     {
         $query->whereNull('revoked_at');
+    }
+
+    /**
+     * A root record: it takes the current company.
+     *
+     * @return list<string>
+     */
+    protected function companyParents(): array
+    {
+        return [];
     }
 }

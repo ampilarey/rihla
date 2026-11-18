@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -28,6 +29,8 @@ use Illuminate\Support\Carbon;
  */
 class DocumentExtraction extends Model
 {
+    use BelongsToCompany;
+
     public const PROPOSED = 'proposed';
 
     public const ACCEPTED = 'accepted';
@@ -78,5 +81,11 @@ class DocumentExtraction extends Model
     public function lowConfidenceFields(float $below = 0.7): array
     {
         return array_keys(array_filter($this->confidence ?? [], fn (float $c): bool => $c < $below));
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['version'];
     }
 }

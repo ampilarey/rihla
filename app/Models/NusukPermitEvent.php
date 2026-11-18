@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** One stage of one permit: from, to, who, why, and what they saw. Append-only. */
 class NusukPermitEvent extends Model
 {
+    use BelongsToCompany;
+
     public const UPDATED_AT = null;
 
     protected $guarded = [];
@@ -30,5 +33,11 @@ class NusukPermitEvent extends Model
     public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['permit', 'document'];
     }
 }

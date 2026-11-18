@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Discount extends Model
 {
+    use BelongsToCompany;
+
     /** A number of rufiyaa off. */
     public const FIXED = 'fixed';
 
@@ -71,5 +74,11 @@ class Discount extends Model
     public function isReversed(): bool
     {
         return $this->reversed_at !== null;
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking', 'line'];
     }
 }

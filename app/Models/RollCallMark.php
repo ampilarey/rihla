@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class RollCallMark extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['roll_call_id', 'traveller_id', 'state', 'note', 'marked_at'];
 
@@ -71,5 +72,11 @@ class RollCallMark extends Model
             self::EXCUSED => 'Excused',
             default => 'Unknown',
         };
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['rollCall', 'traveller'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -20,9 +21,21 @@ use Illuminate\Support\Carbon;
  */
 class TelegramUpdate extends Model
 {
+    use BelongsToCompany;
+
     public $timestamps = false;
 
     protected $fillable = ['update_id', 'chat_id', 'kind', 'command', 'received_at', 'handled_at', 'error'];
 
     protected $casts = ['received_at' => 'datetime', 'handled_at' => 'datetime'];
+
+    /**
+     * A root record: it takes the current company.
+     *
+     * @return list<string>
+     */
+    protected function companyParents(): array
+    {
+        return [];
+    }
 }

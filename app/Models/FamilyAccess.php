@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class FamilyAccess extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['booking_id', 'token_hash', 'label', 'shares_attendance', 'expires_at'];
 
@@ -54,5 +55,11 @@ class FamilyAccess extends Model
         }
 
         return null;
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking'];
     }
 }

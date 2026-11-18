@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,8 @@ use Illuminate\Support\Carbon;
  */
 class ExchangeRate extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = ['currency', 'to_currency', 'rate', 'effective_on', 'set_by', 'note'];
 
     protected $casts = [
@@ -34,5 +37,15 @@ class ExchangeRate extends Model
     public function setter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'set_by');
+    }
+
+    /**
+     * A root record: it takes the current company.
+     *
+     * @return list<string>
+     */
+    protected function companyParents(): array
+    {
+        return [];
     }
 }

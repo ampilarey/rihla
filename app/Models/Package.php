@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Audience;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +22,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class Package extends Model
 {
-    use HasFactory, HasTranslations;
+    use BelongsToCompany, HasFactory, HasTranslations;
 
     protected $fillable = [
         'slug', 'type', 'sold_to', 'property_id', 'title', 'summary', 'details', 'inclusions', 'exclusions',
@@ -344,5 +345,15 @@ class Package extends Model
     {
         return $this->type === self::UMRAH_PLUS
             && filled($this->extension_destination);
+    }
+
+    /**
+     * A root record: it takes the current company.
+     *
+     * @return list<string>
+     */
+    protected function companyParents(): array
+    {
+        return [];
     }
 }

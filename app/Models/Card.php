@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,8 @@ use Illuminate\Support\Str;
  */
 class Card extends Model
 {
+    use BelongsToCompany;
+
     public const CUSTOMER = 'customer';
 
     public const LUGGAGE = 'luggage';
@@ -101,5 +104,11 @@ class Card extends Model
     public function url(): string
     {
         return rtrim((string) config('app.url'), '/').'/staff/scan?t='.$this->qr_token;
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['bookingTraveller'];
     }
 }
