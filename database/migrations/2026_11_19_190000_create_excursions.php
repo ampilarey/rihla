@@ -66,7 +66,9 @@ return new class extends Migration
             $table->bigInteger('amount_minor')->default(0);
             $table->timestamps();
 
-            $table->unique(['excursion_booking_id', 'booking_traveller_id']);
+            // Named: the generated name is 72 characters, and MySQL refuses
+            // an identifier over 64 (SQLite does not care, so only MySQL says).
+            $table->unique(['excursion_booking_id', 'booking_traveller_id'], 'excursion_participants_place_unique');
         });
     }
 
