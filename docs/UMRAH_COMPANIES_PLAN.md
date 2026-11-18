@@ -307,7 +307,15 @@ time. The likeliest overrun is 1b: 57 models' worth of queries, some of
 which deliberately reach across rows (the board, the books, `data:forget`)
 and need a decision each.
 
-### Phase 2: the company panel
+### Phase 2: the company panel — done
+
+**Done, November 2026,** in #193 (2a), #194 (2b), #195 (2c), #196 (2d)
+and the pull request carrying 2e. The mechanism is recorded in
+[ADR 0010](adr/0010-each-company-runs-in-its-own-panel.md), and the
+release gate is `CompanyRunsATripTest`. A test company runs a trip from
+registration to return in its own panel, each person in their role,
+without touching `/staff`.
+
 - An Umrah company's own panel (the `/host` pattern: tenant, memberships,
   roles), carrying the back office that `/staff` has for Rihla, with the
   company's name and colours.
