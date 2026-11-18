@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\DeskRefusal;
 use App\Exceptions\IllegalDepartureTransition;
 use App\Models\Concerns\BelongsToCompany;
 use App\Support\Audience;
@@ -116,6 +117,16 @@ class Departure extends Model
         // reads it is lied to, and never set by hand.
         static::saving(function (Departure $departure): void {
             $departure->is_published = $departure->status === self::OPEN;
+        });
+
+        // A departure anybody has booked is never deleted, by anyone
+        // (companies plan, Phase 3a): it is cancelled, so its money and
+        // its history stay. Said in words here; otherwise the database's
+        // restrict on `bookings.departure_id` answers with an error page.
+        static::deleting(function (Departure $departure): void {
+            if ($departure->bookings()->exists()) {
+                throw new DeskRefusal('This departure has bookings, so it cannot be deleted. Cancel it instead; its money and history stay.');
+            }
         });
     }
 

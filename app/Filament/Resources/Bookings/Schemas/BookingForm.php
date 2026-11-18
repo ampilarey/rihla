@@ -8,6 +8,7 @@ use App\Models\BookingTraveller;
 use App\Models\SeatHold;
 use App\Services\Operations\Families;
 use App\Support\Money;
+use App\Support\OfficeContact;
 use App\Support\TravelReadiness;
 use Filament\Forms\Components\Textarea;
 use Filament\Infolists\Components\TextEntry;
@@ -63,6 +64,13 @@ class BookingForm
                         ->label('Who we call')
                         ->state(fn (Booking $record): ?string => app(Families::class)->forBooking($record)?->contactWords())
                         ->placeholder('No phone on file for the head or for the person who booked.'),
+
+                    // Phase 3a (Hijaz parity): who pays, signs and gets the
+                    // office's messages, which is often not the head.
+                    TextEntry::make('office_contact')
+                        ->label('Office contact')
+                        ->state(fn (Booking $record): ?string => OfficeContact::forBooking($record)->words($record->customer))
+                        ->placeholder('No phone on file for the office contact or for the person who booked.'),
 
                     // A repeater would invite editing; this is a list. Passport
                     // details are changed where they are collected, not here.

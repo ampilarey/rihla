@@ -60,7 +60,7 @@ trait ChecksPermissions
         return $this->resolveAbility($user, 'delete', $record);
     }
 
-    private function resolveAbility(User $user, string $action, ?Model $record = null): bool
+    protected function resolveAbility(User $user, string $action, ?Model $record = null): bool
     {
         $host = HostContext::current();
 

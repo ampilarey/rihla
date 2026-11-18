@@ -32,6 +32,9 @@ use Illuminate\Support\Facades\Auth;
  * model method that quietly incremented a counter would be exactly the code
  * path the plan's DB-level constraint exists to catch.
  */
+/**
+ * @property int|null $contact_traveller_id the office contact (companies plan, Phase 3a)
+ */
 class Booking extends Model implements TakesPayments
 {
     use BelongsToCompany, HasFactory, HasNotices;

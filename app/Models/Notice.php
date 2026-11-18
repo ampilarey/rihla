@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Support\OfficeContact;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -285,7 +286,10 @@ class Notice extends Model
      */
     public function whatsappUrl(): ?string
     {
-        $number = $this->customer()?->phone;
+        // About a booking, the office contact for it (Phase 3a); else the customer.
+        $number = $this->noticeable instanceof Booking
+            ? OfficeContact::forBooking($this->noticeable)->phone
+            : $this->customer()?->phone;
 
         if (blank($number)) {
             return null;

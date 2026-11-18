@@ -361,6 +361,42 @@ things directly and need each one found.
   what exists here first.
 - **Done when**: nothing an Umrah company does in the Hijaz app is missing.
 
+#### Phase 3 inventory (November 2026)
+
+Hijaz was read again at `e922821` (its last commit). Everything an Umrah
+company does there is listed below, with what Rihla already has. Each new
+table takes `company_id` and `BelongsToCompany`, and each screen is served
+in the company panel too.
+
+| Hijaz | Rihla today | Phase 3 |
+|---|---|---|
+| Delete a trip that has no bookings; refused, by policy and model, once it has one | A delete button whose database refuses with an error when bookings exist | **3a**: refused in words, by policy and model |
+| A family's head *and* its leader and contact person; a booking may name its own contact | Head of family (`is_lead`), "who we call" falls back own, head, booker | **3a**: a contact person per customer, and per booking |
+| A trip saved and booked before its dates; dates from its flights; each traveller on their own flights; fares by age on their own departure day | Dates required; one set of flights per departure | **3b** |
+| Registration before a price; no payment by any path until priced; waiting travellers priced when the price is set | A booking needs a price tier at the desk | **3b** |
+| Flight groups: the people on one flight out and home, each with its own buses and colours; airline and office lists per group | Buses per departure; lists per departure | **3c** |
+| The route: stops in order (Jeddah, Makkah, Madinah) with dates and hotels | Hotels with dates, itinerary items | **3d**: stops, if hotels and itinerary do not already say it |
+| An island list for addresses | Free-text addresses | **3d** |
+| Additional trips (Taif, Jeddah), priced in riyal and paid in Saudi Arabia, with their own bookings, participants and invoices | None | **3e** |
+| Cash and bank accounts and an append-only ledger with categories (income and spending that is not a booking, voided with a reason) | The books, computed from verified payments and paid costs | **3f**: accounts and entries, added into the books |
+| A home dashboard: six figure cards and two charts, each behind its permission | Today, Performance, Forecast pages | **3g** |
+| The customer portal with a password: sign in by mobile number, every booking, an agreement signed on screen or uploaded, travel acceptance letters, "send to customer" by WhatsApp, Viber or Telegram; installable as an app | A portal entered by a link, per booking; the site is already a PWA | **3h** |
+| Staff sign in with a mobile number as well as an e-mail; lists become cards on a phone | E-mail only; tables scroll | **3i** |
+
+**Different by design, not ported.**
+- *Payments split across currency balances* (`PaymentAllocation`,
+  `UsdAllocation`). Rihla keeps one base currency per booking with a
+  rate table (batch C). An additional trip priced in riyal is its own
+  payable in 3e, which covers the case Hijaz built allocations for.
+- *An authenticator app optional by default, 8-character passwords.*
+  Rihla requires the second step for roles that touch money and
+  passports, and that stays the owner's call.
+- *The sign-in page as the front door.* Rihla's front door is its public
+  website.
+
+**About ten working days**, in nine pull requests (3a to 3i). The
+likeliest overrun is 3h, the portal, which is a product of its own.
+
 ### Phase 4: company websites and themes
 - Subdomain and own-domain routing to a company's site; themes;
   the customer and leader portals and the installable apps under the

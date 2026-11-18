@@ -28,6 +28,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Section;
@@ -493,6 +494,8 @@ class EditBooking extends EditRecord
             ->modalDescription('The head holds the family\'s documents and is the one we call, so give them a phone that works on the journey. Each relationship is to the person who booked.')
             ->fillForm(fn (): array => [
                 'head' => app(Families::class)->forBooking($this->booking())?->head->getKey(),
+                'contact' => $this->booking()->contact_traveller_id ?? $this->booking()->customer->contact_traveller_id ?? 0,
+                'contact_for_family' => $this->booking()->contact_traveller_id === null,
                 'people' => $this->booking()->travellers
                     ->mapWithKeys(fn (BookingTraveller $line): array => [
                         $line->getKey() => [
@@ -508,7 +511,18 @@ class EditBooking extends EditRecord
                     ->required()
                     ->native(false)
                     ->options(fn (): array => $this->familyOptions())
-                    ->helperText('Holds the passports, tickets and papers for everybody, and is who the office and the tour leader ring.'),
+                    ->helperText('Holds the passports, tickets and papers for everybody, and is who the tour leader rings on the journey.'),
+
+                // Phase 3a (Hijaz parity): the person the office deals with.
+                Select::make('contact')
+                    ->label('Office contact')
+                    ->required()
+                    ->native(false)
+                    ->options(fn (): array => [0 => $this->booking()->customer->name.' (who booked)']
+                        + $this->booking()->customer->travellers()->orderBy('full_name')->pluck('full_name', 'id')->all())
+                    ->helperText('Who pays, signs and gets the office\'s messages. Often not the head.'),
+                Toggle::make('contact_for_family')
+                    ->label('Their contact for every booking, not just this one'),
 
                 ...$this->booking()->travellers
                     ->map(fn (BookingTraveller $line): Section => Section::make($line->traveller->full_name)
@@ -552,6 +566,17 @@ class EditBooking extends EditRecord
 
                 if ($head instanceof BookingTraveller) {
                     $families->makeHead($head);
+                }
+
+                // Only one of the booker's own travellers, or the booker (0).
+                $contact = (int) ($data['contact'] ?? 0);
+                $contactId = $contact > 0 && $booking->customer->travellers()->whereKey($contact)->exists() ? $contact : null;
+
+                if ((bool) ($data['contact_for_family'] ?? false)) {
+                    $booking->customer->forceFill(['contact_traveller_id' => $contactId])->save();
+                    $booking->forceFill(['contact_traveller_id' => null])->save();
+                } else {
+                    $booking->forceFill(['contact_traveller_id' => $contactId])->save();
                 }
 
                 Notification::make()->success()->title('Family saved')->send();

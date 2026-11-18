@@ -57,6 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: the office contact on `customers` and `bookings`
+        // (companies plan, Phase 3a). No foreign key, but left recorded
+        // while the booking domain is re-created below, both tables would
+        // come back without it.
+        __DIR__.'/../../database/migrations/2026_11_19_130000_give_families_an_office_contact.php',
         // Newest of all: `telegram_updates` unique on `(update_id,
         // company_id)` (companies plan, Phase 2d). It names `company_id`, so
         // it must roll back before the company column below can go.

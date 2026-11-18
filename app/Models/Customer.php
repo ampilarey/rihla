@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 /**
  * @property-read ?Customer $referrer
+ * @property int|null $contact_traveller_id the family's office contact (companies plan, Phase 3a)
  */
 class Customer extends Model
 {
