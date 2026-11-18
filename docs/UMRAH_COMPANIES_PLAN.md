@@ -82,7 +82,7 @@ The Hijaz repository stays as the reference for each.
 ## What "totally independent" means in code
 
 - **One database, every Umrah record tagged with its company**
-  (`partner_id`, as packages already are), scoped by a global scope on the
+  (`company_id`, see the Phase 1 inventory), scoped by a global scope on the
   model as well as by Filament's tenant scoping, and checked by `HostContext`
   style ownership in policies. Lists are scoped; so is a record reached by id.
 - **No shared people.** A customer, traveller or family belongs to one
@@ -192,7 +192,8 @@ Every phase goes to test.rihla.mv first and is promoted to production by
 hand, as now. Rihla's own Umrah business keeps working throughout.
 
 ### Phase 1: the Umrah side becomes company-aware (largest)
-- `partner_id` on every Umrah table; existing rows backfilled to Rihla's
+- `company_id` on every Umrah table (see the inventory below for why not
+  `partner_id`); existing rows backfilled to Rihla's
   own partner record, in reversible migrations with literals, rehearsed on
   MySQL against a restored copy of production (AGENTS.md traps apply:
   constrained columns on SQLite, dependent-migration list, no constants).
@@ -201,6 +202,102 @@ hand, as now. Rihla's own Umrah business keeps working throughout.
 - The cross-company test suite.
 - **Done when**: Rihla's staff see no difference, and a second test
   company created by hand is fully walled off.
+
+#### Phase 1 inventory (November 2026)
+
+**One naming decision first: the column is `company_id`, not `partner_id`.**
+`packages.partner_id` already means something else: the guesthouse host who
+*wrote* a package that Rihla prices and sells on rihla.mv (§16 Phase 16).
+Such a package is Rihla's company's, written by a host. Reusing the name
+would make one column answer two questions. `company_id` points at
+`partners` as well (an Umrah company is a partner of kind `agency`, and
+Rihla's own is `is_rihla`). Like `packages.partner_id`, it is a plain
+indexed column with **no foreign key**, so SQLite can add it in place
+without the cascade-delete rebuild in AGENTS.md. A company is never deleted
+(it leaves through an export), so nothing hangs on a missing constraint.
+
+**Umrah tables that get `company_id`** (57). Every existing row is
+backfilled to the partner whose `is_rihla` is true, looked up in the
+migration and never taken from a constant.
+
+| Group | Tables |
+|---|---|
+| Products | `packages`, `departures`, `price_tiers`, `itinerary_items`, `departure_flights`, `departure_hotels`, `departure_transfers`, `departure_checklist_items`, `departure_events`, `departure_costs` (its company costs have no departure, so the column is their only owner), `exchange_rates` |
+| People | `customers`, `travellers`, `customer_tags`, `people` (staff profiles), `family_accesses`, `portal_accesses` |
+| Bookings | `bookings`, `booking_lines`, `booking_status_transitions`, `booking_travellers`, `seat_holds`, `waitlist_entries`, `quotations`, `discounts`, `payment_schedules` |
+| Money | `payments` (the Umrah rows; stays payments keep their own route), `payment_transactions` |
+| Documents | `documents`, `document_versions`, `document_extractions`, `visa_applications`, `visa_application_events`, `nusuk_permits`, `nusuk_permit_events` |
+| On the journey | `bus_groups`, `cards`, `rooms`, `room_assignments`, `roll_calls`, `roll_call_marks`, `incidents`, `incident_notes`, `operations_log_entries`, `announcements`, `emergency_broadcasts`, `broadcast_deliveries`, `scholar_questions`, `assistant_exchanges` |
+| Office | `enquiries`, `enquiry_notes`, `crm_tasks`, `notices`, `audit_logs`, `telegram_links`, `telegram_link_codes`, `telegram_updates` |
+
+A child row's company is copied from its parent when it is created, and a
+mismatch is refused. So a booking for company A's departure cannot be
+written with company B's customer, and a row reached by id is checked
+against its own column, never only through a join.
+
+**Not company-aware, on purpose.** Rihla's editorial content (`trips`,
+`articles`, `knowledge_articles`, `guide_steps`, `learning_*`, `quiz_*`,
+`ziyarah_locations`, `location_misconceptions`, `hero_banners`, `why_*`,
+`media`, `settings`) stays Rihla's. A company's own site content arrives
+in Phase 4. The Stays tables are already scoped by `partner_id` to their
+host. Framework tables (`users`, `roles`, `permissions`, `jobs`, `cache`,
+`sessions`, `pulse_*`) hold no company data: a staff login reaches a
+company's records only through that company's membership, in Phase 2.
+
+**Where one company could reach another today**, each fixed in Phase 1:
+
+- **Every Umrah model query.** A global scope on all 57 models, keyed on
+  the current company: Rihla's on `/staff`, rihla.mv and the console
+  unless a command names one. Policies check `company_id` as well, so a
+  scope bypassed with `withoutGlobalScopes()` still meets a refusal.
+- **Unique columns that are global today.** `customers.user_id`: the same
+  person at two companies is two customers with two logins, so this
+  becomes unique per company. `bookings.reference`, `payments.reference`,
+  `enquiries.reference`, `incidents.reference`, and `cards.serial`
+  and `cards.qr_token`: references stay globally unique (a reference is
+  quoted to a bank and must not collide), and the company's prefix
+  arrives in Phase 2. A card's QR token resolves only inside its company.
+  The `travellers.national_id` duplicate check compares within a company.
+- **Files.** `DocumentWallet` writes `documents/…` for everybody. A new
+  company's files go under `documents/{company}/…`. Rihla's stay where
+  they are, because moving live passports is a risk with no reader.
+  Downloads check the company before the file.
+- **Cache.** Only `sitemap.xml` is cached by key, and it is Rihla's. The
+  homepage's `why` cache is Rihla's content. A rule and a test make any
+  future company cache key carry the company.
+- **Scheduled commands.** `bookings:expire-holds`, `notices:sweep` and
+  `telegram:daily` run for every company in turn, each under its own
+  company context. A command touching Umrah data refuses to run with no
+  company set. There are no queued job classes yet, and the rule is
+  written down for the first one.
+- **Telegram.** One bot, one webhook, one `services.telegram` token. In
+  Phase 1, the links and updates carry the company, and the router
+  refuses a chat linked to another company. Each company's own bot
+  (decision 7) needs its token stored on the company and comes with the
+  panel in Phase 2.
+- **The public surface.** rihla.mv's packages pages, sitemap, structured
+  data, enquiry form, checkout and the pilgrim assistant's corpus read
+  Rihla's company only. They already do so by accident, because Rihla is
+  the only company. Phase 1 makes it explicit and tested.
+- **Erasure and anonymising.** `data:forget` and `data:anonymise` keep
+  working across all companies (they are Rihla's operator tools). A
+  company's own export comes with "Leaving" (decision 12).
+
+**Phase 1 in six pull requests**, each merged to test after green CI:
+
+| # | Pull request | Estimate |
+|---|---|---|
+| 1a | `company_id` on the 57 tables, backfilled to Rihla; the `BelongsToCompany` trait filling it from the parent and refusing a mismatch; `DEPENDENT_MIGRATIONS` updated; rehearsed on MariaDB | 1 day |
+| 1b | The current-company context and the global scope on every model; policies check the company; Rihla's staff see no change | 1 day |
+| 1c | Uniques, references, cards and the ID duplicate check per company | half a day |
+| 1d | Files, scheduled commands and Telegram per company | half a day |
+| 1e | rihla.mv's public pages, sitemap, checkout and assistant pinned to Rihla's company | half a day |
+| 1f | The cross-company suite: a second company made by hand, and every page, file, PDF, list, export, portal link and bot query of one refused to the other | 1 day |
+
+**About four and a half working days of sessions**, plus CI and review
+time. The likeliest overrun is 1b: 57 models' worth of queries, some of
+which deliberately reach across rows (the board, the books, `data:forget`)
+and need a decision each.
 
 ### Phase 2: the company panel
 - An Umrah company's own panel (the `/host` pattern: tenant, memberships,
