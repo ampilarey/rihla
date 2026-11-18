@@ -29,7 +29,7 @@ class BusGroupsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['departure.package', 'departure.tourLeader']))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['departure.package', 'departure.tourLeader', 'flightGroup']))
             ->columns([
                 // Bus first: on a phone the departure column took the whole
                 // width and pushed the bus itself off the right edge, so the
@@ -41,6 +41,7 @@ class BusGroupsTable
                     ->sortable()
                     ->wrap()
                     ->description(fn (BusGroup $record): string => DepartureOptions::label($record->departure)
+                        .($record->flightGroup ? ' · '.$record->flightGroup->name : '')
                         .' · Leader: '.($record->leaderLabel() ?? 'nobody yet')
                         .($record->leader_phone ? ' · '.$record->leader_phone : '')),
 

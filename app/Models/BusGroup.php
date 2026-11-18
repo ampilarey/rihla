@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * departure, which is most of them.
  *
  * @property int $departure_id
+ * @property int|null $flight_group_id
+ * @property string|null $colour
  * @property string $name
  * @property int|null $capacity
  * @property string|null $leader_name
@@ -33,9 +35,9 @@ class BusGroup extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = ['departure_id', 'name', 'capacity', 'leader_name', 'leader_phone', 'sort_order', 'notes'];
+    protected $fillable = ['departure_id', 'flight_group_id', 'name', 'colour', 'capacity', 'leader_name', 'leader_phone', 'sort_order', 'notes'];
 
-    protected $casts = ['capacity' => 'integer', 'sort_order' => 'integer'];
+    protected $casts = ['flight_group_id' => 'integer', 'capacity' => 'integer', 'sort_order' => 'integer'];
 
     protected static function booted(): void
     {
@@ -51,6 +53,12 @@ class BusGroup extends Model
     public function departure(): BelongsTo
     {
         return $this->belongsTo(Departure::class);
+    }
+
+    /** @return BelongsTo<FlightGroup, $this> */
+    public function flightGroup(): BelongsTo
+    {
+        return $this->belongsTo(FlightGroup::class);
     }
 
     /** @return HasMany<BookingTraveller, $this> */

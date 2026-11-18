@@ -155,6 +155,7 @@ final class Forgetting
         'departure_checklist_items' => 'What the office has to do before a whole departure leaves.',
         'departure_transfers' => 'A coach or car a whole departure takes; the contact is the driver or the company, not a customer.',
         'bus_groups' => 'A coach a whole departure rides; whoever is named at its door is staff or a volunteer, not a customer.',
+        'flight_groups' => 'The people of a departure on one flight out and home; the group is a timetable fact, not one customer.',
         'departure_events' => 'A departure\'s own moves along its lifecycle; whoever moved it is staff.',
         'telegram_links' => 'A staff account\'s own Telegram chat. A member of staff leaving is a different procedure.',
         'telegram_link_codes' => 'A staff account\'s one-time link code.',

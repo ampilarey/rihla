@@ -8,6 +8,7 @@ use App\Models\BusGroup;
 use App\Models\Card;
 use App\Models\Departure;
 use App\Models\DepartureHotel;
+use App\Models\FlightGroup;
 use App\Services\Operations\Cards;
 use App\Services\Operations\ListDocument;
 use App\Services\Operations\Lists;
@@ -45,11 +46,17 @@ class OperationsController extends Controller
 
         $withMoney = $request->user()?->can('payment.viewAny') === true;
 
+        // One flight group's list (Phase 3c). Looked up on this departure,
+        // so a group number from another one is a 404, not an empty list.
+        $group = $request->filled('group')
+            ? FlightGroup::query()->where('departure_id', $departure->getKey())->findOrFail((int) $request->query('group'))
+            : null;
+
         return $this->send(
-            $this->lists->manifest($departure, $preset, $only, $withMoney),
+            $this->lists->manifest($departure, $preset, $only, $withMoney, $group),
             $request,
             $departure,
-            ['list' => 'manifest', 'preset' => $preset],
+            ['list' => 'manifest', 'preset' => $preset, ...($group !== null ? ['group' => $group->getKey()] : [])],
         );
     }
 
