@@ -57,6 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `ledger_entries` hangs off `departures` (companies
+        // plan, Phase 3f).
+        __DIR__.'/../../database/migrations/2026_11_19_200000_create_accounts_and_ledger.php',
         // Newest of all: `excursion_bookings` hangs off `bookings` and
         // `customers`, `excursion_participants` off `booking_travellers`,
         // and `departure_excursions` off `departures` (companies plan,

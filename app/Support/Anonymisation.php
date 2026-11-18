@@ -200,6 +200,11 @@ final class Anonymisation
         // behave like the real thing.
         'departure_excursions' => ['notes' => 'text'],
         'excursion_bookings' => ['notes' => 'text'],
+        // Accounts and the ledger (Phase 3f). An account's holder name and
+        // number are a person's bank details; an entry's description and
+        // who it was paid to or by are free text that may name somebody.
+        'accounts' => ['account_name' => 'name', 'account_number' => 'null'],
+        'ledger_entries' => ['description' => 'text', 'counterparty' => 'name', 'reference' => 'text', 'void_reason' => 'text'],
         'departure_checklist_items' => ['notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],
         // Site audit: thirteen of the names here did not exist — `title`
@@ -274,6 +279,8 @@ final class Anonymisation
         'booking_travellers',
         // A place on an additional trip: two ids and an amount (Phase 3e).
         'excursion_participants',
+        // What a ledger entry was for: a company's own list of words.
+        'ledger_categories',
         // A card or tag: a serial, a random token and a print count. The
         // person is on the booking traveller it hangs off, and the token
         // opens nothing on its own — the Scan page needs a staff login
