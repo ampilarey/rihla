@@ -170,10 +170,15 @@ class CompanyRecordsTest extends TestCase
         $migration = require self::MIGRATION;
 
         // Rolled back in the order migrate:rollback would: the per-company
-        // customer login (1c) indexes this column, and MySQL refuses to
+        // slugs (1e) and customer login (1c) index this column, and MySQL refuses to
         // drop a column an index still names.
-        $later = require __DIR__.'/../../database/migrations/2026_11_18_110000_make_a_customer_login_per_company.php';
-        $later->down();
+        $later = [
+            require __DIR__.'/../../database/migrations/2026_11_18_120000_make_public_slugs_per_company.php',
+            require __DIR__.'/../../database/migrations/2026_11_18_110000_make_a_customer_login_per_company.php',
+        ];
+        foreach ($later as $step) {
+            $step->down();
+        }
         $migration->down();
         $this->assertFalse(Schema::hasColumn('packages', 'company_id'));
 
@@ -181,7 +186,9 @@ class CompanyRecordsTest extends TestCase
         DB::table('partners')->where('is_rihla', true)->update(['id' => 77]);
 
         $migration->up();
-        $later->up();
+        foreach (array_reverse($later) as $step) {
+            $step->up();
+        }
 
         $this->assertSame(77, (int) DB::table('packages')->where('id', $package->id)->value('company_id'));
     }

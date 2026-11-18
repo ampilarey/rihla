@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Partner;
 use Illuminate\Database\QueryException;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * Which Umrah company the current request or command is working for —
@@ -79,6 +80,21 @@ class CompanyContext
         $scope = $this->scopeId();
 
         return $scope === null || $companyId === $scope;
+    }
+
+    /**
+     * Narrow a form's unique rule to the current company (Phase 1e).
+     *
+     * Laravel's unique rule queries the table directly, so the company
+     * scope never reaches it: without this, another company's slug would
+     * refuse Rihla's, and the database index (which is per company) would
+     * disagree with the form about what is taken.
+     */
+    public static function uniqueWithin(Unique $rule): Unique
+    {
+        $company = app(self::class)->scopeId();
+
+        return $company === null ? $rule : $rule->where('company_id', $company);
     }
 
     /** Rihla's own company, whatever the current one is. */
