@@ -142,6 +142,16 @@ class CompanyContext
             : $base.'/company-'.$companyId;
     }
 
+    /**
+     * Work for one company for the rest of this request — set by the
+     * company panel once Filament has resolved its tenant (Phase 2a).
+     * Scoped to the request, so it never reaches the next one.
+     */
+    public function use(int $companyId): void
+    {
+        [$this->id, $this->resolved, $this->everyCompany] = [$companyId, true, false];
+    }
+
     /** Work for one company for the length of a callback, then go back. */
     public function as(int $companyId, callable $callback): mixed
     {

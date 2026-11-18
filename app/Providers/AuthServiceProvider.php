@@ -24,6 +24,7 @@ use App\Models\Notice;
 use App\Models\NusukPermit;
 use App\Models\OperationsLogEntry;
 use App\Models\Package;
+use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Person;
 use App\Models\RollCall;
@@ -69,7 +70,9 @@ use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
 use App\Support\Access;
 use App\Support\CompanyContext;
+use App\Support\CompanyRole;
 use App\Support\HostContext;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -135,6 +138,26 @@ class AuthServiceProvider extends ServiceProvider
             return null;
         });
 
+        // Inside a company's own panel (companies plan, Phase 2a) a
+        // permission is answered from the person's role at that company,
+        // never from spatie: a company's staff hold no spatie role, and a
+        // Rihla Super Admin is nobody there unless they are a member.
+        // Policy abilities ('update', 'view') fall through to the policies,
+        // which ask for permissions by name and so land back here.
+        Gate::before(function ($user, string $ability) {
+            if (Filament::getCurrentPanel()?->getId() !== 'company') {
+                return null;
+            }
+
+            $company = Filament::getTenant();
+
+            if (! $company instanceof Partner || ! in_array($ability, Access::PERMISSIONS, true)) {
+                return null;
+            }
+
+            return CompanyRole::allows($user->roleAtCompany($company), $ability);
+        });
+
         // Super Admin is granted everything here rather than by holding every
         // permission. A permission added later is then covered automatically,
         // instead of silently locking out the one role that must never be
@@ -145,7 +168,7 @@ class AuthServiceProvider extends ServiceProvider
             // (site audit): the grant below answered before the host
             // policies could, so a reception member who was also staff
             // held every host ability at that host.
-            if (HostContext::current() !== null) {
+            if (HostContext::current() !== null || Filament::getCurrentPanel()?->getId() === 'company') {
                 return null;
             }
 

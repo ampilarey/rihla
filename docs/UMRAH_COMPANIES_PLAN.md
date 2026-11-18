@@ -316,6 +316,38 @@ and need a decision each.
 - **Done when**: a test company can run a trip from registration to
   return without touching `/staff`.
 
+#### Phase 2 plan (November 2026)
+
+**Where the panel lives (open question 2, decided for now).** At
+`/company/{company}` on Rihla's address, behind a shared sign-in page at
+`/company/login`. The company's own address (`company.rihla.mv/admin`)
+needs the wildcard subdomain in cPanel, which the hosting notes leave for
+Phase 4. It is added then, as a second address for the same panel, so
+nothing built now is thrown away.
+
+**The panel reuses Rihla's screens rather than copying them.** The same
+Filament resources and policies serve both panels.
+- In a company's panel, `CompanyContext` follows the tenant, so the Phase 1
+  scope and gate wall every query to that company.
+- A permission is answered from the person's role at that company
+  (`CompanyRole`): Rihla's role definitions (`Access::matrix()`) narrowed to
+  the Umrah back office, plus an Owner who holds all of it.
+- A company member holds no spatie role, so `/staff` stays closed to them.
+  A Rihla Super Admin is nobody in a company's panel unless they are a
+  member.
+
+| # | Pull request | Estimate |
+|---|---|---|
+| 2a | `partners.is_umrah_company` and `company_memberships`, `CompanyRole`, the panel with the company as tenant, the role gate, and Rihla's admin adding a company and its owner | 1 day |
+| 2b | The Umrah screens in the company panel (bookings, customers, packages and departures, payments, documents, visas, permits, the journey, the CRM, costs and books), with every screen loading for an Owner and showing only the company's records | 2 days |
+| 2c | The owner's team screen (invite, change role, remove) and the company's settings: profile, bank accounts, agreement wording, reference prefix | 1 day |
+| 2d | Each company's own Telegram bot: token stored encrypted on the company, its own webhook address and secret | 1 day |
+| 2e | The end-to-end test that marks Phase 2 done: a test company runs a trip from registration to return without touching `/staff`; ADR | 1 day |
+
+**About six working days of sessions**, plus CI and review time. The
+likeliest overrun is 2b. Some screens name the staff panel or Rihla's own
+things directly and need each one found.
+
 ### Phase 3: the rest of Hijaz, company-aware
 - The list under "Still in Hijaz and not yet here", each checked against
   what exists here first.
