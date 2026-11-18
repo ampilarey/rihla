@@ -8,6 +8,7 @@ use App\Models\BusGroup;
 use App\Models\Departure;
 use App\Models\DepartureHotel;
 use App\Models\Document;
+use App\Models\FlightGroup;
 use App\Models\NusukPermit;
 use App\Models\Room;
 use App\Models\VisaApplication;
@@ -63,19 +64,27 @@ final class Lists
      * @param  Collection<int, BookingTraveller>|null  $only  a selection of the departure's travellers, or everybody
      * @param  bool  $withMoney  whether the reader may see what is owed (`payment.viewAny`)
      */
-    public function manifest(Departure $departure, string $preset = 'office', ?Collection $only = null, bool $withMoney = true): ListDocument
+    public function manifest(Departure $departure, string $preset = 'office', ?Collection $only = null, bool $withMoney = true, ?FlightGroup $group = null): ListDocument
     {
         $travellers = $only ?? $this->travellers($departure);
+
+        // One flight group's people (Phase 3c): the airline list a group's
+        // flight is handed, and the office list of who flies when.
+        if ($group !== null) {
+            $travellers = $travellers->where('flight_group_id', $group->getKey())->values();
+        }
+
         $context = $this->context($departure);
         $roomColumns = $this->roomColumns($context['hotels']);
+        $grouped = $group === null && FlightGroup::query()->where('departure_id', $departure->getKey())->exists();
 
         $columns = match ($preset) {
-            'airline' => ['n' => '#', 'name' => 'Name as on passport', 'passport' => 'Passport no', 'nationality' => 'Nat.', 'dob' => 'Date of birth', 'gender' => 'Sex', 'expiry' => 'Expiry', 'ticket' => 'Ticket', 'seat' => 'Seat'],
+            'airline' => ['n' => '#', 'name' => 'Name as on passport', 'passport' => 'Passport no', 'nationality' => 'Nat.', 'dob' => 'Date of birth', 'gender' => 'Sex', 'expiry' => 'Expiry', ...($grouped ? ['group' => 'Group'] : []), 'ticket' => 'Ticket', 'seat' => 'Seat'],
             'hotel' => ['n' => '#', 'name' => 'Name', 'gender' => 'Sex', 'passport' => 'Passport no', 'nationality' => 'Nat.', ...$roomColumns],
             'ministry' => ['n' => '#', 'name' => 'Name', 'passport' => 'Passport no', 'dob' => 'Date of birth', 'gender' => 'Sex', 'nationality' => 'Nationality', 'phone' => 'Phone'],
             default => [
                 'n' => '#', 'name' => 'Name', 'passport' => 'Passport', 'expiry' => 'Expiry', 'dob' => 'DOB', 'gender' => 'Sex',
-                'phone' => 'Phone', 'booked_by' => 'Booked by', 'booking' => 'Booking', 'bus' => 'Bus',
+                'phone' => 'Phone', 'booked_by' => 'Booked by', 'booking' => 'Booking', ...($grouped ? ['group' => 'Group'] : []), 'bus' => 'Bus',
                 ...$roomColumns,
                 'visa' => 'Visa', 'ticket' => 'Ticket',
                 ...($withMoney ? ['paid' => 'Paid'] : []),
@@ -100,12 +109,12 @@ final class Lists
 
         return new ListDocument(
             title: self::PRESETS[$preset] ?? 'List',
-            subtitle: $this->subtitle($departure).' · '.count($rows).' '.Str::plural('traveller', count($rows)),
+            subtitle: $this->subtitle($departure).($group !== null ? ' · '.$group->name.' · '.$group->flightsLabel() : '').' · '.count($rows).' '.Str::plural('traveller', count($rows)),
             columns: $columns,
             rows: $rows,
             landscape: count($columns) > 7,
             notes: $notes,
-            filename: $this->slug($departure).'-'.$preset.'-list',
+            filename: $this->slug($departure).($group !== null ? '-'.Str::slug($group->name) : '').'-'.$preset.'-list',
         );
     }
 
@@ -300,7 +309,7 @@ final class Lists
                 'booking_id',
                 Booking::query()->where('departure_id', $departure->getKey())->whereIn('status', self::LISTED)->select('id'),
             )
-            ->with(['traveller', 'booking.customer', 'busGroup'])
+            ->with(['traveller', 'booking.customer', 'busGroup', 'flightGroup'])
             ->get();
 
         return $this->inFamilies($members, ['families' => $this->families->group($members)]);
@@ -423,6 +432,7 @@ final class Lists
             'booked_by' => (string) $booking->customer->name,
             'booking' => (string) $booking->reference,
             'bus' => (string) $member->busGroup?->name,
+            'group' => (string) $member->flightGroup?->name,
             'visa' => $context['visas'][$key] ?? 'none',
             'ticket' => (string) $member->ticket_number,
             'seat' => (string) $member->seat_number,

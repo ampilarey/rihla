@@ -57,6 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `flight_groups` hangs off `departures` and
+        // `departure_flights`, and `booking_travellers` and `bus_groups`
+        // gain columns the re-created tables would otherwise come back
+        // without (companies plan, Phase 3c).
+        __DIR__.'/../../database/migrations/2026_11_19_160000_create_flight_groups.php',
         // Newest of all: `booking_travellers.awaits_price` and
         // `awaits_audience`, and `departures` dates made nullable
         // (companies plan, Phase 3b). Both re-created below; left recorded,

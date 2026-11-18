@@ -190,6 +190,9 @@ final class Anonymisation
         // A coach on a departure — Hijaz's bus groups. Whoever is named at
         // its door has a phone number, and the note is free text.
         'bus_groups' => ['leader_name' => 'name', 'leader_phone' => 'phone', 'notes' => 'text'],
+        // The people of a departure on one flight (companies plan, Phase
+        // 3c). Its name and flights are timetable facts; the note is free text.
+        'flight_groups' => ['notes' => 'text'],
         'departure_checklist_items' => ['notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],
         // Site audit: thirteen of the names here did not exist — `title`

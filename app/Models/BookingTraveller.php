@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * deleted afterwards, and `amount_minor` is the number that was agreed.
  *
  * @property int|null $bus_group_id
+ * @property int|null $flight_group_id
  * @property Carbon|null $checked_in_at
  * @property string|null $ticket_number
  * @property string|null $seat_number
@@ -35,6 +36,9 @@ class BookingTraveller extends Model
         // App\Services\Operations\Buses and the Scan page, never by the
         // booking form.
         'bus_group_id', 'checked_in_at',
+        // Which flight group (companies plan, Phase 3c). Written by
+        // App\Services\Operations\FlightGroups and Buses, never by a form.
+        'flight_group_id',
     ];
 
     protected $casts = [
@@ -42,6 +46,7 @@ class BookingTraveller extends Model
         'is_lead' => 'boolean',
         'awaits_price' => 'boolean',
         'bus_group_id' => 'integer',
+        'flight_group_id' => 'integer',
         'checked_in_at' => 'datetime',
     ];
 
@@ -74,6 +79,12 @@ class BookingTraveller extends Model
     public function busGroup(): BelongsTo
     {
         return $this->belongsTo(BusGroup::class);
+    }
+
+    /** @return BelongsTo<FlightGroup, $this> */
+    public function flightGroup(): BelongsTo
+    {
+        return $this->belongsTo(FlightGroup::class);
     }
 
     /**

@@ -50,7 +50,7 @@ final class Buses
         return DB::transaction(function () use ($bus, $bookingTravellerIds): array {
             $members = BookingTraveller::query()
                 ->whereKey($bookingTravellerIds)
-                ->with(['traveller', 'booking'])
+                ->with(['traveller', 'booking', 'flightGroup'])
                 ->get();
 
             $assigned = 0;
@@ -67,7 +67,20 @@ final class Buses
                     continue;
                 }
 
-                $member->forceFill(['bus_group_id' => $bus->getKey(), 'checked_in_at' => null])->save();
+                // A bus carries one flight group (Phase 3c): somebody already
+                // in another group stays off it, and is named.
+                if ($bus->flight_group_id !== null && $member->flight_group_id !== null && $member->flight_group_id !== $bus->flight_group_id) {
+                    $skipped[] = $member->traveller->full_name.': in '.($member->flightGroup->name ?? 'another flight group').', not '.($bus->flightGroup->name ?? 'this bus\'s group');
+
+                    continue;
+                }
+
+                // Getting on a group's bus puts them in its group.
+                $member->forceFill([
+                    'bus_group_id' => $bus->getKey(),
+                    'checked_in_at' => null,
+                    'flight_group_id' => $bus->flight_group_id ?? $member->flight_group_id,
+                ])->save();
                 $assigned++;
             }
 
@@ -193,7 +206,7 @@ final class Buses
                 'booking_id',
                 Booking::query()->where('departure_id', $departure->getKey())->whereIn('status', $statuses)->select('id'),
             )
-            ->with(['traveller', 'booking.customer', 'busGroup'])
+            ->with(['traveller', 'booking.customer', 'busGroup', 'flightGroup'])
             ->get()
             ->sortBy(fn (BookingTraveller $member): string => $member->booking->customer->name.' '.$member->traveller->full_name)
             ->values();

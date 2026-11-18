@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\BusGroups\Schemas;
 
 use App\Filament\Support\DepartureOptions;
+use App\Models\FlightGroup;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -23,6 +25,7 @@ class BusGroupForm
                     ->searchable()
                     ->native(false)
                     ->disabledOn('edit')
+                    ->live()
                     // Recent and upcoming only: a bus for a trip that came
                     // home last March is always a mis-click.
                     ->options(fn (): array => DepartureOptions::all(recentOnly: true)),
@@ -37,6 +40,22 @@ class BusGroupForm
                         modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule->where('departure_id', $get('departure_id')),
                     )
                     ->validationMessages(['unique' => 'This departure already has a bus called that.']),
+
+                Select::make('flight_group_id')
+                    ->label('Flight group')
+                    ->native(false)
+                    ->options(fn (Get $get): array => blank($get('departure_id')) ? [] : FlightGroup::query()
+                        ->where('departure_id', $get('departure_id'))
+                        ->orderBy('sort_order')
+                        ->pluck('name', 'id')
+                        ->all())
+                    ->helperText('The flight this bus meets. Leave blank when the whole departure flies together.'),
+
+                ColorPicker::make('colour')
+                    ->label('Colour')
+                    ->hex()
+                    ->regex('/^#[0-9a-fA-F]{6}$/')
+                    ->helperText('The sticker, lanyard and flag colour people look for at the airport.'),
 
                 TextInput::make('capacity')
                     ->label('Seats')
