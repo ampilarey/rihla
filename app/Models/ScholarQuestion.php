@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\EditorialStandardNotMet;
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 class ScholarQuestion extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['booking_id', 'traveller_id', 'body', 'locale', 'may_publish'];
 
@@ -202,5 +203,11 @@ class ScholarQuestion extends Model
             ->where('status', self::ANSWERED)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now());
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking', 'traveller'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class SeatHold extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['departure_id', 'booking_id', 'seats', 'expires_at'];
 
@@ -78,5 +79,11 @@ class SeatHold extends Model
     public function scopeLapsed($query)
     {
         return $query->whereNull('released_at')->where('expires_at', '<=', now());
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure', 'booking'];
     }
 }

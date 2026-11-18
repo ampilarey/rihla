@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -17,6 +18,8 @@ use Illuminate\Support\Carbon;
  */
 class TelegramLinkCode extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = ['user_id', 'code_hash', 'expires_at', 'used_at'];
 
     protected $casts = ['expires_at' => 'datetime', 'used_at' => 'datetime'];
@@ -30,5 +33,15 @@ class TelegramLinkCode extends Model
     public function isUsable(): bool
     {
         return $this->used_at === null && $this->expires_at->isFuture();
+    }
+
+    /**
+     * A root record: it takes the current company.
+     *
+     * @return list<string>
+     */
+    protected function companyParents(): array
+    {
+        return [];
     }
 }

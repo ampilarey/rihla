@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\IllegalPermitTransition;
 use App\Exceptions\PrerequisitesNotMet;
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +25,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class NusukPermit extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'booking_id', 'traveller_id', 'kind', 'attempt', 'reference',
@@ -230,5 +231,11 @@ class NusukPermit extends Model
     public function scopeOfKind($query, string $kind)
     {
         return $query->where('kind', $kind);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking', 'traveller'];
     }
 }

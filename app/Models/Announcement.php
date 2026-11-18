@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Announcement extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['departure_id', 'headline', 'body', 'published_at'];
 
@@ -61,5 +62,11 @@ class Announcement extends Model
     public function isLive(): bool
     {
         return $this->published_at !== null && $this->published_at->isPast();
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Incident extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'client_uuid',
@@ -225,5 +226,11 @@ class Incident extends Model
             self::OTHER => 'Other',
             default => 'Unknown',
         };
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure', 'traveller'];
     }
 }

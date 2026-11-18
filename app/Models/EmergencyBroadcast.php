@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class EmergencyBroadcast extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['departure_id', 'incident_id', 'headline', 'body'];
 
@@ -68,5 +69,11 @@ class EmergencyBroadcast extends Model
             ->pluck('booking_id')
             ->unique()
             ->count();
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure', 'incident'];
     }
 }

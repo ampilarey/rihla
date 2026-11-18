@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Rooming;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,7 @@ use Illuminate\Support\Collection;
  */
 class Room extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['departure_hotel_id', 'label', 'capacity', 'gender', 'notes'];
 
@@ -76,5 +77,11 @@ class Room extends Model
             self::FAMILY => 'Family',
             default => 'Not set',
         };
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['hotel'];
     }
 }

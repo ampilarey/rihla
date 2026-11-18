@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  */
 class Document extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'traveller_id', 'booking_id', 'category', 'type', 'expires_at', 'notes',
@@ -180,5 +181,11 @@ class Document extends Model
     public function scopeExpiringBefore($query, \DateTimeInterface $date)
     {
         return $query->whereNotNull('expires_at')->where('expires_at', '<', $date);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['traveller', 'booking'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class VisaApplicationEvent extends Model
 {
+    use BelongsToCompany;
+
     public const UPDATED_AT = null;
 
     protected $guarded = [];
@@ -35,5 +38,11 @@ class VisaApplicationEvent extends Model
     public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['application', 'document'];
     }
 }

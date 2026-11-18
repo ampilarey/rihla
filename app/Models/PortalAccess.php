@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class PortalAccess extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['booking_id', 'token_hash', 'expires_at', 'issued_by'];
 
@@ -64,5 +65,11 @@ class PortalAccess extends Model
     public function scopeLive($query)
     {
         return $query->whereNull('revoked_at')->where('expires_at', '>', now());
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class AssistantExchange extends Model
 {
+    use BelongsToCompany;
+
     protected $guarded = [];
 
     /** @var array<string, string> */
@@ -34,5 +37,11 @@ class AssistantExchange extends Model
             ->map(fn (array $source): string => (string) ($source['title'] ?? ''))
             ->filter()
             ->join(', ');
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['traveller'];
     }
 }

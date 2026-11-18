@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class DepartureHotel extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'departure_id', 'city', 'name', 'rating',
@@ -86,5 +87,11 @@ class DepartureHotel extends Model
         return $this->distance_metres < 1000
             ? $this->distance_metres.' m'
             : round($this->distance_metres / 1000, 1).' km';
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure'];
     }
 }

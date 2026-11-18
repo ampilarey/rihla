@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +23,7 @@ use Illuminate\Support\Carbon;
  */
 class BookingTraveller extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'booking_id', 'traveller_id', 'occupancy', 'pax_type',
@@ -99,5 +100,11 @@ class BookingTraveller extends Model
     public function money(): Money
     {
         return Money::ofMinor($this->amount_minor, $this->booking->currency);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['booking', 'traveller', 'priceTier', 'busGroup'];
     }
 }

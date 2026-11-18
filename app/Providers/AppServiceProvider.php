@@ -32,6 +32,7 @@ use App\Services\Family\Doorkeeper;
 use App\Services\Portal\Gatekeeper;
 use App\Services\Stays\StayGatekeeper;
 use App\Support\CanonicalUrl;
+use App\Support\CompanyContext;
 use App\Support\InitialsAvatar;
 use App\Support\LivewireReturns;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -52,7 +53,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One per request, job or test, so the company one of them worked
+        // for is never the next one's (docs/UMRAH_COMPANIES_PLAN.md).
+        $this->app->scoped(CompanyContext::class);
     }
 
     /**

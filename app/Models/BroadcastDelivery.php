@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class BroadcastDelivery extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['emergency_broadcast_id', 'booking_id', 'channel', 'status', 'detail'];
 
@@ -62,5 +63,11 @@ class BroadcastDelivery extends Model
             'sms' => 'SMS',
             default => 'Unknown',
         };
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['broadcast', 'booking'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Traveller extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'customer_id', 'full_name', 'date_of_birth', 'gender', 'relationship',
@@ -155,5 +156,11 @@ class Traveller extends Model
         return $this->date_of_birth === null
             ? null
             : (int) $this->date_of_birth->diffInYears($date);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['customer'];
     }
 }

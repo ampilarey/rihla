@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\EditorialStandardNotMet;
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -51,7 +52,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Quotation extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'enquiry_id', 'package_id', 'departure_id', 'party_size',
@@ -311,5 +312,11 @@ class Quotation extends Model
     {
         return $query->whereIn('status', [self::DRAFT, self::SENT])
             ->whereDate('valid_until', '>=', now()->toDateString());
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['enquiry', 'package', 'departure', 'booking'];
     }
 }

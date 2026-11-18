@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\IllegalDepartureTransition;
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Audience;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Departure extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'package_id', 'trip_id', 'date_start', 'date_end', 'airline',
@@ -501,5 +502,11 @@ class Departure extends Model
     public function scopeUpcoming($query)
     {
         return $query->where('date_start', '>=', now()->startOfDay());
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['package'];
     }
 }

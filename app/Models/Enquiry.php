@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Services\Stays\LostStayFollowUp;
 use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Enquiry extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'source', 'name', 'phone', 'email', 'message',
@@ -273,5 +274,11 @@ class Enquiry extends Model
     public function scopeOverdue($query)
     {
         return $query->open()->whereNotNull('next_action_at')->whereDate('next_action_at', '<', now());
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['package', 'departure', 'customer', 'booking'];
     }
 }

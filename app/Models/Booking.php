@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\IllegalBookingTransition;
+use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasNotices;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\TakesPayments;
@@ -32,7 +33,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Booking extends Model implements TakesPayments
 {
-    use HasFactory, HasNotices;
+    use BelongsToCompany, HasFactory, HasNotices;
 
     protected $fillable = [
         'customer_id', 'departure_id', 'package_snapshot', 'currency',
@@ -335,5 +336,11 @@ class Booking extends Model implements TakesPayments
     public function scopeForDeparture($query, Departure|int $departure)
     {
         return $query->where('departure_id', $departure instanceof Departure ? $departure->getKey() : $departure);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['customer', 'departure'];
     }
 }

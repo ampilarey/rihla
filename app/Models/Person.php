@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class Person extends Model
 {
-    use HasFactory, HasTranslations;
+    use BelongsToCompany, HasFactory, HasTranslations;
 
     /** Laravel would otherwise guess "persons". */
     protected $table = 'people';
@@ -112,5 +113,15 @@ class Person extends Model
     public function scopePublished($query)
     {
         return $query->where('is_published', true);
+    }
+
+    /**
+     * A root record: it takes the current company.
+     *
+     * @return list<string>
+     */
+    protected function companyParents(): array
+    {
+        return [];
     }
 }

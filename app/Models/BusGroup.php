@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class BusGroup extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = ['departure_id', 'name', 'capacity', 'leader_name', 'leader_phone', 'sort_order', 'notes'];
 
     protected $casts = ['capacity' => 'integer', 'sort_order' => 'integer'];
@@ -74,5 +77,11 @@ class BusGroup extends Model
     public function checkedInCount(): int
     {
         return $this->members()->whereNotNull('checked_in_at')->count();
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure'];
     }
 }

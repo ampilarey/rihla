@@ -57,6 +57,11 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `company_id` on every Umrah table (companies plan,
+        // Phase 1a). No foreign key, but left recorded while the booking
+        // domain is dropped and re-created below, the tables would come
+        // back without it and the migration would never run again.
+        __DIR__.'/../../database/migrations/2026_11_18_100000_give_umrah_records_a_company.php',
         // Newest of all: `travellers.phone` (families). No foreign key, but
         // left recorded while the booking domain is dropped and re-created
         // below, the table would come back without it.

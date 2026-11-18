@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,7 +45,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class CrmTask extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $table = 'crm_tasks';
 
@@ -171,5 +172,11 @@ class CrmTask extends Model
     public function scopeDueBy(Builder $query, \DateTimeInterface $date): Builder
     {
         return $query->whereNull('done_at')->whereDate('due_on', '<=', $date);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['about'];
     }
 }

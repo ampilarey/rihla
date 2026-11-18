@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\IllegalPaymentTransition;
+use App\Models\Concerns\BelongsToCompany;
 use App\Services\Payments\Ledger;
 use App\Services\Telegram\Notifier;
 use App\Support\Money;
@@ -33,7 +34,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Payment extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'payable_type', 'payable_id', 'refund_of_id', 'method', 'provider', 'currency',
@@ -351,5 +352,11 @@ class Payment extends Model
     public function scopeAwaitingReview($query)
     {
         return $query->where('status', self::AWAITING_REVIEW);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['payable'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use App\Support\Rooming;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class RollCall extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['departure_id', 'moment', 'taken_at', 'notes'];
 
@@ -148,5 +149,11 @@ class RollCall extends Model
     public function countIn(string $state): int
     {
         return $this->marks->where('state', $state)->count();
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure'];
     }
 }

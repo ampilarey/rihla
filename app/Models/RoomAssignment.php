@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** One person in one room. */
 class RoomAssignment extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = ['room_id', 'traveller_id', 'booking_id', 'assigned_by'];
 
     /** @return BelongsTo<Room, $this> */
@@ -32,5 +35,11 @@ class RoomAssignment extends Model
     public function assigner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['room', 'traveller', 'booking'];
     }
 }

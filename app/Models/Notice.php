@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class Notice extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['kind', 'headline', 'body'];
 
@@ -314,5 +315,11 @@ class Notice extends Model
             self::REVIEW_REQUESTED => 'Ask for a review',
             default => 'Unknown',
         };
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['noticeable'];
     }
 }

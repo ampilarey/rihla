@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WaitlistEntry extends Model
 {
-    use HasFactory;
+    use BelongsToCompany, HasFactory;
 
     protected $fillable = ['departure_id', 'customer_id', 'seats', 'occupancy', 'notes'];
 
@@ -102,5 +103,11 @@ class WaitlistEntry extends Model
     public function scopeOldestFirst($query)
     {
         return $query->orderBy('created_at')->orderBy('id');
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['departure', 'customer', 'seatHold', 'booking'];
     }
 }
