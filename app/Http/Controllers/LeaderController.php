@@ -8,6 +8,7 @@ use App\Models\RollCall;
 use App\Models\RollCallMark;
 use App\Models\User;
 use App\Services\Leader\Outbox;
+use App\Support\DepartureRoute;
 use App\Support\Rooming;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,6 +58,7 @@ class LeaderController extends Controller
 
         return view('leader.departure', [
             'departure' => $departure,
+            'route' => DepartureRoute::stops($departure),
             'travellers' => Rooming::travellersOwedABed($departure),
             'rollCalls' => RollCall::where('departure_id', $departure->getKey())
                 ->with(['marks.traveller', 'departure'])

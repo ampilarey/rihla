@@ -10,6 +10,7 @@ use App\Models\ItineraryItem;
 use App\Models\NusukPermit;
 use App\Models\PriceTier;
 use App\Services\Departures\DepartureCopier;
+use App\Support\DepartureRoute;
 use App\Support\Money;
 use App\Support\TravelReadiness;
 use Carbon\CarbonImmutable;
@@ -25,6 +26,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
@@ -195,10 +197,34 @@ class DeparturesRelationManager extends RelationManager
                             TextInput::make('distance_metres')->label('Distance to Haram')->numeric()->suffix('m'),
                             TextInput::make('walk_minutes')->label('Walk')->numeric()->suffix('min'),
                             TextInput::make('nights')->numeric()->minValue(1),
+                            Select::make('leaves_by')
+                                ->label('Leaves by')
+                                ->options(DepartureRoute::LEAVES_BY)
+                                ->native(false)
+                                ->placeholder('Coach'),
                         ])
                         ->addActionLabel('Add a hotel')
                         ->orderColumn('sort_order')
                         ->defaultItems(0),
+                ]),
+
+            Section::make('Route')
+                ->description('Worked out from the flights and the hotels above, in their order and nights: nothing to type here. Save to see a change.')
+                ->visibleOn('edit')
+                ->collapsed()
+                ->schema([
+                    TextEntry::make('route')
+                        ->hiddenLabel()
+                        ->state(fn (?Departure $record): array => $record === null ? [] : array_map(
+                            fn (array $stop): string => $stop['place']
+                                .($stop['hotel'] ? ' · '.$stop['hotel'] : '')
+                                .' · '.($stop['arrives'] ? $stop['arrives']->format('j M') : 'date to be set')
+                                .($stop['leaves'] && $stop['arrives'] && ! $stop['leaves']->isSameDay($stop['arrives']) ? '–'.$stop['leaves']->format('j M') : '')
+                                .' · then '.$stop['by'],
+                            DepartureRoute::stops($record),
+                        ))
+                        ->listWithLineBreaks()
+                        ->placeholder('Add the flights and hotels to see the route.'),
                 ]),
 
             Section::make('Itinerary')

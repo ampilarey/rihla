@@ -81,7 +81,7 @@ final class Lists
         $columns = match ($preset) {
             'airline' => ['n' => '#', 'name' => 'Name as on passport', 'passport' => 'Passport no', 'nationality' => 'Nat.', 'dob' => 'Date of birth', 'gender' => 'Sex', 'expiry' => 'Expiry', ...($grouped ? ['group' => 'Group'] : []), 'ticket' => 'Ticket', 'seat' => 'Seat'],
             'hotel' => ['n' => '#', 'name' => 'Name', 'gender' => 'Sex', 'passport' => 'Passport no', 'nationality' => 'Nat.', ...$roomColumns],
-            'ministry' => ['n' => '#', 'name' => 'Name', 'passport' => 'Passport no', 'dob' => 'Date of birth', 'gender' => 'Sex', 'nationality' => 'Nationality', 'phone' => 'Phone'],
+            'ministry' => ['n' => '#', 'name' => 'Name', 'passport' => 'Passport no', 'dob' => 'Date of birth', 'gender' => 'Sex', 'nationality' => 'Nationality', 'island' => 'Island', 'phone' => 'Phone'],
             default => [
                 'n' => '#', 'name' => 'Name', 'passport' => 'Passport', 'expiry' => 'Expiry', 'dob' => 'DOB', 'gender' => 'Sex',
                 'phone' => 'Phone', 'booked_by' => 'Booked by', 'booking' => 'Booking', ...($grouped ? ['group' => 'Group'] : []), 'bus' => 'Bus',
@@ -309,7 +309,7 @@ final class Lists
                 'booking_id',
                 Booking::query()->where('departure_id', $departure->getKey())->whereIn('status', self::LISTED)->select('id'),
             )
-            ->with(['traveller', 'booking.customer', 'busGroup', 'flightGroup'])
+            ->with(['traveller.island', 'booking.customer.island', 'busGroup', 'flightGroup'])
             ->get();
 
         return $this->inFamilies($members, ['families' => $this->families->group($members)]);
@@ -433,6 +433,8 @@ final class Lists
             'booking' => (string) $booking->reference,
             'bus' => (string) $member->busGroup?->name,
             'group' => (string) $member->flightGroup?->name,
+            // Their own island, or else the island of the person who booked (Phase 3d).
+            'island' => (string) ($traveller->island ?? $booking->customer->island)?->label(),
             'visa' => $context['visas'][$key] ?? 'none',
             'ticket' => (string) $member->ticket_number,
             'seat' => (string) $member->seat_number,
