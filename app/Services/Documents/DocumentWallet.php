@@ -8,6 +8,7 @@ use App\Models\DocumentVersion;
 use App\Models\Traveller;
 use App\Services\Documents\Reading\PhotoCheck;
 use App\Services\Documents\Reading\ReaderManager;
+use App\Support\CompanyContext;
 use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -248,7 +249,8 @@ final class DocumentWallet
      */
     private function directoryFor(Document $document): string
     {
-        return 'documents/'.$document->getKey();
+        // Another company's under their own folder (companies plan, 1d).
+        return app(CompanyContext::class)->folder('documents', $document->company_id).'/'.$document->getKey();
     }
 
     private function disk(): string

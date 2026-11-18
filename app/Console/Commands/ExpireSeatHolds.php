@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Departure;
 use App\Models\SeatHold;
 use App\Services\Booking\SeatAllocator;
+use App\Support\CompanyContext;
 use Illuminate\Console\Command;
 
 /**
@@ -27,18 +28,42 @@ class ExpireSeatHolds extends Command
 
     protected $description = 'Release seat holds whose fifteen minutes are up';
 
-    public function handle(SeatAllocator $allocator): int
+    public function handle(SeatAllocator $allocator, CompanyContext $companies): int
+    {
+        // Every company's lapsed holds, each released inside its own
+        // company (companies plan, Phase 1d): the scope would otherwise
+        // leave every company but the console's default holding seats.
+        $withLapsed = $companies->acrossEveryCompany(
+            fn () => SeatHold::query()->lapsed()->distinct()->pluck('company_id'),
+        );
+
+        $released = $companies->eachCompany($withLapsed, fn (): array => $this->reclaim($allocator));
+
+        $seats = array_sum(array_column($released, 0));
+        $departures = array_sum(array_column($released, 1));
+
+        if ($departures === 0) {
+            $this->info('No seat holds have lapsed.');
+
+            return self::SUCCESS;
+        }
+
+        $this->info(sprintf('Released %d seat(s) across %d departure(s).', $seats, $departures));
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * One company's lapsed holds.
+     *
+     * @return array{0: int, 1: int} seats released, departures touched
+     */
+    private function reclaim(SeatAllocator $allocator): array
     {
         // Only departures that actually have something to reclaim. Locking
         // every departure in the table to discover that none of them do is
         // a lot of row locks for nothing.
         $departureIds = SeatHold::query()->lapsed()->distinct()->pluck('departure_id');
-
-        if ($departureIds->isEmpty()) {
-            $this->info('No seat holds have lapsed.');
-
-            return self::SUCCESS;
-        }
 
         $seats = 0;
 
@@ -46,12 +71,6 @@ class ExpireSeatHolds extends Command
             $seats += $allocator->reclaim($departure);
         }
 
-        $this->info(sprintf(
-            'Released %d seat(s) across %d departure(s).',
-            $seats,
-            $departureIds->count(),
-        ));
-
-        return self::SUCCESS;
+        return [$seats, $departureIds->count()];
     }
 }
