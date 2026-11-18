@@ -22,7 +22,7 @@
 
             <x-filament::section
                 :heading="$departure->package?->title ?? 'Departure'"
-                :description="$departure->date_start->format('j M Y') . ' — ' . $departure->date_start->diffForHumans()"
+                :description="$departure->startLabel('j M Y') . ' — ' . ($departure->date_start?->diffForHumans() ?? 'not fixed yet')"
                 collapsible
                 :collapsed="$row['concerns'] === []"
             >
@@ -85,7 +85,7 @@
                                 size="sm"
                                 :color="$to === \App\Models\Departure::SETTLED ? 'success' : 'gray'"
                                 wire:click="move({{ $departure->getKey() }}, '{{ $to }}')"
-                                wire:confirm="{{ $label }}: {{ $departure->package?->title ?? 'this departure' }}, {{ $departure->date_start->format('j M Y') }}?"
+                                wire:confirm="{{ $label }}: {{ $departure->package?->title ?? 'this departure' }}, {{ $departure->startLabel('j M Y') }}?"
                             >{{ $label }}</x-filament::button>
                         @endforeach
                     </div>

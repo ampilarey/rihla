@@ -32,7 +32,7 @@ class RoomForm
                                 '%s — %s (%s)',
                                 $hotel->cityLabel(),
                                 $hotel->name,
-                                $hotel->departure->date_start->format('j M Y'),
+                                $hotel->departure->startLabel('j M Y'),
                             ),
                         ])
                         ->all()),

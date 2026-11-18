@@ -56,8 +56,9 @@ final class PackageSnapshot
                 'id' => $departure->getKey(),
                 // Both date columns are NOT NULL, so no null guard — the
                 // same reason Departure::getNightsAttribute() has none.
-                'date_start' => $departure->date_start->toDateString(),
-                'date_end' => $departure->date_end->toDateString(),
+                // Null while the dates are not fixed (companies plan, Phase 3b).
+                'date_start' => $departure->date_start?->toDateString(),
+                'date_end' => $departure->date_end?->toDateString(),
                 'airline' => $departure->airline,
                 // Names only. A snapshot of a person is a copy of their
                 // biography in every booking row, which is both useless and

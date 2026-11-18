@@ -70,7 +70,7 @@
                 color="gray"
                 icon="heroicon-o-ticket"
                 :heading="$booking->reference . ' — ' . ($booking->departure?->package?->title ?? 'no package')"
-                :description="($booking->departure->date_start->format('j M Y') ?? 'no date')
+                :description="($booking->departure->startLabel('j M Y') ?? 'no date')
                     . ' · ' . $booking->seats . ' ' . ($booking->seats === 1 ? 'seat' : 'seats')
                     . ' · ' . $booking->total()
                     . ' · paid ' . $booking->paid()"

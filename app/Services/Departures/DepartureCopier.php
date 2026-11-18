@@ -30,7 +30,8 @@ class DepartureCopier
 {
     public function copy(Departure $from, CarbonInterface $dateStart): Departure
     {
-        $shift = (int) $from->date_start->diffInDays($dateStart, false);
+        // A departure copied from one without dates (Phase 3b) shifts nothing.
+        $shift = $from->date_start === null ? 0 : (int) $from->date_start->diffInDays($dateStart, false);
         $shifted = fn (?CarbonInterface $date): ?string => $date?->copy()->addDays($shift)->toDateString();
         $shiftedAt = fn (?CarbonInterface $at): ?CarbonInterface => $at?->copy()->addDays($shift);
 

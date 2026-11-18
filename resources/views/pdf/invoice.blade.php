@@ -24,9 +24,9 @@
             <div class="muted">{{ __('messages.Package') }}</div>
             <div><strong>{{ $booking->departure->package->title }}</strong></div>
             <div class="muted ltr">
-                {{ $booking->departure->date_start->format('j M Y') }}
+                {{ $booking->departure->startLabel('j M Y') }}
                 &ndash;
-                {{ $booking->departure->date_end->format('j M Y') }}
+                {{ $booking->departure->endLabel('j M Y') }}
             </div>
         </td>
     </tr>

@@ -70,6 +70,12 @@ final class SeatForecast
     {
         $capacity = (int) $departure->capacity_total;
         $sold = self::soldOn($departure);
+
+        // No dates yet (Phase 3b): nothing to project towards.
+        if ($departure->date_start === null) {
+            return new self(departure: $departure, capacity: $capacity, soldNow: $sold, daysToGo: Departure::DAYS_UNTIL_UNKNOWN, comparableJourneys: 0, comparablesSharePackage: false, low: null, high: null, because: 'Its dates are not set yet.');
+        }
+
         // copy() on both: startOfDay() mutates an Illuminate Carbon in place,
         // and the right-hand one is the model's own attribute.
         $daysToGo = (int) Carbon::now()->startOfDay()
@@ -130,7 +136,7 @@ final class SeatForecast
         foreach ($past as $journey) {
             $final = self::soldOn($journey);
 
-            if ($final < 1) {
+            if ($final < 1 || $journey->date_start === null) {
                 continue;
             }
 

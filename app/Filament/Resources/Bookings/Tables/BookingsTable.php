@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Bookings\Tables;
 
 use App\Filament\Resources\Bookings\BookingResource;
 use App\Models\Booking;
+use App\Models\Departure;
 use App\Support\Money;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -86,6 +87,9 @@ class BookingsTable
 
                 SelectFilter::make('departure')
                     ->relationship('departure', 'date_start')
+                    // A departure without dates yet (Phase 3b) is still a
+                    // choice, named for its package, not an empty option.
+                    ->getOptionLabelFromRecordUsing(fn (Departure $record): string => ($record->package->title ?? 'Departure').' · '.$record->startLabel('j M Y'))
                     ->searchable()
                     ->preload(),
             ])

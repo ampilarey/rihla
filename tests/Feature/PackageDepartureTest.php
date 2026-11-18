@@ -57,6 +57,12 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `booking_travellers.awaits_price` and
+        // `awaits_audience`, and `departures` dates made nullable
+        // (companies plan, Phase 3b). Both re-created below; left recorded,
+        // they would come back without these.
+        __DIR__.'/../../database/migrations/2026_11_19_150000_let_travellers_wait_for_a_price.php',
+        __DIR__.'/../../database/migrations/2026_11_19_140000_let_departure_dates_wait.php',
         // Newest of all: the office contact on `customers` and `bookings`
         // (companies plan, Phase 3a). No foreign key, but left recorded
         // while the booking domain is re-created below, both tables would

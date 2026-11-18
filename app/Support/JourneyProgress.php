@@ -45,8 +45,18 @@ final class JourneyProgress
     public static function of(Departure $departure): array
     {
         $today = now()->startOfDay();
-        $start = $departure->date_start->startOfDay();
-        $end = $departure->date_end->startOfDay();
+
+        // Dates not fixed yet (companies plan, Phase 3b): nothing to count.
+        if ($departure->date_start === null || $departure->date_end === null) {
+            return [
+                'stage' => self::BEFORE,
+                'headline' => 'Dates to be confirmed',
+                'detail' => 'The office will tell you the dates as soon as the flights are confirmed.',
+            ];
+        }
+
+        $start = $departure->date_start->copy()->startOfDay();
+        $end = $departure->date_end->copy()->startOfDay();
 
         if ($today->lessThan($start)) {
             $days = (int) $today->diffInDays($start);
@@ -64,7 +74,7 @@ final class JourneyProgress
             return [
                 'stage' => self::HOME,
                 'headline' => 'The journey is over',
-                'detail' => 'The group came home on '.$departure->date_end->format('j F Y').'.',
+                'detail' => 'The group came home on '.$departure->endLabel('j F Y').'.',
             ];
         }
 
@@ -86,14 +96,14 @@ final class JourneyProgress
             return [
                 'stage' => self::ON_THE_TRIP,
                 'headline' => 'They are on the journey',
-                'detail' => 'The group is away until '.$departure->date_end->format('j F Y').'.',
+                'detail' => 'The group is away until '.$departure->endLabel('j F Y').'.',
             ];
         }
 
         return [
             'stage' => $city === 'makkah' ? self::IN_MAKKAH : self::IN_MADINAH,
             'headline' => $city === 'makkah' ? 'They are in Makkah' : 'They are in Madinah',
-            'detail' => 'Until '.$departure->date_end->format('j F Y').'.',
+            'detail' => 'Until '.$departure->endLabel('j F Y').'.',
         ];
     }
 
@@ -109,7 +119,7 @@ final class JourneyProgress
     {
         $hotels = $departure->hotels()->orderBy('id')->get();
 
-        if ($hotels->isEmpty()) {
+        if ($hotels->isEmpty() || $departure->date_start === null) {
             return null;
         }
 

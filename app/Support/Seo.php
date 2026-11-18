@@ -360,7 +360,7 @@ class Seo
         foreach ($package->publishedDepartures as $departure) {
             $lead = $departure->lead_price;
 
-            if ($lead === null || $departure->date_start->isPast()) {
+            if ($lead === null || $departure->date_start === null || $departure->date_start->isPast()) {
                 continue;
             }
 

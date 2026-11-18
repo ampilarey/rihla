@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\DeskRefusal;
 use App\Exceptions\IllegalPaymentTransition;
 use App\Models\Concerns\BelongsToCompany;
 use App\Services\Payments\Ledger;
@@ -126,6 +127,19 @@ class Payment extends Model
 
     protected static function booted(): void
     {
+        // Money is taken against a price (companies plan, Phase 3b, Hijaz
+        // parity). Here, on the row, so every way money arrives meets it:
+        // the desk, a slip, the bot, the checkout, the customer's own page.
+        static::creating(function (self $payment): void {
+            $booking = $payment->payable_type === (new Booking)->getMorphClass() || $payment->payable_type === Booking::class
+                ? Booking::query()->find($payment->payable_id)
+                : null;
+
+            if ($booking?->awaitsPrice() === true) {
+                throw new DeskRefusal('This booking has no price yet. Set the departure\'s prices first; money can be taken once everybody on it is priced.');
+            }
+        });
+
         // Minted from the primary key after the insert, for the reason
         // Booking's docblock spells out: deriving it from a count races, and
         // two people reconciling in the same second both get the same

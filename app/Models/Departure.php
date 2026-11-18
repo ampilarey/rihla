@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -19,6 +20,9 @@ use Illuminate\Support\Facades\Auth;
  *
  * Carries everything that changes between runs: the dates, the airline, the
  * hotels, the day-by-day itinerary, the prices and the seats.
+ *
+ * @property Carbon|null $date_start null until the dates are fixed (companies plan, Phase 3b)
+ * @property Carbon|null $date_end
  */
 class Departure extends Model
 {
@@ -130,6 +134,58 @@ class Departure extends Model
         });
     }
 
+    /** Whether the flights decide the dates: there is a flight out or home. */
+    public function datesFromFlights(): bool
+    {
+        return $this->flights()->whereIn('direction', [DepartureFlight::OUTBOUND, DepartureFlight::RETURN])->exists();
+    }
+
+    /**
+     * Take the dates from the flights (companies plan, Phase 3b, Hijaz
+     * parity): the first flight out is the first day, the last flight home
+     * the last. A direction with no flight leaves its date as it is.
+     */
+    public function syncDatesFromFlights(): void
+    {
+        $flights = $this->flights()->get();
+        $out = $flights->where('direction', DepartureFlight::OUTBOUND)->min('departs_at');
+        // Home on the day the last flight lands, not the day it leaves.
+        $home = $flights->where('direction', DepartureFlight::RETURN)
+            ->map(fn (DepartureFlight $flight) => $flight->arrives_at ?? $flight->departs_at)
+            ->filter()
+            ->max();
+
+        $dates = array_filter([
+            'date_start' => $out === null ? null : Carbon::parse((string) $out)->toDateString(),
+            'date_end' => $home === null ? null : Carbon::parse((string) $home)->toDateString(),
+        ]);
+
+        if ($dates !== []) {
+            $this->forceFill($dates)->save();
+        }
+    }
+
+    /** Whether the dates are fixed yet (companies plan, Phase 3b). */
+    public function datesKnown(): bool
+    {
+        return $this->date_start !== null;
+    }
+
+    /**
+     * The dates in words, or that they are not fixed yet — for every screen
+     * and document that prints them, so none prints a blank or crashes.
+     */
+    public function datesLabel(string $format = 'j M Y'): string
+    {
+        if ($this->date_start === null) {
+            return 'Dates to be set';
+        }
+
+        $start = $this->date_start->format($format);
+
+        return $this->date_end === null ? $start : $start.' – '.$this->date_end->format($format);
+    }
+
     public static function label(string $status): string
     {
         return self::LABELS[$status] ?? ucfirst($status);
@@ -185,8 +241,14 @@ class Departure extends Model
             throw IllegalDepartureTransition::from($this, $status);
         }
 
-        if ($status === self::OPEN && $this->date_start->isPast()) {
+        if ($status === self::OPEN && $this->date_start?->isPast()) {
             throw IllegalDepartureTransition::because('A departure that left on '.$this->date_start->format('j M Y').' cannot be opened for booking.');
+        }
+
+        // Registration may open before the dates are fixed; travelling may
+        // not (companies plan, Phase 3b).
+        if ($status === self::DEPARTED && ! $this->datesKnown()) {
+            throw IllegalDepartureTransition::because('Set the dates, or enter the flights, before it leaves.');
         }
 
         if ($status === self::OPEN && $this->capacity_total < 1) {
@@ -415,7 +477,9 @@ class Departure extends Model
         return $this->acceptsBookings()
             && $this->has_capacity
             && ! $this->is_sold_out
-            && $this->date_start->isFuture();
+            // Dates not fixed yet: still bookable at the office (Phase 3b);
+            // the public site never lists such a departure.
+            && ($this->date_start === null || $this->date_start->isFuture());
     }
 
     // ── Price ────────────────────────────────────────────────────────────
@@ -478,13 +542,49 @@ class Departure extends Model
      */
     public function getNightsAttribute(): int
     {
+        // No dates yet (companies plan, Phase 3b): no nights to count.
+        if ($this->date_start === null || $this->date_end === null) {
+            return 0;
+        }
+
         return (int) $this->date_start->diffInDays($this->date_end);
     }
 
-    /** Whole days until departure; negative once it has left. */
+    /**
+     * Whole days until departure; negative once it has left. A departure
+     * with no dates yet is as far off as can be: nothing that counts down
+     * to it should fire.
+     */
     public function getDaysUntilAttribute(): int
     {
+        if ($this->date_start === null) {
+            return self::DAYS_UNTIL_UNKNOWN;
+        }
+
         return (int) now()->startOfDay()->diffInDays($this->date_start->startOfDay(), false);
+    }
+
+    /** {@see getDaysUntilAttribute()} for a departure whose dates are not fixed. */
+    public const DAYS_UNTIL_UNKNOWN = 99999;
+
+    /** The first day, formatted, or that it is not fixed yet (Phase 3b). */
+    public function startLabel(string $format = 'j M Y', bool $translated = false): string
+    {
+        if ($this->date_start === null) {
+            return 'dates to be set';
+        }
+
+        return $translated ? $this->date_start->translatedFormat($format) : $this->date_start->format($format);
+    }
+
+    /** The last day, formatted, or that it is not fixed yet (Phase 3b). */
+    public function endLabel(string $format = 'j M Y', bool $translated = false): string
+    {
+        if ($this->date_end === null) {
+            return 'dates to be set';
+        }
+
+        return $translated ? $this->date_end->translatedFormat($format) : $this->date_end->format($format);
     }
 
     /**

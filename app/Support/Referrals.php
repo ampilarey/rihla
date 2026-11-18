@@ -163,7 +163,7 @@ final class Referrals
             // A booking on a departure that has not flown is not yet a
             // favour returned — it is a favour in progress, and thanking
             // somebody for it before it happens is premature.
-            if ($departure === null || $departure->date_start->gte($today)) {
+            if ($departure?->date_start === null || $departure->date_start->gte($today)) {
                 continue;
             }
 

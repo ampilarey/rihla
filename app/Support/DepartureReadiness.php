@@ -588,8 +588,19 @@ final class DepartureReadiness
      */
     private static function lifecycleConcerns(Departure $departure): array
     {
-        $leaves = $departure->date_start->format('j M Y');
-        $returns = $departure->date_end->format('j M Y');
+        // No dates yet (companies plan, Phase 3b): none of the date-driven
+        // concerns can be judged. Said once, as something to do, not hidden.
+        if ($departure->date_start === null || $departure->date_end === null) {
+            return [[
+                'area' => self::LIFECYCLE,
+                'severity' => self::ATTENTION,
+                'headline' => 'Dates not set',
+                'detail' => 'Enter the flights or the dates. Nothing can leave, and no passport can be checked against a return day, until then.',
+            ]];
+        }
+
+        $leaves = $departure->startLabel('j M Y');
+        $returns = $departure->endLabel('j M Y');
         $left = $departure->date_start->lt(today());
         $due = $departure->date_end->lt(today());
         $home = $departure->status_changed_at;

@@ -68,8 +68,17 @@ class DeparturesRelationManager extends RelationManager
     {
         return $schema->components([
             Section::make()->columns(2)->schema([
-                DatePicker::make('date_start')->label('Departs')->required()->native(false),
-                DatePicker::make('date_end')->label('Returns')->required()->native(false)
+                // Phase 3b (Hijaz parity): empty until the dates are fixed,
+                // and set by the flights once there are any.
+                DatePicker::make('date_start')->label('Departs')->native(false)
+                    ->disabled(fn (?Departure $record): bool => $record?->datesFromFlights() === true)
+                    ->helperText(fn (?Departure $record): string => $record?->datesFromFlights() === true
+                        ? 'Set by the flights: the first flight out.'
+                        : 'Leave empty until the dates are fixed. It can take registrations at the office meanwhile, but is not on the website and cannot leave.'),
+                DatePicker::make('date_end')->label('Returns')->native(false)
+                    ->disabled(fn (?Departure $record): bool => $record?->datesFromFlights() === true)
+                    ->helperText(fn (?Departure $record): ?string => $record?->datesFromFlights() === true ? 'Set by the flights: the last flight home.' : null)
+                    ->requiredWith('date_start')
                     ->afterOrEqual('date_start'),
                 TextInput::make('airline')->maxLength(255),
                 // The stage is moved from the list, with a reason on the
@@ -283,7 +292,7 @@ class DeparturesRelationManager extends RelationManager
             ->icon('heroicon-o-document-duplicate')
             ->color('gray')
             ->authorize(fn (): bool => auth()->user()?->can('departure.create') === true)
-            ->modalHeading(fn (Departure $record): string => 'Copy the '.$record->date_start->format('j M Y').' departure')
+            ->modalHeading(fn (Departure $record): string => 'Copy the '.$record->startLabel('j M Y').' departure')
             ->modalDescription(fn (Departure $record): string => DepartureCopier::carries($record) === []
                 ? 'The dates, airline, seats and people travelling with the party are copied. Nothing else is set up on this departure yet.'
                 : 'Copied with every date moved by the same number of days: '.implode(', ', DepartureCopier::carries($record))
@@ -302,7 +311,7 @@ class DeparturesRelationManager extends RelationManager
                 Notification::make()
                     ->success()
                     ->title('Departure copied')
-                    ->body('Departs '.$copy->date_start->format('j M Y').', returns '.$copy->date_end->format('j M Y').'. It is a draft until you open it for booking.')
+                    ->body('Departs '.$copy->startLabel('j M Y').', returns '.$copy->endLabel('j M Y').'. It is a draft until you open it for booking.')
                     ->send();
             });
     }
@@ -358,7 +367,7 @@ class DeparturesRelationManager extends RelationManager
             ->color($colour)
             ->visible(fn (Departure $record): bool => $record->canBecome($to) && auth()->user()?->can($permission) === true)
             ->requiresConfirmation()
-            ->modalHeading(fn (Departure $record): string => $label.' · '.$record->date_start->format('j M Y'))
+            ->modalHeading(fn (Departure $record): string => $label.' · '.$record->startLabel('j M Y'))
             ->modalDescription($description)
             ->modalSubmitActionLabel($label)
             ->schema([
@@ -385,7 +394,7 @@ class DeparturesRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                TextColumn::make('date_start')->label('Departs')->date('d M Y')->sortable(),
+                TextColumn::make('date_start')->label('Departs')->date('d M Y')->sortable()->placeholder('Dates to be set'),
                 // Second, so a phone sees the stage without scrolling the
                 // table sideways: it is the column that says what to do.
                 TextColumn::make('status')

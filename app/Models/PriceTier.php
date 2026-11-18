@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Services\Booking\BookingDesk;
 use App\Support\Audience;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -94,6 +95,14 @@ class PriceTier extends Model
         static::saving(function (self $tier): void {
             if ($tier->audience === Audience::TOURIST) {
                 $tier->currency = strtoupper((string) config('marketplace.currencies.tourist', 'USD'));
+            }
+        });
+
+        // A new price reaches everybody registered while the departure had
+        // none for their room (companies plan, Phase 3b).
+        static::saved(function (self $tier): void {
+            if ($tier->departure !== null) {
+                app(BookingDesk::class)->priceWaiting($tier->departure);
             }
         });
     }

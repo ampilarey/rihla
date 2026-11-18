@@ -82,21 +82,21 @@ final class Personalisation
         $today = Carbon::now()->startOfDay();
 
         $flown = $bookings->filter(
-            fn (Booking $booking): bool => $booking->departure !== null
+            fn (Booking $booking): bool => $booking->departure?->date_start !== null
                 && $booking->departure->date_start->lt($today),
         );
 
         $upcoming = $bookings
-            ->filter(fn (Booking $booking): bool => $booking->departure !== null
+            ->filter(fn (Booking $booking): bool => $booking->departure?->date_start !== null
                 && $booking->departure->date_start->gte($today))
-            ->sortBy(fn (Booking $booking): string => $booking->departure->date_start->toDateString())
+            ->sortBy(fn (Booking $booking): string => (string) $booking->departure->date_start?->toDateString())
             ->first();
 
         return new self(
             customer: $customer,
             journeysTaken: $flown->count(),
             lastTravelled: $flown
-                ->map(fn (Booking $booking): Carbon => Carbon::parse($booking->departure->date_start->toDateString()))
+                ->map(fn (Booking $booking): Carbon => Carbon::parse((string) $booking->departure->date_start?->toDateString()))
                 ->sortDesc()
                 ->first(),
             upcoming: $upcoming,

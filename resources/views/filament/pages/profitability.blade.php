@@ -26,7 +26,7 @@
         <x-filament::section :collapsed="$journey->travellers === 0">
             <x-slot name="heading">
                 {{ $journey->departure->package->title ?? 'Departure' }} —
-                {{ $journey->departure->date_start->format('j M Y') }}
+                {{ $journey->departure->startLabel('j M Y') }}
             </x-slot>
 
             {{-- `afterHeader`, not `headerEnd`: Blade discards a slot the

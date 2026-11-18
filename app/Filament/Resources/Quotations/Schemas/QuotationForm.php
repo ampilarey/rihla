@@ -65,7 +65,7 @@ class QuotationForm
                             // date does not need one either: `date_start` is
                             // not a nullable column.
                             $d->getKey() => ($d->package->title ?? 'Departure')
-                                .' — '.$d->date_start->translatedFormat('j M Y'),
+                                .' — '.$d->startLabel('j M Y', true),
                         ])
                         ->all()),
             ]),

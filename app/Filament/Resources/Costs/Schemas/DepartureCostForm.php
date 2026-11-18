@@ -32,7 +32,7 @@ class DepartureCostForm
                         ->limit(100)
                         ->get()
                         ->mapWithKeys(fn (Departure $d): array => [
-                            $d->getKey() => ($d->package->title ?? 'Departure').' — '.$d->date_start->format('j M Y'),
+                            $d->getKey() => ($d->package->title ?? 'Departure').' — '.$d->startLabel('j M Y'),
                         ])
                         ->all())
                     ->helperText('Leave it empty for a cost of the company\'s own — rent, software, the agent\'s annual fee. It then shows in the books under the company, in no journey\'s margin.'),

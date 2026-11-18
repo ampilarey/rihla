@@ -98,8 +98,7 @@ final class CustomerDossier
     public function journeysTaken(): int
     {
         return $this->bookings
-            ->filter(fn (Booking $booking): bool => $booking->departure !== null
-                && $booking->departure->date_start->isPast()
+            ->filter(fn (Booking $booking): bool => $booking->departure?->date_start?->isPast() === true
                 && in_array($booking->status, Customer::TRAVELLED_ON, true))
             ->count();
     }

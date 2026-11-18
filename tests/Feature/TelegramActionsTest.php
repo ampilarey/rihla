@@ -147,7 +147,9 @@ class TelegramActionsTest extends TestCase
         $this->assertSame(Payment::SUCCEEDED, $payment->fresh()->status);
         $this->assertTrue($payment->fresh()->reviewer->is($finance));
         $this->assertSame(1_000_000, $booking->fresh()->paid()->minor);
-        $this->assertStringContainsString('verified</b> by '.$finance->name, collect($this->calls())->last(fn (array $call): bool => $call['method'] === 'editMessageText')['body']['text']);
+        // e(): the message escapes the name, and a generated one can hold an
+        // apostrophe ("O'Conner" arrives as "O&#039;Conner").
+        $this->assertStringContainsString('verified</b> by '.e($finance->name), collect($this->calls())->last(fn (array $call): bool => $call['method'] === 'editMessageText')['body']['text']);
 
         // As that person: the ledger's own record names them, and the
         // booking's audit row says it was by chat.

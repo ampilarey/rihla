@@ -30,6 +30,16 @@ class DepartureFlight extends Model
 
     public const DIRECTIONS = [self::OUTBOUND, self::CONNECTING, self::RETURN];
 
+    /**
+     * The flights decide the departure's dates (companies plan, Phase 3b):
+     * every change to one, in or out, sets them again.
+     */
+    protected static function booted(): void
+    {
+        static::saved(fn (DepartureFlight $flight) => $flight->departure?->syncDatesFromFlights());
+        static::deleted(fn (DepartureFlight $flight) => $flight->departure?->syncDatesFromFlights());
+    }
+
     protected $fillable = [
         'departure_id', 'direction', 'airline', 'flight_number',
         'from_airport', 'to_airport', 'departs_at', 'arrives_at',

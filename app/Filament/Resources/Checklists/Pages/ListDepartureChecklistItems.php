@@ -67,7 +67,8 @@ class ListDepartureChecklistItems extends ListRecords
 
     public static function copy(Departure $from, Departure $to): int
     {
-        $shift = (int) $from->date_start->diffInDays($to->date_start, false);
+        // Either without dates yet (Phase 3b): copied as dated, unshifted.
+        $shift = $from->date_start === null || $to->date_start === null ? 0 : (int) $from->date_start->diffInDays($to->date_start, false);
 
         return DB::transaction(function () use ($from, $to, $shift): int {
             $count = 0;
