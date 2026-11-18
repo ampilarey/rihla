@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Providers\Filament\CompanyPanelProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -100,10 +101,22 @@ class Card extends Model
         return self::KINDS[$this->kind] ?? $this->kind;
     }
 
-    /** What the QR holds: the Scan page, with this card's token. */
+    /**
+     * What the QR holds: the Scan page, with this card's token — in the
+     * panel of the company the card belongs to (companies plan, Phase 2b),
+     * so a company's tour leader scanning their own tag lands in their
+     * own panel rather than at a `/staff` that refuses them.
+     */
     public function url(): string
     {
-        return rtrim((string) config('app.url'), '/').'/staff/scan?t='.$this->qr_token;
+        $base = rtrim((string) config('app.url'), '/');
+        $company = $this->company_id === null ? null : Partner::find($this->company_id);
+
+        if ($company === null || $company->is_rihla) {
+            return $base.'/staff/scan?t='.$this->qr_token;
+        }
+
+        return $base.'/'.CompanyPanelProvider::PATH.'/'.$company->slug.'/scan?t='.$this->qr_token;
     }
 
     /** @return list<string> */

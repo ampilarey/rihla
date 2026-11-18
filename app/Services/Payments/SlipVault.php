@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Services\Documents\Reading\ReaderManager;
 use App\Support\CompanyContext;
+use App\Support\CompanyRequest;
 use App\Support\EncryptedFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -138,7 +139,8 @@ final class SlipVault
         return URL::temporarySignedRoute(
             'payments.slip',
             now()->addMinutes((int) config('payments.slips.link_minutes', 5)),
-            ['payment' => $payment->getKey()],
+            // Carries the company when made on a company's screen (Phase 2b).
+            ['payment' => $payment->getKey()] + CompanyRequest::parameter(),
         );
     }
 

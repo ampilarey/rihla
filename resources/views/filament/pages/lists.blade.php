@@ -29,8 +29,8 @@
                     <div style="{{ $row }}">
                         <span style="flex:1 1 12rem;">{{ $label }}</span>
                         <span style="{{ $pair }}">
-                            <x-filament::button tag="a" size="sm" href="{{ route('lists.manifest', ['departure' => $departure, 'preset' => $preset]) }}" target="_blank" rel="noopener">PDF</x-filament::button>
-                            <x-filament::button tag="a" size="sm" color="gray" href="{{ route('lists.manifest', ['departure' => $departure, 'preset' => $preset, 'format' => 'csv']) }}">CSV</x-filament::button>
+                            <x-filament::button tag="a" size="sm" href="{{ \App\Support\CompanyRequest::route('lists.manifest', ['departure' => $departure, 'preset' => $preset]) }}" target="_blank" rel="noopener">PDF</x-filament::button>
+                            <x-filament::button tag="a" size="sm" color="gray" href="{{ \App\Support\CompanyRequest::route('lists.manifest', ['departure' => $departure, 'preset' => $preset, 'format' => 'csv']) }}">CSV</x-filament::button>
                         </span>
                     </div>
                 @endforeach
@@ -38,8 +38,8 @@
                     <div style="{{ $row }}">
                         <span style="flex:1 1 12rem;">Payment status (who still owes what)</span>
                         <span style="{{ $pair }}">
-                            <x-filament::button tag="a" size="sm" href="{{ route('lists.payments', ['departure' => $departure]) }}" target="_blank" rel="noopener">PDF</x-filament::button>
-                            <x-filament::button tag="a" size="sm" color="gray" href="{{ route('lists.payments', ['departure' => $departure, 'format' => 'csv']) }}">CSV</x-filament::button>
+                            <x-filament::button tag="a" size="sm" href="{{ \App\Support\CompanyRequest::route('lists.payments', ['departure' => $departure]) }}" target="_blank" rel="noopener">PDF</x-filament::button>
+                            <x-filament::button tag="a" size="sm" color="gray" href="{{ \App\Support\CompanyRequest::route('lists.payments', ['departure' => $departure, 'format' => 'csv']) }}">CSV</x-filament::button>
                         </span>
                     </div>
                 @endif
@@ -47,8 +47,8 @@
                     <div style="{{ $row }}">
                         <span style="flex:1 1 12rem;">Documents still owed</span>
                         <span style="{{ $pair }}">
-                            <x-filament::button tag="a" size="sm" href="{{ route('lists.documents', ['departure' => $departure]) }}" target="_blank" rel="noopener">PDF</x-filament::button>
-                            <x-filament::button tag="a" size="sm" color="gray" href="{{ route('lists.documents', ['departure' => $departure, 'format' => 'csv']) }}">CSV</x-filament::button>
+                            <x-filament::button tag="a" size="sm" href="{{ \App\Support\CompanyRequest::route('lists.documents', ['departure' => $departure]) }}" target="_blank" rel="noopener">PDF</x-filament::button>
+                            <x-filament::button tag="a" size="sm" color="gray" href="{{ \App\Support\CompanyRequest::route('lists.documents', ['departure' => $departure, 'format' => 'csv']) }}">CSV</x-filament::button>
                         </span>
                     </div>
                 @endif
@@ -63,9 +63,9 @@
                     <div style="{{ $row }}">
                         <span style="flex:1 1 12rem;">{{ $bus->name }} · {{ $bus->members()->count() }} on board{{ $bus->leaderLabel() ? ' · '.$bus->leaderLabel() : '' }}</span>
                         <span style="{{ $pair }}">
-                            <x-filament::button tag="a" size="sm" href="{{ route('lists.bus', ['busGroup' => $bus]) }}" target="_blank" rel="noopener">Bus list</x-filament::button>
+                            <x-filament::button tag="a" size="sm" href="{{ \App\Support\CompanyRequest::route('lists.bus', ['busGroup' => $bus]) }}" target="_blank" rel="noopener">Bus list</x-filament::button>
                             @if ($canPrintCards && $bus->members()->exists())
-                                <x-filament::button tag="a" size="sm" color="gray" href="{{ route('lists.cards', ['kind' => 'luggage', 'bus' => $bus->getKey()]) }}" target="_blank" rel="noopener">Luggage tags</x-filament::button>
+                                <x-filament::button tag="a" size="sm" color="gray" href="{{ \App\Support\CompanyRequest::route('lists.cards', ['kind' => 'luggage', 'bus' => $bus->getKey()]) }}" target="_blank" rel="noopener">Luggage tags</x-filament::button>
                             @endif
                         </span>
                     </div>
@@ -83,9 +83,9 @@
                     <div style="{{ $row }}">
                         <span style="flex:1 1 12rem;">{{ $hotel->cityLabel() }} · {{ $hotel->name }} · {{ $hotel->rooms()->count() }} {{ \Illuminate\Support\Str::plural('room', $hotel->rooms()->count()) }}</span>
                         <span style="{{ $pair }}">
-                            <x-filament::button tag="a" size="sm" href="{{ route('lists.rooms', ['departureHotel' => $hotel]) }}" target="_blank" rel="noopener">Office copy</x-filament::button>
-                            <x-filament::button tag="a" size="sm" color="gray" href="{{ route('lists.rooms', ['departureHotel' => $hotel, 'hotel' => 1]) }}" target="_blank" rel="noopener">Hotel copy</x-filament::button>
-                            <x-filament::button tag="a" size="sm" color="gray" href="{{ route('lists.rooms', ['departureHotel' => $hotel, 'format' => 'csv']) }}">CSV</x-filament::button>
+                            <x-filament::button tag="a" size="sm" href="{{ \App\Support\CompanyRequest::route('lists.rooms', ['departureHotel' => $hotel]) }}" target="_blank" rel="noopener">Office copy</x-filament::button>
+                            <x-filament::button tag="a" size="sm" color="gray" href="{{ \App\Support\CompanyRequest::route('lists.rooms', ['departureHotel' => $hotel, 'hotel' => 1]) }}" target="_blank" rel="noopener">Hotel copy</x-filament::button>
+                            <x-filament::button tag="a" size="sm" color="gray" href="{{ \App\Support\CompanyRequest::route('lists.rooms', ['departureHotel' => $hotel, 'format' => 'csv']) }}">CSV</x-filament::button>
                         </span>
                     </div>
                 @empty
@@ -99,8 +99,8 @@
                 <x-slot name="heading">Cards and tags for the whole departure</x-slot>
                 <x-slot name="description">Each traveller gets one card and one tag; printing again reuses the same QR. Print a bus's own from Travel → Buses.</x-slot>
                 <div style="{{ $pair }}">
-                    <x-filament::button tag="a" size="sm" href="{{ route('lists.cards', ['kind' => 'customer', 'departure' => $departure->getKey()]) }}" target="_blank" rel="noopener">Customer cards</x-filament::button>
-                    <x-filament::button tag="a" size="sm" href="{{ route('lists.cards', ['kind' => 'luggage', 'departure' => $departure->getKey()]) }}" target="_blank" rel="noopener">Luggage tags</x-filament::button>
+                    <x-filament::button tag="a" size="sm" href="{{ \App\Support\CompanyRequest::route('lists.cards', ['kind' => 'customer', 'departure' => $departure->getKey()]) }}" target="_blank" rel="noopener">Customer cards</x-filament::button>
+                    <x-filament::button tag="a" size="sm" href="{{ \App\Support\CompanyRequest::route('lists.cards', ['kind' => 'luggage', 'departure' => $departure->getKey()]) }}" target="_blank" rel="noopener">Luggage tags</x-filament::button>
                 </div>
             </x-filament::section>
         @endif

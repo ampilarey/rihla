@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Bookings\Pages\Concerns;
 use App\Models\Booking;
 use App\Models\Discount;
 use App\Services\Booking\BookingDesk;
+use App\Support\CompanyRequest;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -34,7 +35,7 @@ trait HasInvoiceAndDiscountActions
             ->label('Invoice')
             ->icon('heroicon-o-document-arrow-down')
             ->color('gray')
-            ->url(fn (): string => route('staff.invoice', ['booking' => $this->bookingRecord()]), shouldOpenInNewTab: true);
+            ->url(fn (): string => CompanyRequest::route('staff.invoice', ['booking' => $this->bookingRecord()]), shouldOpenInNewTab: true);
     }
 
     /**

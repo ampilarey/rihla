@@ -8,6 +8,7 @@ use App\Models\BookingTraveller;
 use App\Models\BusGroup;
 use App\Services\Operations\Buses;
 use App\Services\Operations\Families;
+use App\Support\CompanyRequest;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -214,7 +215,7 @@ class BusGroupsTable
             ->icon('heroicon-o-document-text')
             ->color('gray')
             ->visible(fn (): bool => auth()->user()?->can('list.view') === true)
-            ->url(fn (BusGroup $record): string => route('lists.bus', ['busGroup' => $record]), shouldOpenInNewTab: true);
+            ->url(fn (BusGroup $record): string => CompanyRequest::route('lists.bus', ['busGroup' => $record]), shouldOpenInNewTab: true);
     }
 
     private static function tagsAction(): Action
@@ -224,7 +225,7 @@ class BusGroupsTable
             ->icon('heroicon-o-tag')
             ->color('gray')
             ->visible(fn (BusGroup $record): bool => auth()->user()?->can('card.create') === true && $record->members()->exists())
-            ->url(fn (BusGroup $record): string => route('lists.cards', ['kind' => 'luggage', 'bus' => $record->getKey()]), shouldOpenInNewTab: true);
+            ->url(fn (BusGroup $record): string => CompanyRequest::route('lists.cards', ['kind' => 'luggage', 'bus' => $record->getKey()]), shouldOpenInNewTab: true);
     }
 
     private static function cardsAction(): Action
@@ -234,7 +235,7 @@ class BusGroupsTable
             ->icon('heroicon-o-identification')
             ->color('gray')
             ->visible(fn (BusGroup $record): bool => auth()->user()?->can('card.create') === true && $record->members()->exists())
-            ->url(fn (BusGroup $record): string => route('lists.cards', ['kind' => 'customer', 'bus' => $record->getKey()]), shouldOpenInNewTab: true);
+            ->url(fn (BusGroup $record): string => CompanyRequest::route('lists.cards', ['kind' => 'customer', 'bus' => $record->getKey()]), shouldOpenInNewTab: true);
     }
 
     /** @return array<int, string> */

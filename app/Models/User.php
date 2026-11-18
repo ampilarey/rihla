@@ -141,6 +141,25 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
     }
 
     /**
+     * Where this person's work starts: Rihla's staff panel for staff, else
+     * the first Umrah company they work for (companies plan, Phase 2b).
+     * Used wherever a screen sends somebody "home", so a company's owner
+     * is never sent to a `/staff` that answers them 403.
+     */
+    public function homeUrl(): string
+    {
+        if ($this->can('admin.access')) {
+            return route('filament.staff.pages.dashboard');
+        }
+
+        $company = $this->companies()->orderBy('name')->first();
+
+        return $company !== null
+            ? route('filament.company.pages.dashboard', ['tenant' => $company->slug])
+            : url('/');
+    }
+
+    /**
      * Roles already looked up in this request, by company id. A page asks
      * the gate dozens of times; the answer does not change mid-request.
      *
