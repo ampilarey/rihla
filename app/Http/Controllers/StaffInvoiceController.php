@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\ExcursionBooking;
 use App\Models\Payment;
 use App\Services\Invoices\Documents;
+use App\Services\Portal\Agreements;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -31,6 +32,17 @@ class StaffInvoiceController extends Controller
 
         return $this->documents->invoice($booking)
             ->download($this->documents->invoiceFilename($booking));
+    }
+
+    /** The booking agreement as signed (Phase 3h, part 3). */
+    public function agreement(Booking $booking, Agreements $agreements): Response
+    {
+        $this->authorize('view', $booking);
+
+        $agreement = $agreements->for($booking);
+        abort_unless($agreement->isSigned(), 404);
+
+        return PortalAgreementController::document($booking, $agreement)->download('agreement-'.strtolower((string) $booking->reference).'.pdf');
     }
 
     /** An additional trip's own invoice (companies plan, Phase 3e). */

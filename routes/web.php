@@ -31,6 +31,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentSlipController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PortalAccountController;
+use App\Http\Controllers\PortalAgreementController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecondFactorController;
@@ -165,6 +166,13 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
             ->middleware('throttle:assistant')->name('learning.questions.guide');
 
         Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
+        // The booking agreement (Phase 3h, part 3), once the company has terms.
+        Route::get('/portal/agreement', [PortalAgreementController::class, 'show'])->name('portal.agreement');
+        Route::post('/portal/agreement', [PortalAgreementController::class, 'sign'])
+            ->middleware('throttle:portal-write')->name('portal.agreement.sign');
+        Route::post('/portal/agreement/paper', [PortalAgreementController::class, 'upload'])
+            ->middleware('throttle:portal-write')->name('portal.agreement.paper');
+        Route::get('/portal/agreement/pdf', [PortalAgreementController::class, 'pdf'])->name('portal.agreement.pdf');
         // Their travel letters, without passport numbers (Phase 3h).
         Route::get('/portal/letters', [PortalAccountController::class, 'letters'])->name('portal.letters');
         Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
@@ -394,6 +402,8 @@ Route::middleware(['auth', 'mfa', 'company.request'])->group(function () {
         ->name('staff.receipt');
     Route::get('/staff-documents/excursion/{excursionBooking}/invoice', [StaffInvoiceController::class, 'excursion'])
         ->name('staff.excursion-invoice');
+    Route::get('/staff-documents/booking/{booking}/agreement', [StaffInvoiceController::class, 'agreement'])
+        ->name('staff.agreement');
 
     // The lists a departure runs on, the cards and the tags — Hijaz's
     // ground operations. Authenticated and authorised by permission, not

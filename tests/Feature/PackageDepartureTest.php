@@ -57,6 +57,9 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `agreements` hangs off `bookings` (companies plan,
+        // Phase 3h, part 3).
+        __DIR__.'/../../database/migrations/2026_11_19_230000_create_agreements.php',
         // Newest of all: `customers.portal_password` and its two timestamps
         // (companies plan, Phase 3h). Left recorded while `customers` is
         // re-created below, it would come back without them.

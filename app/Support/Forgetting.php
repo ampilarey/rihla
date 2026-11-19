@@ -68,6 +68,8 @@ final class Forgetting
         'waitlist_entries' => 'customer',
 
         'payments' => 'booking',
+        // The signature on a booking's agreement (Phase 3h).
+        'agreements' => 'booking',
         'discounts' => 'booking',
 
         // Polymorphic since §15.7, so there is no `booking_id` to match:

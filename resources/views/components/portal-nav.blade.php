@@ -34,6 +34,20 @@
         {{ __('messages.Your bookings') }}
     </a>
 
+    {{-- The agreement (Phase 3h, part 3), only once the company has terms. --}}
+    @if(\App\Services\Portal\Agreements::offered())
+        <a href="{{ route('portal.agreement', ['locale' => app()->getLocale()]) }}"
+           @class([
+               'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',
+               'bg-wine-600 text-cream' => $current === 'agreement',
+               'bg-cream text-ink hover:bg-cream-deep' => $current !== 'agreement',
+           ])
+           @if($current === 'agreement') aria-current="page" @endif
+           dir="auto">
+            {{ __('messages.Agreement') }}
+        </a>
+    @endif
+
     <a href="{{ route('portal.documents', ['locale' => app()->getLocale()]) }}"
        @class([
            'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',

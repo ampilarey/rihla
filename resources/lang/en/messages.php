@@ -986,4 +986,20 @@ return [
     'Your bookings' => 'Your bookings',
     'Your password is set. Next time, sign in with your mobile number.' => 'Your password is set. Next time, sign in with your mobile number.',
     'Download the travel letters' => 'Download the travel letters',
+
+    // The booking agreement (companies plan, Phase 3h, part 3).
+    'Agreement' => 'Agreement',
+    'Download the signed agreement' => 'Download the signed agreement',
+    'Draw your signature in the box' => 'Draw your signature in the box',
+    'Draw your signature in the box, then sign.' => 'Draw your signature in the box, then sign.',
+    'I have read this agreement and I agree to it.' => 'I have read this agreement and I agree to it.',
+    'Or send a signed paper copy' => 'Or send a signed paper copy',
+    'Sign on screen' => 'Sign on screen',
+    'Sign the agreement' => 'Sign the agreement',
+    'Thank you. We have your signed copy.' => 'Thank you. We have your signed copy.',
+    'Thank you. Your agreement is signed.' => 'Thank you. Your agreement is signed.',
+    'This agreement is already signed.' => 'This agreement is already signed.',
+    'Type your full name as you sign.' => 'Type your full name as you sign.',
+    'Your agreement' => 'Your agreement',
+    'Your full name' => 'Your full name',
 ];
