@@ -136,6 +136,11 @@ class Partner extends Model
         // its own site on before it has paid.
         'site_enabled' => 'boolean',
         'powered_by_rihla' => 'boolean',
+        // What the company has paid for (Phase 5a), likewise never fillable.
+        'features' => 'array',
+        'registration_fee_minor' => 'integer',
+        'registration_paid_at' => 'datetime',
+        'staff_seats' => 'integer',
         'bank_accounts' => 'array',
         // A company's own Telegram bot (companies plan, Phase 2d). A
         // credential, so ciphertext at rest; scrubbed to null by

@@ -69,6 +69,7 @@ use App\Policies\WhyFeaturePolicy;
 use App\Policies\WhySectionPolicy;
 use App\Support\Access;
 use App\Support\CompanyContext;
+use App\Support\CompanyFeatures;
 use App\Support\CompanyRequest;
 use App\Support\CompanyRole;
 use App\Support\HostContext;
@@ -152,7 +153,10 @@ class AuthServiceProvider extends ServiceProvider
                 return null;
             }
 
-            return CompanyRole::allows($user->roleAtCompany($company), $ability);
+            // And only within what the company has paid for (Phase 5a): an
+            // area that is off is refused, a read-only one only shown.
+            return CompanyRole::allows($user->roleAtCompany($company), $ability)
+                && CompanyFeatures::allows($company, $ability);
         });
 
         // Super Admin is granted everything here rather than by holding every

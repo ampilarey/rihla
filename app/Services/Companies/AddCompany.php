@@ -4,6 +4,7 @@ namespace App\Services\Companies;
 
 use App\Models\Partner;
 use App\Models\User;
+use App\Support\CompanyFeatures;
 use App\Support\CompanyRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -23,11 +24,19 @@ use Illuminate\Support\Str;
  */
 final class AddCompany
 {
-    public function __invoke(string $name, string $ownerName, string $ownerEmail, ?User $checkedBy = null): Partner
+    /**
+     * @param  array<string, string>|null  $features  what the company has paid for (Phase 5a); null is
+     *                                                everything, for callers that predate features. The
+     *                                                admin's screen always passes exactly what was ticked.
+     */
+    public function __invoke(string $name, string $ownerName, string $ownerEmail, ?User $checkedBy = null, ?array $features = null): Partner
     {
         $email = Str::lower(trim($ownerEmail));
+        $features = $features === null
+            ? array_fill_keys(array_keys(CompanyFeatures::FEATURES), CompanyFeatures::ON)
+            : CompanyFeatures::clean($features);
 
-        [$company, $owner, $isNew] = DB::transaction(function () use ($name, $ownerName, $email, $checkedBy): array {
+        [$company, $owner, $isNew] = DB::transaction(function () use ($name, $ownerName, $email, $checkedBy, $features): array {
             $company = new Partner(['name' => $name, 'slug' => $this->slugFor($name), 'email' => $email, 'is_active' => true]);
             $company->forceFill([
                 'is_umrah_company' => true,
@@ -35,6 +44,7 @@ final class AddCompany
                 'verified_at' => now(),
                 'verified_by' => $checkedBy?->getKey(),
                 'status' => Partner::STATUS_ACTIVE,
+                'features' => $features,
             ])->save();
 
             $owner = User::where('email', $email)->first();

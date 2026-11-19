@@ -73,6 +73,12 @@ final class CurrentSite
             ? self::ownDomain($host)
             : Partner::query()->where('slug', $label)->first();
 
+        // An own domain is a paid feature (Phase 5a); the name under the
+        // companies domain comes with the basic website.
+        if ($label === null && $company !== null && ! CompanyFeatures::has($company, CompanyFeatures::DOMAIN)) {
+            return null;
+        }
+
         return $company !== null && self::isLive($company) ? $company : null;
     }
 
@@ -83,7 +89,7 @@ final class CurrentSite
      */
     public static function hostOf(Partner $company): ?string
     {
-        if (filled($company->site_domain)) {
+        if (filled($company->site_domain) && CompanyFeatures::has($company, CompanyFeatures::DOMAIN)) {
             return (string) $company->site_domain;
         }
 
@@ -195,6 +201,38 @@ final class CurrentSite
     /** May a link to this route be shown here? Always on rihla.mv. */
     public static function allows(string $route): bool
     {
-        return ! self::active() || in_array($route, self::ROUTES, true);
+        if (! self::active()) {
+            return true;
+        }
+
+        return in_array($route, self::ROUTES, true)
+            && self::paidFor(app(self::class)->company, $route);
+    }
+
+    /**
+     * Routes that belong to a paid feature (Phase 5a), by name prefix, and
+     * whether a read-only feature still lets them answer. Checkout and the
+     * waiting list take money and seats, so they need the feature on; a
+     * downgraded portal still lets a customer see their booking.
+     *
+     * @var array<string, array{0: string, 1: bool}>
+     */
+    private const PAID = [
+        'booking.' => [CompanyFeatures::BOOKINGS, false],
+        'waitlist.' => [CompanyFeatures::BOOKINGS, false],
+        'portal.' => [CompanyFeatures::PORTAL, true],
+        'family.' => [CompanyFeatures::PORTAL, true],
+        'site.' => [CompanyFeatures::APP, false],
+    ];
+
+    private static function paidFor(?Partner $company, string $route): bool
+    {
+        foreach (self::PAID as $prefix => [$feature, $readOnlyWillDo]) {
+            if (str_starts_with($route, $prefix)) {
+                return CompanyFeatures::has($company, $feature, $readOnlyWillDo);
+            }
+        }
+
+        return true;
     }
 }

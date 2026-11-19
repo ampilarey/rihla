@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Partners\Pages;
 use App\Filament\Resources\Partners\PartnerResource;
 use App\Providers\Filament\CompanyPanelProvider;
 use App\Services\Companies\AddCompany;
+use App\Support\CompanyFeatures;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
@@ -30,9 +32,22 @@ class ListPartners extends ListRecords
                     TextInput::make('name')->label('Company name')->required()->maxLength(255),
                     TextInput::make('owner_name')->label('Owner\'s name')->required()->maxLength(255),
                     TextInput::make('owner_email')->label('Owner\'s e-mail')->email()->required()->maxLength(255),
+                    // Phase 5a: only what they have paid for. The basic
+                    // website comes with the registration fee and is not here.
+                    CheckboxList::make('features')
+                        ->label('What they have paid for')
+                        ->options(array_map(fn (array $feature): string => $feature['label'], CompanyFeatures::FEATURES))
+                        ->columns(2)
+                        ->helperText('Leave it all unticked for the basic website alone. Each can be changed later on their record.'),
                 ])
                 ->action(function (array $data): void {
-                    $company = app(AddCompany::class)((string) $data['name'], (string) $data['owner_name'], (string) $data['owner_email'], auth()->user());
+                    $company = app(AddCompany::class)(
+                        (string) $data['name'],
+                        (string) $data['owner_name'],
+                        (string) $data['owner_email'],
+                        auth()->user(),
+                        array_fill_keys((array) ($data['features'] ?? []), CompanyFeatures::ON),
+                    );
 
                     Notification::make()
                         ->success()

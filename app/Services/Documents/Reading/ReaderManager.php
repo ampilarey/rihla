@@ -10,6 +10,8 @@ use App\Services\Documents\Reading\Readers\ManualReader;
 use App\Services\Documents\Reading\Readers\Reader;
 use App\Services\Documents\Reading\Readers\TesseractReader;
 use App\Services\Telegram\Notifier;
+use App\Support\CompanyDetails;
+use App\Support\CompanyFeatures;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -22,6 +24,14 @@ class ReaderManager
 {
     public function reader(): Reader
     {
+        // Document reading is a paid feature for a company (Phase 5a):
+        // without it, nothing is proposed and staff type as before.
+        $company = CompanyDetails::company();
+
+        if ($company !== null && ! CompanyFeatures::has($company, CompanyFeatures::READING)) {
+            return new ManualReader;
+        }
+
         $wanted = (string) config('documents.reader', 'auto');
 
         $reader = match ($wanted) {

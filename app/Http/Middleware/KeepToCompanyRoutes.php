@@ -18,7 +18,8 @@ class KeepToCompanyRoutes
     public function handle(Request $request, Closure $next): Response
     {
         if (CurrentSite::active()) {
-            abort_unless(in_array($request->route()?->getName(), [...CurrentSite::ROUTES, 'root'], true), 404);
+            $name = (string) $request->route()?->getName();
+            abort_unless($name === 'root' || CurrentSite::allows($name), 404);
         }
 
         return $next($request);
