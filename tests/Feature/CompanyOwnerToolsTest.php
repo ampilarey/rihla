@@ -62,7 +62,7 @@ class CompanyOwnerToolsTest extends TestCase
         $this->assertSame('Ministry of Islamic Affairs register of Hajj and Umrah operators', $company->licence_register);
         $this->assertSame(150000, $company->registration_fee_minor);
         $this->assertSame(4, $company->staff_seats);
-        $this->assertSame([CompanyFeatures::BOOKINGS => CompanyFeatures::ON, CompanyFeatures::PORTAL => CompanyFeatures::ON], $company->features);
+        $this->assertEquals([CompanyFeatures::BOOKINGS => CompanyFeatures::ON, CompanyFeatures::PORTAL => CompanyFeatures::ON], $company->features);
         $this->assertSame($this->admin->id, $company->verified_by);
 
         // Defaults seeded: an unpublished website, and not live: the fee is
