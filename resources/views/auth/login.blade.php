@@ -28,15 +28,18 @@
 
             <!-- Email Address -->
             <div>
-                <label for="email" class="block text-sm font-medium text-ink mb-2">{{ __('Email Address') }}</label>
+                {{-- An e-mail address or a mobile number (companies plan, Phase 3i). --}}
+                <label for="email" class="block text-sm font-medium text-ink mb-2">{{ __('Email or mobile number') }}</label>
                 <input id="email" 
                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-wine-500 focus:border-wine-500 transition-colors" 
-                       type="email" 
+                       type="text" 
+                       inputmode="email"
+                       autocomplete="username"
                        name="email" 
                        value="{{ old('email') }}" 
                        required 
                        autofocus
-                       placeholder="{{ __('Enter your email') }}">
+                       placeholder="{{ __('Your e-mail or mobile number') }}">
                 @error('email')
                     <p class="mt-2 text-sm text-error">{{ $message }}</p>
                 @enderror

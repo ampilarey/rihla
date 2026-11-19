@@ -98,11 +98,13 @@ class Team extends Page implements HasTable
                 ->schema([
                     TextInput::make('name')->required()->maxLength(255),
                     TextInput::make('email')->label('E-mail')->email()->required()->maxLength(255),
+                    TextInput::make('phone')->label('Mobile number')->tel()->maxLength(40)
+                        ->helperText('Optional. They can sign in with it instead of their e-mail.'),
                     Select::make('role')->options(self::roles())->required()->default(CompanyRole::ROLES[2])
                         ->helperText('The same jobs as at Rihla. An Owner can also manage this team and your company details.'),
                 ])
                 ->action(fn (array $data) => $this->attempt(
-                    fn () => app(CompanyTeam::class)->add($this->company(), (string) $data['name'], (string) $data['email'], (string) $data['role'], $this->user()),
+                    fn () => app(CompanyTeam::class)->add($this->company(), (string) $data['name'], (string) $data['email'], (string) $data['role'], $this->user(), $data['phone'] ?? null),
                     'Added. Somebody new is e-mailed a link to choose their password.',
                 )),
         ];

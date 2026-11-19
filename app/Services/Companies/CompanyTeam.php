@@ -7,6 +7,7 @@ use App\Models\CompanyMembership;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\CompanyRole;
+use App\Support\PhoneNumber;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -24,17 +25,25 @@ use Illuminate\Support\Str;
  */
 final class CompanyTeam
 {
-    public function add(Partner $company, string $name, string $email, string $role, ?User $by = null): CompanyMembership
+    public function add(Partner $company, string $name, string $email, string $role, ?User $by = null, ?string $phone = null): CompanyMembership
     {
         $this->assertRole($role);
         $email = Str::lower(trim($email));
+        // A mobile number to sign in with (Phase 3i), for a new account only:
+        // somebody who already has one keeps the number they chose.
+        $phoneKey = PhoneNumber::key($phone);
 
-        [$membership, $isNew] = DB::transaction(function () use ($company, $name, $email, $role, $by): array {
+        if ($phoneKey !== null && User::query()->where('phone', $phoneKey)->where('email', '!=', $email)->exists()) {
+            throw new DeskRefusal('Somebody else already signs in with that mobile number.');
+        }
+
+        [$membership, $isNew] = DB::transaction(function () use ($company, $name, $email, $role, $by, $phoneKey): array {
             $user = User::where('email', $email)->first();
             $isNew = $user === null;
             $user ??= User::forceCreate([
                 'name' => $name,
                 'email' => $email,
+                'phone' => $phoneKey,
                 'password' => Hash::make(Str::random(40)),
             ]);
 
