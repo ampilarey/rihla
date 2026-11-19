@@ -6,10 +6,10 @@
     <div
         class="container mx-auto max-w-3xl px-4 section-y-tight"
         data-leader-departure="{{ $departure->getKey() }}"
-        data-snapshot-url="{{ route('leader.snapshot', $departure) }}"
+        data-snapshot-url="{{ \App\Support\CompanyRequest::route('leader.snapshot', [$departure]) }}"
     >
         <p class="mb-2">
-            <a href="{{ route('leader.index') }}" class="inline-block py-1 text-ink-muted underline">All your groups</a>
+            <a href="{{ \App\Support\CompanyRequest::route('leader.index') }}" class="inline-block py-1 text-ink-muted underline">All your groups</a>
         </p>
 
         <h1 dir="auto" class="mb-1 text-2xl font-bold text-ink">
@@ -57,7 +57,7 @@
                         @php($missing = $rollCall->unaccountedFor()->count())
                         <li>
                             <a
-                                href="{{ route('leader.count', [$departure, $rollCall]) }}"
+                                href="{{ \App\Support\CompanyRequest::route('leader.count', [$departure, $rollCall]) }}"
                                 class="flex items-center justify-between gap-4 border-b border-cream-deep py-2 last:border-0"
                             >
                                 <span>

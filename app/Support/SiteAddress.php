@@ -28,15 +28,20 @@ final class SiteAddress
         }
 
         $company = Partner::find($companyId);
-        $domain = config('companies.site_domain');
 
-        if ($company === null || blank($domain) || ! CurrentSite::isLive($company)) {
+        if ($company === null || ! CurrentSite::isLive($company)) {
+            return null;
+        }
+
+        $host = CurrentSite::hostOf($company);
+
+        if ($host === null) {
             return null;
         }
 
         $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
 
-        return $scheme.'://'.$company->slug.'.'.$domain;
+        return $scheme.'://'.$host;
     }
 
     /**

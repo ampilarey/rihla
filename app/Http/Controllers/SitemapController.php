@@ -181,6 +181,7 @@ class SitemapController extends Controller
         $hostPages = HostPage::query()
             ->whereNotNull('published_at')
             ->whereHas('partner', fn ($query) => $query
+                ->where('is_umrah_company', false)
                 ->where('status', Partner::STATUS_ACTIVE)
                 ->where('verification', Partner::VERIFIED))
             ->with('partner:id,slug')

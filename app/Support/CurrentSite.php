@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\CompanySite;
 use App\Models\Partner;
+use Illuminate\Database\QueryException;
 
 /**
  * Whose website this request is — companies plan, Phase 4a.
@@ -66,13 +67,52 @@ final class CurrentSite
     {
         $label = self::label($host);
 
-        if ($label === null) {
+        // Not a name under the companies domain: perhaps a company's own
+        // domain (Phase 4e), with or without `www.`.
+        $company = $label === null
+            ? self::ownDomain($host)
+            : Partner::query()->where('slug', $label)->first();
+
+        return $company !== null && self::isLive($company) ? $company : null;
+    }
+
+    /**
+     * The host a company's site answers on: its own domain when Rihla's
+     * admin has mapped one (Phase 4e), else its name under the companies
+     * domain, else null.
+     */
+    public static function hostOf(Partner $company): ?string
+    {
+        if (filled($company->site_domain)) {
+            return (string) $company->site_domain;
+        }
+
+        $domain = config('companies.site_domain');
+
+        return filled($domain) ? $company->slug.'.'.$domain : null;
+    }
+
+    /** The company whose own domain this host is, or null. */
+    public static function ownDomain(string $host): ?Partner
+    {
+        $host = strtolower($host);
+        $bare = str_starts_with($host, 'www.') ? substr($host, 4) : $host;
+        $own = strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+        $own = str_starts_with($own, 'www.') ? substr($own, 4) : $own;
+
+        // rihla.mv's own requests, and anything that is not a domain at all,
+        // never cost a query.
+        if ($bare === '' || ! str_contains($bare, '.') || $bare === $own) {
             return null;
         }
 
-        $company = Partner::query()->where('slug', $label)->first();
-
-        return $company !== null && self::isLive($company) ? $company : null;
+        try {
+            return Partner::query()->where('site_domain', $bare)->first();
+        } catch (QueryException) {
+            // A deploy that has the code before its migration: no company
+            // has a domain yet, so nobody's site is missing.
+            return null;
+        }
     }
 
     /**

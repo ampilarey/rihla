@@ -32,11 +32,14 @@ class ServeCompanySite
             app(CompanyContext::class)->use($rihla);
         }
 
-        if (CurrentSite::label($request->getHost()) === null) {
+        $isCompanyName = CurrentSite::label($request->getHost()) !== null;
+        $company = CurrentSite::companyFor($request->getHost());
+
+        // Neither a company's name nor a live company's own domain: rihla.mv
+        // (or anything else) as before.
+        if (! $isCompanyName && $company === null) {
             return $next($request);
         }
-
-        $company = CurrentSite::companyFor($request->getHost());
 
         if ($company === null) {
             // A guesthouse host's name is answered by its own redirect when

@@ -32,7 +32,7 @@
             <ul class="space-y-4">
                 @foreach ($departures as $departure)
                     <li>
-                        <a href="{{ route('leader.departure', $departure) }}" class="card block hover:border-wine">
+                        <a href="{{ \App\Support\CompanyRequest::route('leader.departure', [$departure]) }}" class="card block hover:border-wine">
                             <h2 dir="auto" class="text-lg font-bold text-ink">
                                 {{ $departure->package->title ?? 'Departure' }}
                             </h2>

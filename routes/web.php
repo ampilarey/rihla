@@ -181,12 +181,17 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
 
     // The Tour Leader Portal (§6.3).
     //
+    // A company's leaders reach it from their company's panel, with
+    // `?company=` (companies plan, Phase 4e): it stays behind the panel's own
+    // sign-in and second step on this address rather than asking a leader
+    // to sign in again on the company's site.
+    //
     // Behind `auth` and a permission, not a portal token: a leader is a
     // member of staff with a login, and these pages carry pilgrim names,
     // ages and who is sharing a room with whom. The controller narrows
     // further to the departures this person's profile is assigned to, so an
     // account with no profile sees nothing rather than everything.
-    Route::middleware(['auth', 'mfa', 'can:attendance.create'])->prefix('leader')->name('leader.')->group(function () {
+    Route::middleware(['auth', 'mfa', 'company.request', 'can:attendance.create'])->prefix('leader')->name('leader.')->group(function () {
         Route::get('/', [LeaderController::class, 'index'])->name('index');
         Route::get('/{departure}', [LeaderController::class, 'departure'])->name('departure');
         Route::get('/{departure}/snapshot', [LeaderController::class, 'snapshot'])->name('snapshot');

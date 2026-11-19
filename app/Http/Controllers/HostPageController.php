@@ -43,6 +43,9 @@ class HostPageController extends Controller
         $listed = fn ($properties) => $properties->listable()->ofType($types);
 
         $hosts = Partner::query()
+            // An Umrah company is never a guesthouse host on rihla.mv
+            // (companies plan, decision 2; Phase 4e).
+            ->where('is_umrah_company', false)
             ->where('status', Partner::STATUS_ACTIVE)
             ->where('verification', Partner::VERIFIED)
             ->whereHas('page', fn ($page) => $page->whereNotNull('published_at'))
@@ -66,6 +69,8 @@ class HostPageController extends Controller
 
     public function show(Request $request, Partner $partner): View|Response
     {
+        abort_if($partner->is_umrah_company, 404);
+
         $page = $this->page($partner);
         $previewing = $request->boolean('preview') && $request->hasValidSignature();
 
