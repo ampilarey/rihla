@@ -35,6 +35,20 @@ final class CurrentSite
         'enquiries.store',
         'sitemap',
         'robots',
+        // Checkout and the waiting list (Phase 4c). No card payment: the
+        // flow ends at the seat hold and the company's own bank details.
+        'booking.start', 'booking.hold', 'booking.travellers', 'booking.travellers.store',
+        'booking.review', 'booking.confirm', 'booking.confirmation',
+        'waitlist.join', 'waitlist.claim',
+        // The customer portal and the family portal (Phase 4c), on the
+        // company's address, where the company scope finds its bookings.
+        'portal.enter', 'portal.locked', 'portal.login', 'portal.login.attempt',
+        'portal.home', 'portal.documents', 'portal.documents.store', 'portal.payments.store',
+        'portal.leave', 'portal.bookings', 'portal.bookings.choose', 'portal.password',
+        'portal.family', 'portal.family.store', 'portal.family.update', 'portal.family.revoke',
+        'portal.invoice', 'portal.receipt', 'portal.letters',
+        'portal.agreement', 'portal.agreement.sign', 'portal.agreement.paper', 'portal.agreement.pdf',
+        'family.enter', 'family.locked', 'family.home', 'family.leave',
     ];
 
     private ?Partner $company = null;
@@ -54,13 +68,21 @@ final class CurrentSite
             return null;
         }
 
-        return Partner::query()
-            ->where('slug', $label)
-            ->where('is_umrah_company', true)
-            ->where('status', Partner::STATUS_ACTIVE)
-            ->where('site_enabled', true)
-            ->whereHas('site', fn ($site) => $site->whereNotNull('published_at'))
-            ->first();
+        $company = Partner::query()->where('slug', $label)->first();
+
+        return $company !== null && self::isLive($company) ? $company : null;
+    }
+
+    /**
+     * Is this company's site live: an Umrah company, active, switched on by
+     * Rihla's admin, with a site it has published?
+     */
+    public static function isLive(Partner $company): bool
+    {
+        return $company->is_umrah_company
+            && $company->status === Partner::STATUS_ACTIVE
+            && $company->site_enabled
+            && $company->site?->isPublished() === true;
     }
 
     /**

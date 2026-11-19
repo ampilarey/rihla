@@ -1017,4 +1017,7 @@ return [
     'Ask us anything about a trip, or send us a message.' => 'Ask us anything about a trip, or send us a message.',
     'Contact us' => 'Contact us',
     'Ask about this trip' => 'Ask about this trip',
+    'Hello :company, I would like to complete booking :reference.' => 'Hello :company, I would like to complete booking :reference.',
+    'Hello :company, my portal link is not working.' => 'Hello :company, my portal link is not working.',
+    'I confirm these details are correct and understand that :company will contact me to arrange payment.' => 'I confirm these details are correct and understand that :company will contact me to arrange payment.',
 ];

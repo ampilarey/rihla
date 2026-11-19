@@ -18,7 +18,7 @@
                 {{ session('portal_problem') ?? __('messages.That link has expired. Message us and we will send a new one.') }}
             </p>
 
-            <a href="{{ \App\Support\Contact::whatsappUrl(__('messages.Hello Rihla, my portal link is not working.')) }}"
+            <a href="{{ \App\Support\Contact::whatsappUrl((\App\Support\CurrentSite::active() ? __('messages.Hello :company, my portal link is not working.', ['company' => app(\App\Support\CurrentSite::class)->company()->name]) : __('messages.Hello Rihla, my portal link is not working.'))) }}"
                class="btn-primary w-full"
                target="_blank" rel="noopener noreferrer">
                 {{ __('messages.Message us on WhatsApp') }}

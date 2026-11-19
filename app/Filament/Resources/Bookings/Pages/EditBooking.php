@@ -27,6 +27,7 @@ use App\Support\Money;
 use App\Support\OfficeContact;
 use App\Support\Rates;
 use App\Support\SendToCustomer;
+use App\Support\SiteAddress;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -187,7 +188,10 @@ class EditBooking extends EditRecord
         return Action::make('portalLink')
             ->label('Portal link')
             ->icon('heroicon-o-link')
-            ->visible(fn (): bool => auth()->user()?->can('booking.update') === true)
+            // A company's portal lives on its own site (Phase 4c): until
+            // that is live there is nowhere the link could open.
+            ->visible(fn (): bool => auth()->user()?->can('booking.update') === true
+                && SiteAddress::root($this->booking()->company_id) !== null)
             ->modalHeading('A link to this booking')
             ->modalDescription(fn (): string => sprintf(
                 'Good for %d days. Send it on WhatsApp and it opens their booking, what they still owe, '
@@ -319,10 +323,10 @@ class EditBooking extends EditRecord
 
     private function mintLink(): string
     {
-        return route('portal.enter', [
+        return (string) SiteAddress::route('portal.enter', [
             'locale' => app()->getLocale(),
             'token' => app(Gatekeeper::class)->issue($this->booking()),
-        ]);
+        ], $this->booking()->company_id);
     }
 
     private function liveLinkCount(): int

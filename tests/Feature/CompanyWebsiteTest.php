@@ -4,19 +4,26 @@ namespace Tests\Feature;
 
 use App\Filament\Company\Pages\Website;
 use App\Filament\Resources\Partners\Pages\EditPartner;
+use App\Models\Booking;
 use App\Models\CompanySite;
+use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Enquiry;
 use App\Models\Package;
 use App\Models\Partner;
+use App\Models\PriceTier;
 use App\Models\User;
+use App\Models\WaitlistEntry;
+use App\Services\Booking\Waitlist;
 use App\Services\Companies\AddCompany;
+use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use App\Support\Brand;
 use App\Support\CompanyContext;
 use App\Support\Contact;
 use App\Support\Contrast;
 use App\Support\CurrentSite;
+use App\Support\SiteAddress;
 use App\Support\SitePalette;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,7 +110,7 @@ class CompanyWebsiteTest extends TestCase
 
     public function test_only_the_sites_own_pages_answer_on_its_address(): void
     {
-        foreach (['/en/articles', '/en/guide', '/en/trips', '/en/stays', '/en/gallery', '/en/people', '/en/portal', '/staff', '/company/'.$this->coral->slug, '/login', '/api/health', '/pulse'] as $path) {
+        foreach (['/en/articles', '/en/guide', '/en/trips', '/en/stays', '/en/gallery', '/en/people', '/en/learning', '/staff', '/company/'.$this->coral->slug, '/login', '/api/health', '/pulse'] as $path) {
             $this->get($this->at($this->coral, $path))->assertNotFound();
         }
 
@@ -125,8 +132,8 @@ class CompanyWebsiteTest extends TestCase
             ->assertDontSee('Amber Shawwal Umrah');
 
         $page = $this->get($this->at($this->coral, '/en/packages/coral-ramadan'))->assertOk();
-        // Online booking is not open on a company's site yet: the visitor asks.
-        $page->assertSee('Ask about this trip')->assertDontSee('/book', false);
+        // Booking is open on the company's site (Phase 4c), at its own address.
+        $page->assertSee($this->at($this->coral, '/en/packages/coral-ramadan/book'), false)->assertDontSee('Ask about this trip');
         // Structured data names the company, never Rihla.
         $page->assertSee('"name":"Coral Umrah"', false)->assertSee('C-0420/2026');
 
@@ -338,5 +345,109 @@ class CompanyWebsiteTest extends TestCase
         $this->get($this->at($this->coral, '/robots.txt'))->assertOk()
             ->assertSee('Sitemap: '.$this->at($this->coral, '/sitemap.xml'))
             ->assertDontSee('rihla.mv');
+    }
+
+    // ── Phase 4c: checkout, the portal and links, on the company's address ──
+
+    private function priced(Package $package): Departure
+    {
+        return app(CompanyContext::class)->as((int) $package->company_id, function () use ($package): Departure {
+            $departure = $package->departures()->sole();
+            PriceTier::create(['departure_id' => $departure->id, 'occupancy' => 'quad', 'pax_type' => PriceTier::ADULT, 'amount_minor' => 2_850_000]);
+
+            return $departure;
+        });
+    }
+
+    public function test_a_visitor_books_on_the_companys_site_and_the_booking_is_the_companys(): void
+    {
+        $package = $this->sellable($this->coral, 'Coral Ramadan Umrah', 'coral-ramadan');
+        $departure = $this->priced($package);
+        $this->coral->forceFill(['bank_name' => 'Bank of Maldives', 'bank_account_name' => 'Coral Umrah Pvt Ltd', 'bank_accounts' => ['MVR' => '7730000123456']])->save();
+
+        $this->post($this->at($this->coral, '/en/packages/coral-ramadan/book'), ['departure' => $departure->id, 'occupancy' => 'quad', 'seats' => 1])
+            ->assertRedirect($this->at($this->coral, '/en/book/travellers'));
+        $this->post($this->at($this->coral, '/en/book/travellers'), [
+            'contact_name' => 'Aminath', 'contact_phone' => '7779999', 'contact_email' => 'aminath@example.mv',
+            'travellers' => [['full_name' => 'Aminath Ali', 'date_of_birth' => now()->subYears(35)->toDateString(), 'gender' => 'female']],
+        ])->assertRedirect($this->at($this->coral, '/en/book/review'));
+
+        $this->get($this->at($this->coral, '/en/book/review'))->assertOk()
+            ->assertSee('understand that Coral Umrah will contact me')
+            ->assertDontSee('Rihla');
+        $this->post($this->at($this->coral, '/en/book/review'), ['confirmed' => '1'])
+            ->assertRedirect($this->at($this->coral, '/en/book/confirmation'));
+
+        $this->get($this->at($this->coral, '/en/book/confirmation'))->assertOk()
+            ->assertSee('7730000123456')
+            ->assertSee(rawurlencode('Hello Coral Umrah'), false)
+            ->assertDontSee('Rihla');
+
+        $booking = app(CompanyContext::class)->acrossEveryCompany(fn () => Booking::query()->sole());
+        $this->assertSame($this->coral->id, $booking->company_id);
+        $this->assertSame($this->coral->id, $booking->customer->company_id);
+    }
+
+    public function test_the_portal_opens_on_the_companys_address_and_nowhere_else(): void
+    {
+        $booking = app(CompanyContext::class)->as($this->coral->id, function (): Booking {
+            $package = $this->sellable($this->coral, 'Coral Ramadan Umrah', 'coral-ramadan');
+            $booking = Booking::factory()->create(['customer_id' => Customer::factory()->create()->id, 'departure_id' => $package->departures()->sole()->id, 'seats' => 1]);
+            $booking->forceFill(['status' => Booking::CONFIRMED])->save();
+
+            return $booking;
+        });
+        $token = app(CompanyContext::class)->as($this->coral->id, fn () => app(Gatekeeper::class)->issue($booking));
+
+        // rihla.mv cannot find another company's booking.
+        $this->get(config('app.url').'/en/portal/enter/'.$token)->assertRedirect();
+        $this->get(config('app.url').'/en/portal')->assertRedirect(config('app.url').'/en/portal/locked');
+
+        $this->get($this->at($this->coral, '/en/portal/enter/'.$token))->assertRedirect($this->at($this->coral, '/en/portal'));
+        $this->get($this->at($this->coral, '/en/portal'))->assertOk()
+            ->assertSee($booking->reference)
+            ->assertSee('Coral Umrah')
+            ->assertDontSee('Rihla Travels')
+            ->assertDontSee('/learning', false);
+    }
+
+    public function test_links_made_in_the_panel_point_at_the_companys_own_site(): void
+    {
+        $booking = app(CompanyContext::class)->as($this->coral->id, function (): Booking {
+            $package = $this->sellable($this->coral, 'Coral Ramadan Umrah', 'coral-ramadan');
+
+            return Booking::factory()->create(['customer_id' => Customer::factory()->create()->id, 'departure_id' => $package->departures()->sole()->id, 'seats' => 1]);
+        });
+
+        $link = SiteAddress::route('portal.enter', ['locale' => 'en', 'token' => 'abc'], $booking->company_id);
+        $this->assertSame($this->at($this->coral, '/en/portal/enter/abc'), $link);
+
+        // Rihla's links are made as they always were.
+        $this->assertSame(url('/en/portal/enter/abc'), SiteAddress::route('portal.enter', ['locale' => 'en', 'token' => 'abc'], null));
+
+        // A company with no live site gets no link at all, never one to rihla.mv.
+        $this->coral->forceFill(['site_enabled' => false])->save();
+        $this->assertNull(SiteAddress::route('portal.enter', ['locale' => 'en', 'token' => 'abc'], $booking->company_id));
+    }
+
+    public function test_a_waiting_list_claim_is_signed_for_the_companys_address_and_works_there(): void
+    {
+        $entry = app(CompanyContext::class)->as($this->coral->id, function (): WaitlistEntry {
+            $package = $this->sellable($this->coral, 'Coral Ramadan Umrah', 'coral-ramadan');
+            $departure = $package->departures()->sole();
+            $waitlist = app(Waitlist::class);
+            $entry = $waitlist->join($departure, Customer::factory()->create(), 1);
+            $waitlist->offerAvailableSeats($departure);
+
+            return $entry->fresh();
+        });
+
+        $url = app(CompanyContext::class)->as($this->coral->id, fn () => app(Waitlist::class)->claimUrl($entry));
+
+        $this->assertStringStartsWith($this->at($this->coral, '/en/waitlist/claim/'.$entry->id), (string) $url);
+        $this->assertNotSame(403, $this->get((string) $url)->status(), 'The signature holds on the company\'s own host.');
+        // On rihla.mv the same link opens nothing: the entry is not Rihla's,
+        // and the signature does not cover that host either.
+        $this->assertContains($this->get(str_replace($this->coral->slug.'.'.self::DOMAIN, 'localhost', (string) $url))->status(), [403, 404]);
     }
 }

@@ -106,7 +106,7 @@
                 </div>
             @endif
 
-            <a href="{{ \App\Support\Contact::whatsappUrl(__('messages.Hello Rihla, I would like to complete booking :reference.', ['reference' => $reference])) }}"
+            <a href="{{ \App\Support\Contact::whatsappUrl((\App\Support\CurrentSite::active() ? __('messages.Hello :company, I would like to complete booking :reference.', ['company' => app(\App\Support\CurrentSite::class)->company()->name, 'reference' => $reference]) : __('messages.Hello Rihla, I would like to complete booking :reference.', ['reference' => $reference]))) }}"
                class="btn-primary w-full"
                target="_blank" rel="noopener noreferrer">
                 {{ __('messages.Complete on WhatsApp') }}
