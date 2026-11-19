@@ -37,6 +37,14 @@ final class CompanyTeam
             throw new DeskRefusal('Somebody else already signs in with that mobile number.');
         }
 
+        // Staff seats are what the company has paid for (Phase 5a); null is
+        // no limit.
+        $seats = $company->staff_seats;
+
+        if ($seats !== null && CompanyMembership::where('company_id', $company->getKey())->count() >= $seats) {
+            throw new DeskRefusal("Your plan has {$seats} staff ".($seats === 1 ? 'seat' : 'seats').' and every one is taken. Ask Rihla for more, or remove somebody first.');
+        }
+
         [$membership, $isNew] = DB::transaction(function () use ($company, $name, $email, $role, $by, $phoneKey): array {
             $user = User::where('email', $email)->first();
             $isNew = $user === null;

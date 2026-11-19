@@ -2,18 +2,22 @@
 
 namespace App\Filament\Company\Pages;
 
+use App\Models\CompanyMembership;
 use App\Models\Partner;
 use App\Services\Telegram\Bot;
+use App\Support\CompanyFeatures;
 use App\Support\CompanyRole;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 use Throwable;
 
 /**
@@ -85,6 +89,17 @@ class CompanySettings extends Page
     {
         return $schema
             ->components([
+                // What the company has (Phase 5a), so nobody has to ask why a
+                // screen is missing. Read-only: Rihla's admin sets it.
+                Section::make('Your plan')
+                    ->description('What your company has with Rihla. Ask Rihla to change it.')
+                    ->collapsible()
+                    ->schema([
+                        Placeholder::make('plan')
+                            ->hiddenLabel()
+                            ->content(fn (): HtmlString => $this->plan()),
+                    ]),
+
                 Section::make('On your documents')
                     ->description('Printed at the top of every invoice, receipt and list your team makes here.')
                     ->columns(2)
@@ -150,6 +165,22 @@ class CompanySettings extends Page
                     ]),
             ])
             ->statePath('data');
+    }
+
+    private function plan(): HtmlString
+    {
+        $company = $this->company();
+        $words = [CompanyFeatures::ON => 'On', CompanyFeatures::READ_ONLY => 'Read-only: your records stay visible', CompanyFeatures::OFF => 'Not included'];
+        $rows = '';
+
+        foreach (CompanyFeatures::FEATURES as $feature => $definition) {
+            $rows .= '<li><strong>'.e($definition['label']).'</strong> — '.e($words[CompanyFeatures::state($company, $feature)]).'</li>';
+        }
+
+        $used = CompanyMembership::where('company_id', $company->getKey())->count();
+        $seats = $company->staff_seats === null ? $used.' people, no limit' : $used.' of '.$company->staff_seats.' staff seats used';
+
+        return new HtmlString('<ul style="margin:0;padding-inline-start:1.25rem;line-height:1.8;">'.$rows.'<li><strong>Your team</strong> — '.e($seats).'</li></ul>');
     }
 
     /** @return array<Action> */

@@ -481,6 +481,55 @@ stay unreachable and nothing else changes.
 - **Done when**: the owner can add a company in minutes and it can take
   its first booking without help.
 
+#### Phase 5 plan (November 2026)
+
+**What exists already.**
+- Rihla's admin adds a company and its owner (`AddCompany`, from Partners in `/staff`).
+- Suspending a partner shuts its people out of the company panel (`canAccessTenant`) and takes its site down (`CurrentSite::isLive`).
+- The site's switch (`site_enabled`) stands for "the registration fee is paid".
+- `Services` switches features for the whole of rihla.mv, not per company.
+- There is no record of a licence, no fee, no feature switch, no usage view, no support access, no export and no way to close an account.
+
+**Features are permission areas.** A company's people are already answered from `CompanyRole`, narrowed to `CompanyRole::UMRAH_AREAS`. Each paid feature names the areas it covers, and the company gate adds one more condition:
+- **On:** the area works as today.
+- **Read-only:** only `view` and `viewAny` pass. Decision 14 says a downgrade keeps the data and makes the area read-only.
+- **Off:** nothing in that area passes.
+
+Because Filament asks the gate for every screen, menu item and action, an area that is off disappears from the panel without any screen knowing about features.
+
+**The paid features, one switch each:**
+- bookings and payments;
+- pilgrims and documents;
+- visas and permits;
+- the journey (rooms, buses, roll calls, incidents and announcements);
+- lists, cards and Scan;
+- the books;
+- the customer portal;
+- the Telegram bot;
+- document reading;
+- the installable app;
+- an own domain.
+
+Package and departure areas are always on, because the basic website lists trips. Extra staff seats are a number, not a switch. The features that live outside the panel follow the same switches:
+- checkout and the waiting list on the company's site;
+- the portals;
+- the app's files;
+- domain mapping;
+- the bot's token;
+- the document reader.
+
+Rihla's own company always has everything.
+
+| # | Pull request | Estimate |
+|---|---|---|
+| 5a ✅ | The features, the registration fee and staff seats: stored on the company, set in `/staff`, read by the company gate, the company's site, the bot, the reader and the team screen. The company sees what it has. | 1.5 days |
+| 5b | Adding a company properly: licence number, expiry and the register it was checked against; the fee; a starting set of features; defaults seeded. Suspend and reactivate with a reason. Usage as counts, never contents. | 1 day |
+| 5c | Support access: Rihla asks, the company's owner grants it for a limited time, and every visit is recorded and visible to the company. | 1 day |
+| 5d | Full export (customers, travellers, bookings, payments, books, documents and the audit trail, in open formats) and closing an account. | 1 day |
+| 5e | The end-to-end test that marks Phase 5 done: the owner adds a company and it takes its first booking without help. ADR. | 0.5 day |
+
+**About five working days.** The likeliest overrun is 5d, because documents make an export large on a cPanel disk.
+
 ### Pilot
 - One real company, added by the owner, on a signed agreement, invoiced by
   hand, for at least one trip from booking to return.

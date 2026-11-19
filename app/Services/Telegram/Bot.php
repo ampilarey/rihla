@@ -3,6 +3,7 @@
 namespace App\Services\Telegram;
 
 use App\Support\CompanyDetails;
+use App\Support\CompanyFeatures;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -23,6 +24,14 @@ class Bot
     public static function token(): ?string
     {
         $company = CompanyDetails::company();
+
+        // A company's bot is a paid feature (Phase 5a): switched off, it is
+        // simply not configured, so nothing sends and the webhook answers
+        // nobody.
+        if ($company !== null && ! CompanyFeatures::has($company, CompanyFeatures::TELEGRAM)) {
+            return null;
+        }
+
         $token = $company === null ? config('telegram.bot_token') : $company->telegram_bot_token;
 
         return filled($token) ? (string) $token : null;

@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Partners\Schemas;
 
 use App\Models\Partner;
+use App\Support\CompanyFeatures;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -75,6 +77,47 @@ class PartnerForm
                         ])
                         ->helperText('Only once the domain points at the server and cPanel has it, with a certificate. www is answered too.')
                         ->columnSpanFull(),
+                ]),
+
+            // Companies plan, Phase 5a: what the company has paid for. Set
+            // here by Rihla's admin, saved by EditPartner, never fillable.
+            Section::make('What they have paid for')
+                ->description('The registration fee opens the basic website. Every other feature is switched on here once it is paid for. Switching one to read-only keeps their records visible and stops new work; nothing is ever deleted.')
+                ->visible(fn (?Partner $record): bool => (bool) $record?->is_umrah_company)
+                ->columns(3)
+                ->schema([
+                    TextInput::make('registration_fee')
+                        ->label('Registration fee')
+                        ->numeric()
+                        ->minValue(0)
+                        ->formatStateUsing(fn (?Partner $record): ?string => $record?->registration_fee_minor === null ? null : number_format($record->registration_fee_minor / 100, 2, '.', '')),
+                    Select::make('registration_fee_currency')
+                        ->label('In')
+                        ->options(['MVR' => 'MVR', 'USD' => 'USD'])
+                        ->default('MVR'),
+                    DatePicker::make('registration_paid_at')
+                        ->label('Paid on')
+                        ->maxDate(now())
+                        ->helperText('Until this is set, their site cannot be switched on.'),
+                    TextInput::make('staff_seats')
+                        ->label('Staff seats')
+                        ->integer()
+                        ->minValue(1)
+                        ->maxValue(500)
+                        ->helperText('Leave empty for no limit.'),
+                    ...array_map(
+                        fn (string $feature): Select => Select::make('features.'.$feature)
+                            ->label(CompanyFeatures::FEATURES[$feature]['label'])
+                            ->options([
+                                CompanyFeatures::OFF => 'Off',
+                                CompanyFeatures::ON => 'On',
+                                CompanyFeatures::READ_ONLY => 'Read-only',
+                            ])
+                            ->default(CompanyFeatures::OFF)
+                            ->selectablePlaceholder(false)
+                            ->formatStateUsing(fn (?Partner $record): string => CompanyFeatures::state($record, $feature)),
+                        array_keys(CompanyFeatures::FEATURES),
+                    ),
                 ]),
 
             Section::make('The arrangement')->columns(2)->schema([
