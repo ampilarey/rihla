@@ -1,18 +1,18 @@
 <?php
 
-namespace Tests\Feature;
+namespace Modules\Telegram\Tests;
 
-use App\Filament\Pages\Telegram;
-use App\Models\TelegramLink;
-use App\Models\TelegramLinkCode;
-use App\Models\TelegramUpdate;
 use App\Models\User;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\Linker;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+use Modules\Telegram\Filament\Pages\Telegram;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Models\TelegramLinkCode;
+use Modules\Telegram\Models\TelegramUpdate;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\Linker;
 use Tests\TestCase;
 
 /**

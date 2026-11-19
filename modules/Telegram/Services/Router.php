@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Services\Telegram;
+namespace Modules\Telegram\Services;
 
 use App\Models\Booking;
 use App\Models\BusGroup;
 use App\Models\Departure;
 use App\Models\DepartureHotel;
 use App\Models\Payment;
-use App\Models\TelegramLink;
-use App\Models\TelegramUpdate;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Invoices\Documents;
@@ -24,6 +22,8 @@ use Closure;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Models\TelegramUpdate;
 
 /**
  * Turns one Telegram update into one reply — batch A4 from Hijaz.

@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Modules\Telegram\Console\Commands;
 
-use App\Models\TelegramLink;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\DailySummary;
 use App\Support\CompanyContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\DailySummary;
 use Throwable;
 
 /** The morning message to every staff member who linked a chat. */

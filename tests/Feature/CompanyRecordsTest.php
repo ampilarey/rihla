@@ -57,8 +57,7 @@ class CompanyRecordsTest extends TestCase
         $this->assertCount(57, $tables);
 
         $models = [];
-        foreach (glob(app_path('Models/*.php')) ?: [] as $file) {
-            $class = 'App\\Models\\'.basename($file, '.php');
+        foreach (self::modelFiles() as $class) {
             if (in_array(BelongsToCompany::class, class_uses_recursive($class), true)) {
                 $models[(new $class)->getTable()] = $class;
             }

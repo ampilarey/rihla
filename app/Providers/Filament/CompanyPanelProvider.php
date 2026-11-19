@@ -15,7 +15,6 @@ use App\Filament\Pages\NusukGate;
 use App\Filament\Pages\Performance;
 use App\Filament\Pages\Profitability;
 use App\Filament\Pages\Scan;
-use App\Filament\Pages\Telegram;
 use App\Filament\Pages\Today;
 use App\Filament\Pages\VisaBatch;
 use App\Filament\Pages\WhoSendsUsPeople;
@@ -76,6 +75,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Modules\Telegram\Filament\Pages\Telegram;
 
 /**
  * Each Umrah company's own panel, at /company/{company} — companies plan,

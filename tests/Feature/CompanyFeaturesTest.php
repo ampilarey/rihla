@@ -12,7 +12,6 @@ use App\Services\Companies\AddCompany;
 use App\Services\Companies\CompanyTeam;
 use App\Services\Documents\Reading\ReaderManager;
 use App\Services\Documents\Reading\Readers\ManualReader;
-use App\Services\Telegram\Bot;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use App\Support\CompanyFeatures;
@@ -21,6 +20,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
+use Modules\Telegram\Services\Bot;
 use Tests\TestCase;
 
 /**

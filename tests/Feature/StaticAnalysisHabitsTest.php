@@ -122,8 +122,8 @@ class StaticAnalysisHabitsTest extends TestCase
     {
         $names = [];
 
-        foreach (File::files(app_path('Models')) as $file) {
-            preg_match_all('/function\s+scope([A-Z]\w*)\s*\(/', (string) file_get_contents($file->getPathname()), $matches);
+        foreach (array_keys(self::modelFiles()) as $file) {
+            preg_match_all('/function\s+scope([A-Z]\w*)\s*\(/', (string) file_get_contents($file), $matches);
 
             foreach ($matches[1] as $name) {
                 $names[] = lcfirst($name);

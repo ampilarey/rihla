@@ -22,12 +22,12 @@ use App\Models\Payment;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Booking\BookingDesk;
-use App\Services\Telegram\DailySummary;
 use App\Support\Access;
 use App\Support\DepartureReadiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Livewire\Livewire;
+use Modules\Telegram\Services\DailySummary;
 use Tests\TestCase;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Telegram;
+namespace Modules\Telegram\Services;
 
 use App\Models\Booking;
 use App\Models\CrmTask;

@@ -11,13 +11,13 @@ use App\Models\Partner;
 use App\Models\User;
 use App\Services\Companies\AddCompany;
 use App\Services\Companies\CompanyUsage;
-use App\Services\Telegram\Bot;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use App\Support\CompanyFeatures;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
+use Modules\Telegram\Services\Bot;
 use Tests\TestCase;
 
 /**

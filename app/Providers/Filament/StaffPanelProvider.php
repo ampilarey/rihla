@@ -72,6 +72,8 @@ class StaffPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            // Each module's own screens (docs/MODULES_PLAN.md).
+            ->discoverPages(in: base_path('modules/Telegram/Filament/Pages'), for: 'Modules\\Telegram\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
             ])

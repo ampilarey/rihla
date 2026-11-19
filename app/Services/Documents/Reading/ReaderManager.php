@@ -9,10 +9,10 @@ use App\Services\Documents\Reading\Readers\AnthropicVisionReader;
 use App\Services\Documents\Reading\Readers\ManualReader;
 use App\Services\Documents\Reading\Readers\Reader;
 use App\Services\Documents\Reading\Readers\TesseractReader;
-use App\Services\Telegram\Notifier;
 use App\Support\CompanyDetails;
 use App\Support\CompanyFeatures;
 use Illuminate\Support\Facades\Log;
+use Modules\Telegram\Services\Notifier;
 use Throwable;
 
 /**
