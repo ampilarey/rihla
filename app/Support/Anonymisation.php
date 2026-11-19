@@ -101,7 +101,7 @@ final class Anonymisation
         // left alone rather than set to something known: nobody should be
         // able to sign in to the test server with a credential this command
         // minted. Make an account afterwards with `admin:create`.
-        'users' => ['name' => 'name', 'email' => 'email', 'remember_token' => 'null', 'password' => 'hash'],
+        'users' => ['name' => 'name', 'email' => 'email', 'phone' => 'null', 'remember_token' => 'null', 'password' => 'hash'],
         'enquiries' => [
             'name' => 'name', 'phone' => 'phone', 'email' => 'email',
             'message' => 'text', 'next_action' => 'text', 'lost_reason' => 'text',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\LastSuperAdmin;
 use App\Support\Access;
+use App\Support\PhoneNumber;
 use Database\Factories\UserFactory;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
@@ -51,6 +52,9 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
     protected $fillable = [
         'name',
         'email',
+        // A second way to sign in (companies plan, Phase 3i), kept as the
+        // number's key so every way of writing it is the same sign-in.
+        'phone',
         'password',
         // Deprecated: superseded by roles. Read only by the migration
         // that backfilled Super Admin from it, and kept for one release
@@ -367,5 +371,14 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         }
 
         return false;
+    }
+
+    /**
+     * Stored as the number's key (Phase 3i): "+960 777-1234" and "7771234"
+     * are one sign-in, and an empty box clears it rather than storing "".
+     */
+    public function setPhoneAttribute(?string $value): void
+    {
+        $this->attributes['phone'] = PhoneNumber::key($value);
     }
 }

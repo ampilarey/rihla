@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\BottomNav;
+use App\Filament\Company\Pages\Auth\Login;
 use App\Filament\Company\Pages\Dashboard;
 use App\Filament\InitialsAvatarProvider;
 use App\Filament\Pages\Books;
@@ -165,7 +166,7 @@ class CompanyPanelProvider extends PanelProvider
             ->id('company')
             ->path(self::PATH)
             ->brandName(fn (): string => filament()->getTenant()?->getAttribute('name') ?? 'Your company')
-            ->login()
+            ->login(Login::class)
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
             ->colors([
                 'primary' => Brand::WINE_SCALE,

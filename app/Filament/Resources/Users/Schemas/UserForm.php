@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\User;
 use App\Support\Access;
+use App\Support\PhoneNumber;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
@@ -24,6 +27,22 @@ class UserForm
                 ->required()
                 ->maxLength(255)
                 ->unique(ignoreRecord: true),
+
+            // A second way to sign in (companies plan, Phase 3i).
+            TextInput::make('phone')
+                ->label('Mobile number')
+                ->tel()
+                ->maxLength(40)
+                ->helperText('They can sign in with this instead of their e-mail address.')
+                ->rule(fn (?Model $record): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($record): void {
+                    $key = PhoneNumber::key((string) $value);
+
+                    if (filled($value) && $key === null) {
+                        $fail('That does not look like a mobile number.');
+                    } elseif ($key !== null && User::query()->where('phone', $key)->when($record, fn ($q) => $q->whereKeyNot($record->getKey()))->exists()) {
+                        $fail('Somebody else already signs in with that number.');
+                    }
+                }),
 
             // Required when creating, left alone when editing. Filament
             // dehydrates a blank password field away rather than writing an

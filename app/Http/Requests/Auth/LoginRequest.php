@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Support\PhoneNumber;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +29,9 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            // An e-mail address or a mobile number (companies plan, Phase 3i):
+            // one box, still called `email` so nothing that reads it moves.
+            'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,7 +45,7 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! Auth::attempt($this->credentials(), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -51,6 +54,23 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * By mobile number when the box holds no "@" and reads as one, by e-mail
+     * otherwise. A number is matched by its key, so every way of writing it
+     * opens the same account; a wrong one fails as a wrong e-mail does.
+     *
+     * @return array<string, string>
+     */
+    private function credentials(): array
+    {
+        $login = trim((string) $this->string('email'));
+        $key = str_contains($login, '@') ? null : PhoneNumber::key($login);
+
+        return $key === null
+            ? ['email' => $login, 'password' => (string) $this->string('password')]
+            : ['phone' => $key, 'password' => (string) $this->string('password')];
     }
 
     /**
@@ -81,6 +101,11 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        // A number counts by its key, so writing it three ways is three tries
+        // at one account, not one try each at three.
+        $login = trim((string) $this->string('email'));
+        $key = str_contains($login, '@') ? null : PhoneNumber::key($login);
+
+        return Str::transliterate(Str::lower($key ?? $login).'|'.$this->ip());
     }
 }

@@ -15,15 +15,22 @@ class CustomersTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable()->sortable(),
+                // On a phone the row is a card (companies plan, Phase 3i): the
+                // name, with the number and the bookings under it, and the
+                // other columns from a tablet up — no sideways scrolling.
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable()
+                    ->description(fn (Customer $record): string => trim(($record->phone ?? '').' · '.$record->bookings_count.' '.str('booking')->plural((int) $record->bookings_count), ' ·')),
 
-                TextColumn::make('phone')->searchable()->toggleable(),
+                TextColumn::make('phone')->searchable()->toggleable()->visibleFrom('md'),
 
                 TextColumn::make('bookings_count')
                     ->label('Bookings')
                     ->counts('bookings')
                     ->alignCenter()
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
 
                 TextColumn::make('tags')
                     ->label('Tags')
@@ -32,10 +39,12 @@ class CustomersTable
                     // needs before picking up the phone.
                     ->state(fn (Customer $record): string => $record->tags->pluck('tag')->implode(', ') ?: '—')
                     ->wrap()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->visibleFrom('md'),
 
                 TextColumn::make('referrer.name')
                     ->label('Referred by')
+                    ->visibleFrom('md')
                     ->state(fn (Customer $record): string => $record->referrer->name
                         ?? match ($record->referral_source) {
                             null, '' => '—',

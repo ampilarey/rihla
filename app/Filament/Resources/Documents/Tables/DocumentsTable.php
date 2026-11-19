@@ -9,6 +9,7 @@ use App\Services\Documents\Reading\Acceptor;
 use App\Services\Documents\Reading\Duplicates;
 use App\Services\Documents\Reading\ReaderManager;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
@@ -55,15 +56,25 @@ class DocumentsTable
     {
         return $table
             ->columns([
+                // On a phone the row is a card (companies plan, Phase 3i): who,
+                // what, where it stands and when it expires under the name,
+                // the reading beside it, and the rest from a tablet up.
                 TextColumn::make('traveller.full_name')
                     ->label('Traveller')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->description(fn (Document $record): string => implode(' · ', array_filter([
+                        Document::TYPES[$record->type] ?? ucfirst((string) $record->type),
+                        ucfirst((string) $record->status),
+                        $record->expires_at ? 'expires '.$record->expires_at->format('j M Y') : null,
+                    ])))
+                    ->wrap(),
 
                 TextColumn::make('type')
                     ->badge()
                     ->color('gray')
-                    ->description(fn (Document $record): string => ucfirst($record->category)),
+                    ->description(fn (Document $record): string => ucfirst($record->category))
+                    ->visibleFrom('md'),
 
                 // What the reader made of the current file: something to
                 // accept, accepted, or nothing. A photo shows its check. On
@@ -79,7 +90,8 @@ class DocumentsTable
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => self::COLOURS[$state] ?? 'gray')
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
 
                 TextColumn::make('versions_count')
                     ->label('Versions')
@@ -89,10 +101,11 @@ class DocumentsTable
                     // Two or more means the document was replaced, which is
                     // exactly the case somebody chasing a visa needs to see.
                     ->color(fn (?int $state): string => ($state ?? 0) > 1 ? 'info' : 'gray')
-                    ->visibleFrom('sm'),
+                    ->visibleFrom('md'),
 
                 TextColumn::make('expires_at')
                     ->label('Expires')
+                    ->visibleFrom('md')
                     ->date('j M Y')
                     ->placeholder('—')
                     ->sortable()
@@ -101,7 +114,7 @@ class DocumentsTable
                         ? 'Inside the '.config('documents.passport_validity_months').'-month window'
                         : null),
 
-                TextColumn::make('updated_at')->label('Updated')->since()->sortable()->toggleable(),
+                TextColumn::make('updated_at')->label('Updated')->since()->sortable()->toggleable()->visibleFrom('md'),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
@@ -131,47 +144,51 @@ class DocumentsTable
                     }),
             ])
             ->recordActions([
-                // A fresh signed URL each time the row is drawn, valid for
-                // minutes. The link is the only thing between a passport scan
-                // and whoever ends up holding the URL.
-                Action::make('download')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->visible(fn (Document $record): bool => auth()->user()?->can('document.download') === true
-                        && $record->load('versions')->currentVersion() !== null)
-                    ->url(fn (Document $record): string => app(DocumentWallet::class)
-                        ->downloadUrl($record->load('versions')->currentVersion()), shouldOpenInNewTab: true),
+                // One menu rather than a row of buttons (companies plan, Phase
+                // 3i): three buttons side by side pushed every row off a phone.
+                ActionGroup::make([
+                    // A fresh signed URL each time the row is drawn, valid for
+                    // minutes. The link is the only thing between a passport scan
+                    // and whoever ends up holding the URL.
+                    Action::make('download')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->visible(fn (Document $record): bool => auth()->user()?->can('document.download') === true
+                            && $record->load('versions')->currentVersion() !== null)
+                        ->url(fn (Document $record): string => app(DocumentWallet::class)
+                            ->downloadUrl($record->load('versions')->currentVersion()), shouldOpenInNewTab: true),
 
-                Action::make('verify')
-                    ->icon('heroicon-o-check-badge')
-                    ->color('success')
-                    ->visible(fn (Document $record): bool => $record->status !== Document::VERIFIED
-                        && auth()->user()?->can('document.update') === true)
-                    ->requiresConfirmation()
-                    ->action(function (Document $record): void {
-                        app(DocumentWallet::class)->verify($record);
+                    Action::make('verify')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->visible(fn (Document $record): bool => $record->status !== Document::VERIFIED
+                            && auth()->user()?->can('document.update') === true)
+                        ->requiresConfirmation()
+                        ->action(function (Document $record): void {
+                            app(DocumentWallet::class)->verify($record);
 
-                        Notification::make()->success()->title('Document verified')->send();
-                    }),
+                            Notification::make()->success()->title('Document verified')->send();
+                        }),
 
-                Action::make('reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn (Document $record): bool => $record->status !== Document::REJECTED
-                        && auth()->user()?->can('document.update') === true)
-                    ->schema([
-                        Textarea::make('reason')->label('What is wrong with it')->required()->rows(2),
-                    ])
-                    ->action(function (Document $record, array $data): void {
-                        app(DocumentWallet::class)->reject($record, $data['reason']);
+                    Action::make('reject')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->visible(fn (Document $record): bool => $record->status !== Document::REJECTED
+                            && auth()->user()?->can('document.update') === true)
+                        ->schema([
+                            Textarea::make('reason')->label('What is wrong with it')->required()->rows(2),
+                        ])
+                        ->action(function (Document $record, array $data): void {
+                            app(DocumentWallet::class)->reject($record, $data['reason']);
 
-                        Notification::make()->warning()->title('Document rejected')->send();
-                    }),
+                            Notification::make()->warning()->title('Document rejected')->send();
+                        }),
 
-                self::acceptReadingAction(),
-                self::ignoreReadingAction(),
-                self::readAgainAction(),
+                    self::acceptReadingAction(),
+                    self::ignoreReadingAction(),
+                    self::readAgainAction(),
 
-                EditAction::make()->label('Open'),
+                    EditAction::make()->label('Open'),
+                ]),
             ])
             ->emptyStateHeading('No documents yet')
             ->emptyStateDescription('Passports, photographs and slips, kept per traveller. Every replacement is a new version — nothing is overwritten.');
