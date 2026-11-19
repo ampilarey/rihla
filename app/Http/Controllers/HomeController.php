@@ -9,6 +9,7 @@ use App\Models\Package;
 use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\WhySection;
+use App\Support\CurrentSite;
 use App\Support\Personalisation;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -16,6 +17,12 @@ class HomeController extends Controller
 {
     public function index()
     {
+        // A company's own address has its own home page (companies plan,
+        // Phase 4a). Nothing below is Rihla's to show there.
+        if (CurrentSite::active()) {
+            return app(CompanySiteController::class)->home();
+        }
+
         $currentTrip = Trip::published()->current()->first();
         $upcomingTrip = Trip::published()->upcoming()->orderBy('date_start')->first();
         $recentMedia = Media::published()

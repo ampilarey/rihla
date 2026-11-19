@@ -31,9 +31,38 @@ final class Contact
     /** Digits only, with country code, as wa.me and tel: both require. */
     public static function whatsappNumber(): string
     {
+        // Another company's pages and documents never give Rihla's number
+        // (companies plan, decision 2): its own, or none at all.
+        if (CompanyDetails::company() !== null) {
+            return self::digits(self::companyWhatsapp());
+        }
+
         $configured = self::digits(Setting::getWhatsAppNumber());
 
         return $configured !== '' ? $configured : self::FALLBACK;
+    }
+
+    /**
+     * The current company's WhatsApp number when it is not Rihla: its
+     * site's, else its telephone, with the country code a seven-digit
+     * Maldivian number lacks. Null when it has given neither — never
+     * Rihla's {@see FALLBACK}.
+     */
+    public static function companyWhatsapp(): ?string
+    {
+        $company = CompanyDetails::company();
+
+        if ($company === null) {
+            return null;
+        }
+
+        $digits = self::digits($company->site?->whatsapp ?: $company->phone);
+
+        if ($digits === '') {
+            return null;
+        }
+
+        return strlen($digits) === 7 ? '960'.$digits : $digits;
     }
 
     /**

@@ -33,6 +33,7 @@ use App\Services\Portal\Gatekeeper;
 use App\Services\Stays\StayGatekeeper;
 use App\Support\CanonicalUrl;
 use App\Support\CompanyContext;
+use App\Support\CurrentSite;
 use App\Support\InitialsAvatar;
 use App\Support\LivewireReturns;
 use App\Support\PhoneNumber;
@@ -57,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
         // One per request, job or test, so the company one of them worked
         // for is never the next one's (docs/UMRAH_COMPANIES_PLAN.md).
         $this->app->scoped(CompanyContext::class);
+        $this->app->scoped(CurrentSite::class);
     }
 
     /**

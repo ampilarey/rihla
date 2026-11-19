@@ -45,6 +45,22 @@ class PartnerForm
                 TextInput::make('email')->email()->maxLength(255),
             ]),
 
+            // Companies plan, Phase 4a: Rihla's admin's two switches for an
+            // Umrah company's own website. Saved by EditPartner with
+            // forceFill, because neither is fillable.
+            Section::make('Website')
+                ->description('The company\'s own site at its own address. Nothing is shown until it is switched on here and the company has published it.')
+                ->visible(fn (?Partner $record): bool => (bool) $record?->is_umrah_company)
+                ->columns(2)
+                ->schema([
+                    Toggle::make('site_enabled')
+                        ->label('Site switched on')
+                        ->helperText('Once the registration fee is paid. Switching it off takes the site down at once; nothing is deleted.'),
+                    Toggle::make('powered_by_rihla')
+                        ->label('Say "Powered by Rihla"')
+                        ->helperText('Off unless the company has agreed to it. When on, one line at the foot of their site links here.'),
+                ]),
+
             Section::make('The arrangement')->columns(2)->schema([
                 Select::make('pricing_model')
                     ->label('How they are paid')

@@ -131,6 +131,11 @@ class Partner extends Model
         'is_active' => 'boolean',
         'is_rihla' => 'boolean',
         'is_umrah_company' => 'boolean',
+        // Rihla's admin's two switches for a company's website (Phase 4a):
+        // set with forceFill, never fillable, so a company cannot switch
+        // its own site on before it has paid.
+        'site_enabled' => 'boolean',
+        'powered_by_rihla' => 'boolean',
         'bank_accounts' => 'array',
         // A company's own Telegram bot (companies plan, Phase 2d). A
         // credential, so ciphertext at rest; scrubbed to null by
@@ -266,6 +271,16 @@ class Partner extends Model
     public function page(): HasOne
     {
         return $this->hasOne(HostPage::class);
+    }
+
+    /**
+     * An Umrah company's own website (companies plan, Phase 4a).
+     *
+     * @return HasOne<CompanySite, $this>
+     */
+    public function site(): HasOne
+    {
+        return $this->hasOne(CompanySite::class, 'company_id');
     }
 
     /**

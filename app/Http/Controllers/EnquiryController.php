@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Enquiry;
 use App\Models\EnquiryNote;
 use App\Models\Package;
+use App\Support\CompanyContext;
 use App\Support\PhoneNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,12 @@ class EnquiryController extends Controller
             'phone' => ['nullable', 'string', 'max:40', 'required_without:email'],
             'email' => ['nullable', 'email', 'max:255', 'required_without:phone'],
             'message' => ['nullable', 'string', 'max:2000'],
-            'package_id' => ['nullable', 'integer', Rule::exists('packages', 'id')->where('is_published', true)],
+            // This company's packages only: the rule reads the table
+            // directly, past the company scope, and another company's id
+            // would otherwise reach the write and be refused there with a
+            // 500 instead of a message (companies plan, Phase 4a).
+            'package_id' => ['nullable', 'integer', Rule::exists('packages', 'id')->where('is_published', true)
+                ->where('company_id', app(CompanyContext::class)->scopeId())],
             'party_size' => ['nullable', 'integer', 'min:1', 'max:60'],
         ], [
             'phone.required_without' => __('messages.Leave us a phone number or an email so we can reply.'),
