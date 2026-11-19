@@ -15,9 +15,8 @@ concurrency:
 permissions:
   contents: read
 
-# Every job carries `timeout-minutes: 15`. GitHub's default is six hours, and
-# the whole run normally finishes in about two minutes, so nothing legitimate
-# comes near fifteen.
+# Every job carries `timeout-minutes: 15` (the MySQL job 25, see there).
+# GitHub's default is six hours, and the other jobs finish well inside it.
 #
 # Added after a job was misread as hanging when it had in fact already failed
 # — the check-runs API went on reporting it in_progress for a quarter of an
@@ -81,7 +80,11 @@ jobs:
   mysql:
     name: Tests (MySQL)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Longer than the rest: this suite re-migrates MySQL for every test class
+    # and passed fourteen minutes in November 2026 (2671 tests, 819s of tests
+    # plus set-up). Fifteen cancelled a fully green run in its last seconds.
+    # Twenty-five still ends a real lock-wait hang the same afternoon.
+    timeout-minutes: 25
     # The booking engine's capacity guarantee rests on SELECT ... FOR UPDATE
     # row locking, which SQLite cannot exercise. A concurrency test that only
     # ever runs on SQLite reports green while proving nothing, so the suite
