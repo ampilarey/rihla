@@ -62,6 +62,9 @@ class ForgetCustomer extends Command
      * Rihla's operator tool, so it sees every company's rows by design
      * (companies plan, Phase 1b); nothing a company's staff can start.
      */
+    /** Set when an e-mail address matched customers of more than one company. */
+    private bool $ambiguous = false;
+
     public function handle(): int
     {
         return app(CompanyContext::class)->acrossEveryCompany(fn (): int => $this->work());
@@ -84,6 +87,12 @@ class ForgetCustomer extends Command
         }
 
         $customer = $this->resolve((string) $this->argument('customer'));
+
+        if ($customer === null && $this->ambiguous) {
+            $this->error('More than one company has a customer with that e-mail address. Run this again with the customer id.');
+
+            return self::FAILURE;
+        }
 
         if ($customer === null) {
             $this->error('No customer matches that id or e-mail address.');
@@ -112,12 +121,17 @@ class ForgetCustomer extends Command
         // Theirs by the link, and theirs by the number or the address: the
         // board links only the enquiry that became the booking, so a person
         // who asked three times kept two of them (site audit).
+        // Only the customer's own company's enquiries (security review): this
+        // runs across every company, and the same number or address asking
+        // another company is that company's record, not this request's.
         $phoneKey = PhoneNumber::key($customer->phone);
+        $companyId = $customer->getAttribute('company_id');
         $enquiryIds = DB::table('enquiries')
-            ->where('customer_id', $customer->getKey())
-            ->when(filled($customer->email), fn ($q) => $q->orWhereRaw('LOWER(email) = ?', [mb_strtolower((string) $customer->email)]))
+            ->where('company_id', $companyId)
+            ->where(fn ($q) => $q->where('customer_id', $customer->getKey())
+                ->when(filled($customer->email), fn ($q) => $q->orWhereRaw('LOWER(email) = ?', [mb_strtolower((string) $customer->email)])))
             ->get(['id', 'phone'])
-            ->merge($phoneKey === null ? collect() : DB::table('enquiries')->whereNotNull('phone')->get(['id', 'phone'])
+            ->merge($phoneKey === null ? collect() : DB::table('enquiries')->where('company_id', $companyId)->whereNotNull('phone')->get(['id', 'phone'])
                 ->filter(fn ($row): bool => PhoneNumber::key($row->phone) === $phoneKey))
             ->pluck('id')->map(fn ($id): int => (int) $id)->unique()->values()->all();
         $stayIds = DB::table('stays')->where('customer_id', $customer->getKey())->pluck('id')->all();
@@ -381,6 +395,18 @@ class ForgetCustomer extends Command
             return Customer::query()->find((int) $given);
         }
 
-        return Customer::query()->where('email', $given)->first();
+        // The same address can be a customer of two companies. Erasing the
+        // first match would honour the request against the wrong company's
+        // record and report success (security review), so an address that
+        // is not one person is refused and the id asked for instead.
+        $matches = Customer::query()->where('email', $given)->limit(2)->get();
+
+        if ($matches->count() > 1) {
+            $this->ambiguous = true;
+
+            return null;
+        }
+
+        return $matches->first();
     }
 }

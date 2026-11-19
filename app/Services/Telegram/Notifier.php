@@ -8,6 +8,8 @@ use App\Models\DocumentExtraction;
 use App\Models\Payment;
 use App\Models\TelegramLink;
 use App\Models\User;
+use App\Providers\Filament\CompanyPanelProvider;
+use App\Support\CompanyDetails;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -113,8 +115,17 @@ final class Notifier
         }
     }
 
+    /**
+     * The panel the reader of this message works in: Rihla's staff panel,
+     * or the company's own when a company's bot is speaking (security
+     * review — a company's staff were sent to /staff, which they cannot
+     * open). The company panel serves the same screens at the same paths.
+     */
     public static function panelUrl(string $path = ''): string
     {
-        return rtrim((string) config('app.url'), '/').'/staff'.($path === '' ? '' : '/'.ltrim($path, '/'));
+        $company = CompanyDetails::company();
+        $base = $company === null ? '/staff' : '/'.CompanyPanelProvider::PATH.'/'.$company->slug;
+
+        return rtrim((string) config('app.url'), '/').$base.($path === '' ? '' : '/'.ltrim($path, '/'));
     }
 }

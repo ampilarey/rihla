@@ -105,8 +105,8 @@
          an outbound Umrah package, and no terms, because the terms document
          does not exist. An invoice referencing terms nobody can produce
          implies a customer agreed to something. --}}
-    @if(config('invoices.tax.note'))
-        <p>{{ config('invoices.tax.note') }}</p>
+    @if(filled(\App\Support\CompanyDetails::taxNote()))
+        <p>{{ \App\Support\CompanyDetails::taxNote() }}</p>
     @endif
     @if(filled(\App\Support\CompanyDetails::terms()))
         <p>{{ \App\Support\CompanyDetails::terms() }}</p>

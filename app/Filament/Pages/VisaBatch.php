@@ -12,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Illuminate\Http\UploadedFile;
+use Livewire\Attributes\Locked;
 use RuntimeException;
 use UnitEnum;
 
@@ -45,14 +46,20 @@ class VisaBatch extends Page
     /** @var array<string, mixed> */
     public array $data = [];
 
+    // Locked (security review): the browser could set these, and the batch
+    // token became a path — `..` deleted every company's documents. Only
+    // the match boxes in $pages are the user's to change.
+    #[Locked]
     public string $batch = '';
 
+    #[Locked]
     public ?int $departureId = null;
 
     /** @var list<array<string, mixed>> */
     public array $pages = [];
 
     /** @var array<int, string> */
+    #[Locked]
     public array $candidates = [];
 
     public static function canAccess(): bool

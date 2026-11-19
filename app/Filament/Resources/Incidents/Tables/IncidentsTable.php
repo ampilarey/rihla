@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Incidents\Tables;
 
 use App\Models\Incident;
 use App\Models\User;
+use App\Support\Assignees;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
@@ -193,11 +194,7 @@ class IncidentsTable
                     ->label('Who')
                     ->required()
                     ->searchable()
-                    ->options(fn (): array => User::query()
-                        ->whereNotNull('name')
-                        ->orderBy('name')
-                        ->pluck('name', 'id')
-                        ->all()),
+                    ->options(fn (): array => Assignees::options()),
             ])
             ->action(function (Incident $record, array $data): void {
                 $record->forceFill(['assigned_to' => $data['assigned_to']])->save();

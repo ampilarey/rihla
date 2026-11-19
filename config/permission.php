@@ -118,7 +118,12 @@ return [
      * Set this to false if you want to implement custom logic for checking permissions.
      */
 
-    'register_permission_check_method' => true,
+    // False (security review before the pilot): spatie registers its check
+    // when the Gate is first resolved, which put it ahead of the company
+    // gate, so a Rihla role answered inside a company's panel — a support
+    // visitor could edit. AuthServiceProvider registers the same check
+    // itself, after the company gate.
+    'register_permission_check_method' => false,
 
     /*
      * When set to true, Laravel\Octane\Events\OperationTerminated event listener will be registered

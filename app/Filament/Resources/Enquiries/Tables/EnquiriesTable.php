@@ -5,8 +5,8 @@ namespace App\Filament\Resources\Enquiries\Tables;
 use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\EnquiryNote;
-use App\Models\User;
 use App\Support\Access;
+use App\Support\Assignees;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
@@ -137,10 +137,7 @@ class EnquiriesTable
      */
     private static function staff(): array
     {
-        return User::role([Access::BOOKING_STAFF, Access::PILGRIM_SUPPORT, Access::OPERATIONS_MANAGER])
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->all();
+        return Assignees::options([Access::BOOKING_STAFF, Access::PILGRIM_SUPPORT, Access::OPERATIONS_MANAGER]);
     }
 
     /** What was said. The history is the point of a CRM at this size. */

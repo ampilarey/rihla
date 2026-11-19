@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AssistantExchange;
+use App\Support\CompanyContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -35,7 +36,12 @@ class PruneAssistantLog extends Command
 
         $cutoff = Carbon::now()->subDays($days);
 
-        $deleted = AssistantExchange::query()->where('created_at', '<', $cutoff)->delete();
+        // Every company's exchanges, not only Rihla's (security review): the
+        // log is company-scoped and a console run defaults to Rihla, so a
+        // company's pilgrims' questions were kept past the retention rule.
+        $deleted = (int) app(CompanyContext::class)->acrossEveryCompany(
+            fn (): int => AssistantExchange::query()->where('created_at', '<', $cutoff)->delete(),
+        );
 
         $this->info($deleted === 0
             ? 'Nothing older than '.$days.' days.'

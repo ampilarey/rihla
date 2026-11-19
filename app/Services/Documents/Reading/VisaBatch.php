@@ -78,6 +78,10 @@ final class VisaBatch
      */
     public function split(string $batch, UploadedFile $file): array
     {
+        if (! self::isToken($batch)) {
+            throw new \InvalidArgumentException('Not a batch token.');
+        }
+
         $mime = $file->getMimeType() ?: 'application/octet-stream';
         $name = $file->getClientOriginalName() ?: 'upload';
         $bytes = (string) file_get_contents((string) $file->getRealPath());
@@ -232,7 +236,7 @@ final class VisaBatch
 
             $path = (string) ($page['path'] ?? '');
 
-            if (! str_starts_with($path, self::DIRECTORY.'/'.$batch.'/') || ($bytes = EncryptedFile::contents($this->disk(), $path)) === null) {
+            if (! self::isPageOf($path, $batch) || ($bytes = EncryptedFile::contents($this->disk(), $path)) === null) {
                 $left++;
                 $notes[] = $label.': the file is no longer there. Upload it again.';
 
@@ -254,10 +258,28 @@ final class VisaBatch
         return ['filed' => $filed, 'left' => $left, 'notes' => $notes];
     }
 
+    /**
+     * A batch token is exactly what {@see newBatch()} makes, and nothing else
+     * (security review): it is joined into a path on the documents disk,
+     * where `..` reached every company's files.
+     */
+    public static function isToken(string $batch): bool
+    {
+        return preg_match('/^[A-Za-z0-9]{32}$/', $batch) === 1;
+    }
+
+    /** A page file directly inside this batch's folder: no `..`, no subfolder. */
+    public static function isPageOf(string $path, string $batch): bool
+    {
+        return self::isToken($batch)
+            && preg_match('#^'.preg_quote(self::DIRECTORY.'/'.$batch.'/', '#').'[A-Za-z0-9._-]+$#', $path) === 1
+            && ! str_contains($path, '..');
+    }
+
     /** Throw the batch away, filed or not. */
     public function discard(string $batch): void
     {
-        if ($batch !== '') {
+        if (self::isToken($batch)) {
             Storage::disk($this->disk())->deleteDirectory(self::DIRECTORY.'/'.$batch);
         }
     }

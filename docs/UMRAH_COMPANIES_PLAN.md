@@ -591,7 +591,7 @@ Rihla's own company always has everything.
 
 | Risk | Answer |
 |---|---|
-| One company sees another's data | Scopes, policies, files, cache and jobs per company; the cross-company suite as a release gate; a security review before the pilot |
+| One company sees another's data | Scopes, policies, files, cache and jobs per company; the cross-company suite as a release gate; ~~a security review before the pilot~~ **done, November 2026** — three reviews (the company panel, the public sites and portals, work outside a request) found and fixed: a visa-batch token a browser could turn into a path that deleted every company's documents; spatie answering before the company gate, so a Rihla manager on a view-only support grant could edit; a company's address serving Rihla's site when not live, with a trailing dot or one level deeper; `data:forget` reaching another company's enquiries; portal password hashes in the audit trail and export; staff lists showing every account; Rihla's tax line on company documents; one retention command and the bot's links that saw only Rihla. Pinned by `CompanyIsolationReviewTest` |
 | Rihla's live Umrah business breaks during Phase 1 | Invisible change; reversible migrations rehearsed on a production copy; test first, promoted by hand |
 | rihla.mv leaks another company (search, sitemap, assistant, feeds) | Explicit audit in Phase 4, with tests on each surface |
 | Companies distrust a host that also sells Umrah | Independence in code, a written agreement, no Rihla branding on their sites, export at any time |

@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Tasks\Schemas;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Enquiry;
-use App\Models\User;
+use App\Support\Assignees;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -34,7 +34,7 @@ class CrmTaskForm
                 Select::make('owner_id')
                     ->label('Whose job')
                     ->searchable()
-                    ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all())
+                    ->options(fn (): array => Assignees::options())
                     ->default(fn () => auth()->id())
                     // Work everybody can hand around is work nobody owns.
                     ->disabled(fn (): bool => auth()->user()?->can('task.assign') !== true)

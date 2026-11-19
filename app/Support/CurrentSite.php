@@ -101,7 +101,7 @@ final class CurrentSite
     /** The company whose own domain this host is, or null. */
     public static function ownDomain(string $host): ?Partner
     {
-        $host = strtolower($host);
+        $host = self::normalise($host);
         $bare = str_starts_with($host, 'www.') ? substr($host, 4) : $host;
         $own = strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
         $own = str_starts_with($own, 'www.') ? substr($own, 4) : $own;
@@ -141,7 +141,7 @@ final class CurrentSite
     public static function label(string $host): ?string
     {
         $domain = strtolower((string) config('companies.site_domain'));
-        $host = strtolower($host);
+        $host = self::normalise($host);
 
         if ($domain === '' || ! str_ends_with($host, '.'.$domain)) {
             return null;
@@ -160,6 +160,32 @@ final class CurrentSite
         }
 
         return $label;
+    }
+
+    /**
+     * Lower case, and without the trailing dot of a fully qualified name
+     * (security review): `coral.rihla.mv.` is the same address to a browser
+     * and the wildcard certificate, and it matched nothing here, so it was
+     * served as rihla.mv under the company's name.
+     */
+    public static function normalise(string $host): string
+    {
+        return rtrim(strtolower($host), '.');
+    }
+
+    /**
+     * A name under the companies domain that can never be a site: more than
+     * one level deep (`www.coral.rihla.mv`). Served as rihla.mv, it would
+     * be Rihla's whole site on an address that reads as a company's.
+     */
+    public static function isStrayName(string $host): bool
+    {
+        $domain = strtolower((string) config('companies.site_domain'));
+        $host = self::normalise($host);
+
+        return $domain !== ''
+            && str_ends_with($host, '.'.$domain)
+            && str_contains(substr($host, 0, -strlen('.'.$domain)), '.');
     }
 
     public function use(Partner $company): void

@@ -18,8 +18,10 @@ use App\Services\Telegram\Bot;
 use App\Services\Telegram\Linker;
 use App\Support\Access;
 use App\Support\CompanyContext;
+use App\Support\CompanyFeatures;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -124,7 +126,11 @@ class CompanyOperationsTest extends TestCase
         config(['telegram.bot_token' => '123456:TEST', 'telegram.bot_username' => 'rihla_test_bot']);
         Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['message_id' => 1]])]);
 
-        $user = User::factory()->create()->assignRole(Access::OPERATIONS_MANAGER);
+        // A member of Coral's team, with Coral's bot paid for: a Rihla role
+        // alone no longer answers inside a company (security review).
+        $this->coral->forceFill(['features' => [CompanyFeatures::TELEGRAM => CompanyFeatures::ON]])->save();
+        $user = User::factory()->create();
+        DB::table('company_memberships')->insert(['company_id' => $this->coral->id, 'user_id' => $user->id, 'role' => Access::OPERATIONS_MANAGER, 'accepted_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
         $this->asCoral(fn () => app(Linker::class)->redeem(app(Linker::class)->issueCode($user), 4242));
         $this->assertSame($this->coral->id, $this->asCoral(fn () => TelegramLink::sole()->company_id));
 
