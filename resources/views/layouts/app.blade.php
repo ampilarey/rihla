@@ -1,3 +1,8 @@
+{{-- A company's own address (companies plan, Phase 4a): the page is the
+     same, the frame is the company's, and nothing below is used. --}}
+@if (\App\Support\CurrentSite::active())
+@include('sites.layout')
+@else
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Http\Middleware\SetLocale::isRtl(app()->getLocale()) ? 'rtl' : 'ltr' }}">
 <head>
@@ -782,3 +787,4 @@
     </script>
 </body>
 </html>
+@endif

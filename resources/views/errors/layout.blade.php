@@ -14,8 +14,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>@yield('title') — {{ config('app.name') }}</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    {{-- On a company's own address the error is the company's: its name,
+         its logo or none, never Rihla's (companies plan, Phase 4a). --}}
+    @php
+        $errorCompany = app(\App\Support\CurrentSite::class)->company();
+        $errorName = $errorCompany?->name ?? config('app.name');
+        $errorMark = $errorCompany ? $errorCompany->site?->logoUrl() : '/images/icon-192.png';
+    @endphp
+    <title>@yield('title') — {{ $errorName }}</title>
+    @if ($errorMark)
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ $errorCompany ? $errorMark : '/favicon-32x32.png' }}">
+    @endif
     <style>
         /* A copy of the Thaana face from resources/css/dhivehi-fonts.css.
            Nothing here loads the compiled bundle, so without this a Dhivehi
@@ -105,9 +114,11 @@
 </head>
 <body>
     <main class="panel">
-        <img src="/images/icon-192.png" alt="{{ config('app.name') }}" class="mark" width="72" height="72"
-         loading="lazy"
-         decoding="async">
+        @if ($errorMark)
+            <img src="{{ $errorMark }}" alt="{{ $errorName }}" class="mark" width="72" height="72"
+             loading="lazy"
+             decoding="async">
+        @endif
 
         <p class="code">@yield('code')</p>
         <h1>@yield('title')</h1>
@@ -121,7 +132,11 @@
                  helper would then throw inside the handler for the first
                  throw. --}}
             <a class="button" href="/{{ app()->getLocale() }}">{{ __('messages.error_home') }}</a>
-            <a class="button secondary" href="/{{ app()->getLocale() }}/trips">{{ __('messages.Trips') }}</a>
+            @if ($errorCompany)
+                <a class="button secondary" href="/{{ app()->getLocale() }}/packages">{{ __('messages.Packages') }}</a>
+            @else
+                <a class="button secondary" href="/{{ app()->getLocale() }}/trips">{{ __('messages.Trips') }}</a>
+            @endif
         </div>
     </main>
 </body>

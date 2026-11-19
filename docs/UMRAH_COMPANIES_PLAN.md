@@ -405,6 +405,70 @@ likeliest overrun is 3h, the portal, which is a product of its own.
 - **Done when**: two test companies have sites that share nothing visible
   with each other or with rihla.mv.
 
+#### Phase 4 plan (November 2026)
+
+**rihla.mv today.** I audited every public route, the sitemap, structured
+data, the assistant, the PWA and the API, and found no route that shows
+another company's records. Nothing on a public path changes
+`CompanyContext`, so every scoped model is narrowed to Rihla's own records.
+`withoutGlobalScope` and `acrossEveryCompany` are used only by commands, the
+Telegram router and one check that a reference is unique. Two things would
+break the moment a company's site reused these controllers:
+- **Two shared cache keys:** the homepage's `why_section_active` and the
+  sitemap's `sitemap.xml`.
+- **Rihla-only content with no company:** trips, articles, knowledge,
+  ziyarah, learning, the guide, media, hero banners, the "why" section and
+  settings.
+
+As a side effect, another company's pilgrims cannot open their portal on
+rihla.mv at all: their booking is outside Rihla's scope. Phase 4 serves
+that portal on the company's own address.
+
+**How a company's address reaches its site.**
+- One middleware reads the request's host before route model binding:
+  either `{slug}.{companies.site_domain}` or a domain the owner mapped to
+  the company.
+- If the host belongs to a company whose site is switched on, the
+  middleware sets `CompanyContext` to that company and marks the request as
+  that company's site. Every scoped query then sees that company's records
+  only, exactly as in its panel.
+- **The same route table serves both kinds of site.** On a company's
+  address, only an allowlist of route names answers: home, packages and a
+  package, checkout, waiting list, contact and enquiry, the customer and
+  family portals, the leader portal, and the app manifest. Everything else
+  is a 404. So a page Rihla adds later is absent from company sites by
+  default, not present by mistake.
+- `layouts.app` hands the page to the company's theme. No Rihla header,
+  footer, logo, social links, WhatsApp button or organisation data appears
+  unless the owner switches "Powered by Rihla" on for that company.
+- Guesthouse hosts and Umrah companies share one name space. A slug that
+  is a company with a live site gets the site. Any other slug keeps
+  today's redirect to the host's page.
+
+**Who switches it on.** Rihla's admin switches a company's site on in
+`/staff`, and switches "Powered by Rihla" on or off there. Until Phase 5
+ties the site to the registration fee, the switch stands for "the fee is
+paid". The company itself sets its theme, logo, colours, words and
+sections, on a Website page in its own panel. Colours are checked with
+`Contrast` on save, as host pages are.
+
+| # | Pull request | Estimate |
+|---|---|---|
+| 4a | The site record (`company_sites`) and the admin switches. The host middleware and the route allowlist. The company's home and contact pages in a first theme. The company panel's Website page. Tests that a company's address shows none of Rihla's pages, header or content, and that rihla.mv is unchanged | 1.5 days |
+| 4b | Three themes, each a complete layout, with sections switched on and off. The inner pages (packages, checkout) in the company's colours. Rihla's name taken out of the copy they show. Titles, meta tags, structured data, the sitemap and robots per company | 1.5 days |
+| 4c | The customer portal, family portal, checkout and waiting list working on the company's address. Every link issued for a company's booking (the panel's portal link, a waiting-list claim, a family link) points at the company's own address | 1 day |
+| 4d | Each company's installable app: a manifest and icons generated from its logo and colours. The offline page in its name. The service worker is per address, so two companies' caches never meet | 1 day |
+| 4e | The leader portal on the company's address. Own domains mapped by the owner. rihla.mv's host directory and search kept free of companies. The two-companies suite that marks Phase 4 done. ADR | 1.5 days |
+
+**About six and a half working days**, in five pull requests. The
+likeliest overrun is 4b: the inner pages were written for Rihla's palette
+and copy.
+
+**For the owner, once 4a merges:** add a wildcard subdomain `*.rihla.mv`
+in cPanel, pointing at the app's document root (see "Hosting notes"), and
+set `COMPANY_SITE_DOMAIN=rihla.mv` on the server. Until then company sites
+stay unreachable and nothing else changes.
+
 ### Phase 5: plans and the owner's tools
 - Plans and per-company feature switches.
 - Add a company (details, licence checked, first admin invited, defaults

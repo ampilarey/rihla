@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\SetLocale;
 use App\Models\GuideStep;
 use App\Models\Setting;
+use App\Support\CurrentSite;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,11 @@ class PageController extends Controller
 
     public function contact()
     {
+        // A company's own address has its own contact page (Phase 4a).
+        if (CurrentSite::active()) {
+            return app(CompanySiteController::class)->contact();
+        }
+
         $socialSettings = Setting::getSocialSettings();
 
         return view('pages.contact', [

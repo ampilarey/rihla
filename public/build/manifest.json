@@ -21,7 +21,7 @@
     "src": "node_modules/leaflet/dist/leaflet.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DqfsRG5M.css",
+    "file": "assets/app-BxomskaP.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",

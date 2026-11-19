@@ -317,11 +317,15 @@ class Seo
             'name' => $title,
             'description' => $package->getTranslation('summary', app()->getLocale()) ?: null,
             'url' => $url,
-            'provider' => [
-                '@type' => 'TravelAgency',
-                'name' => config('app.name'),
-                'identifier' => self::REGISTRATION_NUMBER,
-            ],
+            // Another company's package names that company, never Rihla
+            // (companies plan, decision 2).
+            'provider' => ($company = CompanyDetails::company()) !== null
+                ? array_filter(['@type' => 'TravelAgency', 'name' => $company->name, 'identifier' => $company->registration_number])
+                : [
+                    '@type' => 'TravelAgency',
+                    'name' => config('app.name'),
+                    'identifier' => self::REGISTRATION_NUMBER,
+                ],
         ]);
 
         if ($package->cover_image) {

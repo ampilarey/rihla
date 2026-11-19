@@ -2,9 +2,11 @@
 
 use App\Http\Middleware\EnsureServiceEnabled;
 use App\Http\Middleware\FamilySession;
+use App\Http\Middleware\KeepToCompanyRoutes;
 use App\Http\Middleware\PortalSession;
 use App\Http\Middleware\RequireSecondFactor;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\ServeCompanySite;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\StaySession;
 use App\Http\Middleware\UseRequestedCompany;
@@ -30,7 +32,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             SetLocale::class,
+            // On a company's own address, only the pages its site answers
+            // (companies plan, Phase 4a).
+            KeepToCompanyRoutes::class,
         ]);
+
+        // A company's address serves that company's site (Phase 4a). First
+        // of all, so the company is in place before any route, panel or
+        // binding runs.
+        $middleware->prepend(ServeCompanySite::class);
 
         // Every response, not just web: the JSON API and the deploy webhook
         // should not advertise the PHP version either.

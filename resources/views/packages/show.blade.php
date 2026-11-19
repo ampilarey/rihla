@@ -12,7 +12,7 @@
 @section('content')
     <div class="container mx-auto px-4 section-y-tight">
         <nav class="mb-6 text-sm" aria-label="{{ __('Breadcrumb') }}">
-            <a href="{{ route('packages.index') }}" class="inline-block py-1 text-wine-600 hover:underline">{{ __('Packages') }}</a>
+            <a href="{{ route('packages.index') }}" class="inline-block py-1 text-wine-600 hover:underline">{{ __('messages.Packages') }}</a>
             <span class="text-ink-muted" aria-hidden="true">/</span>
             <span class="text-ink-muted" dir="auto">{{ $package->title }}</span>
         </nav>
@@ -275,12 +275,17 @@
                                  no capacity recorded is not "unlimited", it is
                                  unconfigured, and a button that throws on the
                                  next page is worse than no button. --}}
-                            @if($departure->is_bookable)
+                            @if($departure->is_bookable && \App\Support\CurrentSite::allows('booking.start'))
                                 <a href="{{ route('booking.start', ['slug' => $package->slug, 'departure' => $departure->id]) }}"
                                    class="btn-action w-full">
                                     {{ __('messages.Book now') }}
                                 </a>
-                            @elseif($departure->is_sold_out && $departure->date_start->isFuture())
+                            @elseif($departure->is_bookable)
+                                {{-- A company's site whose online booking is
+                                     not open yet (companies plan, Phase 4a):
+                                     the visitor asks instead. --}}
+                                <a href="{{ route('contact') }}" class="btn-action w-full">{{ __('messages.Ask about this trip') }}</a>
+                            @elseif($departure->is_sold_out && $departure->date_start->isFuture() && \App\Support\CurrentSite::allows('waitlist.join'))
                                 {{-- A sold-out departure was a dead end: the page
                                      said "Fully booked" and the visitor left. Seats
                                      do come back — a hold lapses, a passport turns

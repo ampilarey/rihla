@@ -132,6 +132,9 @@ final class Anonymisation
         // the WhatsApp number and the social handles may well be the
         // owner's own, as the partner row's are.
         'host_pages' => ['whatsapp' => 'phone', 'instagram' => 'null', 'facebook' => 'null'],
+        // An Umrah company's own website (companies plan, Phase 4a): the
+        // same reasoning as a host's page.
+        'company_sites' => ['whatsapp' => 'phone', 'instagram' => 'null', 'facebook' => 'null'],
         // A guest's review — §16.11. What they wrote is theirs, and a reply
         // or a reason for hiding may quote it or name them. Cleared rather
         // than replaced with a stand-in: a scrubbed review stays public,
