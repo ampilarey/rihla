@@ -457,7 +457,7 @@ sections, on a Website page in its own panel. Colours are checked with
 | 4a ✅ (#210) | The site record (`company_sites`) and the admin switches. The host middleware and the route allowlist. The company's home and contact pages in a first theme. The company panel's Website page. Tests that a company's address shows none of Rihla's pages, header or content, and that rihla.mv is unchanged | 1.5 days |
 | 4b ✅ | Three themes, each a complete layout, with sections switched on and off. The inner pages (packages, checkout) in the company's colours. Rihla's name taken out of the copy they show. Titles, meta tags, structured data, the sitemap and robots per company | 1.5 days |
 | 4c ✅ | The customer portal, family portal, checkout and waiting list working on the company's address. Every link issued for a company's booking (the panel's portal link, a waiting-list claim, a family link) points at the company's own address | 1 day |
-| 4d | Each company's installable app: a manifest and icons generated from its logo and colours. The offline page in its name. The service worker is per address, so two companies' caches never meet | 1 day |
+| 4d ✅ | Each company's installable app: a manifest and icons generated from its logo and colours. The offline page in its name. The service worker is per address, so two companies' caches never meet | 1 day |
 | 4e | The leader portal on the company's address. Own domains mapped by the owner. rihla.mv's host directory and search kept free of companies. The two-companies suite that marks Phase 4 done. ADR | 1.5 days |
 
 **About six and a half working days**, in five pull requests. The

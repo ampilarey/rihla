@@ -28,6 +28,7 @@ use App\Support\SitePalette;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -99,7 +100,8 @@ class CompanyWebsiteTest extends TestCase
             ->assertDontSee('Rihla Signature Umrah')
             ->assertDontSee('Rihla Travels')
             ->assertDontSee('manifest.json', false)
-            ->assertDontSee('sw.js', false)
+            ->assertDontSee("'/sw.js'", false)
+            ->assertDontSee('/sw.js\'', false)
             ->assertDontSee('Powered by Rihla');
 
         // Rihla's own home page is untouched, and shows nothing of Coral's.
@@ -449,5 +451,61 @@ class CompanyWebsiteTest extends TestCase
         // On rihla.mv the same link opens nothing: the entry is not Rihla's,
         // and the signature does not cover that host either.
         $this->assertContains($this->get(str_replace($this->coral->slug.'.'.self::DOMAIN, 'localhost', (string) $url))->status(), [403, 404]);
+    }
+
+    // ── Phase 4d: each company's installable app ─────────────────────────
+
+    public function test_the_installable_app_is_the_companys_own(): void
+    {
+        $home = $this->get($this->at($this->coral))->assertOk();
+        $home->assertSee('rel="manifest" href="'.$this->at($this->coral, '/manifest.webmanifest').'"', false)
+            ->assertSee($this->at($this->coral, '/site-sw.js'), false);
+
+        $manifest = $this->get($this->at($this->coral, '/manifest.webmanifest'))->assertOk()->json();
+        $this->assertSame('Coral Umrah', $manifest['name']);
+        $this->assertSame('#14532D', $manifest['theme_color']);
+        $this->assertSame('/', $manifest['start_url']);
+        $this->assertSame('/site-icon-512.png', $manifest['icons'][2]['src']);
+        $this->assertStringNotContainsString('Rihla', (string) json_encode($manifest));
+
+        $worker = $this->get($this->at($this->coral, '/site-sw.js'))->assertOk()
+            ->assertHeader('Content-Type', 'application/javascript')
+            ->getContent();
+        $this->assertStringContainsString('"site-coral-umrah-v1"', (string) $worker);
+        $this->assertStringNotContainsString('rihla', strtolower((string) $worker));
+
+        $this->get($this->at($this->coral, '/offline'))->assertOk()->assertSee('Coral Umrah')->assertDontSee('Rihla');
+
+        // None of it on rihla.mv, which keeps its own files.
+        foreach (['/manifest.webmanifest', '/site-sw.js', '/offline', '/site-icon-192.png'] as $path) {
+            $this->get(config('app.url').$path)->assertNotFound();
+        }
+    }
+
+    public function test_the_icon_is_the_logo_or_the_initials_at_the_size_asked(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+
+        // No logo: the initials on the company's colour.
+        $png = $this->get($this->at($this->coral, '/site-icon-192.png'))->assertOk()->assertHeader('Content-Type', 'image/png')->getContent();
+        $image = imagecreatefromstring((string) $png);
+        $this->assertSame([192, 192], [imagesx($image), imagesy($image)]);
+        $this->assertSame(0x14532D, imagecolorat($image, 2, 2) & 0xFFFFFF, 'The corner is the company\'s colour.');
+
+        // A logo: drawn on white.
+        $logo = imagecreatetruecolor(40, 20);
+        imagefill($logo, 0, 0, (int) imagecolorallocate($logo, 200, 0, 0));
+        ob_start();
+        imagepng($logo);
+        Storage::disk('public')->put('company-sites/logo.png', (string) ob_get_clean());
+        $this->coral->site->forceFill(['logo_path' => 'company-sites/logo.png'])->save();
+
+        $image = imagecreatefromstring((string) $this->get($this->at($this->coral, '/site-icon-512.png'))->assertOk()->getContent());
+        $this->assertSame([512, 512], [imagesx($image), imagesy($image)]);
+        $this->assertSame(0xFFFFFF, imagecolorat($image, 2, 2) & 0xFFFFFF);
+        $this->assertSame(0xC80000, imagecolorat($image, 256, 256) & 0xFFFFFF, 'The logo sits in the middle.');
+
+        $this->get($this->at($this->coral, '/site-icon-64.png'))->assertNotFound();
     }
 }

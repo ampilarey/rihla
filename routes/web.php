@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BooksController;
+use App\Http\Controllers\CompanyAppController;
 use App\Http\Controllers\DevicesController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
@@ -340,6 +341,13 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 // Only ever reached on a company's address, where .htaccess sends it here
 // (companies plan, Phase 4b); everywhere else the file in public/ answers.
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+
+// Each company's installable app (companies plan, Phase 4d). Answered only
+// on a company's address; rihla.mv keeps its files in public/.
+Route::get('/manifest.webmanifest', [CompanyAppController::class, 'manifest'])->name('site.manifest');
+Route::get('/site-icon-{size}.png', [CompanyAppController::class, 'icon'])->whereNumber('size')->name('site.icon');
+Route::get('/site-sw.js', [CompanyAppController::class, 'worker'])->name('site.worker');
+Route::get('/offline', [CompanyAppController::class, 'offline'])->name('site.offline');
 
 // Accepting an invitation to a host's team — §16.10. Outside `/host`, so
 // Filament's `/host/{tenant}/…` routes can never answer for it.
