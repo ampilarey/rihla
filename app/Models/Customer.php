@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Services\Portal\Gatekeeper;
 use App\Support\CustomerDossier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
 /**
  * The person who books and pays.
@@ -23,6 +25,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 /**
  * @property-read ?Customer $referrer
  * @property int|null $contact_traveller_id the family's office contact (companies plan, Phase 3a)
+ * @property string|null $portal_password hashed; never fillable, never shown (Phase 3h)
+ * @property Carbon|null $portal_password_set_at
+ * @property Carbon|null $portal_last_login_at
  */
 class Customer extends Model
 {
@@ -35,6 +40,25 @@ class Customer extends Model
         // dropped without a word, which is the trap AGENTS.md records.
         'referred_by_customer_id', 'referral_source',
     ];
+
+    /**
+     * The portal password (Phase 3h) is written only by
+     * {@see Gatekeeper}, through forceFill, and never
+     * leaves the model in an array or a JSON response.
+     *
+     * @var list<string>
+     */
+    protected $hidden = ['portal_password'];
+
+    protected $casts = [
+        'portal_password_set_at' => 'datetime',
+        'portal_last_login_at' => 'datetime',
+    ];
+
+    public function hasPortalPassword(): bool
+    {
+        return filled($this->portal_password);
+    }
 
     /** @return BelongsTo<Island, $this> */
     public function island(): BelongsTo

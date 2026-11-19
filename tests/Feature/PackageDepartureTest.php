@@ -57,6 +57,10 @@ class PackageDepartureTest extends TestCase
      * @var list<string>
      */
     private const DEPENDENT_MIGRATIONS = [
+        // Newest of all: `customers.portal_password` and its two timestamps
+        // (companies plan, Phase 3h). Left recorded while `customers` is
+        // re-created below, it would come back without them.
+        __DIR__.'/../../database/migrations/2026_11_19_220000_give_customers_a_portal_password.php',
         // Newest of all: `ledger_entries` hangs off `departures` (companies
         // plan, Phase 3f).
         __DIR__.'/../../database/migrations/2026_11_19_200000_create_accounts_and_ledger.php',

@@ -4,10 +4,13 @@ namespace App\Filament\Resources\Customers\Pages;
 
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\Customer;
+use App\Services\Portal\Gatekeeper;
 use App\Support\CustomerDossier;
 use App\Support\ReferralCredit;
 use App\Support\Referrals;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 /**
@@ -26,7 +29,25 @@ class ViewCustomer extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [EditAction::make()->label('Edit their details')];
+        return [
+            EditAction::make()->label('Edit their details'),
+            // The portal password (Phase 3h): the office's reset when one was
+            // chosen by the wrong person or forgotten. The customer chooses a
+            // new one from the next link they are sent.
+            Action::make('clearPortalPassword')
+                ->label('Clear their portal password')
+                ->icon('heroicon-o-key')
+                ->color('danger')
+                ->visible(fn (): bool => auth()->user()?->can('customer.update') === true
+                    && Customer::query()->whereKey($this->getRecord()->getKey())->first()?->hasPortalPassword() === true)
+                ->requiresConfirmation()
+                ->modalDescription('Signs them out everywhere. They choose a new password from the next portal link you send.')
+                ->action(function (): void {
+                    app(Gatekeeper::class)->clearPassword(Customer::query()->findOrFail($this->getRecord()->getKey()));
+
+                    Notification::make()->success()->title('Portal password cleared')->send();
+                }),
+        ];
     }
 
     /**
