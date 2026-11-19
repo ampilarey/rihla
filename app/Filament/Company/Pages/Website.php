@@ -10,6 +10,7 @@ use App\Models\CompanySite;
 use App\Models\HostPage;
 use App\Models\Partner;
 use App\Support\CompanyRole;
+use App\Support\CurrentSite;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -69,9 +70,9 @@ class Website extends Page
     /** The address the site answers at, or null until the owner has set the domain. */
     public static function address(Partner $company): ?string
     {
-        $domain = config('companies.site_domain');
+        $host = CurrentSite::hostOf($company);
 
-        return filled($domain) ? 'https://'.$company->slug.'.'.$domain : null;
+        return $host === null ? null : 'https://'.$host;
     }
 
     public function mount(): void

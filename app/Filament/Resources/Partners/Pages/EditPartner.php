@@ -29,10 +29,11 @@ class EditPartner extends EditRecord
             $record->forceFill([
                 'site_enabled' => (bool) $data['site_enabled'],
                 'powered_by_rihla' => (bool) ($data['powered_by_rihla'] ?? false),
+                'site_domain' => filled($data['site_domain'] ?? null) ? strtolower(trim((string) $data['site_domain'])) : null,
             ]);
         }
 
-        unset($data['site_enabled'], $data['powered_by_rihla']);
+        unset($data['site_enabled'], $data['powered_by_rihla'], $data['site_domain']);
 
         return parent::handleRecordUpdate($record, $data);
     }

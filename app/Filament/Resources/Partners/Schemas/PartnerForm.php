@@ -59,6 +59,22 @@ class PartnerForm
                     Toggle::make('powered_by_rihla')
                         ->label('Say "Powered by Rihla"')
                         ->helperText('Off unless the company has agreed to it. When on, one line at the foot of their site links here.'),
+                    // Phase 4e: the company's own domain, once it points at
+                    // the server and cPanel has it with a certificate.
+                    TextInput::make('site_domain')
+                        ->label('Their own domain')
+                        ->placeholder('coralumrah.mv')
+                        ->maxLength(253)
+                        ->regex('/^(?!www\.)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/')
+                        ->notRegex('/(^|\.)rihla\.mv$/')
+                        ->unique('partners', 'site_domain', ignoreRecord: true)
+                        ->validationMessages([
+                            'regex' => 'A bare domain in small letters, without www or https: coralumrah.mv.',
+                            'not_regex' => 'That is one of Rihla\'s own addresses.',
+                            'unique' => 'Another company already has that domain.',
+                        ])
+                        ->helperText('Only once the domain points at the server and cPanel has it, with a certificate. www is answered too.')
+                        ->columnSpanFull(),
                 ]),
 
             Section::make('The arrangement')->columns(2)->schema([

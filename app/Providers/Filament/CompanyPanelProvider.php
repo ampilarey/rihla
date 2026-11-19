@@ -56,10 +56,12 @@ use App\Http\Middleware\RequireSecondFactor;
 use App\Http\Middleware\UseTenantCompany;
 use App\Models\Partner;
 use App\Support\Brand;
+use App\Support\CompanyRequest;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages\Page;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -182,6 +184,15 @@ class CompanyPanelProvider extends PanelProvider
             // The home page's cards and charts (Phase 3g), each behind its permission.
             ->widgets([DashboardStats::class, MoneyChart::class, SeatsChart::class])
             ->renderHook(PanelsRenderHook::BODY_END, fn (): string => BottomNav::render())
+            // The leader pages, for this company (companies plan, Phase 4e):
+            // the same sign-in, so a leader opens them from here.
+            ->navigationItems([
+                NavigationItem::make('Leader pages')
+                    ->icon('heroicon-o-flag')
+                    ->group('Travel')
+                    ->url(fn (): string => CompanyRequest::route('leader.index', ['locale' => app()->getLocale()]), shouldOpenInNewTab: true)
+                    ->visible(fn (): bool => auth()->user()?->can('attendance.create') === true),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

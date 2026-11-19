@@ -397,7 +397,11 @@ in the company panel too.
 **About ten working days**, in nine pull requests (3a to 3i). The
 likeliest overrun is 3h, the portal, which is a product of its own.
 
-### Phase 4: company websites and themes
+### Phase 4: company websites and themes — done
+
+Done in #210–#214; the mechanism is recorded in
+[ADR 0011](adr/0011-each-company-site-on-its-own-address.md).
+
 - Subdomain and own-domain routing to a company's site; themes;
   the customer and leader portals and the installable apps under the
   company's brand; "Powered by Rihla" as a per-company switch.
@@ -458,7 +462,7 @@ sections, on a Website page in its own panel. Colours are checked with
 | 4b ✅ | Three themes, each a complete layout, with sections switched on and off. The inner pages (packages, checkout) in the company's colours. Rihla's name taken out of the copy they show. Titles, meta tags, structured data, the sitemap and robots per company | 1.5 days |
 | 4c ✅ | The customer portal, family portal, checkout and waiting list working on the company's address. Every link issued for a company's booking (the panel's portal link, a waiting-list claim, a family link) points at the company's own address | 1 day |
 | 4d ✅ | Each company's installable app: a manifest and icons generated from its logo and colours. The offline page in its name. The service worker is per address, so two companies' caches never meet | 1 day |
-| 4e | The leader portal on the company's address. Own domains mapped by the owner. rihla.mv's host directory and search kept free of companies. The two-companies suite that marks Phase 4 done. ADR | 1.5 days |
+| 4e ✅ | The leader portal for a company's staff, opened from its panel (it stays behind the panel's sign-in; see ADR 0011). Own domains mapped by the owner. rihla.mv's host directory and search kept free of companies. The two-companies suite that marks Phase 4 done. ADR | 1.5 days |
 
 **About six and a half working days**, in five pull requests. The
 likeliest overrun is 4b: the inner pages were written for Rihla's palette

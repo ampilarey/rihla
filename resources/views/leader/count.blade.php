@@ -7,10 +7,10 @@
         class="container mx-auto max-w-3xl px-4 section-y-tight"
         data-leader-count="{{ $rollCall->getKey() }}"
         data-leader-departure="{{ $departure->getKey() }}"
-        data-sync-url="{{ route('leader.sync') }}"
+        data-sync-url="{{ \App\Support\CompanyRequest::route('leader.sync') }}"
     >
         <p class="mb-2">
-            <a href="{{ route('leader.departure', $departure) }}" class="inline-block py-1 text-ink-muted underline">
+            <a href="{{ \App\Support\CompanyRequest::route('leader.departure', [$departure]) }}" class="inline-block py-1 text-ink-muted underline">
                 Back to the group
             </a>
         </p>

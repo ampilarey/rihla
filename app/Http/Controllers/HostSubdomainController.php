@@ -27,6 +27,7 @@ class HostSubdomainController extends Controller
 
         $host = Partner::query()
             ->where('slug', strtolower($hostSlug))
+            ->where('is_umrah_company', false)
             ->where('status', Partner::STATUS_ACTIVE)
             ->where('verification', Partner::VERIFIED)
             ->whereHas('page', fn ($page) => $page->whereNotNull('published_at'))
