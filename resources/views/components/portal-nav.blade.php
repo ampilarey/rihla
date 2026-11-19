@@ -21,6 +21,19 @@
         {{ __('messages.Your booking') }}
     </a>
 
+    {{-- Every booking of a customer who signed in with a password, and where
+         somebody who came by a link chooses one (Phase 3h). --}}
+    <a href="{{ route('portal.bookings', ['locale' => app()->getLocale()]) }}"
+       @class([
+           'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',
+           'bg-wine-600 text-cream' => $current === 'bookings',
+           'bg-cream text-ink hover:bg-cream-deep' => $current !== 'bookings',
+       ])
+       @if($current === 'bookings') aria-current="page" @endif
+       dir="auto">
+        {{ __('messages.Your bookings') }}
+    </a>
+
     <a href="{{ route('portal.documents', ['locale' => app()->getLocale()]) }}"
        @class([
            'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',

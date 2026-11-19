@@ -35,6 +35,7 @@ use App\Support\CanonicalUrl;
 use App\Support\CompanyContext;
 use App\Support\InitialsAvatar;
 use App\Support\LivewireReturns;
+use App\Support\PhoneNumber;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -245,6 +246,14 @@ class AppServiceProvider extends ServiceProvider
         // payment slip, a passport scan, a family link. By the stay or
         // booking the link opened rather than by address — many phones
         // here share one carrier address.
+        // Signing in to the portal with a password (Phase 3h): five tries a
+        // minute from one address and ten an hour at one number, so neither
+        // a single phone nor a list of numbers can be ground through.
+        RateLimiter::for('portal-login', fn (Request $request) => [
+            Limit::perMinute(5)->by('portal-login-ip:'.$request->ip()),
+            Limit::perHour(10)->by('portal-login-number:'.(PhoneNumber::key((string) $request->input('phone')) ?? 'none')),
+        ]);
+
         RateLimiter::for('portal-write', fn (Request $request) => Limit::perHour(20)->by('portal-write:'.$this->portalKey($request)));
 
         // The Learning Academy's quiz and Ask a Scholar: every submission is

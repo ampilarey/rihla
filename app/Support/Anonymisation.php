@@ -52,6 +52,8 @@ final class Anonymisation
         'customers' => [
             'name' => 'name', 'email' => 'email', 'phone' => 'phone',
             'national_id' => 'name', 'address' => 'text', 'island_id' => 'null', 'notes' => 'text',
+            // The portal password's hash (Phase 3h): nothing to sign in with on a test server.
+            'portal_password' => 'null',
         ],
         'travellers' => [
             'full_name' => 'name', 'passport_number' => 'name',

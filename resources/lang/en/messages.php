@@ -965,4 +965,24 @@ return [
     // The invoice's instalments
     'Payment schedule' => 'Payment schedule',
     'Due' => 'Due',
+
+    // The customer portal with a password (companies plan, Phase 3h).
+    'Choose a password' => 'Choose a password',
+    'Mobile number' => 'Mobile number',
+    'No password yet? Open the link we sent you, and choose one there.' => 'No password yet? Open the link we sent you, and choose one there.',
+    'Open' => 'Open',
+    'Open now' => 'Open now',
+    'Password, at least 8 characters' => 'Password, at least 8 characters',
+    'Set my password' => 'Set my password',
+    'Sign in' => 'Sign in',
+    'Sign in to your booking' => 'Sign in to your booking',
+    'Sign in with your mobile number' => 'Sign in with your mobile number',
+    'That is not the number we have for you, or a password is already set. Message us and we will help.' => 'That is not the number we have for you, or a password is already set. Message us and we will help.',
+    'That number and password do not match. Use the link we sent, or message us.' => 'That number and password do not match. Use the link we sent, or message us.',
+    'The mobile number you booked with' => 'The mobile number you booked with',
+    'The same password again' => 'The same password again',
+    'Then you can sign in with your mobile number and see every booking, without waiting for a link.' => 'Then you can sign in with your mobile number and see every booking, without waiting for a link.',
+    'Use the mobile number you booked with and the password you chose.' => 'Use the mobile number you booked with and the password you chose.',
+    'Your bookings' => 'Your bookings',
+    'Your password is set. Next time, sign in with your mobile number.' => 'Your password is set. Next time, sign in with your mobile number.',
 ];

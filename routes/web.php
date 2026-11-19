@@ -30,6 +30,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentSlipController;
 use App\Http\Controllers\PeopleController;
+use App\Http\Controllers\PortalAccountController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecondFactorController;
@@ -113,6 +114,11 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
     // their own booking or nothing.
     Route::get('/portal/enter/{token}', [PortalController::class, 'enter'])->name('portal.enter');
     Route::get('/portal/locked', [PortalController::class, 'locked'])->name('portal.locked');
+    // Signing in with a mobile number and a password (companies plan, Phase
+    // 3h): outside the gate, because it is the other door.
+    Route::get('/portal/login', [PortalAccountController::class, 'showLogin'])->name('portal.login');
+    Route::post('/portal/login', [PortalAccountController::class, 'login'])
+        ->middleware('throttle:portal-login')->name('portal.login.attempt');
 
     Route::middleware('portal')->group(function () {
         Route::get('/portal', [PortalController::class, 'home'])->name('portal.home');
@@ -122,6 +128,10 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         Route::post('/portal/payments', [PortalController::class, 'storePayment'])
             ->middleware('throttle:portal-write')->name('portal.payments.store');
         Route::post('/portal/leave', [PortalController::class, 'leave'])->name('portal.leave');
+        Route::get('/portal/bookings', [PortalAccountController::class, 'bookings'])->name('portal.bookings');
+        Route::post('/portal/bookings', [PortalAccountController::class, 'choose'])->name('portal.bookings.choose');
+        Route::post('/portal/password', [PortalAccountController::class, 'choosePassword'])
+            ->middleware('throttle:portal-login')->name('portal.password');
 
         // §6.2 puts the family-sharing controls in the pilgrim's hands, so
         // they live behind the pilgrim's own gate and there is no staff

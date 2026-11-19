@@ -27,6 +27,11 @@
             <p dir="auto" class="mt-4 text-sm text-ink-muted">
                 {{ __('messages.Or call us on :number.', ['number' => \App\Support\Contact::displayNumber()]) }}
             </p>
+
+            {{-- The other door (Phase 3h), for anybody who chose a password. --}}
+            <a href="{{ route('portal.login') }}" dir="auto" class="mt-4 inline-block text-sm font-medium text-ink underline">
+                {{ __('messages.Sign in with your mobile number') }}
+            </a>
         </div>
     </div>
 @endsection
