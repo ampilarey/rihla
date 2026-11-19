@@ -9,6 +9,7 @@ use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Trip;
 use App\Models\ZiyarahLocation;
+use App\Support\CurrentSite;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
@@ -24,6 +25,17 @@ class SitemapController extends Controller
      */
     public function index(): Response
     {
+        // A company's own address lists that company's pages and nothing of
+        // Rihla's (companies plan, Phase 4b). Its URLs are its own host's —
+        // a host already matched to a live company, so not a header anybody
+        // can poison the cache with — and the cache is the company's own.
+        if (($company = app(CurrentSite::class)->company()) !== null) {
+            URL::forceRootUrl(request()->getSchemeAndHttpHost());
+            $xml = Cache::remember('sitemap.xml.company.'.$company->getKey(), now()->addHour(), fn () => $this->render($this->companyEntries()));
+
+            return response($xml, 200, ['Content-Type' => 'application/xml']);
+        }
+
         // Built from APP_URL, never the request's Host header: the result is
         // cached for an hour for every crawler, so one request with a
         // foreign Host would otherwise poison it (site audit).
@@ -35,6 +47,42 @@ class SitemapController extends Controller
         $xml = Cache::remember('sitemap.xml', now()->addHour(), fn () => $this->build());
 
         return response($xml, 200, ['Content-Type' => 'application/xml']);
+    }
+
+    /**
+     * robots.txt on a company's address (Phase 4b). On rihla.mv the web
+     * server answers with the file in public/ and never reaches here; on a
+     * company's it is sent here by .htaccess, because that file names
+     * rihla.mv's sitemap.
+     */
+    public function robots(): Response
+    {
+        if (! CurrentSite::active()) {
+            return response((string) file_get_contents(public_path('robots.txt')), 200, ['Content-Type' => 'text/plain']);
+        }
+
+        return response("User-agent: *\nAllow: /\n\nSitemap: ".url('/sitemap.xml')."\n", 200, ['Content-Type' => 'text/plain']);
+    }
+
+    /**
+     * A company's own pages: home, packages and contact, and each of its
+     * published packages. The scope already walls the query to it.
+     *
+     * @return list<array{path: string, lastmod: ?string, changefreq: string, priority: string}>
+     */
+    private function companyEntries(): array
+    {
+        $entries = [
+            ['path' => '', 'lastmod' => null, 'changefreq' => 'weekly', 'priority' => '1.0'],
+            ['path' => '/packages', 'lastmod' => null, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['path' => '/contact', 'lastmod' => null, 'changefreq' => 'yearly', 'priority' => '0.5'],
+        ];
+
+        foreach (Package::published()->orderBy('sort_order')->get(['slug', 'updated_at']) as $package) {
+            $entries[] = ['path' => '/packages/'.$package->slug, 'lastmod' => $package->updated_at?->toAtomString(), 'changefreq' => 'weekly', 'priority' => '0.8'];
+        }
+
+        return $entries;
     }
 
     private function build(): string
@@ -156,6 +204,12 @@ class SitemapController extends Controller
             ];
         }
 
+        return $this->render($entries);
+    }
+
+    /** @param  list<array{path: string, lastmod: ?string, changefreq: string, priority: string}>  $entries */
+    private function render(array $entries): string
+    {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
             .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
             .'xmlns:xhtml="http://www.w3.org/1999/xhtml">'."\n";

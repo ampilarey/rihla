@@ -53,14 +53,9 @@
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    {{-- The pages' own buttons in the company's colour. Unlayered, so it
-         wins over the components layer without !important. The rest of the
-         inner pages take the company's colours in Phase 4b. --}}
-    <style>
-        .btn-primary { background-color: var(--site-accent); border-color: var(--site-accent); color: var(--site-on-accent); }
-        .btn-primary:hover { filter: brightness(0.92); }
-        .btn-action { background-color: var(--site-accent); border-color: var(--site-accent); color: var(--site-on-accent); }
-    </style>
+    {{-- Rihla's palette classes in the company's colours (Phase 4b). After
+         the built CSS and unlayered, so it wins without !important. --}}
+    <style>{!! (new \App\Support\SitePalette($site))->css() !!}</style>
     @stack('styles')
 </head>
 <body class="antialiased overflow-x-hidden bg-white text-ink"
@@ -68,9 +63,21 @@
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">{{ __('messages.Skip to content') }}</a>
 
     <div class="flex min-h-screen flex-col">
-        <header class="bg-[var(--site-accent)] text-[color:var(--site-on-accent)]">
-            <div class="container mx-auto flex flex-wrap items-center justify-between gap-4 px-4 py-4">
-                <a href="{{ route('home') }}" class="flex items-center gap-3 font-semibold text-lg" dir="auto">
+        {{-- The header is the one part of the frame each theme draws its
+             own way. Literal class strings, so Tailwind compiles each. --}}
+        @php
+            $siteHeader = match ($site->theme) {
+                \App\Models\CompanySite::MINIMAL => 'bg-white text-[color:var(--site-primary)] border-b-4 border-[color:var(--site-accent)]',
+                \App\Models\CompanySite::BOLD => 'bg-[var(--site-accent)] text-[color:var(--site-on-accent)] text-center',
+                default => 'bg-[var(--site-accent)] text-[color:var(--site-on-accent)]',
+            };
+            $siteHeaderInner = $site->theme === \App\Models\CompanySite::BOLD
+                ? 'container mx-auto flex flex-col items-center gap-3 px-4 py-6'
+                : 'container mx-auto flex flex-wrap items-center justify-between gap-4 px-4 py-4';
+        @endphp
+        <header class="{{ $siteHeader }}">
+            <div class="{{ $siteHeaderInner }}">
+                <a href="{{ route('home') }}" class="flex items-center gap-3 font-semibold {{ $site->theme === \App\Models\CompanySite::BOLD ? 'text-2xl' : 'text-lg' }}" dir="auto">
                     @if ($site->logoUrl())
                         <img src="{{ $site->logoUrl() }}" alt="{{ $siteName }}" class="h-12 w-auto rounded bg-white p-1">
                     @else

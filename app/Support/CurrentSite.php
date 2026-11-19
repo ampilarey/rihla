@@ -33,6 +33,8 @@ final class CurrentSite
         'packages.show',
         'contact',
         'enquiries.store',
+        'sitemap',
+        'robots',
     ];
 
     private ?Partner $company = null;
