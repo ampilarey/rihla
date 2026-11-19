@@ -21,6 +21,10 @@ class AuditObserver
      */
     private const NEVER_RECORD = [
         'password',
+        // A customer's portal password (security review): the exact-name
+        // match above missed it, so every hash went into the trail and on
+        // into the company's export.
+        'portal_password',
         'remember_token',
         'two_factor_secret',
         'two_factor_recovery_codes',

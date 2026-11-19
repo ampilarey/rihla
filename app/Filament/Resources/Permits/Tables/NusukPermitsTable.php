@@ -8,6 +8,7 @@ use App\Models\NusukPermit;
 use App\Models\User;
 use App\Services\Nusuk\PermitDesk;
 use App\Support\Access;
+use App\Support\Assignees;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Select;
@@ -156,10 +157,7 @@ class NusukPermitsTable
      */
     private static function officers(): array
     {
-        return User::role([Access::VISA_STAFF, Access::OPERATIONS_MANAGER])
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->all();
+        return Assignees::options([Access::VISA_STAFF, Access::OPERATIONS_MANAGER]);
     }
 
     /** Work with no name against it is work nobody does. */

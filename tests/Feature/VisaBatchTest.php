@@ -21,6 +21,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use RuntimeException;
 use Tests\TestCase;
@@ -313,9 +314,9 @@ class VisaBatchTest extends TestCase
         $pages = [...$pages, ...$this->readAndMatch($departure, $batch, UploadedFile::fake()->image('two.jpg', 900, 1200))];
         $pages[0]['traveller_id'] = $t['Aminath Ali']->getKey();
 
-        Livewire::test(VisaBatchPage::class)
-            ->set('departureId', $departure->getKey())
-            ->set('batch', $batch)
+        // The batch and departure are locked against the browser (security
+        // review), so they arrive as the server sets them, not by ->set().
+        Livewire::test(VisaBatchPage::class, ['departureId' => $departure->getKey(), 'batch' => $batch])
             ->set('pages', $pages)
             ->call('file')
             ->assertNotified('1 visa filed · 1 page left out')
@@ -331,15 +332,26 @@ class VisaBatchTest extends TestCase
         $pages = $this->readAndMatch($departure, $again, UploadedFile::fake()->image('three.jpg', 800, 1100));
         $pages[0]['traveller_id'] = $t['Hassan Ibrahim']->getKey();
 
-        Livewire::test(VisaBatchPage::class)
-            ->set('departureId', $departure->getKey())
-            ->set('batch', $again)
+        // The batch and departure are locked against the browser (security
+        // review), so they arrive as the server sets them, not by ->set().
+        Livewire::test(VisaBatchPage::class, ['departureId' => $departure->getKey(), 'batch' => $again])
             ->set('pages', $pages)
             ->call('discard')
             ->assertSet('pages', []);
 
         $this->assertSame([], Storage::disk('documents')->allFiles(VisaBatch::DIRECTORY));
         $this->assertFalse(Document::query()->where('traveller_id', $t['Hassan Ibrahim']->getKey())->exists());
+
+        // A token from the browser is refused outright: `..` once reached
+        // every company's documents.
+        try {
+            Livewire::test(VisaBatchPage::class)->set('batch', '..');
+            $this->fail('The browser set the batch token.');
+        } catch (CannotUpdateLockedPropertyException) {
+            // Refused, as it should be.
+        }
+        $this->assertFalse(VisaBatch::isToken('..'));
+        $this->assertFalse(VisaBatch::isPageOf(VisaBatch::DIRECTORY.'/'.$again.'/../../documents/x.pdf', $again));
 
         // Nothing read: the file button says so and writes nothing.
         Livewire::test(VisaBatchPage::class)->call('file')->assertNotified('Nothing read yet');

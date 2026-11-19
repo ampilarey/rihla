@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Visas\Tables;
 
 use App\Models\Document;
-use App\Models\User;
 use App\Models\VisaApplication;
 use App\Services\Visa\VisaDesk;
 use App\Support\Access;
+use App\Support\Assignees;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -86,7 +86,7 @@ class VisaApplicationsTable
 
                 SelectFilter::make('assigned_to')
                     ->label('Officer')
-                    ->options(fn (): array => User::role(Access::VISA_STAFF)->pluck('name', 'id')->all()),
+                    ->options(fn (): array => Assignees::options([Access::VISA_STAFF])),
 
                 Filter::make('stalled')
                     ->label('Past its service level')
@@ -119,7 +119,7 @@ class VisaApplicationsTable
             ->schema([
                 Select::make('assigned_to')
                     ->label('Visa officer')
-                    ->options(fn (): array => User::role(Access::VISA_STAFF)->pluck('name', 'id')->all())
+                    ->options(fn (): array => Assignees::options([Access::VISA_STAFF]))
                     ->required(),
             ])
             ->action(function (VisaApplication $record, array $data): void {

@@ -36,8 +36,15 @@ class ServeCompanySite
         $company = CurrentSite::companyFor($request->getHost());
 
         // Neither a company's name nor a live company's own domain: rihla.mv
-        // (or anything else) as before.
+        // (or anything else) as before — unless the address reads as a
+        // company's (security review). A company's own domain whose site is
+        // not live (suspended, switched off, unpublished, the feature not
+        // paid for) and a name more than one level under the companies
+        // domain are a 404: served as rihla.mv they were Rihla's packages
+        // and checkout on the company's address.
         if (! $isCompanyName && $company === null) {
+            abort_if(CurrentSite::isStrayName($request->getHost()) || CurrentSite::ownDomain($request->getHost()) !== null, 404);
+
             return $next($request);
         }
 

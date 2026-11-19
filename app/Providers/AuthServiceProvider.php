@@ -176,6 +176,24 @@ class AuthServiceProvider extends ServiceProvider
             return $user->hasRole(Access::SUPER_ADMIN) ? true : null;
         });
 
+        // Spatie's permission check, registered here rather than by spatie
+        // (config/permission.php), so that it runs *after* the company gate
+        // above. Registered by spatie it ran first, and a person's Rihla
+        // role answered inside a company's panel before the company could:
+        // a Rihla manager on a view-only support grant could edit the
+        // company's bookings (security review before the pilot). Inside a
+        // company's panel the company gate has already answered every
+        // permission by name, so this only ever speaks for Rihla.
+        Gate::before(function ($user, string $ability, array $arguments) {
+            if (CompanyRequest::current() !== null || ! method_exists($user, 'checkPermissionTo')) {
+                return null;
+            }
+
+            $guard = is_string($arguments[0] ?? null) && ! class_exists($arguments[0]) ? $arguments[0] : null;
+
+            return $user->checkPermissionTo($ability, $guard) ?: null;
+        });
+
         // `admin` used to mean `is_admin === true`. It now means "may open the
         // admin panel at all", which every staff role holds. It stays a gate
         // because the whole admin route group is behind `can:admin`, and that

@@ -66,6 +66,17 @@ final class CompanyDetails
     }
 
     /**
+     * The tax line under a document (security review): Rihla's for Rihla,
+     * and nothing for a company, which has no tax line of its own stored —
+     * Rihla's GST or TIN under a company's name would be a tax claim made
+     * on the company's behalf.
+     */
+    public static function taxNote(): ?string
+    {
+        return self::company() === null ? (filled(config('invoices.tax.note')) ? (string) config('invoices.tax.note') : null) : null;
+    }
+
+    /**
      * Where a transfer goes: bank, account name and the account for one
      * currency. Null account when none is set, as Rihla's driver does.
      *
