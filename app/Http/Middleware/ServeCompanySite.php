@@ -21,6 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ServeCompanySite
 {
+    /** The site's own files outside the language-prefixed pages. */
+    private const FILES = ['sitemap.xml', 'robots.txt', 'manifest.webmanifest', 'site-sw.js', 'offline'];
+
     public function handle(Request $request, Closure $next): Response
     {
         // A request on any other host is never a company's site, even in an
@@ -54,10 +57,10 @@ class ServeCompanySite
 
         // The site's own pages only: the bare address, which sends a visitor
         // on to their language, the language-prefixed public routes, and
-        // the site's own sitemap and robots.txt.
+        // the site's own sitemap, robots.txt and installable app.
         // Panels, the API, health and Pulse are rihla.mv's.
         $path = trim($request->path(), '/');
-        abort_unless($path === '' || in_array($path, ['sitemap.xml', 'robots.txt'], true) || preg_match('#^(en|dv|ar)(/|$)#', $path) === 1, 404);
+        abort_unless($path === '' || in_array($path, self::FILES, true) || preg_match('#^site-icon-\d+\.png$#', $path) === 1 || preg_match('#^(en|dv|ar)(/|$)#', $path) === 1, 404);
 
         return $next($request);
     }

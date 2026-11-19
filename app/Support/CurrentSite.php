@@ -35,6 +35,8 @@ final class CurrentSite
         'enquiries.store',
         'sitemap',
         'robots',
+        // The installable app (Phase 4d).
+        'site.manifest', 'site.icon', 'site.worker', 'site.offline',
         // Checkout and the waiting list (Phase 4c). No card payment: the
         // flow ends at the seat hold and the company's own bank details.
         'booking.start', 'booking.hold', 'booking.travellers', 'booking.travellers.store',

@@ -41,10 +41,13 @@
     @endif
     @stack('schema')
 
-    @if ($site->logoUrl())
-        <link rel="icon" href="{{ $site->logoUrl() }}">
-    @endif
+    {{-- The company's own installable app (Phase 4d). --}}
+    <link rel="icon" type="image/png" href="{{ route('site.icon', ['size' => 192]) }}">
+    <link rel="apple-touch-icon" href="{{ route('site.icon', ['size' => 192]) }}">
+    <link rel="manifest" href="{{ route('site.manifest') }}">
     <meta name="theme-color" content="{{ $site->accent() }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="{{ mb_strimwidth($siteName, 0, 12, '') }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet">
@@ -147,5 +150,10 @@
     </div>
 
     @stack('scripts')
+    <script nonce="@cspNonce">
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('{{ route('site.worker') }}', { scope: '/' }).catch(() => {}));
+        }
+    </script>
 </body>
 </html>
