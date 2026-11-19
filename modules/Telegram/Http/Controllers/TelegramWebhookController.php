@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace Modules\Telegram\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
-use App\Models\TelegramUpdate;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\Router;
 use App\Support\CompanyContext;
 use App\Support\CompanyRequest;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Modules\Telegram\Models\TelegramUpdate;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\Router;
 use Throwable;
 
 /**

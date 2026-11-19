@@ -5,10 +5,12 @@ use App\Providers\AuthServiceProvider;
 use App\Providers\Filament\CompanyPanelProvider;
 use App\Providers\Filament\HostPanelProvider;
 use App\Providers\Filament\StaffPanelProvider;
+use App\Providers\ModulesServiceProvider;
 use App\Providers\ViewServiceProvider;
 
 return [
     AppServiceProvider::class,
+    ModulesServiceProvider::class,
     AuthServiceProvider::class,
     StaffPanelProvider::class,
     HostPanelProvider::class,

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Modules\Telegram\Console\Commands;
 
-use App\Services\Telegram\Bot;
 use Illuminate\Console\Command;
+use Modules\Telegram\Services\Bot;
 
 /**
  * Point the bot at this site. Run by the deploy scripts after every

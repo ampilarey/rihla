@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Services\Telegram;
+namespace Modules\Telegram\Services;
 
 use App\Models\Booking;
 use App\Models\Document;
 use App\Models\DocumentExtraction;
 use App\Models\Payment;
-use App\Models\TelegramLink;
 use App\Models\User;
 use App\Providers\Filament\CompanyPanelProvider;
 use App\Support\CompanyDetails;
 use Illuminate\Support\Facades\Log;
+use Modules\Telegram\Models\TelegramLink;
 use Throwable;
 
 /**

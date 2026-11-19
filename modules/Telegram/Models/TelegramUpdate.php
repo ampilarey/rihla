@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Modules\Telegram\Models;
 
 use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;

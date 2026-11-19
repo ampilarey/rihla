@@ -12,7 +12,6 @@ use App\Models\Traveller;
 use App\Models\User;
 use App\Models\VisaApplication;
 use App\Services\Documents\Reading\VisaBatch;
-use App\Services\Telegram\Linker;
 use App\Services\Visa\VisaDesk;
 use App\Support\Access;
 use App\Support\EncryptedFile;
@@ -23,6 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
+use Modules\Telegram\Services\Linker;
 use RuntimeException;
 use Tests\TestCase;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Services\Telegram;
+namespace Modules\Telegram\Services;
 
-use App\Models\TelegramLink;
-use App\Models\TelegramLinkCode;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Models\TelegramLinkCode;
 
 /**
  * Binds a staff account to a Telegram chat through a one-time code: shown

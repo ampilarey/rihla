@@ -5,7 +5,6 @@ namespace App\Filament\Company\Pages;
 use App\Models\CompanyInvoice;
 use App\Models\CompanyMembership;
 use App\Models\Partner;
-use App\Services\Telegram\Bot;
 use App\Support\CompanyFeatures;
 use App\Support\CompanyRole;
 use BackedEnum;
@@ -19,6 +18,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
+use Modules\Telegram\Services\Bot;
 use Throwable;
 
 /**

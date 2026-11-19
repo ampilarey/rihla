@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace Modules\Telegram\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

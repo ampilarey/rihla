@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Modules\Telegram\Tests;
 
 use App\Models\AuditLog;
 use App\Models\Booking;
@@ -8,15 +8,12 @@ use App\Models\BusGroup;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Payment;
-use App\Models\TelegramLink;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Booking\BookingDesk;
 use App\Services\Operations\Buses;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Services\Payments\SlipVault;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\Linker;
 use App\Support\Access;
 use App\Support\AuditContext;
 use App\Support\Money;
@@ -24,6 +21,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\Linker;
 use Tests\TestCase;
 
 /**

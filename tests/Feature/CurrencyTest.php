@@ -16,8 +16,6 @@ use App\Models\PriceTier;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Payments\Ledger;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\Linker;
 use App\Support\Access;
 use App\Support\JourneyProfit;
 use App\Support\Money;
@@ -28,6 +26,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Livewire\Livewire;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\Linker;
 use Tests\TestCase;
 
 /**

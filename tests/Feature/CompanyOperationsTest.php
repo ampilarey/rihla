@@ -8,14 +8,11 @@ use App\Models\Departure;
 use App\Models\Notice;
 use App\Models\Partner;
 use App\Models\Payment;
-use App\Models\TelegramLink;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Booking\SeatAllocator;
 use App\Services\Documents\DocumentWallet;
 use App\Services\Payments\SlipVault;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\Linker;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use App\Support\CompanyFeatures;
@@ -24,6 +21,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\Linker;
 use Tests\TestCase;
 
 /**

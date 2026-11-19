@@ -12,7 +12,6 @@ use App\Services\Companies\AddCompany;
 use App\Services\Companies\CompanyExport;
 use App\Services\Companies\CompanyTeam;
 use App\Services\Companies\SupportAccess;
-use App\Services\Telegram\Notifier;
 use App\Support\Access;
 use App\Support\Assignees;
 use App\Support\CompanyContext;
@@ -23,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Modules\Telegram\Services\Notifier;
 use Tests\TestCase;
 use ZipArchive;
 

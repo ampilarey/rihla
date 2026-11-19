@@ -1,15 +1,12 @@
 <?php
 
-namespace Tests\Feature;
+namespace Modules\Telegram\Tests;
 
 use App\Filament\Company\Pages\CompanySettings;
 use App\Models\CompanyMembership;
 use App\Models\Partner;
-use App\Models\TelegramLink;
 use App\Models\User;
 use App\Services\Companies\AddCompany;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\Linker;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use Filament\Facades\Filament;
@@ -20,6 +17,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\Linker;
 use Tests\TestCase;
 
 /**

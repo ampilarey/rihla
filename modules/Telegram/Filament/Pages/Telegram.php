@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace Modules\Telegram\Filament\Pages;
 
-use App\Models\TelegramLink;
 use App\Models\User;
-use App\Services\Telegram\Bot;
-use App\Services\Telegram\Linker;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
+use Modules\Telegram\Models\TelegramLink;
+use Modules\Telegram\Services\Bot;
+use Modules\Telegram\Services\Linker;
 
 /**
  * Link this account to a Telegram chat so the staff bot acts as you —

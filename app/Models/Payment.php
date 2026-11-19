@@ -6,7 +6,6 @@ use App\Exceptions\DeskRefusal;
 use App\Exceptions\IllegalPaymentTransition;
 use App\Models\Concerns\BelongsToCompany;
 use App\Services\Payments\Ledger;
-use App\Services\Telegram\Notifier;
 use App\Support\CompanyDetails;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
+use Modules\Telegram\Services\Notifier;
 
 /**
  * One sum of money received against a booking — §5.3.

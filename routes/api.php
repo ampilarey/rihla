@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\HealthController;
-use App\Http\Controllers\Api\TelegramWebhookController;
 use App\Http\Controllers\Api\TestDeployWebhookController;
 use Illuminate\Support\Facades\Route;
+use Modules\Telegram\Http\Controllers\TelegramWebhookController;
 
 // Same URL and same response it has always given. It now also reports the
 // running commit to a caller holding the deploy secret, which is how the

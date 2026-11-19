@@ -22,6 +22,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Modules\Telegram\Models\TelegramLink;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
