@@ -65,7 +65,7 @@
 </head>
 <body class="antialiased overflow-x-hidden bg-white text-ink"
       style="--site-primary: {{ $site->primary() }}; --site-accent: {{ $site->accent() }}; --site-on-accent: {{ $site->textOnAccent() }}; font-family: {{ $site->fontStack() }};">
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">{{ __('Skip to content') }}</a>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">{{ __('messages.Skip to content') }}</a>
 
     <div class="flex min-h-screen flex-col">
         <header class="bg-[var(--site-accent)] text-[color:var(--site-on-accent)]">
@@ -77,10 +77,10 @@
                         <span>{{ $siteName }}</span>
                     @endif
                 </a>
-                <nav aria-label="{{ __('Main') }}" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium">
-                    <a href="{{ route('home') }}" class="py-2 hover:underline" @if (request()->routeIs('home')) aria-current="page" @endif>{{ __('Home') }}</a>
-                    <a href="{{ route('packages.index') }}" class="py-2 hover:underline" @if (request()->routeIs('packages.*')) aria-current="page" @endif>{{ __('Packages') }}</a>
-                    <a href="{{ route('contact') }}" class="py-2 hover:underline" @if (request()->routeIs('contact')) aria-current="page" @endif>{{ __('Contact') }}</a>
+                <nav aria-label="{{ __('messages.Main') }}" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium">
+                    <a href="{{ route('home') }}" class="py-2 hover:underline" @if (request()->routeIs('home')) aria-current="page" @endif>{{ __('messages.Home') }}</a>
+                    <a href="{{ route('packages.index') }}" class="py-2 hover:underline" @if (request()->routeIs('packages.*')) aria-current="page" @endif>{{ __('messages.Packages') }}</a>
+                    <a href="{{ route('contact') }}" class="py-2 hover:underline" @if (request()->routeIs('contact')) aria-current="page" @endif>{{ __('messages.Contact') }}</a>
                     @if ($siteAlternates)
                         @foreach ($siteAlternates as $seoLocale => $seoUrl)
                             @continue($seoLocale === app()->getLocale())
@@ -109,7 +109,7 @@
                         <p class="mt-2" dir="auto">{{ $siteCompany->address }}</p>
                     @endif
                     @if ($siteCompany->registration_number)
-                        <p class="mt-1 text-ink-muted">{{ __('Registration') }}: {{ $siteCompany->registration_number }}</p>
+                        <p class="mt-1 text-ink-muted">{{ __('messages.Registration') }}: {{ $siteCompany->registration_number }}</p>
                     @endif
                 </div>
                 <ul class="space-y-2 md:text-end">
@@ -133,7 +133,7 @@
             <div class="container mx-auto mt-8 flex flex-wrap justify-between gap-2 px-4 text-ink-muted">
                 <p>&copy; {{ now()->year }} {{ $siteName }}</p>
                 @if ($siteCompany->powered_by_rihla)
-                    <p><a class="hover:underline" href="https://rihla.mv" rel="noopener">{{ __('Powered by Rihla') }}</a></p>
+                    <p><a class="hover:underline" href="https://rihla.mv" rel="noopener">{{ __('messages.Powered by Rihla') }}</a></p>
                 @endif
             </div>
         </footer>

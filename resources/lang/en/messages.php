@@ -1002,4 +1002,19 @@ return [
     'Type your full name as you sign.' => 'Type your full name as you sign.',
     'Your agreement' => 'Your agreement',
     'Your full name' => 'Your full name',
+
+    // A company's own website (companies plan, Phase 4a).
+    'Skip to content' => 'Skip to content',
+    'Main' => 'Main',
+    'Home' => 'Home',
+    'Packages' => 'Packages',
+    'Registration' => 'Registration',
+    'Powered by Rihla' => 'Powered by Rihla',
+    'See our packages' => 'See our packages',
+    'Upcoming trips' => 'Upcoming trips',
+    'About us' => 'About us',
+    'How to reach us' => 'How to reach us',
+    'Ask us anything about a trip, or send us a message.' => 'Ask us anything about a trip, or send us a message.',
+    'Contact us' => 'Contact us',
+    'Ask about this trip' => 'Ask about this trip',
 ];

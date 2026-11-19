@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', __('Contact'))
+@section('title', __('messages.Contact'))
 
 @section('content')
     <div class="container mx-auto max-w-3xl px-4 section-y-tight">
-        <h1 class="mb-6 text-3xl font-bold text-[color:var(--site-primary)]" dir="auto">{{ __('Contact') }} — {{ $company->name }}</h1>
+        <h1 class="mb-6 text-3xl font-bold text-[color:var(--site-primary)]" dir="auto">{{ __('messages.Contact') }} — {{ $company->name }}</h1>
 
         <ul class="mb-8 space-y-2 text-lg">
             @if ($company->phone)

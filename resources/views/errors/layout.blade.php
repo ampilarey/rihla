@@ -133,7 +133,7 @@
                  throw. --}}
             <a class="button" href="/{{ app()->getLocale() }}">{{ __('messages.error_home') }}</a>
             @if ($errorCompany)
-                <a class="button secondary" href="/{{ app()->getLocale() }}/packages">{{ __('Packages') }}</a>
+                <a class="button secondary" href="/{{ app()->getLocale() }}/packages">{{ __('messages.Packages') }}</a>
             @else
                 <a class="button secondary" href="/{{ app()->getLocale() }}/trips">{{ __('messages.Trips') }}</a>
             @endif
