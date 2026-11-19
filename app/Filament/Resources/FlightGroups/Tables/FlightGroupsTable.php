@@ -76,6 +76,13 @@ class FlightGroupsTable
                     self::removeAction(),
                     self::listAction('airline', 'Airline list', 'heroicon-o-document-text'),
                     self::listAction('office', 'Office list', 'heroicon-o-clipboard-document-list'),
+                    // One letter per person in the group, across their bookings (Phase 3h).
+                    Action::make('letters')
+                        ->label('Travel letters')
+                        ->icon('heroicon-o-envelope-open')
+                        ->color('gray')
+                        ->visible(fn (FlightGroup $record): bool => self::mayPrintLetters() && $record->members_count > 0)
+                        ->url(fn (FlightGroup $record): string => CompanyRequest::route('lists.group-letters', ['flightGroup' => $record]), shouldOpenInNewTab: true),
                     EditAction::make(),
                     DeleteAction::make()
                         ->modalDescription('The people and buses stay on the departure, in no group.'),
@@ -83,6 +90,13 @@ class FlightGroupsTable
             ])
             ->emptyStateHeading('No flight groups yet')
             ->emptyStateDescription('A group is the people who fly together. Add the departure\'s flights first, then a group for each flight, then its buses under Buses.');
+    }
+
+    private static function mayPrintLetters(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->can('list.view') && $user->can('booking.view');
     }
 
     public static function busChip(BusGroup $bus): string

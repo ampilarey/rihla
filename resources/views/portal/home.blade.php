@@ -152,6 +152,15 @@
                     {{ __('messages.Download the invoice') }}
                 </a>
 
+                {{-- The travel letters (Phase 3h), once the booking is confirmed. --}}
+                @if(in_array($booking->status, [\App\Models\Booking::CONFIRMED, \App\Models\Booking::COMPLETED], true))
+                    <a dir="auto"
+                       class="mt-4 ms-4 inline-block py-1 text-sm font-medium text-wine-700 underline"
+                       href="{{ route('portal.letters') }}">
+                        {{ __('messages.Download the travel letters') }}
+                    </a>
+                @endif
+
                 {{--
                     Where to send it — only when somebody has actually said.
                     While no account is configured this block does not render

@@ -20,11 +20,15 @@ use App\Services\Payments\Gateways;
 use App\Services\Payments\SlipVault;
 use App\Services\Portal\Gatekeeper;
 use App\Services\Visa\VisaDesk;
+use App\Support\CompanyRequest;
 use App\Support\Money;
+use App\Support\OfficeContact;
 use App\Support\Rates;
+use App\Support\SendToCustomer;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -35,6 +39,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
 
 /**
@@ -61,6 +66,7 @@ class EditBooking extends EditRecord
             $this->ticketsAction(),
             $this->familyAction(),
             $this->portalLinkAction(),
+            $this->lettersAction(),
             $this->confirmAction(),
             $this->openVisasAction(),
             $this->openPermitsAction(),
@@ -201,6 +207,10 @@ class EditBooking extends EditRecord
                     // every booking on screen.
                     ->default(fn (): string => $this->mintLink())
                     ->helperText('The token is stored hashed, so nobody — including us — can read it back afterwards.'),
+                // Send to customer (Phase 3h).
+                Placeholder::make('send')
+                    ->label('Send it to them')
+                    ->content(fn (Get $get): HtmlString => $this->sendWords($get('link'))),
             ])
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Done')
@@ -220,6 +230,40 @@ class EditBooking extends EditRecord
                             ->send();
                     }),
             ]);
+    }
+
+    /** One letter per traveller, with passport numbers: the office's copy (Phase 3h). */
+    private function lettersAction(): Action
+    {
+        return Action::make('letters')
+            ->label('Travel letters')
+            ->icon('heroicon-o-envelope-open')
+            ->color('gray')
+            ->visible(fn (): bool => auth()->user()?->can('booking.view') === true
+                && in_array($this->booking()->status, [Booking::CONFIRMED, Booking::COMPLETED], true))
+            ->url(fn (): string => CompanyRequest::route('lists.letters', ['booking' => $this->booking()]), shouldOpenInNewTab: true);
+    }
+
+    /**
+     * The new link, ready to send by WhatsApp, Viber or Telegram (Phase 3h),
+     * to the family's office contact. Links only: nothing is sent until a
+     * person presses send on their own phone.
+     */
+    private function sendWords(?string $link): HtmlString
+    {
+        if (blank($link)) {
+            return new HtmlString('');
+        }
+
+        $contact = OfficeContact::forBooking($this->booking());
+        $links = SendToCustomer::links($contact->phone, 'Assalaamu alaikum '.$contact->name.'. Your booking '.$this->booking()->reference.' with us:', $link);
+        $style = 'display:inline-block;margin-inline-end:1rem;font-weight:600;text-decoration:underline;';
+
+        return new HtmlString(
+            '<a style="'.$style.'" target="_blank" rel="noopener" href="'.e($links['whatsapp']).'">WhatsApp</a>'
+            .'<a style="'.$style.'" target="_blank" rel="noopener" href="'.e($links['viber']).'">Viber</a>'
+            .'<a style="'.$style.'" target="_blank" rel="noopener" href="'.e($links['telegram']).'">Telegram</a>'
+        );
     }
 
     private function mintLink(): string
