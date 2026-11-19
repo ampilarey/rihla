@@ -74,6 +74,8 @@
          keyed to the departure date, so it changes under the pilgrim
          without being opened, and a deadline nobody can find is not one
          anybody meets. --}}
+    {{-- Rihla's own learning content: not on a company's site (Phase 4c). --}}
+    @if (\App\Support\CurrentSite::allows('learning.index'))
     <a href="{{ route('learning.index', ['locale' => app()->getLocale()]) }}"
        @class([
            'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',
@@ -84,6 +86,7 @@
        dir="auto">
         {{ __('messages.Learning') }}
     </a>
+    @endif
 
     {{-- A POST, because signing out with a GET is something a link
          prefetcher can do to you. --}}

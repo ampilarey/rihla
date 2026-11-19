@@ -82,7 +82,7 @@
                 <input type="checkbox" name="confirmed" value="1"
                        class="mt-1 rounded border-cream-deep text-wine-500 focus:ring-wine-500">
                 <span dir="auto" class="text-sm text-ink">
-                    {{ __('messages.I confirm these details are correct and understand that Rihla will contact me to arrange payment.') }}
+                    {{ \App\Support\CurrentSite::active() ? __('messages.I confirm these details are correct and understand that :company will contact me to arrange payment.', ['company' => app(\App\Support\CurrentSite::class)->company()->name]) : __('messages.I confirm these details are correct and understand that Rihla will contact me to arrange payment.') }}
                 </span>
             </label>
 

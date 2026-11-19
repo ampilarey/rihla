@@ -7,7 +7,7 @@ use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\SeatHold;
 use App\Models\WaitlistEntry;
-use Illuminate\Support\Facades\URL;
+use App\Support\SiteAddress;
 
 /**
  * The queue for a full departure, and what happens when a seat comes back.
@@ -210,10 +210,13 @@ final class Waitlist
             return null;
         }
 
-        return URL::temporarySignedRoute(
+        // On the company's own site (Phase 4c): the claim is only any use
+        // where the company scope can find the entry. Null while it has none.
+        return SiteAddress::temporarySignedRoute(
             'waitlist.claim',
             $entry->offer_expires_at,
             ['locale' => app()->getLocale(), 'entry' => $entry->getKey()],
+            $entry->company_id,
         );
     }
 
