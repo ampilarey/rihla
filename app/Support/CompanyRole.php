@@ -25,6 +25,13 @@ final class CompanyRole
 {
     public const OWNER = 'Owner';
 
+    /**
+     * Somebody from Rihla inside the company under a support grant the Owner
+     * gave (Phase 5c). Never in {@see ROLES}, so it cannot be given to a
+     * member; it can look at everything and change nothing.
+     */
+    public const SUPPORT = 'Rihla support';
+
     /** The roles a company can give its members, Owner first. */
     public const ROLES = [
         self::OWNER,
@@ -76,6 +83,13 @@ final class CompanyRole
     {
         if ($role === self::OWNER) {
             return self::umrahPermissions();
+        }
+
+        if ($role === self::SUPPORT) {
+            return array_values(array_filter(
+                self::umrahPermissions(),
+                fn (string $permission): bool => in_array(explode('.', $permission, 2)[1] ?? '', ['view', 'viewAny'], true),
+            ));
         }
 
         if ($role === null || ! in_array($role, self::ROLES, true)) {

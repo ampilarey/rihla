@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Partners\Pages;
 
 use App\Filament\Resources\Partners\PartnerResource;
 use App\Models\Partner;
+use App\Providers\Filament\CompanyPanelProvider;
 use App\Services\Companies\CompanyStanding;
+use App\Services\Companies\SupportAccess;
 use App\Support\CompanyFeatures;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -30,6 +32,25 @@ class EditPartner extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            // Support access (Phase 5c): Rihla asks, the company's Owner
+            // decides on their Support access page.
+            Action::make('askSupport')
+                ->label('Ask for support access')
+                ->icon('heroicon-o-lifebuoy')
+                ->color('gray')
+                ->visible(fn (): bool => $this->company()?->is_umrah_company === true && ! $this->company()->is_rihla && auth()->user()?->can('partner.update') === true)
+                ->modalDescription('Their Owner sees your name and this reason, decides, and chooses for how long. You will be able to look and not change anything, and every page you open is listed for them.')
+                ->schema([Textarea::make('reason')->label('Why you need to look')->required()->maxLength(1000)->rows(3)])
+                ->action(function (array $data): void {
+                    app(SupportAccess::class)->ask($this->company(), auth()->user(), (string) $data['reason']);
+                    Notification::make()->success()->title('Asked')->body('You can open their panel once their Owner allows it.')->send();
+                }),
+            Action::make('openPanel')
+                ->label('Open their panel')
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->color('gray')
+                ->visible(fn (): bool => $this->company() !== null && auth()->user() !== null && SupportAccess::liveFor($this->company(), auth()->user()) !== null)
+                ->url(fn (): string => url('/'.CompanyPanelProvider::PATH.'/'.$this->company()?->slug), shouldOpenInNewTab: true),
             Action::make('suspend')
                 ->label('Suspend')
                 ->icon('heroicon-o-pause-circle')

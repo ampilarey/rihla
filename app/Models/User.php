@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Exceptions\LastSuperAdmin;
+use App\Services\Companies\SupportAccess;
 use App\Support\Access;
+use App\Support\CompanyRole;
 use App\Support\PhoneNumber;
 use Database\Factories\UserFactory;
 use Filament\Facades\Filament;
@@ -80,7 +82,9 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
             // Companies plan, Phase 2: a company's staff are let in by an
             // accepted membership and hold no spatie role, so `/staff`
             // stays closed to them, as `/host` does to a guesthouse.
-            'company' => $this->companies()->exists(),
+            // Or by a live support grant a company's Owner gave (Phase 5c).
+            'company' => $this->companies()->exists()
+                || SupportGrant::query()->live()->where('requested_by', $this->getKey())->exists(),
             default => $this->can('admin.access'),
         };
     }
@@ -102,7 +106,13 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
     public function getTenants(Panel $panel): Collection
     {
         if ($panel->getId() === 'company') {
-            return $this->companies()->orderBy('name')->get();
+            // With the companies a live support grant opens (Phase 5c).
+            $granted = SupportGrant::query()->live()->where('requested_by', $this->getKey())->pluck('company_id');
+
+            return $this->companies()->orderBy('name')->get()
+                ->merge(Partner::query()->whereKey($granted)->where('is_umrah_company', true)->get())
+                ->unique('id')
+                ->values();
         }
 
         return $this->hosts()
@@ -121,7 +131,8 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         if (Filament::getCurrentPanel()?->getId() === 'company') {
             return $tenant instanceof Partner
                 && ! $tenant->isSuspended()
-                && $this->companies()->whereKey($tenant->getKey())->exists();
+                && ($this->companies()->whereKey($tenant->getKey())->exists()
+                    || SupportAccess::liveFor($tenant, $this) !== null);
         }
 
         return $tenant instanceof Partner
@@ -185,6 +196,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
             ->where('user_id', $this->getKey())
             ->whereNotNull('accepted_at')
             ->value('role');
+
+        // No membership, but a live support grant the Owner gave this person
+        // (Phase 5c): they may look, and nothing more.
+        if (! is_string($role) && SupportAccess::liveFor($company, $this) !== null) {
+            $role = CompanyRole::SUPPORT;
+        }
 
         return $this->companyRoles[$key] = is_string($role) ? $role : null;
     }

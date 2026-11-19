@@ -157,6 +157,8 @@ final class Forgetting
         'calendar_feeds' => 'A guesthouse\'s link to its own calendar on another site — a business\'s, not a customer\'s.',
         'host_pages' => 'A guesthouse\'s own page — a business\'s words and contact links, not a customer\'s.',
         'company_sites' => 'An Umrah company\'s own website — a business\'s words and contact links, not a customer\'s.',
+        'support_grants' => 'Rihla asking a company for support access, and its answer — between two businesses, not about a customer.',
+        'support_visits' => 'The pages Rihla opened inside a company under a support grant: paths, kept for the company.',
         'departure_flights' => 'The flights a whole departure takes. Nothing in a row is about one customer.',
         'departure_checklist_items' => 'What the office has to do before a whole departure leaves.',
         'departure_transfers' => 'A coach or car a whole departure takes; the contact is the driver or the company, not a customer.',
