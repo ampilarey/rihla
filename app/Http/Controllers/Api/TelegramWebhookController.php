@@ -33,7 +33,8 @@ class TelegramWebhookController extends Controller
     {
         $partner = Partner::where('slug', $company)->where('is_umrah_company', true)->where('is_rihla', false)->first();
 
-        abort_if($partner === null || blank($partner->telegram_bot_token), 404);
+        // A suspended company's bot answers nobody (Phase 5b).
+        abort_if($partner === null || $partner->isSuspended() || blank($partner->telegram_bot_token), 404);
 
         app(CompanyContext::class)->use((int) $partner->getKey());
         $request->attributes->set(CompanyRequest::ATTRIBUTE, $partner);

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Exceptions\DeskRefusal;
 use App\Filament\Resources\Partners\Pages\EditPartner;
-use App\Models\CompanySite;
 use App\Models\Departure;
 use App\Models\Package;
 use App\Models\Partner;
@@ -48,7 +47,7 @@ class CompanyFeaturesTest extends TestCase
         $company = app(AddCompany::class)('Coral Umrah', 'Aishath', 'coral@example.com', null, $features);
         $company->forceFill(['site_enabled' => true, 'registration_paid_at' => now()])->save();
 
-        $site = new CompanySite;
+        $site = $company->site()->firstOrNew();
         $site->company_id = (int) $company->getKey();
         $site->published_at = now();
         $site->save();

@@ -28,7 +28,7 @@ class Bot
         // A company's bot is a paid feature (Phase 5a): switched off, it is
         // simply not configured, so nothing sends and the webhook answers
         // nobody.
-        if ($company !== null && ! CompanyFeatures::has($company, CompanyFeatures::TELEGRAM)) {
+        if ($company !== null && ($company->isSuspended() || ! CompanyFeatures::has($company, CompanyFeatures::TELEGRAM))) {
             return null;
         }
 

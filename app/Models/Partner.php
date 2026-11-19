@@ -141,6 +141,9 @@ class Partner extends Model
         'registration_fee_minor' => 'integer',
         'registration_paid_at' => 'datetime',
         'staff_seats' => 'integer',
+        // The licence Rihla's admin checked, and a suspension (Phase 5b).
+        'licence_expires_on' => 'date',
+        'suspended_at' => 'datetime',
         'bank_accounts' => 'array',
         // A company's own Telegram bot (companies plan, Phase 2d). A
         // credential, so ciphertext at rest; scrubbed to null by

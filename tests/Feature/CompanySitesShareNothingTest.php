@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
-use App\Models\CompanySite;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\HostPage;
@@ -49,7 +48,8 @@ class CompanySitesShareNothingTest extends TestCase
         $company = app(AddCompany::class)($name, 'Owner of '.$name, $email);
         $company->forceFill(['site_enabled' => true])->save();
 
-        $site = new CompanySite(['tagline' => ['en' => $name.' tagline']]);
+        $site = $company->site()->firstOrNew();
+        $site->fill(['tagline' => ['en' => $name.' tagline']]);
         $site->company_id = (int) $company->getKey();
         $site->published_at = now();
         $site->save();
