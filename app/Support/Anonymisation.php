@@ -356,6 +356,10 @@ final class Anonymisation
         // Transfers Rihla made to a business — §16 Phase 16. An amount, a
         // date and a bank reference; the account is on `partners`, above.
         'payouts',
+        // Rihla's invoices to an Umrah company (billing automation). One
+        // business billing another: an amount, a month and a bank
+        // reference; nobody is named in a row.
+        'company_invoices',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',

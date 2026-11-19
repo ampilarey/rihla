@@ -11,6 +11,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BooksController;
 use App\Http\Controllers\CompanyAppController;
+use App\Http\Controllers\CompanyInvoiceController;
 use App\Http\Controllers\DevicesController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
@@ -443,6 +444,11 @@ Route::middleware(['auth', 'mfa', 'company.request'])->group(function () {
     Route::get('/staff-books/{report}', [BooksController::class, 'csv'])
         ->name('books.csv')
         ->whereIn('report', ['cash', 'months', 'owed', 'collections']);
+
+    // Rihla's invoice to an Umrah company (billing automation): its Owners
+    // and Rihla's staff only, checked in the controller.
+    Route::get('/company-invoices/{invoice}/pdf', [CompanyInvoiceController::class, 'pdf'])
+        ->name('company-invoices.pdf');
 });
 
 // Admin routes (require authentication and admin privileges)

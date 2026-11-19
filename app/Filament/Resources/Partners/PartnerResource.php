@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Partners;
 use App\Filament\Resources\Partners\Pages\CreatePartner;
 use App\Filament\Resources\Partners\Pages\EditPartner;
 use App\Filament\Resources\Partners\Pages\ListPartners;
+use App\Filament\Resources\Partners\RelationManagers\CompanyInvoicesRelationManager;
 use App\Filament\Resources\Partners\Schemas\PartnerForm;
 use App\Filament\Resources\Partners\Tables\PartnersTable;
 use App\Models\Partner;
@@ -44,6 +45,13 @@ class PartnerResource extends Resource
     public static function table(Table $table): Table
     {
         return PartnersTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            CompanyInvoicesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

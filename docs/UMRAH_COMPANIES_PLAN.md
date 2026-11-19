@@ -552,7 +552,16 @@ Rihla's own company always has everything.
   reference it already is.
 
 ### Later, only if wanted
-- Billing automation (invoices to companies, reminders, suspension).
+- ~~Billing automation (invoices to companies, reminders, suspension).~~
+  ✅ **Built** ([ADR 0013](adr/0013-companies-are-billed-by-invoice-and-transfer.md)):
+  - invoices for the registration fee and for a monthly fee set on each
+    company, issued by the daily `companies:bill` run or "Issue invoices
+    now";
+  - paid by bank transfer and recorded by Rihla's admin;
+  - Owners are e-mailed and shown overdue invoices in their panel, and
+    Rihla's admin sees them on Needs attention;
+  - suspension after a set number of overdue days is off until the owner
+    sets `COMPANY_SUSPEND_AFTER_DAYS`.
 - A managed dedicated installation.
 - The move off cPanel, on ADR 0002's triggers.
 

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Announcement;
 use App\Models\Article;
 use App\Models\Booking;
+use App\Models\CompanyInvoice;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\EmergencyBroadcast;
@@ -91,6 +92,8 @@ class AppServiceProvider extends ServiceProvider
         Departure::class,
         PriceTier::class,
         Partner::class,
+        // Billing automation: a payment recorded or an invoice cancelled.
+        CompanyInvoice::class,
         Property::class,
         Announcement::class,
         EmergencyBroadcast::class,

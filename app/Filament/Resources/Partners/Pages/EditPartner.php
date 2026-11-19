@@ -6,6 +6,7 @@ use App\Filament\Resources\Partners\PartnerResource;
 use App\Models\AuditLog;
 use App\Models\Partner;
 use App\Providers\Filament\CompanyPanelProvider;
+use App\Services\Companies\CompanyBilling;
 use App\Services\Companies\CompanyExport;
 use App\Services\Companies\CompanyStanding;
 use App\Services\Companies\SupportAccess;
@@ -55,6 +56,22 @@ class EditPartner extends EditRecord
                 ->color('gray')
                 ->visible(fn (): bool => $this->company() !== null && auth()->user() !== null && SupportAccess::liveFor($this->company(), auth()->user()) !== null)
                 ->url(fn (): string => url('/'.CompanyPanelProvider::PATH.'/'.$this->company()?->slug), shouldOpenInNewTab: true),
+            // Billing automation: what the daily run would issue, now — so a
+            // company added this afternoon has its registration invoice
+            // before tomorrow morning.
+            Action::make('billNow')
+                ->label('Issue invoices now')
+                ->icon('heroicon-o-document-currency-dollar')
+                ->color('gray')
+                ->visible(fn (): bool => $this->company()?->is_umrah_company === true && ! $this->company()->is_rihla && auth()->user()?->can('partner.update') === true)
+                ->requiresConfirmation()
+                ->modalDescription('Issues the registration invoice if the fee is set and unpaid, and the monthly invoice for every month from "Billed from" that has none. The company\'s Owners are e-mailed each one.')
+                ->action(function (): void {
+                    $issued = app(CompanyBilling::class)->issueDue($this->company());
+                    Notification::make()->success()
+                        ->title($issued === [] ? 'Nothing to issue' : count($issued).' '.(count($issued) === 1 ? 'invoice' : 'invoices').' issued')
+                        ->send();
+                }),
             Action::make('suspend')
                 ->label('Suspend')
                 ->icon('heroicon-o-pause-circle')
@@ -156,6 +173,10 @@ class EditPartner extends EditRecord
                 'registration_fee_minor' => filled($data['registration_fee'] ?? null) ? (int) round(((float) $data['registration_fee']) * 100) : null,
                 'registration_fee_currency' => filled($data['registration_fee'] ?? null) ? ($data['registration_fee_currency'] ?? 'MVR') : null,
                 'registration_paid_at' => $paidAt,
+                // Billing automation.
+                'monthly_fee_minor' => filled($data['monthly_fee'] ?? null) ? (int) round(((float) $data['monthly_fee']) * 100) : null,
+                'monthly_fee_currency' => filled($data['monthly_fee'] ?? null) ? ($data['monthly_fee_currency'] ?? 'MVR') : null,
+                'billing_starts_on' => filled($data['monthly_fee'] ?? null) && filled($data['billing_starts_on'] ?? null) ? $data['billing_starts_on'] : null,
                 'staff_seats' => filled($data['staff_seats'] ?? null) ? (int) $data['staff_seats'] : null,
                 // The licence (Phase 5b).
                 'licence_number' => filled($data['licence_number'] ?? null) ? trim((string) $data['licence_number']) : null,
@@ -167,6 +188,7 @@ class EditPartner extends EditRecord
         unset(
             $data['site_enabled'], $data['powered_by_rihla'], $data['site_domain'],
             $data['features'], $data['registration_fee'], $data['registration_fee_currency'], $data['registration_paid_at'], $data['staff_seats'],
+            $data['monthly_fee'], $data['monthly_fee_currency'], $data['billing_starts_on'],
             $data['licence_number'], $data['licence_expires_on'], $data['licence_register'],
         );
 

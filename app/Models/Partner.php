@@ -146,6 +146,8 @@ class Partner extends Model
         // What the company has paid for (Phase 5a), likewise never fillable.
         'features' => 'array',
         'registration_fee_minor' => 'integer',
+        'monthly_fee_minor' => 'integer',
+        'billing_starts_on' => 'date',
         'registration_paid_at' => 'datetime',
         'staff_seats' => 'integer',
         // The licence Rihla's admin checked, and a suspension (Phase 5b).
@@ -394,6 +396,16 @@ class Partner extends Model
         }
 
         return $expires->lte(now()->addDays(self::LICENCE_NOTICE_DAYS)->endOfDay()) ? 'expiring' : null;
+    }
+
+    /**
+     * Rihla's invoices to this company (billing automation).
+     *
+     * @return HasMany<CompanyInvoice, $this>
+     */
+    public function companyInvoices(): HasMany
+    {
+        return $this->hasMany(CompanyInvoice::class, 'partner_id');
     }
 
     /** @return HasMany<Payment, $this> */
