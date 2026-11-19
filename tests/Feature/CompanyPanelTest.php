@@ -50,7 +50,11 @@ class CompanyPanelTest extends TestCase
 
         Livewire::actingAs($admin)
             ->test(ListPartners::class)
-            ->callAction('addCompany', ['name' => 'Coral Umrah', 'owner_name' => 'Aishath Coral', 'owner_email' => 'Aishath@Coral.example'])
+            ->callAction('addCompany', [
+                'name' => 'Coral Umrah', 'owner_name' => 'Aishath Coral', 'owner_email' => 'Aishath@Coral.example',
+                // The licence checked is required (Phase 5b).
+                'licence_number' => 'MIA-HU-0420', 'licence_expires_on' => now()->addYear()->toDateString(), 'licence_register' => 'Ministry of Islamic Affairs',
+            ])
             ->assertHasNoActionErrors();
 
         $company = Partner::where('slug', 'coral-umrah')->sole();

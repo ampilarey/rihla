@@ -52,6 +52,7 @@ use App\Filament\Resources\Waitlist\WaitlistEntryResource;
 use App\Filament\Widgets\DashboardStats;
 use App\Filament\Widgets\MoneyChart;
 use App\Filament\Widgets\SeatsChart;
+use App\Http\Middleware\RecordSupportVisit;
 use App\Http\Middleware\RequireSecondFactor;
 use App\Http\Middleware\UseTenantCompany;
 use App\Models\Partner;
@@ -176,7 +177,7 @@ class CompanyPanelProvider extends PanelProvider
             ])
             ->tenant(Partner::class, slugAttribute: 'slug', ownershipRelationship: 'company')
             ->tenantMenu(fn (): bool => (auth()->user()?->companies()->count() ?? 0) > 1)
-            ->tenantMiddleware([UseTenantCompany::class], isPersistent: true)
+            ->tenantMiddleware([UseTenantCompany::class, RecordSupportVisit::class], isPersistent: true)
             ->discoverResources(in: app_path('Filament/Company/Resources'), for: 'App\Filament\Company\Resources')
             ->discoverPages(in: app_path('Filament/Company/Pages'), for: 'App\Filament\Company\Pages')
             ->resources(self::RESOURCES)

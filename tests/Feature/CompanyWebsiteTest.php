@@ -60,7 +60,8 @@ class CompanyWebsiteTest extends TestCase
         $company = app(AddCompany::class)($name, 'Owner of '.$name, $email);
         $company->forceFill(['site_enabled' => $live, 'phone' => '7771234', 'registration_number' => 'C-0420/2026'])->save();
 
-        $site = new CompanySite(['tagline' => ['en' => 'Umrah with '.$name], 'colour_accent' => '#14532D']);
+        $site = $company->site()->firstOrNew();
+        $site->fill(['tagline' => ['en' => 'Umrah with '.$name], 'colour_accent' => '#14532D']);
         $site->company_id = (int) $company->getKey();
         $site->published_at = $live ? now() : null;
         $site->save();

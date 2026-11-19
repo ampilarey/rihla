@@ -3,14 +3,17 @@
 namespace App\Filament\Resources\Partners\Schemas;
 
 use App\Models\Partner;
+use App\Services\Companies\CompanyUsage;
 use App\Support\CompanyFeatures;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class PartnerForm
 {
@@ -76,6 +79,31 @@ class PartnerForm
                             'unique' => 'Another company already has that domain.',
                         ])
                         ->helperText('Only once the domain points at the server and cPanel has it, with a certificate. www is answered too.')
+                        ->columnSpanFull(),
+                ]),
+
+            // Companies plan, Phase 5b: the licence Rihla's admin checked,
+            // and how much the company uses Rihla — counts, never contents.
+            Section::make('Licence and usage')
+                ->visible(fn (?Partner $record): bool => (bool) $record?->is_umrah_company)
+                ->columns(3)
+                ->schema([
+                    TextInput::make('licence_number')->label('Licence number')->maxLength(60),
+                    DatePicker::make('licence_expires_on')->label('Licence expires')
+                        ->helperText(fn (?Partner $record): ?string => $record?->licence_expires_on?->isPast() ? 'This licence has expired.' : null),
+                    TextInput::make('licence_register')->label('Checked against')->maxLength(120),
+                    Placeholder::make('suspension')
+                        ->label('Suspended')
+                        ->visible(fn (?Partner $record): bool => (bool) $record?->isSuspended())
+                        ->content(fn (?Partner $record): string => trim(($record?->suspended_at?->toFormattedDateString() ?? '').' — '.($record->suspended_reason ?? ''), ' —'))
+                        ->columnSpanFull(),
+                    Placeholder::make('usage')
+                        ->label('Usage')
+                        ->content(fn (?Partner $record): HtmlString => $record === null ? new HtmlString('') : new HtmlString(implode(' · ', array_map(
+                            fn (string $label, int $count): string => e($label).': <strong>'.number_format($count).'</strong>',
+                            array_keys($counts = app(CompanyUsage::class)->counts($record)),
+                            $counts,
+                        ))))
                         ->columnSpanFull(),
                 ]),
 

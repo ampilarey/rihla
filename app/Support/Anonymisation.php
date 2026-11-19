@@ -135,6 +135,9 @@ final class Anonymisation
         // An Umrah company's own website (companies plan, Phase 4a): the
         // same reasoning as a host's page.
         'company_sites' => ['whatsapp' => 'phone', 'instagram' => 'null', 'facebook' => 'null'],
+        // Support access (companies plan, Phase 5c): a reason may name a
+        // customer the company asked about.
+        'support_grants' => ['reason' => 'text'],
         // A guest's review — §16.11. What they wrote is theirs, and a reply
         // or a reason for hiding may quote it or name them. Cleared rather
         // than replaced with a stand-in: a scrubbed review stays public,
@@ -296,6 +299,8 @@ final class Anonymisation
         'cards',
         // What a dollar was worth on a day; set by staff, about nobody.
         'exchange_rates',
+        // The pages Rihla opened under a support grant: paths, no person.
+        'support_visits',
         // The inhabited islands (Phase 3d): reference data, about nobody.
         'islands',
         // An amount and a date; the person is on the booking.

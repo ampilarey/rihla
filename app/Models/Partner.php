@@ -82,8 +82,15 @@ class Partner extends Model
 
     public const STATUS_SUSPENDED = 'suspended';
 
+    /**
+     * An Umrah company that has left (companies plan, Phase 5d). Everything
+     * is off, as for a suspension; nothing is deleted, and its export stays
+     * available to Rihla's admin.
+     */
+    public const STATUS_CLOSED = 'closed';
+
     /** @var list<string> */
-    public const STATUSES = [self::STATUS_PENDING, self::STATUS_ACTIVE, self::STATUS_SUSPENDED];
+    public const STATUSES = [self::STATUS_PENDING, self::STATUS_ACTIVE, self::STATUS_SUSPENDED, self::STATUS_CLOSED];
 
     // ── Who holds the guest's money — ADR 0008 decision 3 ────────────────
 
@@ -141,6 +148,9 @@ class Partner extends Model
         'registration_fee_minor' => 'integer',
         'registration_paid_at' => 'datetime',
         'staff_seats' => 'integer',
+        // The licence Rihla's admin checked, and a suspension (Phase 5b).
+        'licence_expires_on' => 'date',
+        'suspended_at' => 'datetime',
         'bank_accounts' => 'array',
         // A company's own Telegram bot (companies plan, Phase 2d). A
         // credential, so ciphertext at rest; scrubbed to null by
@@ -353,7 +363,14 @@ class Partner extends Model
 
     public function isSuspended(): bool
     {
-        return $this->status === self::STATUS_SUSPENDED;
+        // A closed company is shut out exactly as a suspended one is: every
+        // check that reads this (the panel, the bot) covers both (Phase 5d).
+        return $this->status === self::STATUS_SUSPENDED || $this->status === self::STATUS_CLOSED;
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->status === self::STATUS_CLOSED;
     }
 
     /** @return HasMany<Payment, $this> */
