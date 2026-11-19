@@ -14,6 +14,7 @@ use App\Services\Documents\Reading\Duplicates;
 use App\Services\Operations\Cards;
 use App\Support\Access;
 use App\Support\CompanyContext;
+use App\Support\CompanyFeatures;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,13 @@ class CompanyWallTest extends TestCase
 
     private function coral(): Partner
     {
-        return Partner::factory()->create(['name' => 'Coral Umrah', 'kind' => Partner::KIND_AGENCY]);
+        $coral = Partner::factory()->create(['name' => 'Coral Umrah', 'kind' => Partner::KIND_AGENCY]);
+
+        // Bookings paid for (Phase 5a), so the wall — not a missing
+        // feature — is what each assertion below is about.
+        $coral->forceFill(['features' => [CompanyFeatures::BOOKINGS => CompanyFeatures::ON]])->save();
+
+        return $coral;
     }
 
     private function theirBooking(Partner $company): Booking

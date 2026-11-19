@@ -522,7 +522,7 @@ Rihla's own company always has everything.
 
 | # | Pull request | Estimate |
 |---|---|---|
-| 5a | The features, the registration fee and staff seats: stored on the company, set in `/staff`, read by the company gate, the company's site, the bot, the reader and the team screen. The company sees what it has. | 1.5 days |
+| 5a ✅ | The features, the registration fee and staff seats: stored on the company, set in `/staff`, read by the company gate, the company's site, the bot, the reader and the team screen. The company sees what it has. | 1.5 days |
 | 5b | Adding a company properly: licence number, expiry and the register it was checked against; the fee; a starting set of features; defaults seeded. Suspend and reactivate with a reason. Usage as counts, never contents. | 1 day |
 | 5c | Support access: Rihla asks, the company's owner grants it for a limited time, and every visit is recorded and visible to the company. | 1 day |
 | 5d | Full export (customers, travellers, bookings, payments, books, documents and the audit trail, in open formats) and closing an account. | 1 day |
