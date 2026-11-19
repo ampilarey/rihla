@@ -19,6 +19,12 @@
     RewriteRule ^ %1 [L,R=301]
 
     # Send Requests To Front Controller...
+    # A company's own address (coral.rihla.mv, or its own domain) gets its
+    # own robots.txt from the application: the file in this folder names
+    # rihla.mv's sitemap. rihla.mv, www and test keep the file.
+    RewriteCond %{HTTP_HOST} !^(www\.|test\.)?rihla\.mv$ [NC]
+    RewriteRule ^robots\.txt$ index.php [L]
+
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]

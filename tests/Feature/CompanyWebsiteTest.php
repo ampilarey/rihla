@@ -12,9 +12,12 @@ use App\Models\Partner;
 use App\Models\User;
 use App\Services\Companies\AddCompany;
 use App\Support\Access;
+use App\Support\Brand;
 use App\Support\CompanyContext;
 use App\Support\Contact;
+use App\Support\Contrast;
 use App\Support\CurrentSite;
+use App\Support\SitePalette;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -100,7 +103,7 @@ class CompanyWebsiteTest extends TestCase
 
     public function test_only_the_sites_own_pages_answer_on_its_address(): void
     {
-        foreach (['/en/articles', '/en/guide', '/en/trips', '/en/stays', '/en/gallery', '/en/people', '/en/portal', '/staff', '/company/'.$this->coral->slug, '/login', '/api/health', '/pulse', '/sitemap.xml'] as $path) {
+        foreach (['/en/articles', '/en/guide', '/en/trips', '/en/stays', '/en/gallery', '/en/people', '/en/portal', '/staff', '/company/'.$this->coral->slug, '/login', '/api/health', '/pulse'] as $path) {
             $this->get($this->at($this->coral, $path))->assertNotFound();
         }
 
@@ -256,5 +259,84 @@ class CompanyWebsiteTest extends TestCase
 
         // Published, but not live until Rihla switches it on.
         $this->get($this->at($fresh))->assertNotFound();
+    }
+
+    // ── Phase 4b: themes, colours, sitemap ───────────────────────────────
+
+    public function test_the_inner_pages_wear_the_companys_colours_and_stay_readable(): void
+    {
+        $site = $this->coral->site;
+        $site->forceFill(['colour_primary' => '#1E3A8A', 'colour_accent' => '#FACC15'])->save();
+        $css = (new SitePalette($site->fresh()))->css();
+
+        // Surfaces take the accent; words written white on them turn dark,
+        // because white does not read on yellow.
+        $this->assertStringContainsString('.bg-wine-500,', $css);
+        $this->assertStringContainsString('.bg-wine-500.text-white{color:'.Brand::INK.'}', $css);
+        $this->assertStringContainsString('.btn-primary,.btn-sky,.btn-action,.btn-gold,.badge-wine,.badge-gold,.section-wine{background-color:#FACC15', $css);
+
+        // Every shade a link or heading is written in reads on a white page.
+        foreach (['', '-500', '-600', '-700', '-800', '-900'] as $shade) {
+            preg_match('/\.text-wine'.preg_quote($shade, '/').',[^{]*\{color:(#[0-9A-F]{6})\}/', $css, $match);
+            $this->assertNotEmpty($match, "No rule for text-wine{$shade}.");
+            $this->assertGreaterThanOrEqual(Contrast::AA, Contrast::ratio($match[1], '#FFFFFF'), "text-wine{$shade} is {$match[1]}.");
+        }
+
+        $this->sellable($this->coral, 'Coral Ramadan Umrah', 'coral-ramadan');
+        $this->get($this->at($this->coral, '/en/packages/coral-ramadan'))->assertOk()->assertSee('background-color:#FACC15', false);
+    }
+
+    public function test_a_colour_that_is_not_a_colour_never_reaches_the_page(): void
+    {
+        // Seven characters, the column's width: MySQL refuses anything
+        // longer outright, so this is the worst a row can actually hold.
+        $this->coral->site->forceFill(['colour_accent' => 'red;}a{', 'colour_primary' => 'url(x)'])->save();
+
+        $this->get($this->at($this->coral))->assertOk()
+            ->assertDontSee('red;}a{', false)
+            ->assertDontSee('url(x)', false)
+            ->assertSee('--site-accent: '.Brand::INK, false);
+    }
+
+    public function test_each_theme_opens_its_own_way_and_orders_the_home_page(): void
+    {
+        $this->sellable($this->coral, 'Coral Ramadan Umrah', 'coral-ramadan');
+        $this->coral->site->setTranslation('about', 'en', 'Pilgrims since 2009.')->save();
+
+        foreach ([
+            CompanySite::CLASSIC => ['Upcoming trips', 'About us', 'How to reach us'],
+            CompanySite::MINIMAL => ['About us', 'Upcoming trips', 'How to reach us'],
+            CompanySite::BOLD => ['Upcoming trips', 'How to reach us', 'About us'],
+        ] as $theme => $order) {
+            $this->coral->site->forceFill(['theme' => $theme])->save();
+
+            $html = $this->get($this->at($this->coral))->assertOk()->assertSee('Coral Umrah')->getContent();
+            $this->assertSame(1, substr_count($html, '<h1'), "{$theme} has one heading of the first level.");
+            $this->assertTrue(
+                strpos($html, $order[0]) < strpos($html, $order[1]) && strpos($html, $order[1]) < strpos($html, $order[2]),
+                "{$theme} tells the home page in its own order.",
+            );
+        }
+    }
+
+    public function test_the_sitemap_and_robots_are_the_companys_own(): void
+    {
+        $this->sellable($this->coral, 'Coral Ramadan Umrah', 'coral-ramadan');
+        $this->sellable(null, 'Rihla Signature Umrah', 'rihla-signature');
+
+        // Rihla's first, so a shared cache would hand it to Coral.
+        $this->get(config('app.url').'/sitemap.xml')->assertOk()->assertSee('rihla-signature')->assertDontSee('coral-ramadan');
+
+        $this->get($this->at($this->coral, '/sitemap.xml'))->assertOk()
+            ->assertSee($this->at($this->coral, '/en/packages/coral-ramadan'))
+            ->assertSee($this->at($this->coral, '/dv/contact'))
+            ->assertDontSee('rihla-signature')
+            ->assertDontSee('/trips')
+            ->assertDontSee('/articles')
+            ->assertDontSee(config('app.url').'/', false);
+
+        $this->get($this->at($this->coral, '/robots.txt'))->assertOk()
+            ->assertSee('Sitemap: '.$this->at($this->coral, '/sitemap.xml'))
+            ->assertDontSee('rihla.mv');
     }
 }

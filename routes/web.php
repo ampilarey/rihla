@@ -337,6 +337,9 @@ Route::get('trips/{slug}', fn (string $slug) => redirect()->route('trips.show', 
 // alternates so the two locales are read as one page in two languages rather
 // than as duplicate content competing with each other.
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+// Only ever reached on a company's address, where .htaccess sends it here
+// (companies plan, Phase 4b); everywhere else the file in public/ answers.
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // Accepting an invitation to a host's team — §16.10. Outside `/host`, so
 // Filament's `/host/{tenant}/…` routes can never answer for it.

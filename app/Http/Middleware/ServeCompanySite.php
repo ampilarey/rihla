@@ -53,10 +53,11 @@ class ServeCompanySite
         app(CompanyContext::class)->use((int) $company->getKey());
 
         // The site's own pages only: the bare address, which sends a visitor
-        // on to their language, and the language-prefixed public routes.
+        // on to their language, the language-prefixed public routes, and
+        // the site's own sitemap and robots.txt.
         // Panels, the API, health and Pulse are rihla.mv's.
         $path = trim($request->path(), '/');
-        abort_unless($path === '' || preg_match('#^(en|dv|ar)(/|$)#', $path) === 1, 404);
+        abort_unless($path === '' || in_array($path, ['sitemap.xml', 'robots.txt'], true) || preg_match('#^(en|dv|ar)(/|$)#', $path) === 1, 404);
 
         return $next($request);
     }
