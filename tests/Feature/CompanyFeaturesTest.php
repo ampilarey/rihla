@@ -195,7 +195,8 @@ class CompanyFeaturesTest extends TestCase
         $this->assertTrue($company->site_enabled);
         $this->assertSame(150000, $company->registration_fee_minor);
         $this->assertSame(5, $company->staff_seats);
-        $this->assertSame([CompanyFeatures::BOOKINGS => CompanyFeatures::ON, CompanyFeatures::BOOKS => CompanyFeatures::READ_ONLY], $company->features);
+        // assertEquals: MySQL keeps JSON keys in an order of its own.
+        $this->assertEquals([CompanyFeatures::BOOKINGS => CompanyFeatures::ON, CompanyFeatures::BOOKS => CompanyFeatures::READ_ONLY], $company->features);
 
         // And the company sees it, read-only, on its own details page.
         $this->actingAs($this->owner())->get('/company/'.$company->slug.'/details')
