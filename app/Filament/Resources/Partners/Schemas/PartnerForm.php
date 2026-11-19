@@ -130,7 +130,23 @@ class PartnerForm
                     DatePicker::make('registration_paid_at')
                         ->label('Paid on')
                         ->maxDate(now())
-                        ->helperText('Until this is set, their site cannot be switched on.'),
+                        ->helperText('Until this is set, their site cannot be switched on. Recording their registration invoice paid sets it.'),
+                    // Billing automation: the monthly fee, invoiced for each
+                    // whole calendar month from the month billing starts.
+                    TextInput::make('monthly_fee')
+                        ->label('Monthly fee')
+                        ->numeric()
+                        ->minValue(0)
+                        ->formatStateUsing(fn (?Partner $record): ?string => $record?->monthly_fee_minor === null ? null : number_format($record->monthly_fee_minor / 100, 2, '.', ''))
+                        ->helperText('Leave empty for no monthly invoice.'),
+                    Select::make('monthly_fee_currency')
+                        ->label('In')
+                        ->options(['MVR' => 'MVR', 'USD' => 'USD'])
+                        ->default('MVR'),
+                    DatePicker::make('billing_starts_on')
+                        ->label('Billed from')
+                        ->helperText('Invoices start with this month, a whole month each, issued on the 1st.')
+                        ->requiredWith('monthly_fee'),
                     TextInput::make('staff_seats')
                         ->label('Staff seats')
                         ->integer()

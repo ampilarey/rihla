@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\CompanyInvoice;
 use App\Models\Departure;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -40,6 +41,8 @@ use Illuminate\Support\Collection;
  * - an Umrah company whose licence has run out or is about to, because
  *   the date sits on the company's record and nobody opens that record
  *   until something has already gone wrong.
+ * - an invoice Rihla sent a company that is past its due date, because the
+ *   only screen showing it is that company's record.
  *
  * ## Each alert is shown only to somebody who can act on it
  *
@@ -83,6 +86,7 @@ final class Alerts
             self::departuresFlyingWithBlockers(),
             self::contentWaitingOnAScholar(),
             self::companyLicencesRunningOut(),
+            self::companyInvoicesOverdue(),
         ))
             // Two passes, not `sortBy([fn, fn])`. In that multi-sort form
             // Laravel calls each callable as a two-argument *comparator*, so
@@ -377,6 +381,46 @@ final class Alerts
             url: route('filament.staff.resources.partners.index'),
             permission: 'partner.update',
             count: $due->count(),
+        )];
+    }
+
+    /**
+     * Invoices Rihla sent Umrah companies that are past their due date —
+     * billing automation. Per currency, never summed across them.
+     *
+     * @return list<Alert>
+     */
+    private static function companyInvoicesOverdue(): array
+    {
+        $overdue = CompanyInvoice::query()
+            ->outstanding()
+            ->whereDate('due_on', '<', Carbon::now()->toDateString())
+            ->with('company')
+            ->orderBy('due_on')
+            ->get();
+
+        if ($overdue->isEmpty()) {
+            return [];
+        }
+
+        $byCurrency = $overdue
+            ->groupBy('currency')
+            ->map(fn (Collection $group, string $currency): string => (string) Money::ofMinor((int) $group->sum('amount_minor'), $currency))
+            ->values()
+            ->join(' and ');
+
+        $companies = $overdue->map(fn (CompanyInvoice $invoice): string => (string) $invoice->company?->name)->filter()->unique()->values();
+
+        return [new Alert(
+            key: 'company.invoice.overdue',
+            severity: Alert::WORTH_KNOWING,
+            headline: $overdue->count().' '.($overdue->count() === 1 ? 'invoice to a company is' : 'invoices to companies are').' overdue',
+            detail: $byCurrency.' from '.$companies->join(', ').'. They have been e-mailed and see it in their panel; '
+                .'a transfer that arrived and was never recorded looks exactly the same from here.',
+            action: 'Check the bank, then record the payment on the company under Partners — or ring them.',
+            url: route('filament.staff.resources.partners.index'),
+            permission: 'partner.update',
+            count: $overdue->count(),
         )];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\BottomNav;
+use App\Filament\Company\OverdueInvoiceBanner;
 use App\Filament\Company\Pages\Auth\Login;
 use App\Filament\Company\Pages\Dashboard;
 use App\Filament\InitialsAvatarProvider;
@@ -185,6 +186,8 @@ class CompanyPanelProvider extends PanelProvider
             // The home page's cards and charts (Phase 3g), each behind its permission.
             ->widgets([DashboardStats::class, MoneyChart::class, SeatsChart::class])
             ->renderHook(PanelsRenderHook::BODY_END, fn (): string => BottomNav::render())
+            // An overdue invoice from Rihla, to the company's Owners (billing).
+            ->renderHook(PanelsRenderHook::PAGE_START, fn (): string => OverdueInvoiceBanner::render())
             // The leader pages, for this company (companies plan, Phase 4e):
             // the same sign-in, so a leader opens them from here.
             ->navigationItems([

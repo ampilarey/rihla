@@ -2,6 +2,7 @@
 
 namespace App\Filament\Company\Pages;
 
+use App\Models\CompanyInvoice;
 use App\Models\CompanyMembership;
 use App\Models\Partner;
 use App\Services\Telegram\Bot;
@@ -100,6 +101,18 @@ class CompanySettings extends Page
                             ->content(fn (): HtmlString => $this->plan()),
                     ]),
 
+                // Billing automation: Rihla's invoices to the company, each
+                // with its PDF, so an unpaid one is visible whether or not
+                // the e-mail arrived.
+                Section::make('Invoices from Rihla')
+                    ->description('Pay by bank transfer, quoting the invoice number. Rihla marks an invoice paid once the money arrives.')
+                    ->collapsible()
+                    ->schema([
+                        Placeholder::make('invoices')
+                            ->hiddenLabel()
+                            ->content(fn (): HtmlString => $this->invoices()),
+                    ]),
+
                 Section::make('On your documents')
                     ->description('Printed at the top of every invoice, receipt and list your team makes here.')
                     ->columns(2)
@@ -181,6 +194,21 @@ class CompanySettings extends Page
         $seats = $company->staff_seats === null ? $used.' people, no limit' : $used.' of '.$company->staff_seats.' staff seats used';
 
         return new HtmlString('<ul style="margin:0;padding-inline-start:1.25rem;line-height:1.8;">'.$rows.'<li><strong>Your team</strong> — '.e($seats).'</li></ul>');
+    }
+
+    private function invoices(): HtmlString
+    {
+        $invoices = $this->company()->companyInvoices()->latest('id')->limit(24)->get();
+
+        if ($invoices->isEmpty()) {
+            return new HtmlString('No invoices yet.');
+        }
+
+        $rows = $invoices->map(fn (CompanyInvoice $invoice): string => '<li><strong>'.e($invoice->number).'</strong> — '
+            .e($invoice->description()).' — '.e($invoice->money()->format()).' — '.e($invoice->stateLabel())
+            .' — <a href="'.e(route('company-invoices.pdf', $invoice)).'" style="text-decoration:underline;">PDF</a></li>')->join('');
+
+        return new HtmlString('<ul style="margin:0;padding-inline-start:1.25rem;line-height:1.8;">'.$rows.'</ul>');
     }
 
     /** @return array<Action> */

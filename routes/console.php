@@ -42,6 +42,10 @@ Schedule::command('assistant:prune')->daily()->withoutOverlapping(30);
 // §16.9: last month's host statements, on the 2nd so the month has closed.
 Schedule::command('stays:statements')->monthlyOn(2, '03:15')->withoutOverlapping(30);
 
+// Umrah companies' invoices and reminders (billing automation). Early, so
+// an invoice issued on the 1st is in the owner's inbox before the day starts.
+Schedule::command('companies:bill')->dailyAt('06:10')->withoutOverlapping(30);
+
 // Other sites' calendars — §16 Phase 16. Hourly, so a room booked on
 // another site is closed here within the hour.
 Schedule::command('stays:calendars')->hourlyAt(20)->withoutOverlapping(30);
