@@ -127,7 +127,9 @@ class CompanyFeaturesTest extends TestCase
         $company = $this->company([]);
         $company->forceFill(['site_domain' => 'coralumrah.test'])->save();
 
-        $this->get('http://coralumrah.test/en')->assertOk()->assertDontSee('Coral Umrah');
+        // Not paid for: a 404 — never Rihla's site on an address that reads
+        // as the company's (security review).
+        $this->get('http://coralumrah.test/en')->assertNotFound();
 
         $company->forceFill(['features' => [CompanyFeatures::DOMAIN => CompanyFeatures::ON]])->save();
         $this->get('http://coralumrah.test/en')->assertOk()->assertSee('Coral Umrah');
