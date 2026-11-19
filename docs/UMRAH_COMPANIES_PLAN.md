@@ -539,10 +539,17 @@ Rihla's own company always has everything.
   hand, for at least one trip from booking to return.
 
 ### Hijaz moves in
-- Hijaz added as a company at `hijaz.rihla.mv`; an import brings its data
-  from the Hijaz app, rehearsed until money totals, counts and file
-  checksums match; a short planned stop; the old app kept read-only for a
-  month, then retired.
+- **No import (owner, November 2026: "There is no hijaz data").** The Hijaz
+  app holds no live bookings, customers or money, so nothing is carried
+  across and no import tool is built.
+- Hijaz is added like any other company: **Partners → Add company** in
+  `/staff`, with its licence, fee and features, at `hijaz.rihla.mv`. That
+  name was added by hand in cPanel for the old app, so it must be removed
+  there (or pointed at this app's document root) before the wildcard
+  reaches it. Its owner sets a password from the e-mail,
+  fills in the website and publishes it.
+- The old Hijaz app is then retired and its repository kept as the
+  reference it already is.
 
 ### Later, only if wanted
 - Billing automation (invoices to companies, reminders, suspension).
@@ -598,8 +605,9 @@ Still open:
    (on the company's own address), or one shared login page. The plan
    assumes the company's own address.
 3. **Which register a licence is checked against** (the Ministry of
-   Islamic Affairs' list of Hajj and Umrah operators, or another), and
-   whether the licence number and expiry are stored and shown.
+   Islamic Affairs' list of Hajj and Umrah operators, or another). The
+   number, the expiry and the register are stored and shown (5b), and a
+   licence within 30 days of expiring is raised on Needs attention.
 
 ## For the session that builds this
 
