@@ -4,9 +4,7 @@ namespace Tests\Feature;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -99,8 +97,7 @@ class ModelSchemaTest extends TestCase
     {
         $models = [];
 
-        foreach (File::files(app_path('Models')) as $file) {
-            $class = 'App\\Models\\'.Str::before($file->getFilename(), '.php');
+        foreach (self::modelFiles() as $class) {
 
             if (! class_exists($class)) {
                 continue;

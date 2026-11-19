@@ -236,7 +236,12 @@ class ImageUploadTest extends TestCase
      */
     public function test_every_image_field_names_raster_types_and_never_svg(): void
     {
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(app_path('Filament')));
+        // The modules' screens too (docs/MODULES_PLAN.md): a field moved
+        // into a module is still on a panel.
+        $files = new \AppendIterator;
+        foreach ([app_path('Filament'), ...(glob(base_path('modules/*/Filament'), GLOB_ONLYDIR) ?: [])] as $folder) {
+            $files->append(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folder, \FilesystemIterator::SKIP_DOTS)));
+        }
         $checked = 0;
 
         foreach ($files as $file) {
