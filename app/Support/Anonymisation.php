@@ -206,6 +206,9 @@ final class Anonymisation
         // number are a person's bank details; an entry's description and
         // who it was paid to or by are free text that may name somebody.
         'accounts' => ['account_name' => 'name', 'account_number' => 'null'],
+        // The booking agreement (Phase 3h): who signed, their drawn signature,
+        // and the device it came from. The wording is the company's own.
+        'agreements' => ['signed_name' => 'name', 'signature' => 'null', 'signed_ip' => 'null', 'signed_user_agent' => 'null'],
         'ledger_entries' => ['description' => 'text', 'counterparty' => 'name', 'reference' => 'text', 'void_reason' => 'text'],
         'departure_checklist_items' => ['notes' => 'text'],
         'roll_call_marks' => ['note' => 'text'],

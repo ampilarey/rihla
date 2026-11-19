@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Bookings\Pages;
 
+use App\Exceptions\DeskRefusal;
 use App\Exceptions\IllegalBookingTransition;
 use App\Exceptions\NoSeatsAvailable;
 use App\Filament\Resources\Bookings\BookingResource;
@@ -18,6 +19,7 @@ use App\Services\Nusuk\PermitDesk;
 use App\Services\Operations\Families;
 use App\Services\Payments\Gateways;
 use App\Services\Payments\SlipVault;
+use App\Services\Portal\Agreements;
 use App\Services\Portal\Gatekeeper;
 use App\Services\Visa\VisaDesk;
 use App\Support\CompanyRequest;
@@ -67,6 +69,7 @@ class EditBooking extends EditRecord
             $this->familyAction(),
             $this->portalLinkAction(),
             $this->lettersAction(),
+            $this->agreementAction(),
             $this->confirmAction(),
             $this->openVisasAction(),
             $this->openPermitsAction(),
@@ -230,6 +233,54 @@ class EditBooking extends EditRecord
                             ->send();
                     }),
             ]);
+    }
+
+    /**
+     * The booking agreement (Phase 3h, part 3): where it stands, a signed
+     * paper copy recorded from the office, and the signed copy to print.
+     * Only once the company has written its terms.
+     */
+    private function agreementAction(): Action
+    {
+        return Action::make('agreement')
+            ->label('Agreement')
+            ->icon('heroicon-o-document-check')
+            ->color('gray')
+            ->visible(fn (): bool => Agreements::offered() && auth()->user()?->can('booking.view') === true)
+            ->modalHeading('The booking agreement')
+            ->modalDescription(fn (): string => app(Agreements::class)->for($this->booking())->statusWords()
+                .'. The customer signs it in the portal, on screen or by sending a signed paper copy.')
+            ->schema(fn (): array => app(Agreements::class)->for($this->booking())->isSigned() || auth()->user()?->can('booking.update') !== true ? [] : [
+                FileUpload::make('scan')
+                    ->label('Record a signed paper copy')
+                    ->disk('local')
+                    ->directory('livewire-tmp')
+                    ->storeFiles(false)
+                    ->acceptedFileTypes((array) config('documents.mime_types'))
+                    ->maxSize((int) config('documents.max_kilobytes'))
+                    ->helperText('Kept with the lead traveller\'s documents, like a passport scan.'),
+            ])
+            ->modalSubmitActionLabel('Record it')
+            ->action(function (array $data): void {
+                if (($data['scan'] ?? null) === null) {
+                    return;
+                }
+
+                try {
+                    app(Agreements::class)->recordPaper($this->booking(), $data['scan'], auth()->user());
+                } catch (DeskRefusal $e) {
+                    Notification::make()->danger()->title('Not recorded')->body($e->getMessage())->send();
+
+                    return;
+                }
+
+                Notification::make()->success()->title('Signed paper copy recorded')->send();
+            })
+            ->extraModalFooterActions(fn (): array => app(Agreements::class)->for($this->booking())->isSigned() ? [
+                Action::make('agreementPdf')
+                    ->label('Print the signed agreement')
+                    ->url(CompanyRequest::route('staff.agreement', ['booking' => $this->booking()]), shouldOpenInNewTab: true),
+            ] : []);
     }
 
     /** One letter per traveller, with passport numbers: the office's copy (Phase 3h). */

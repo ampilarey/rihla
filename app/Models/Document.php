@@ -67,6 +67,9 @@ class Document extends Model
 
     public const OTHER = 'other';
 
+    /** A signed paper copy of the booking agreement (Phase 3h). */
+    public const AGREEMENT = 'agreement';
+
     /** @var array<string, string> */
     public const TYPES = [
         self::PASSPORT => 'Passport',
@@ -75,6 +78,7 @@ class Document extends Model
         self::VISA => 'Visa',
         self::VACCINATION => 'Vaccination record',
         self::BANK_SLIP => 'Bank transfer slip',
+        self::AGREEMENT => 'Signed agreement',
         self::OTHER => 'Other',
     ];
 
