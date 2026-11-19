@@ -90,7 +90,11 @@ class PartnerForm
                 ->schema([
                     TextInput::make('licence_number')->label('Licence number')->maxLength(60),
                     DatePicker::make('licence_expires_on')->label('Licence expires')
-                        ->helperText(fn (?Partner $record): ?string => $record?->licence_expires_on?->isPast() ? 'This licence has expired.' : null),
+                        ->helperText(fn (?Partner $record): ?string => match ($record?->licenceStanding()) {
+                            'expired' => 'This licence has expired.',
+                            'expiring' => 'This licence expires '.$record->licence_expires_on?->diffForHumans().'. Ask for the renewal.',
+                            default => null,
+                        }),
                     TextInput::make('licence_register')->label('Checked against')->maxLength(120),
                     Placeholder::make('suspension')
                         ->label('Suspended')

@@ -63,7 +63,9 @@ class CustomersTable
                     ->label('Came from a referral')
                     ->query(self::onlyReferred(...)),
             ])
-            ->recordActions([ViewAction::make()->label('Everything about them')])
+            // An icon with the words as its name and tooltip: written out,
+            // the label pushed the row 11px past a 390px phone (Phase 3i).
+            ->recordActions([ViewAction::make()->label('Everything about them')->iconButton()->icon('heroicon-o-eye')])
             ->emptyStateHeading('No customers yet')
             ->emptyStateDescription('A customer appears here the first time somebody books, or when historical records are imported.');
     }

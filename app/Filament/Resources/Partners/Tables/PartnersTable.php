@@ -61,6 +61,21 @@ class PartnersTable
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+
+                // An Umrah company's licence, coloured once it is within a
+                // month of running out (Phase 5b); hosts have none.
+                TextColumn::make('licence_expires_on')
+                    ->label('Licence until')
+                    ->date('j M Y')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (Partner $record): string => match ($record->licenceStanding()) {
+                        'expired' => 'danger',
+                        'expiring' => 'warning',
+                        default => 'gray',
+                    })
+                    ->placeholder('—')
+                    ->toggleable(),
             ])
             ->defaultSort('name')
             ->filters([

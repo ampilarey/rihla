@@ -373,6 +373,29 @@ class Partner extends Model
         return $this->status === self::STATUS_CLOSED;
     }
 
+    /** A licence inside this many days of expiring is somebody's job now. */
+    public const LICENCE_NOTICE_DAYS = 30;
+
+    /**
+     * Whether an Umrah company's licence has run out or is about to:
+     * 'expired', 'expiring' or null. One rule for the alert, the form and
+     * the list, so the three cannot disagree about a date.
+     */
+    public function licenceStanding(): ?string
+    {
+        $expires = $this->licence_expires_on;
+
+        if (! $this->is_umrah_company || $expires === null) {
+            return null;
+        }
+
+        if ($expires->lt(now()->startOfDay())) {
+            return 'expired';
+        }
+
+        return $expires->lte(now()->addDays(self::LICENCE_NOTICE_DAYS)->endOfDay()) ? 'expiring' : null;
+    }
+
     /** @return HasMany<Payment, $this> */
     public function collectedPayments(): HasMany
     {

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Departure;
+use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Quotation;
 use App\Models\User;
@@ -36,6 +37,9 @@ use Illuminate\Support\Collection;
  * - religious content waiting on a scholar for longer than a fortnight,
  *   because only the scholar's own desk shows that, and a scholar who has
  *   gone quiet is exactly the person who will not look at it.
+ * - an Umrah company whose licence has run out or is about to, because
+ *   the date sits on the company's record and nobody opens that record
+ *   until something has already gone wrong.
  *
  * ## Each alert is shown only to somebody who can act on it
  *
@@ -78,6 +82,7 @@ final class Alerts
             self::quotationsAboutToExpire(),
             self::departuresFlyingWithBlockers(),
             self::contentWaitingOnAScholar(),
+            self::companyLicencesRunningOut(),
         ))
             // Two passes, not `sortBy([fn, fn])`. In that multi-sort form
             // Laravel calls each callable as a two-argument *comparator*, so
@@ -329,6 +334,49 @@ final class Alerts
             url: route('filament.staff.pages.scholar-desk'),
             permission: 'knowledge.viewAny',
             count: $stale->count(),
+        )];
+    }
+
+    /**
+     * An Umrah company trading on a licence that has run out, or will
+     * within {@see Partner::LICENCE_NOTICE_DAYS} days.
+     *
+     * Rihla hosts the company's bookings and its website, so a lapsed
+     * licence is Rihla's problem too. Urgent once any has expired; a closed
+     * company is not trading and is left out.
+     *
+     * @return list<Alert>
+     */
+    private static function companyLicencesRunningOut(): array
+    {
+        $due = Partner::query()
+            ->where('is_umrah_company', true)
+            ->where('status', '!=', Partner::STATUS_CLOSED)
+            ->whereNotNull('licence_expires_on')
+            ->whereDate('licence_expires_on', '<=', Carbon::now()->addDays(Partner::LICENCE_NOTICE_DAYS)->toDateString())
+            ->orderBy('licence_expires_on')
+            ->get();
+
+        if ($due->isEmpty()) {
+            return [];
+        }
+
+        $expired = $due->filter(fn (Partner $company): bool => $company->licenceStanding() === 'expired');
+        $first = $due->first();
+
+        return [new Alert(
+            key: 'company.licence',
+            severity: $expired->isNotEmpty() ? Alert::URGENT : Alert::WORTH_KNOWING,
+            headline: $expired->isNotEmpty()
+                ? $expired->count().' Umrah '.($expired->count() === 1 ? 'company is' : 'companies are').' trading on an expired licence'
+                : $due->count().' Umrah '.($due->count() === 1 ? 'company\'s licence expires' : 'companies\' licences expire')
+                    .' within '.Partner::LICENCE_NOTICE_DAYS.' days',
+            detail: $due->map(fn (Partner $company): string => $company->name.' ('.$company->licence_expires_on?->format('j M Y').')')->join(', ')
+                .'. Rihla takes their bookings and runs their website, so a lapsed licence is Rihla\'s concern as well as theirs.',
+            action: 'Open '.$first->name.' under Partners, ask for the renewal and record the new date — or suspend them.',
+            url: route('filament.staff.resources.partners.index'),
+            permission: 'partner.update',
+            count: $due->count(),
         )];
     }
 
