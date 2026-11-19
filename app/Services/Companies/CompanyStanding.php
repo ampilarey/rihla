@@ -32,6 +32,27 @@ final class CompanyStanding
         ])->save();
     }
 
+    /**
+     * Close the account (Phase 5d): everything off, as for a suspension,
+     * and nothing deleted. The reason is kept where a suspension's is.
+     */
+    public function close(Partner $company, string $reason): void
+    {
+        $this->assertCompany($company);
+
+        if (trim($reason) === '') {
+            throw new DeskRefusal('Say why the account is closing.');
+        }
+
+        $company->forceFill([
+            'status' => Partner::STATUS_CLOSED,
+            'suspended_reason' => trim($reason),
+            'suspended_at' => now(),
+            'site_enabled' => false,
+        ])->save();
+    }
+
+    /** Back to active, from suspended or closed. A closed site stays off until switched on again. */
     public function reactivate(Partner $company): void
     {
         $this->assertCompany($company);

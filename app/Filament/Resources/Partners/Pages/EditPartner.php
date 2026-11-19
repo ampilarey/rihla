@@ -3,16 +3,20 @@
 namespace App\Filament\Resources\Partners\Pages;
 
 use App\Filament\Resources\Partners\PartnerResource;
+use App\Models\AuditLog;
 use App\Models\Partner;
 use App\Providers\Filament\CompanyPanelProvider;
+use App\Services\Companies\CompanyExport;
 use App\Services\Companies\CompanyStanding;
 use App\Services\Companies\SupportAccess;
+use App\Support\AuditContext;
 use App\Support\CompanyFeatures;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -61,6 +65,47 @@ class EditPartner extends EditRecord
                 ->action(function (array $data): void {
                     app(CompanyStanding::class)->suspend($this->company(), (string) $data['reason']);
                     Notification::make()->success()->title('Suspended')->send();
+                }),
+            // Phase 5d: everything the company holds, in one download, and
+            // closing the account. Neither deletes anything.
+            Action::make('export')
+                ->label('Export everything')
+                ->icon('heroicon-o-archive-box-arrow-down')
+                ->color('gray')
+                ->visible(fn (): bool => $this->company()?->is_umrah_company === true && ! $this->company()->is_rihla && auth()->user()?->can('partner.update') === true)
+                ->requiresConfirmation()
+                ->modalDescription('One zip of every record and file they hold: customers, travellers, bookings, payments, the books, documents and the audit trail. It contains passport scans — hand it only to the company. The download is recorded.')
+                ->action(function () {
+                    $company = $this->company();
+                    $relative = app(CompanyExport::class)->make($company);
+                    $user = auth()->user();
+
+                    AuditLog::create([
+                        'user_id' => $user?->getKey(),
+                        'user_name' => $user?->name,
+                        'user_email' => $user?->email,
+                        'event' => AuditLog::DOWNLOADED,
+                        'channel' => AuditContext::channel(),
+                        'auditable_type' => $company->getMorphClass(),
+                        'auditable_id' => $company->getKey(),
+                        'old_values' => null,
+                        'new_values' => ['export' => 'everything the company holds', 'file' => basename($relative)],
+                        'ip_address' => request()->ip(),
+                        'user_agent' => substr((string) request()->userAgent(), 0, 255) ?: null,
+                    ]);
+
+                    return response()->download(Storage::disk('local')->path($relative))->deleteFileAfterSend();
+                }),
+            Action::make('close')
+                ->label('Close account')
+                ->icon('heroicon-o-lock-closed')
+                ->color('danger')
+                ->visible(fn (): bool => $this->company()?->is_umrah_company === true && ! $this->company()->isClosed() && auth()->user()?->can('partner.update') === true)
+                ->modalDescription('Their panel, site, portals and bot go off for good. Nothing is deleted: you can still export everything, and reactivate if they come back. Export first if they have asked for their data.')
+                ->schema([Textarea::make('reason')->label('Why')->required()->maxLength(1000)->rows(3)])
+                ->action(function (array $data): void {
+                    app(CompanyStanding::class)->close($this->company(), (string) $data['reason']);
+                    Notification::make()->success()->title('Account closed')->send();
                 }),
             Action::make('reactivate')
                 ->label('Reactivate')

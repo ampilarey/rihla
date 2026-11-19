@@ -82,8 +82,15 @@ class Partner extends Model
 
     public const STATUS_SUSPENDED = 'suspended';
 
+    /**
+     * An Umrah company that has left (companies plan, Phase 5d). Everything
+     * is off, as for a suspension; nothing is deleted, and its export stays
+     * available to Rihla's admin.
+     */
+    public const STATUS_CLOSED = 'closed';
+
     /** @var list<string> */
-    public const STATUSES = [self::STATUS_PENDING, self::STATUS_ACTIVE, self::STATUS_SUSPENDED];
+    public const STATUSES = [self::STATUS_PENDING, self::STATUS_ACTIVE, self::STATUS_SUSPENDED, self::STATUS_CLOSED];
 
     // ── Who holds the guest's money — ADR 0008 decision 3 ────────────────
 
@@ -356,7 +363,14 @@ class Partner extends Model
 
     public function isSuspended(): bool
     {
-        return $this->status === self::STATUS_SUSPENDED;
+        // A closed company is shut out exactly as a suspended one is: every
+        // check that reads this (the panel, the bot) covers both (Phase 5d).
+        return $this->status === self::STATUS_SUSPENDED || $this->status === self::STATUS_CLOSED;
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->status === self::STATUS_CLOSED;
     }
 
     /** @return HasMany<Payment, $this> */
