@@ -288,10 +288,12 @@ class CompanyWebsiteTest extends TestCase
 
     public function test_a_colour_that_is_not_a_colour_never_reaches_the_page(): void
     {
-        $this->coral->site->forceFill(['colour_accent' => 'red;}body{display:none', 'colour_primary' => 'url(x)'])->save();
+        // Seven characters, the column's width: MySQL refuses anything
+        // longer outright, so this is the worst a row can actually hold.
+        $this->coral->site->forceFill(['colour_accent' => 'red;}a{', 'colour_primary' => 'url(x)'])->save();
 
         $this->get($this->at($this->coral))->assertOk()
-            ->assertDontSee('display:none', false)
+            ->assertDontSee('red;}a{', false)
             ->assertDontSee('url(x)', false)
             ->assertSee('--site-accent: '.Brand::INK, false);
     }
