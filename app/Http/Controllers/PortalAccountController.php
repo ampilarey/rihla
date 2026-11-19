@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Services\Invoices\Documents;
 use App\Services\Portal\Gatekeeper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The customer portal with a password (companies plan, Phase 3h, from
@@ -75,6 +77,21 @@ class PortalAccountController extends Controller
         }
 
         return redirect()->route('portal.home');
+    }
+
+    /**
+     * The travel letters for the open booking (Phase 3h). Without passport
+     * numbers: a portal link is the kind of thing that gets forwarded, and
+     * the office prints the copy that carries them.
+     */
+    public function letters(Request $request, Documents $documents): Response
+    {
+        /** @var Booking $booking */
+        $booking = $request->attributes->get('portal_booking');
+
+        abort_unless(in_array($booking->status, [Booking::CONFIRMED, Booking::COMPLETED], true), 404);
+
+        return $documents->travelLetters($booking, withPassport: false)->download('travel-letters-'.strtolower((string) $booking->reference).'.pdf');
     }
 
     /** Choose a password from a link session: once, and with the number on file. */

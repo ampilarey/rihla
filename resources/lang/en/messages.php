@@ -985,4 +985,5 @@ return [
     'Use the mobile number you booked with and the password you chose.' => 'Use the mobile number you booked with and the password you chose.',
     'Your bookings' => 'Your bookings',
     'Your password is set. Next time, sign in with your mobile number.' => 'Your password is set. Next time, sign in with your mobile number.',
+    'Download the travel letters' => 'Download the travel letters',
 ];

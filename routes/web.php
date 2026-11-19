@@ -165,6 +165,8 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
             ->middleware('throttle:assistant')->name('learning.questions.guide');
 
         Route::get('/portal/invoice', [InvoiceController::class, 'invoice'])->name('portal.invoice');
+        // Their travel letters, without passport numbers (Phase 3h).
+        Route::get('/portal/letters', [PortalAccountController::class, 'letters'])->name('portal.letters');
         Route::get('/portal/receipt/{payment}', [InvoiceController::class, 'receipt'])->name('portal.receipt');
     });
 
@@ -403,6 +405,9 @@ Route::middleware(['auth', 'mfa', 'company.request'])->group(function () {
         Route::get('/departure/{departure}/payments', 'payments')->name('payments');
         Route::get('/departure/{departure}/documents', 'documents')->name('documents');
         Route::get('/bus/{busGroup}', 'busList')->name('bus');
+        // Travel letters (companies plan, Phase 3h).
+        Route::get('/booking/{booking}/letters', 'bookingLetters')->name('letters');
+        Route::get('/flight-group/{flightGroup}/letters', 'groupLetters')->name('group-letters');
         Route::get('/hotel/{departureHotel}/rooms', 'roomList')->name('rooms');
         Route::get('/cards/{kind}', 'cards')->name('cards')->whereIn('kind', ['customer', 'luggage']);
     });

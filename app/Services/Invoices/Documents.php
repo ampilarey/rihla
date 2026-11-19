@@ -3,12 +3,17 @@
 namespace App\Services\Invoices;
 
 use App\Models\Booking;
+use App\Models\BookingTraveller;
+use App\Models\Departure;
 use App\Models\ExcursionBooking;
 use App\Models\Payment;
 use App\Support\CompanyDetails;
 use App\Support\Contact;
+use App\Support\DepartureRoute;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as PdfDocument;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 
 /**
  * An invoice for a booking, and a receipt for a payment — §5.3's outputs.
@@ -68,6 +73,53 @@ final class Documents
     {
         return Pdf::loadView('pdf.excursion-invoice', [
             'excursionBooking' => $excursionBooking->load(['customer', 'booking', 'excursion', 'participants.bookingTraveller.traveller']),
+            'issuer' => $this->issuer(),
+        ]);
+    }
+
+    /**
+     * A travel letter per traveller on the booking (Phase 3h), or for the
+     * ones given. With passport numbers for the office; without, for the
+     * portal.
+     *
+     * @param  iterable<BookingTraveller>|null  $members
+     */
+    public function travelLetters(Booking $booking, ?iterable $members = null, bool $withPassport = true): PdfDocument
+    {
+        $booking->load(self::LETTER_RELATIONS);
+
+        return $this->letters($booking->departure, collect($members ?? $booking->travellers), $withPassport);
+    }
+
+    /**
+     * One flight group's letters, across every booking in it (Phase 3h).
+     *
+     * @param  Collection<int, BookingTraveller>  $members
+     */
+    public function groupTravelLetters(Departure $departure, Collection $members): PdfDocument
+    {
+        $members = (new EloquentCollection($members->all()))
+            ->load(['traveller', 'booking.customer', 'busGroup.departure.tourLeader', 'flightGroup.outboundFlight', 'flightGroup.returnFlight']);
+
+        return $this->letters($departure, $members, true);
+    }
+
+    /** What a letter reads, loaded once rather than per page. */
+    private const LETTER_RELATIONS = [
+        'customer', 'departure.package', 'departure.flights', 'travellers.traveller', 'travellers.booking.customer',
+        'travellers.busGroup.departure.tourLeader', 'travellers.flightGroup.outboundFlight', 'travellers.flightGroup.returnFlight',
+    ];
+
+    /** @param  Collection<int, BookingTraveller>  $members */
+    private function letters(Departure $departure, Collection $members, bool $withPassport): PdfDocument
+    {
+        $departure->loadMissing(['package', 'flights']);
+
+        return Pdf::loadView('pdf.travel-letter', [
+            'departure' => $departure,
+            'members' => $members,
+            'route' => DepartureRoute::stops($departure),
+            'withPassport' => $withPassport,
             'issuer' => $this->issuer(),
         ]);
     }

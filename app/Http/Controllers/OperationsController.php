@@ -3,18 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\BusGroup;
 use App\Models\Card;
 use App\Models\Departure;
 use App\Models\DepartureHotel;
 use App\Models\FlightGroup;
+use App\Services\Invoices\Documents;
 use App\Services\Operations\Cards;
 use App\Services\Operations\ListDocument;
 use App\Services\Operations\Lists;
 use App\Support\AuditContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -127,6 +130,32 @@ class OperationsController extends Controller
 
         return $this->cards->sheet($members, $kind)
             ->stream(($kind === Card::LUGGAGE ? 'luggage-tags' : 'customer-cards').'-'.now()->format('Ymd-Hi').'.pdf');
+    }
+
+    /**
+     * Travel letters for a booking (Phase 3h): one page per traveller, with
+     * passport numbers, so audited like every other print that carries them.
+     */
+    public function bookingLetters(Booking $booking, Request $request, Documents $documents): Response
+    {
+        $this->allow($request, 'booking.view');
+        $this->audit($booking, $request, ['document' => 'travel letters']);
+
+        return $documents->travelLetters($booking)->stream('travel-letters-'.strtolower((string) $booking->reference).'.pdf');
+    }
+
+    /** Travel letters for one flight group's people, across their bookings (Phase 3h). */
+    public function groupLetters(FlightGroup $flightGroup, Request $request, Documents $documents): Response
+    {
+        $this->allow($request, 'list.view');
+        $this->allow($request, 'booking.view');
+
+        $members = $this->lists->travellers($flightGroup->departure)->where('flight_group_id', $flightGroup->getKey())->values();
+        abort_if($members->isEmpty(), 404);
+
+        $this->audit($flightGroup->departure, $request, ['document' => 'travel letters', 'group' => $flightGroup->name]);
+
+        return $documents->groupTravelLetters($flightGroup->departure, $members)->stream('travel-letters-'.Str::slug($flightGroup->name).'.pdf');
     }
 
     private function allow(Request $request, string $permission): void
