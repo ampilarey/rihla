@@ -3,11 +3,11 @@
 namespace Modules\Stays\Filament\Host\Resources\Packages\Pages;
 
 use App\Filament\Concerns\EditsTranslations;
-use App\Models\Package;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Str;
 use Modules\Stays\Filament\Host\Resources\Packages\PackageResource;
 use Modules\Stays\Support\HostContext;
+use Modules\Umrah\Models\Package;
 
 /**
  * A host's new package: always an island holiday, never live, on one of

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * Something that went wrong on a trip — §8.3, and the minimum §6.5 asks for.

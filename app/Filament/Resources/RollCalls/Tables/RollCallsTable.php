@@ -4,7 +4,6 @@ namespace App\Filament\Resources\RollCalls\Tables;
 
 use App\Models\RollCall;
 use App\Models\RollCallMark;
-use App\Models\Traveller;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -16,6 +15,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\Umrah\Models\Traveller;
 
 class RollCallsTable
 {

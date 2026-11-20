@@ -2,10 +2,10 @@
 
 namespace App\Support;
 
-use App\Models\Document;
-use App\Models\NusukPermit;
 use App\Models\Payment;
-use App\Models\VisaApplication;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\NusukPermit;
+use Modules\Umrah\Models\VisaApplication;
 
 /**
  * The words a customer reads for a status a member of staff set.

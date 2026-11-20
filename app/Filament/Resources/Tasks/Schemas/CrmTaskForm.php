@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Tasks\Schemas;
 
-use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Support\Assignees;
@@ -13,6 +12,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Modules\Umrah\Models\Booking;
 
 class CrmTaskForm
 {

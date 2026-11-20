@@ -2,11 +2,11 @@
 
 namespace App\Services\Broadcasts\Channels;
 
-use App\Models\Booking;
 use App\Models\BroadcastDelivery;
 use App\Models\EmergencyBroadcast;
 use App\Services\Broadcasts\BroadcastChannel;
 use Illuminate\Support\Facades\Mail;
+use Modules\Umrah\Models\Booking;
 
 /**
  * Email, when this host can actually send one.

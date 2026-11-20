@@ -2,9 +2,9 @@
 
 namespace App\Services\Operations;
 
-use App\Models\BookingTraveller;
 use App\Models\FlightGroup;
 use Illuminate\Support\Facades\DB;
+use Modules\Umrah\Models\BookingTraveller;
 
 /**
  * Puts travellers in a flight group (companies plan, Phase 3c, from Hijaz).

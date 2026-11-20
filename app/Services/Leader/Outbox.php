@@ -2,14 +2,14 @@
 
 namespace App\Services\Leader;
 
-use App\Models\Departure;
 use App\Models\Incident;
 use App\Models\RollCall;
 use App\Models\RollCallMark;
-use App\Models\Traveller;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * Applying writes a leader made on a phone with no signal — §6.3.

@@ -2,9 +2,7 @@
 
 namespace App\Filament\Resources\Incidents\Schemas;
 
-use App\Models\Departure;
 use App\Models\Incident;
-use App\Models\Traveller;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -12,6 +10,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 
 class IncidentForm
 {

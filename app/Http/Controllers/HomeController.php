@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Departure;
 use App\Models\Media;
-use App\Models\Package;
 use App\Models\Setting;
 use App\Support\CurrentSite;
 use App\Support\Personalisation;
@@ -13,6 +11,8 @@ use Modules\Companies\Http\Controllers\CompanySiteController;
 use Modules\Content\Models\HeroBanner;
 use Modules\Content\Models\Trip;
 use Modules\Content\Models\WhySection;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 
 class HomeController extends Controller
 {

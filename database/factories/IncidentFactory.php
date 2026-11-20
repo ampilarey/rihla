@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Departure;
 use App\Models\Incident;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Departure;
 
 /**
  * @extends Factory<Incident>

@@ -3,13 +3,8 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\Customers\Pages\ViewCustomer;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureFlight;
-use App\Models\DepartureHotel;
 use App\Models\Island;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Operations\Lists;
 use App\Support\Access;
@@ -18,6 +13,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Modules\Content\Models\Person;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureFlight;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

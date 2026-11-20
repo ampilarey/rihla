@@ -3,11 +3,11 @@
 namespace Modules\Stays\Filament\Host\Resources\Packages\Pages;
 
 use App\Filament\Concerns\EditsTranslations;
-use App\Models\Package;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Modules\Stays\Filament\Host\Resources\Packages\PackageResource;
 use Modules\Stays\Support\HostContext;
+use Modules\Umrah\Models\Package;
 
 /**
  * A host edits their package until it is live ({@see PackageResource::canEdit()}).

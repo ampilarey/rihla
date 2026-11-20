@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use Modules\Telegram\Services\Notifier;
+use Modules\Umrah\Models\Booking;
 
 /**
  * One sum of money received against a booking — §5.3.

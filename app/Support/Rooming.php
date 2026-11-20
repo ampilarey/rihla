@@ -2,12 +2,12 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Room;
-use App\Models\Traveller;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * What is wrong with a rooming list — §8.2.

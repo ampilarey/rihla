@@ -2,17 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\Bookings\BookingResource;
-use App\Filament\Resources\Bookings\Pages\EditBooking;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\PortalAccess;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
+use Modules\Umrah\Filament\Resources\Bookings\Pages\EditBooking;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

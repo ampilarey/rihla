@@ -2,8 +2,6 @@
 
 namespace Modules\Stays\Services\Stays;
 
-use App\Exceptions\NotSoldToAudience;
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Services\Payments\Gateways;
@@ -12,6 +10,8 @@ use App\Support\Audience;
 use App\Support\Money;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
+use Modules\Stays\Exceptions\NotSoldToAudience;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
 

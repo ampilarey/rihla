@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Departure;
-use App\Models\DepartureCost;
 use App\Support\JourneyProfit;
 use BackedEnum;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureCost;
 use UnitEnum;
 
 /**

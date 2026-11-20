@@ -2,12 +2,12 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
-use App\Models\Departure;
-use App\Models\Document;
-use App\Models\NusukPermit;
-use App\Models\Traveller;
-use App\Models\VisaApplication;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\NusukPermit;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Models\VisaApplication;
 
 /**
  * Whether a traveller can actually go — **computed, never stored**.

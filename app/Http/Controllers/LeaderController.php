@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Departure;
 use App\Models\Incident;
 use App\Models\RollCall;
 use App\Models\RollCallMark;
@@ -14,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Modules\Umrah\Models\Departure;
 
 /**
  * The Tour Leader Portal — §6.3.

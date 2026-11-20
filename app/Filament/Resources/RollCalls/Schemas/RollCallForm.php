@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\RollCalls\Schemas;
 
-use App\Models\Departure;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Modules\Umrah\Models\Departure;
 
 class RollCallForm
 {

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\DepartureHotel;
 use App\Models\Room;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\DepartureHotel;
 
 /**
  * @extends Factory<Room>

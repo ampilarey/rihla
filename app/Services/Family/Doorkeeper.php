@@ -2,11 +2,11 @@
 
 namespace App\Services\Family;
 
-use App\Models\Booking;
 use App\Models\FamilyAccess;
 use App\Services\Portal\Gatekeeper;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Modules\Umrah\Models\Booking;
 
 /**
  * The way into the Family Portal — §6.2.

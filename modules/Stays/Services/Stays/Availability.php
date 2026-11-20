@@ -2,12 +2,12 @@
 
 namespace Modules\Stays\Services\Stays;
 
-use App\Exceptions\NotSoldToAudience;
-use App\Exceptions\RoomNotAvailable;
 use App\Support\Audience;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Modules\Stays\Exceptions\NotSoldToAudience;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\BlockedDate;
 use Modules\Stays\Models\Rate;
 use Modules\Stays\Models\RoomType;

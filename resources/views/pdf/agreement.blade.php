@@ -27,7 +27,7 @@
 <div style="white-space: pre-line;">{{ $agreement->wording }}</div>
 
 <div class="note">
-    @if($agreement->method === \App\Models\Agreement::PAPER)
+    @if($agreement->method === \Modules\Umrah\Models\Agreement::PAPER)
         Signed on paper; the scan is kept with the booking's documents. Recorded {{ $agreement->signed_at?->format('j M Y, H:i') }}.
     @else
         Signed on screen by <strong>{{ $agreement->signed_name }}</strong> on {{ $agreement->signed_at?->format('j M Y, H:i') }}.

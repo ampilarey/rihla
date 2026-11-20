@@ -5,8 +5,6 @@ namespace App\Filament\Resources\Rooms;
 use App\Filament\Resources\Rooms\Pages\ListRooms;
 use App\Filament\Resources\Rooms\Schemas\RoomForm;
 use App\Filament\Resources\Rooms\Tables\RoomsTable;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Room;
 use App\Support\Rooming;
 use BackedEnum;
@@ -14,6 +12,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
 use UnitEnum;
 
 /**

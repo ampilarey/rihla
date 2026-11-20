@@ -3,21 +3,13 @@
 namespace Tests\Feature;
 
 use App\Filament\Pages\Scan;
-use App\Filament\Resources\Bookings\BookingResource;
-use App\Filament\Resources\Bookings\Pages\EditBooking;
-use App\Filament\Resources\Bookings\Pages\ViewBooking;
 use App\Filament\Resources\BusGroups\Pages\ListBusGroups;
 use App\Filament\Resources\Rooms\Pages\ListRooms;
-use App\Models\Booking;
-use App\Models\BookingTraveller;
 use App\Models\BusGroup;
 use App\Models\Card;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Room;
 use App\Models\RoomAssignment;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Operations\Buses;
 use App\Services\Operations\Cards;
@@ -28,6 +20,14 @@ use App\Support\Anonymisation;
 use App\Support\Rooming;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
+use Modules\Umrah\Filament\Resources\Bookings\Pages\EditBooking;
+use Modules\Umrah\Filament\Resources\Bookings\Pages\ViewBooking;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

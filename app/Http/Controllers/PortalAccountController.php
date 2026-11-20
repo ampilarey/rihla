@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
-use App\Services\Invoices\Documents;
 use App\Services\Portal\Gatekeeper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Services\Invoices\Documents;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

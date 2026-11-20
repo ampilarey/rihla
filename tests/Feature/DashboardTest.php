@@ -5,11 +5,8 @@ namespace Tests\Feature;
 use App\Filament\Widgets\DashboardStats;
 use App\Filament\Widgets\MoneyChart;
 use App\Filament\Widgets\SeatsChart;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Payments\Gateways;
 use App\Support\Access;
@@ -19,6 +16,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Modules\Companies\Services\AddCompany;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

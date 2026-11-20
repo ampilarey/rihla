@@ -6,18 +6,18 @@ use App\Filament\Resources\OperationsLog\OperationsLogEntryResource;
 use App\Filament\Resources\OperationsLog\Pages\ListOperationsLogEntries;
 use App\Filament\Resources\RollCalls\Pages\ListRollCalls;
 use App\Filament\Resources\RollCalls\RollCallResource;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\OperationsLogEntry;
 use App\Models\RollCall;
 use App\Models\RollCallMark;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

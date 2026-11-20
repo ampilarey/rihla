@@ -2,10 +2,10 @@
 
 namespace App\Services\Operations;
 
-use App\Models\BookingTraveller;
 use App\Models\Customer;
 use App\Models\FamilyAccess;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\BookingTraveller;
 
 /**
  * One family on one departure: everybody one person booked onto it,

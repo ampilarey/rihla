@@ -6,6 +6,8 @@ use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
 
 /**
  * One coach on one departure, with whoever leads it.

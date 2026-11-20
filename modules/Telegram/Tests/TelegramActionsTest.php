@@ -3,14 +3,10 @@
 namespace Modules\Telegram\Tests;
 
 use App\Models\AuditLog;
-use App\Models\Booking;
 use App\Models\BusGroup;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Booking\BookingDesk;
 use App\Services\Operations\Buses;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Services\Payments\SlipVault;
@@ -24,6 +20,10 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Services\Bot;
 use Modules\Telegram\Services\Linker;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Booking\BookingDesk;
 use Tests\TestCase;
 
 /**

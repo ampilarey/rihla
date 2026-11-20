@@ -2,9 +2,6 @@
 
 namespace App\Filament\Resources\Payments\Tables;
 
-use App\Exceptions\RoomNotAvailable;
-use App\Models\Booking;
-use App\Models\ExcursionBooking;
 use App\Models\Payment;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\SlipVault;
@@ -19,8 +16,11 @@ use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Services\Stays\StayBooking;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\ExcursionBooking;
 
 class PaymentsTable
 {

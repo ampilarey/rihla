@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * One room in one hotel on one departure — §8.2.

@@ -2,9 +2,9 @@
 
 namespace Modules\Stays\Services\Stays;
 
-use App\Exceptions\RoomNotAvailable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
 

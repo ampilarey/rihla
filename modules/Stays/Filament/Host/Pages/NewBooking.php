@@ -3,8 +3,6 @@
 namespace Modules\Stays\Filament\Host\Pages;
 
 use App\Exceptions\DeskRefusal;
-use App\Exceptions\NotSoldToAudience;
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\User;
@@ -24,6 +22,8 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\Stays\Exceptions\NotSoldToAudience;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Filament\Host\Resources\Bookings\BookingResource;
 use Modules\Stays\Filament\Pages\NewStay;
 use Modules\Stays\Models\PropertyUnit;

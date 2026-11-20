@@ -2,13 +2,13 @@
 
 namespace App\Services\Operations;
 
-use App\Models\Booking;
-use App\Models\BookingTraveller;
 use App\Models\BusGroup;
-use App\Models\Departure;
 use App\Support\Rooming;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
 
 /**
  * Who sits on which coach — Hijaz's bus groups, brought across.

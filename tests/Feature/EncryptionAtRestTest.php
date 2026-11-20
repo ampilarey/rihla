@@ -2,15 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DocumentVersion;
-use App\Models\Package;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Documents\DocumentWallet;
 use App\Services\Payments\SlipVault;
 use App\Support\Access;
 use App\Support\EncryptedFile;
@@ -18,6 +12,12 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DocumentVersion;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Documents\DocumentWallet;
 use Tests\TestCase;
 
 /**

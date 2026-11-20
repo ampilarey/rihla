@@ -3,15 +3,15 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\Customers\Pages\ViewCustomer;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\User;
 use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
 use Tests\TestCase;
 
 /**

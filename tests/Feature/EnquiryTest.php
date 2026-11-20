@@ -5,9 +5,9 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\EnquiryNote;
-use App\Models\Package;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Umrah\Models\Package;
 use Tests\TestCase;
 
 /**

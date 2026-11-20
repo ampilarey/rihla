@@ -3,7 +3,6 @@
 namespace Modules\Stays\Tests;
 
 use App\Filament\Resources\Notices\Pages\ListNotices;
-use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Notice;
 use App\Models\User;
@@ -17,6 +16,7 @@ use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Services\Stays\StayBooking;
+use Modules\Umrah\Models\Booking;
 use Tests\TestCase;
 
 /**

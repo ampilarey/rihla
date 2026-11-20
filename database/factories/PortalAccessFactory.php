@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Booking;
 use App\Models\PortalAccess;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Booking;
 
 /**
  * @extends Factory<PortalAccess>

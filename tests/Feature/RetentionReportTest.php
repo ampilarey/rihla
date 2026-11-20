@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
-use App\Models\Traveller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

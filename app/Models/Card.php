@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Modules\Umrah\Models\BookingTraveller;
 
 /**
  * A customer card or a luggage tag issued to somebody on a booking.

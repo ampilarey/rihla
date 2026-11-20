@@ -2,10 +2,10 @@
 
 namespace App\Services\Broadcasts\Channels;
 
-use App\Models\Booking;
 use App\Models\BroadcastDelivery;
 use App\Models\EmergencyBroadcast;
 use App\Services\Broadcasts\BroadcastChannel;
+use Modules\Umrah\Models\Booking;
 
 /**
  * SMS — **a seam, not an implementation**.

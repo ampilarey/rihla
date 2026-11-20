@@ -2,17 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Room;
 use App\Models\RoomAssignment;
-use App\Models\Traveller;
 use App\Support\Rooming;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

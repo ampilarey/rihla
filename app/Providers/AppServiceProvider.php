@@ -3,18 +3,12 @@
 namespace App\Providers;
 
 use App\Models\Announcement;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\EmergencyBroadcast;
 use App\Models\Media;
-use App\Models\Package;
 use App\Models\Partner;
-use App\Models\PriceTier;
 use App\Models\Setting;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Models\WaitlistEntry;
 use App\Observers\AuditObserver;
 use App\Observers\CoverImageObserver;
 use App\Services\Family\Doorkeeper;
@@ -47,6 +41,12 @@ use Modules\Stays\Models\Review;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Observers\LostStayObserver;
 use Modules\Stays\Services\Stays\StayGatekeeper;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\PriceTier;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Models\WaitlistEntry;
 use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider

@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\Incidents\IncidentResource;
 use App\Filament\Resources\Incidents\Pages\ListIncidents;
-use App\Models\Departure;
 use App\Models\Incident;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Departure;
 use Tests\TestCase;
 
 /**

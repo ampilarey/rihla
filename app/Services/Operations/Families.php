@@ -2,12 +2,12 @@
 
 namespace App\Services\Operations;
 
-use App\Models\Booking;
-use App\Models\BookingTraveller;
-use App\Models\Departure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
 
 /**
  * Families — batch C from Hijaz, as the owner chose it: a family is the

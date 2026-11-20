@@ -3,11 +3,9 @@
 namespace Tests\Feature;
 
 use App\Exceptions\EditorialStandardNotMet;
-use App\Models\Booking;
 use App\Models\CrmTask;
 use App\Models\Customer;
 use App\Models\CustomerTag;
-use App\Models\Departure;
 use App\Models\Enquiry;
 use App\Models\Quotation;
 use App\Models\User;
@@ -16,6 +14,8 @@ use App\Support\Money;
 use App\Support\Reengagement;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
 use Tests\TestCase;
 
 /**

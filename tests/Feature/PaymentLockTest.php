@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Package;
 use App\Services\Payments\Ledger;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 use Tests\TestCase;
 
 /**

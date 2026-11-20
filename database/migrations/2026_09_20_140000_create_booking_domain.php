@@ -99,7 +99,7 @@ return new class extends Migration
             $table->id();
 
             // RIH-B-2026-0417. Assigned after insert from the primary key —
-            // see App\Models\Booking — so two booking staff pressing save in
+            // see Modules\Umrah\Models\Booking — so two booking staff pressing save in
             // the same second cannot mint the same one.
             $table->string('reference', 32)->nullable()->unique();
 
@@ -164,7 +164,7 @@ return new class extends Migration
             $table->bigInteger('amount_minor')->default(0);
 
             // The person operations calls. Exactly one per booking, enforced
-            // by App\Models\Booking rather than by a partial unique index,
+            // by Modules\Umrah\Models\Booking rather than by a partial unique index,
             // which MySQL does not have.
             $table->boolean('is_lead')->default(false);
 
@@ -180,7 +180,7 @@ return new class extends Migration
             $table->foreignId('booking_id')->constrained()->cascadeOnDelete();
             $table->foreignId('booking_traveller_id')->nullable()->constrained()->nullOnDelete();
 
-            // 'seat', 'extra', 'discount', 'fee'. See App\Models\BookingLine.
+            // 'seat', 'extra', 'discount', 'fee'. See Modules\Umrah\Models\BookingLine.
             $table->string('type', 20);
             $table->string('description');
 

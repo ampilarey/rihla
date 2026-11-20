@@ -2,14 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Filament\Resources\Payments\PaymentResource;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\SlipVault;
@@ -23,6 +19,10 @@ use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Services\Stays\StayBooking;
+use Modules\Umrah\Filament\Resources\Bookings\Pages\EditBooking;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

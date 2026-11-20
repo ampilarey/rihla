@@ -2,12 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\BroadcastDelivery;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\EmergencyBroadcast;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Broadcasts\Broadcaster;
 use App\Services\Broadcasts\Channels\EmailChannel;
@@ -17,6 +14,9 @@ use App\Support\Access;
 use App\Support\DepartureReadiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

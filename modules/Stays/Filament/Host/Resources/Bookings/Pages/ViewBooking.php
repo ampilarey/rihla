@@ -3,7 +3,6 @@
 namespace Modules\Stays\Filament\Host\Resources\Bookings\Pages;
 
 use App\Exceptions\DeskRefusal;
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\User;
@@ -18,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Filament\Host\Resources\Bookings\BookingResource;
 use Modules\Stays\Models\PropertyUnit;
 use Modules\Stays\Models\Stay;

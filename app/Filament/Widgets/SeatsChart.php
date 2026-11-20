@@ -2,10 +2,10 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Departure;
 use App\Support\Brand;
 use Filament\Facades\Filament;
 use Filament\Widgets\ChartWidget;
+use Modules\Umrah\Models\Departure;
 
 /** How full each open departure is: confirmed, held while the money comes in, and free (companies plan, Phase 3g). */
 class SeatsChart extends ChartWidget

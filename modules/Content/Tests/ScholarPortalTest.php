@@ -3,10 +3,7 @@
 namespace Modules\Content\Tests;
 
 use App\Exceptions\EditorialStandardNotMet;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Traveller;
 use App\Services\Portal\Gatekeeper;
 use App\Support\ReviewQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +14,9 @@ use Modules\Content\Models\LearningModule;
 use Modules\Content\Models\Person;
 use Modules\Content\Models\ScholarQuestion;
 use Modules\Content\Models\ZiyarahLocation;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

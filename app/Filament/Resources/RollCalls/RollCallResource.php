@@ -5,13 +5,13 @@ namespace App\Filament\Resources\RollCalls;
 use App\Filament\Resources\RollCalls\Pages\ListRollCalls;
 use App\Filament\Resources\RollCalls\Schemas\RollCallForm;
 use App\Filament\Resources\RollCalls\Tables\RollCallsTable;
-use App\Models\Departure;
 use App\Models\RollCall;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Modules\Umrah\Models\Departure;
 use UnitEnum;
 
 /**

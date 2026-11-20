@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\FlightGroups\Schemas;
 
 use App\Filament\Support\DepartureOptions;
-use App\Models\DepartureFlight;
 use App\Models\FlightGroup;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -12,6 +11,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\Rules\Unique;
+use Modules\Umrah\Models\DepartureFlight;
 
 class FlightGroupForm
 {

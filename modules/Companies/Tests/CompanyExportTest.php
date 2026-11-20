@@ -6,9 +6,7 @@ use App\Filament\Resources\Partners\Pages\EditPartner;
 use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Partner;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Documents\DocumentWallet;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use App\Support\CurrentSite;
@@ -21,6 +19,8 @@ use Livewire\Livewire;
 use Modules\Companies\Models\CompanySite;
 use Modules\Companies\Services\AddCompany;
 use Modules\Companies\Services\CompanyExport;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Documents\DocumentWallet;
 use Tests\TestCase;
 use ZipArchive;
 

@@ -2,12 +2,12 @@
 
 namespace Modules\Telegram\Services;
 
-use App\Models\Booking;
-use App\Models\DepartureChecklistItem;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\Payments\Ledger;
 use Modules\Telegram\Models\TelegramLink;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\DepartureChecklistItem;
 
 /**
  * Button taps. Every action is two taps: the first shows exactly what is

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\Departure;
 use App\Models\Incident;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

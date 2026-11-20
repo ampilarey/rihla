@@ -3,7 +3,6 @@
 namespace Modules\Stays\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Support\Audience;
 use App\Support\Services as ServiceRegistry;
@@ -18,6 +17,7 @@ use Modules\Stays\Models\HostPage;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\PropertyPhoto;
 use Modules\Stays\Services\Stays\ShareCard;
+use Modules\Umrah\Models\Package;
 
 /**
  * A host's own page — §16.8, §16 Phase 14.4.

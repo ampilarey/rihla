@@ -3,14 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Announcement;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\FamilyAccess;
 use App\Models\RollCall;
 use App\Models\RollCallMark;
-use App\Models\Traveller;
 use App\Services\Family\Doorkeeper;
 use App\Services\Portal\Gatekeeper;
 use App\Support\JourneyProgress;
@@ -18,6 +14,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Auth;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Services\Stays\LostStayFollowUp;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 
 /**
  * Somebody who asked — §8.1's minimal CRM.
@@ -123,7 +126,7 @@ class Enquiry extends Model
     /**
      * The stay that fell through and produced this — §15.7.
      *
-     * The mirror of {@see booking()}: that records what an enquiry became,
+     * The mirror of {@see Booking()}: that records what an enquiry became,
      * this records what it was.
      *
      * @return BelongsTo<Stay, $this>

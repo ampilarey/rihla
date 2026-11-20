@@ -2,9 +2,9 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Exceptions\RoomNotAvailable;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\BlockedDate;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\Rate;

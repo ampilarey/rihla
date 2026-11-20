@@ -3,7 +3,6 @@
 namespace Modules\Companies\Tests;
 
 use App\Filament\Resources\Partners\Pages\ListPartners;
-use App\Models\Booking;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\Access;
@@ -15,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Modules\Companies\Services\AddCompany;
+use Modules\Umrah\Models\Booking;
 use Tests\TestCase;
 
 /**

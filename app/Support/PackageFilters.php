@@ -2,13 +2,13 @@
 
 namespace App\Support;
 
-use App\Models\Departure;
-use App\Models\Package;
-use App\Models\PriceTier;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\PriceTier;
 
 /**
  * The package finder's criteria, read from the query string.

@@ -2,36 +2,23 @@
 
 namespace Modules\Companies\Tests;
 
-use App\Filament\Resources\Bookings\BookingResource;
-use App\Filament\Resources\Costs\DepartureCostResource;
 use App\Filament\Resources\Customers\CustomerResource;
-use App\Filament\Resources\Documents\DocumentResource;
 use App\Filament\Resources\Enquiries\EnquiryResource;
 use App\Filament\Resources\Incidents\IncidentResource;
-use App\Filament\Resources\Packages\PackageResource;
-use App\Filament\Resources\Packages\Pages\CreatePackage;
 use App\Filament\Resources\Payments\PaymentResource;
-use App\Filament\Resources\Permits\NusukPermitResource;
 use App\Filament\Resources\Quotations\QuotationResource;
 use App\Filament\Resources\Rooms\RoomResource;
 use App\Filament\Resources\Tasks\CrmTaskResource;
-use App\Filament\Resources\Visas\VisaApplicationResource;
-use App\Models\Booking;
 use App\Models\Card;
 use App\Models\CrmTask;
 use App\Models\Customer;
-use App\Models\DepartureCost;
-use App\Models\Document;
 use App\Models\Enquiry;
 use App\Models\Incident;
-use App\Models\NusukPermit;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Quotation;
 use App\Models\Room;
 use App\Models\User;
-use App\Models\VisaApplication;
 use App\Providers\Filament\CompanyPanelProvider;
 use App\Services\Payments\SlipVault;
 use App\Support\Access;
@@ -44,6 +31,19 @@ use Livewire\Livewire;
 use Modules\Companies\Services\AddCompany;
 use Modules\Content\Filament\Resources\People\PersonResource;
 use Modules\Content\Models\Person;
+use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
+use Modules\Umrah\Filament\Resources\Costs\DepartureCostResource;
+use Modules\Umrah\Filament\Resources\Documents\DocumentResource;
+use Modules\Umrah\Filament\Resources\Packages\PackageResource;
+use Modules\Umrah\Filament\Resources\Packages\Pages\CreatePackage;
+use Modules\Umrah\Filament\Resources\Permits\NusukPermitResource;
+use Modules\Umrah\Filament\Resources\Visas\VisaApplicationResource;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\DepartureCost;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\NusukPermit;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\VisaApplication;
 use Tests\TestCase;
 
 /**

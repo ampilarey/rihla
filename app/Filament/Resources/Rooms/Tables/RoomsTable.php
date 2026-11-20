@@ -2,11 +2,8 @@
 
 namespace App\Filament\Resources\Rooms\Tables;
 
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Room;
 use App\Models\RoomAssignment;
-use App\Models\Traveller;
 use App\Support\Rooming;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -21,6 +18,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 
 class RoomsTable
 {

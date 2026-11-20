@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\Booking;
-use App\Models\NusukPermit;
-use App\Models\Traveller;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\NusukPermit;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * @extends Factory<NusukPermit>

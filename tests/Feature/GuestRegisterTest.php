@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Casts\EncryptedIdentifier;
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Customer;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;

@@ -3,12 +3,12 @@
 namespace App\Services\Operations;
 
 use App\Exceptions\DeskRefusal;
-use App\Models\Booking;
-use App\Models\BookingTraveller;
-use App\Models\DepartureExcursion;
-use App\Models\ExcursionBooking;
-use App\Models\ExcursionParticipant;
 use Illuminate\Support\Facades\DB;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\DepartureExcursion;
+use Modules\Umrah\Models\ExcursionBooking;
+use Modules\Umrah\Models\ExcursionParticipant;
 
 /**
  * Signs people up for an additional trip and takes them off it (companies

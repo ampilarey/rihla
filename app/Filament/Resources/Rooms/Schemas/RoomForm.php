@@ -2,14 +2,14 @@
 
 namespace App\Filament\Resources\Rooms\Schemas;
 
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Room;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
 
 class RoomForm
 {

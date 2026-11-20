@@ -2,13 +2,8 @@
 
 namespace App\Services\Operations;
 
-use App\Models\BookingTraveller;
 use App\Models\Card;
-use App\Models\DepartureHotel;
-use App\Models\Document;
 use App\Models\RoomAssignment;
-use App\Models\Traveller;
-use App\Services\Invoices\Documents;
 use App\Support\EncryptedFile;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as PdfDocument;
@@ -17,6 +12,11 @@ use chillerlan\QRCode\Output\QROutputInterface;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Invoices\Documents;
 
 /**
  * Customer cards and luggage tags — Hijaz's, brought across.

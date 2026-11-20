@@ -2,15 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureCost;
-use App\Models\Document;
 use App\Models\Enquiry;
 use App\Models\EnquiryNote;
-use App\Models\NusukPermit;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\JourneyProfit;
 use App\Support\Kpi;
@@ -18,6 +12,12 @@ use App\Support\Kpis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Content\Models\LearningModule;
 use Modules\Content\Models\ModuleCompletion;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureCost;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\NusukPermit;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

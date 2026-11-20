@@ -2,10 +2,10 @@
 
 namespace App\Support;
 
-use App\Models\Departure;
-use App\Models\Package;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 
 /**
  * The choices the finder offers, derived from departures that exist.

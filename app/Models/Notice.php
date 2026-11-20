@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use Modules\Stays\Models\Stay;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
 
 /**
  * Something a customer needs to know.

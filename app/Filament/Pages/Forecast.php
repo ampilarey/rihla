@@ -2,12 +2,12 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Departure;
 use App\Support\SeatForecast;
 use BackedEnum;
 use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Departure;
 use UnitEnum;
 
 /**

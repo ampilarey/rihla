@@ -3,12 +3,7 @@
 namespace Modules\Content\Tests;
 
 use App\Exceptions\EditorialStandardNotMet;
-use App\Filament\Pages\DepartureBoard;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\ItineraryItem;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
@@ -25,6 +20,11 @@ use Modules\Content\Models\QuizOption;
 use Modules\Content\Models\QuizQuestion;
 use Modules\Content\Models\ZiyarahLocation;
 use Modules\Content\Services\Learning\Progress;
+use Modules\Umrah\Filament\Pages\DepartureBoard;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\ItineraryItem;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

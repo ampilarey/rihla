@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Traveller;
 
 /** One person in one room. */
 class RoomAssignment extends Model

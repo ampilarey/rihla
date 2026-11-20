@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Models\Departure;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\Quotation;
@@ -12,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Modules\Companies\Models\CompanyInvoice;
+use Modules\Umrah\Models\Departure;
 
 /**
  * What needs attention — §8.5's smart alerts.

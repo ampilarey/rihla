@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * A head count at one moment — §8.3.

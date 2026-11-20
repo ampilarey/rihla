@@ -6,12 +6,12 @@ use App\Exceptions\IllegalPaymentTransition;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Models\User;
-use App\Services\Booking\SeatAllocator;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use LogicException;
+use Modules\Umrah\Services\Booking\SeatAllocator;
 
 /**
  * The only thing in this application that moves a cached paid total —

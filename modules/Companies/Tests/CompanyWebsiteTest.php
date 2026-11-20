@@ -3,16 +3,10 @@
 namespace Modules\Companies\Tests;
 
 use App\Filament\Resources\Partners\Pages\EditPartner;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Enquiry;
-use App\Models\Package;
 use App\Models\Partner;
-use App\Models\PriceTier;
 use App\Models\User;
-use App\Models\WaitlistEntry;
-use App\Services\Booking\Waitlist;
 use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use App\Support\Brand;
@@ -30,6 +24,12 @@ use Livewire\Livewire;
 use Modules\Companies\Filament\Pages\Website;
 use Modules\Companies\Models\CompanySite;
 use Modules\Companies\Services\AddCompany;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\PriceTier;
+use Modules\Umrah\Models\WaitlistEntry;
+use Modules\Umrah\Services\Booking\Waitlist;
 use Tests\TestCase;
 
 /**

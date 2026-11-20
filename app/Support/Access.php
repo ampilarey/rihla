@@ -109,7 +109,7 @@ final class Access
 
         // Bookings. `booking.create` is the desk: a walk-in or a phone
         // call taken in the panel, through the same allocator and prices
-        // as the checkout (App\Services\Booking\BookingDesk). Deliberately
+        // as the checkout (Modules\Umrah\Services\Booking\BookingDesk). Deliberately
         // no `booking.delete`: a booking is a financial record that is
         // cancelled — a status, with a row saying who and why — never
         // deleted, and a verb for it would look enforced and gate nothing.

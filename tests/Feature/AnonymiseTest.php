@@ -3,16 +3,11 @@
 namespace Tests\Feature;
 
 use App\Console\Commands\Anonymise;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Enquiry;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\PortalAccess;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Documents\DocumentWallet;
 use App\Support\Anonymisation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -22,6 +17,11 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Stays\Models\Property;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Documents\DocumentWallet;
 use Tests\TestCase;
 
 /**

@@ -5,13 +5,13 @@ namespace App\Filament\Resources\Broadcasts;
 use App\Filament\Resources\Broadcasts\Pages\ListEmergencyBroadcasts;
 use App\Filament\Resources\Broadcasts\Schemas\EmergencyBroadcastForm;
 use App\Filament\Resources\Broadcasts\Tables\EmergencyBroadcastsTable;
-use App\Models\Departure;
 use App\Models\EmergencyBroadcast;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Modules\Umrah\Models\Departure;
 use UnitEnum;
 
 /**

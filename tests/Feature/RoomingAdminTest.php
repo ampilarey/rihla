@@ -4,19 +4,19 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\Rooms\Pages\ListRooms;
 use App\Filament\Resources\Rooms\RoomResource;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Room;
 use App\Models\RoomAssignment;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\Rooming;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

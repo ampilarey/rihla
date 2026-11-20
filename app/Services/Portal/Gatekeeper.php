@@ -2,7 +2,6 @@
 
 namespace App\Services\Portal;
 
-use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\PortalAccess;
 use App\Models\User;
@@ -12,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Modules\Umrah\Models\Booking;
 
 /**
  * Issuing, checking and revoking the way into the Pilgrim Portal.

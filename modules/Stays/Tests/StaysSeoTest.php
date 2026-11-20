@@ -2,13 +2,13 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Models\Package;
 use App\Support\Services;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\Review;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
+use Modules\Umrah\Models\Package;
 use Tests\TestCase;
 
 /**

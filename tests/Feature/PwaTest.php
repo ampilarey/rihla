@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\User;
 use App\Services\Portal\Gatekeeper;
 use App\Support\Brand;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Umrah\Models\Booking;
 use Tests\TestCase;
 
 /**

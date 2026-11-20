@@ -2,21 +2,21 @@
 
 namespace App\Services\Operations;
 
-use App\Models\Booking;
-use App\Models\BookingTraveller;
 use App\Models\BusGroup;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
-use App\Models\Document;
 use App\Models\FlightGroup;
-use App\Models\NusukPermit;
 use App\Models\Room;
-use App\Models\VisaApplication;
-use App\Services\Invoices\Documents;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as PdfDocument;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\NusukPermit;
+use Modules\Umrah\Models\VisaApplication;
+use Modules\Umrah\Services\Invoices\Documents;
 
 /**
  * The lists a departure runs on — Hijaz's, brought across.

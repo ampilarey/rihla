@@ -2,8 +2,8 @@
 
 namespace Modules\Stays\Services\Stays;
 
-use App\Exceptions\CommissionNotSet;
 use App\Models\Partner;
+use Modules\Stays\Exceptions\CommissionNotSet;
 use Modules\Stays\Models\Stay;
 
 /**

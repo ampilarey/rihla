@@ -3,17 +3,17 @@
 namespace Tests\Feature;
 
 use App\Exceptions\DeskRefusal;
-use App\Filament\Resources\Bookings\Pages\EditBooking;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Notice;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\OfficeContact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Filament\Resources\Bookings\Pages\EditBooking;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

@@ -2,7 +2,6 @@
 
 namespace App\Services\Broadcasts;
 
-use App\Models\Booking;
 use App\Models\BroadcastDelivery;
 use App\Models\EmergencyBroadcast;
 use App\Models\User;
@@ -10,6 +9,7 @@ use App\Services\Broadcasts\Channels\EmailChannel;
 use App\Services\Broadcasts\Channels\PortalNotice;
 use App\Services\Broadcasts\Channels\SmsChannel;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Booking;
 
 /**
  * Sending one broadcast to a whole departure — §6.5.

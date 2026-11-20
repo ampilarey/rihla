@@ -3,7 +3,6 @@
 namespace Modules\Stays\Tests;
 
 use App\Exceptions\DeskRefusal;
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\User;
@@ -12,6 +11,7 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Filament\Host\Pages\Calendar;
 use Modules\Stays\Filament\Host\Pages\Housekeeping;
 use Modules\Stays\Filament\Host\Pages\NewBooking;

@@ -6,6 +6,9 @@ use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureFlight;
 
 /**
  * The people of one departure who fly out on one flight and home on

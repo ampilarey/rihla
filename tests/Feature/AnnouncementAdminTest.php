@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Filament\Resources\Announcements\AnnouncementResource;
 use App\Filament\Resources\Announcements\Pages\ListAnnouncements;
 use App\Models\Announcement;
-use App\Models\Departure;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Departure;
 use Tests\TestCase;
 
 /**

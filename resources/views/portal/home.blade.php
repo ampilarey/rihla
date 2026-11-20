@@ -153,7 +153,7 @@
                 </a>
 
                 {{-- The travel letters (Phase 3h), once the booking is confirmed. --}}
-                @if(in_array($booking->status, [\App\Models\Booking::CONFIRMED, \App\Models\Booking::COMPLETED], true))
+                @if(in_array($booking->status, [\Modules\Umrah\Models\Booking::CONFIRMED, \Modules\Umrah\Models\Booking::COMPLETED], true))
                     <a dir="auto"
                        class="mt-4 ms-4 inline-block py-1 text-sm font-medium text-wine-700 underline"
                        href="{{ route('portal.letters') }}">

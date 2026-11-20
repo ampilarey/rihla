@@ -2,9 +2,7 @@
 
 namespace App\Filament\Resources\Quotations\Schemas;
 
-use App\Models\Departure;
 use App\Models\Enquiry;
-use App\Models\Package;
 use App\Support\Money;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -13,6 +11,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 
 class QuotationForm
 {

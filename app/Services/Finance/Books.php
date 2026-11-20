@@ -2,11 +2,6 @@
 
 namespace App\Services\Finance;
 
-use App\Models\Booking;
-use App\Models\Departure;
-use App\Models\DepartureCost;
-use App\Models\DepartureExcursion;
-use App\Models\ExcursionBooking;
 use App\Models\LedgerEntry;
 use App\Models\Payment;
 use App\Services\Operations\ListDocument;
@@ -17,6 +12,11 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureCost;
+use Modules\Umrah\Models\DepartureExcursion;
+use Modules\Umrah\Models\ExcursionBooking;
 
 /**
  * The company books — batch C from Hijaz, as the owner chose: a cash book

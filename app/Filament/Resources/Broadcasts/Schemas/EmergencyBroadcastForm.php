@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Broadcasts\Schemas;
 
-use App\Models\Departure;
 use App\Models\Incident;
 use App\Services\Broadcasts\Broadcaster;
 use Filament\Forms\Components\Select;
@@ -12,6 +11,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Modules\Umrah\Models\Departure;
 
 class EmergencyBroadcastForm
 {

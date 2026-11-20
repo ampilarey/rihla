@@ -14,7 +14,7 @@ return [
     | hour is expensive — and changing it should not be a deployment.
     |
     | Expiry is never trusted to a scheduler. A hold is expired because the
-    | clock says so, and App\Services\Booking\SeatAllocator reclaims lapsed
+    | clock says so, and Modules\Umrah\Services\Booking\SeatAllocator reclaims lapsed
     | holds inside the same row lock it takes to issue a new one. The
     | `bookings:expire-holds` command exists so the counters are tidy on a
     | quiet departure too, not because correctness depends on cron running.

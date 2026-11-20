@@ -3,13 +3,13 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Support\DepartureOptions;
-use App\Models\Departure;
 use App\Services\Finance\Books as Ledgers;
 use App\Support\CompanyRequest;
 use App\Support\JourneyProfit;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Pages\Page;
+use Modules\Umrah\Models\Departure;
 use UnitEnum;
 
 /**

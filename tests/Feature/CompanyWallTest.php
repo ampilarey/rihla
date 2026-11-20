@@ -2,15 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\Bookings\BookingResource;
-use App\Models\Booking;
-use App\Models\BookingTraveller;
 use App\Models\Card;
 use App\Models\Customer;
 use App\Models\Partner;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Documents\Reading\Duplicates;
 use App\Services\Operations\Cards;
 use App\Support\Access;
 use App\Support\CompanyContext;
@@ -19,6 +14,11 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Documents\Reading\Duplicates;
 use Tests\TestCase;
 
 /**

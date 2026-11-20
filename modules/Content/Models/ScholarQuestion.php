@@ -3,14 +3,14 @@
 namespace Modules\Content\Models;
 
 use App\Exceptions\EditorialStandardNotMet;
-use App\Models\Booking;
 use App\Models\Concerns\BelongsToCompany;
-use App\Models\Traveller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * A question somebody asked, and what a named scholar said back — §6.4.

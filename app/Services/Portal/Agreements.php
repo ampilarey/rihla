@@ -3,14 +3,14 @@
 namespace App\Services\Portal;
 
 use App\Exceptions\DeskRefusal;
-use App\Models\Agreement;
-use App\Models\Booking;
-use App\Models\Document;
 use App\Models\User;
-use App\Services\Documents\DocumentWallet;
 use App\Support\CompanyDetails;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Modules\Umrah\Models\Agreement;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Services\Documents\DocumentWallet;
 
 /**
  * Signs a booking's agreement (companies plan, Phase 3h, part 3, from

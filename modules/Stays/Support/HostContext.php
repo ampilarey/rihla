@@ -2,7 +2,6 @@
 
 namespace Modules\Stays\Support;
 
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -18,6 +17,7 @@ use Modules\Stays\Models\Review;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Models\StayDiscount;
+use Modules\Umrah\Models\Package;
 
 /**
  * "Is this request being answered for a host, and may they?" — §16.6.

@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
-use App\Models\Departure;
-use App\Models\DepartureHotel;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
 
 /**
  * Where a group is in its journey — §6.2's "journey progress".

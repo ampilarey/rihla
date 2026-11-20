@@ -2,17 +2,17 @@
 
 namespace Modules\Telegram\Services;
 
-use App\Models\Booking;
 use App\Models\CrmTask;
-use App\Models\Departure;
-use App\Models\DepartureChecklistItem;
-use App\Models\Document;
-use App\Models\DocumentExtraction;
 use App\Models\Payment;
-use App\Models\PaymentSchedule;
 use App\Models\User;
 use App\Support\DepartureReadiness;
 use Illuminate\Database\Eloquent\Collection;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureChecklistItem;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\DocumentExtraction;
+use Modules\Umrah\Models\PaymentSchedule;
 
 /**
  * The morning message: what is waiting for this person, by what they may

@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\OperationsLog\Schemas;
 
-use App\Models\Departure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Modules\Umrah\Models\Departure;
 
 class OperationsLogEntryForm
 {

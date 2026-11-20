@@ -24,7 +24,7 @@
                 @foreach($travellers as $line)
                     @php($traveller = $line->traveller)
                     @php($theirs = $documents[$traveller->id] ?? collect())
-                    @php($passport = $theirs->firstWhere('type', \App\Models\Document::PASSPORT))
+                    @php($passport = $theirs->firstWhere('type', \Modules\Umrah\Models\Document::PASSPORT))
                     @php($visa = $visas[$traveller->id] ?? null)
                     @php($permit = $permits[$traveller->id] ?? null)
 
@@ -39,7 +39,7 @@
                                         {{ __('messages.Not sent yet') }}
                                     @else
                                         {{ \App\Support\PortalWords::documentStatus($passport->status) }}
-                                        @if($passport->status === \App\Models\Document::REJECTED && $passport->rejection_reason)
+                                        @if($passport->status === \Modules\Umrah\Models\Document::REJECTED && $passport->rejection_reason)
                                             <span class="block font-normal text-ink-muted">{{ $passport->rejection_reason }}</span>
                                         @endif
                                     @endif

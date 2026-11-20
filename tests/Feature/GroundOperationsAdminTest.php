@@ -6,19 +6,19 @@ use App\Filament\Pages\Lists;
 use App\Filament\Pages\Scan;
 use App\Filament\Resources\BusGroups\BusGroupResource;
 use App\Filament\Resources\BusGroups\Pages\ListBusGroups;
-use App\Models\Booking;
-use App\Models\BookingTraveller;
 use App\Models\BusGroup;
 use App\Models\Card;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Operations\Buses;
 use App\Services\Operations\Cards;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

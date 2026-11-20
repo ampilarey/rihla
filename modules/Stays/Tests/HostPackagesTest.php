@@ -2,9 +2,6 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Filament\Resources\Packages\PackageResource as StaffPackageResource;
-use App\Filament\Resources\Packages\Pages\ListPackages as StaffListPackages;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\Access;
@@ -18,6 +15,9 @@ use Modules\Stays\Filament\Host\Resources\Packages\Pages\ListPackages;
 use Modules\Stays\Models\HostMembership;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Support\HostRole;
+use Modules\Umrah\Filament\Resources\Packages\PackageResource as StaffPackageResource;
+use Modules\Umrah\Filament\Resources\Packages\Pages\ListPackages as StaffListPackages;
+use Modules\Umrah\Models\Package;
 use Tests\TestCase;
 
 /**

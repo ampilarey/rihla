@@ -1,0 +1,364 @@
+<?php
+
+namespace Modules\Umrah\Models;
+
+use App\Models\Concerns\BelongsToCompany;
+use App\Models\Concerns\HasNotices;
+use App\Models\CrmTask;
+use App\Models\Customer;
+use App\Models\Payment;
+use App\Models\User;
+use App\Services\Payments\Ledger;
+use App\Services\Payments\TakesPayments;
+use App\Support\CompanyDetails;
+use App\Support\Money;
+use App\Support\PackageSnapshot;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Auth;
+use Modules\Umrah\Exceptions\IllegalBookingTransition;
+
+/**
+ * The aggregate root: one party, one departure, one contract.
+ *
+ * Everything else in the booking domain hangs off this row —
+ * `booking_travellers`, `booking_lines`, `seat_holds` and
+ * `booking_status_transitions` — and nothing else may change a booking's
+ * status except {@see transitionTo()}, so that every change has a row saying
+ * who made it and why.
+ *
+ * Seats are **not** taken here. Capacity lives on the departure and is only
+ * ever moved by Modules\Umrah\Services\Booking\SeatAllocator, inside a row lock. A
+ * model method that quietly incremented a counter would be exactly the code
+ * path the plan's DB-level constraint exists to catch.
+ */
+/**
+ * @property int|null $contact_traveller_id the office contact (companies plan, Phase 3a)
+ */
+class Booking extends Model implements TakesPayments
+{
+    use BelongsToCompany, HasFactory, HasNotices;
+
+    protected $fillable = [
+        'customer_id', 'departure_id', 'package_snapshot', 'currency',
+        'seats', 'total_minor', 'deposit_minor', 'paid_minor', 'notes',
+    ];
+
+    protected $casts = [
+        'package_snapshot' => 'array',
+        'seats' => 'integer',
+        'total_minor' => 'integer',
+        'deposit_minor' => 'integer',
+        'paid_minor' => 'integer',
+        'confirmed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+    ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'currency' => 'MVR',
+        'status' => self::DRAFT,
+        'seats' => 1,
+    ];
+
+    /** Being assembled. No seats held yet. */
+    public const DRAFT = 'draft';
+
+    /** Seats are off the departure and the clock is running. */
+    public const HELD = 'held';
+
+    /** Paid (or approved by staff). The seats are theirs. */
+    public const CONFIRMED = 'confirmed';
+
+    /** The hold lapsed before anyone paid. Final — a returning customer starts a new booking. */
+    public const EXPIRED = 'expired';
+
+    public const CANCELLED = 'cancelled';
+
+    /** They travelled and came home. */
+    public const COMPLETED = 'completed';
+
+    /** @var list<string> */
+    public const STATUSES = [
+        self::DRAFT, self::HELD, self::CONFIRMED, self::EXPIRED, self::CANCELLED, self::COMPLETED,
+    ];
+
+    /**
+     * Where each status may go next.
+     *
+     * `expired` is final on purpose. Reviving a lapsed booking would mean
+     * re-taking seats that somebody else may now hold, at a price that may
+     * have changed, under terms that may have changed — all of which is a
+     * new booking wearing an old reference. Coming back means starting
+     * again, and the old row stays as the record that they tried.
+     *
+     * @var array<string, list<string>>
+     */
+    public const TRANSITIONS = [
+        self::DRAFT => [self::HELD, self::CANCELLED],
+        self::HELD => [self::CONFIRMED, self::EXPIRED, self::CANCELLED],
+        self::CONFIRMED => [self::COMPLETED, self::CANCELLED],
+        self::EXPIRED => [],
+        self::CANCELLED => [],
+        self::COMPLETED => [],
+    ];
+
+    protected static function booted(): void
+    {
+        // Freeze the product before the row exists, not after: a booking
+        // that is briefly in the database without a snapshot is a booking
+        // that can be read without one.
+        static::creating(function (self $booking): void {
+            $booking->captureSnapshot();
+        });
+
+        // The reference is minted from the primary key, which only exists
+        // after the insert. Deriving it from a count instead — "how many
+        // bookings this year, plus one" — races: two staff saving in the
+        // same second both read the same count and both get RIH-B-2026-0418,
+        // and the unique index turns one of them into a 500 at the worst
+        // possible moment.
+        static::created(function (self $booking): void {
+            if ($booking->reference === null) {
+                $booking->forceFill(['reference' => $booking->makeReference()])->saveQuietly();
+            }
+        });
+    }
+
+    /**
+     * Somebody on it was registered before the departure had their price
+     * (companies plan, Phase 3b). Nothing is owed, and no money is taken,
+     * until everybody is priced.
+     */
+    public function awaitsPrice(): bool
+    {
+        return $this->travellers()->where('awaits_price', true)->exists();
+    }
+
+    public function makeReference(): string
+    {
+        return sprintf(
+            '%s-%s-%s',
+            CompanyDetails::referencePrefix($this->company_id, 'B', (string) config('booking.reference.prefix', 'RIH-B')),
+            ($this->created_at ?? now())->format('Y'),
+            str_pad((string) $this->getKey(), (int) config('booking.reference.pad', 4), '0', STR_PAD_LEFT),
+        );
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<Departure, $this> */
+    public function departure(): BelongsTo
+    {
+        return $this->belongsTo(Departure::class);
+    }
+
+    /**
+     * Money recorded against this booking, newest first.
+     *
+     * Read here; written only through
+     * {@see Ledger}, which owns `paid_minor` under
+     * a row lock for the same reason SeatAllocator owns the seat counters.
+     *
+     * Polymorphic since §15.3 (Phase 8.6): a payment belongs to whatever it
+     * is against, and a booking is one of those things rather than the only
+     * one.
+     *
+     * @return MorphMany<Payment, $this>
+     */
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(Payment::class, 'payable')->orderByDesc('id');
+    }
+
+    /** @return HasMany<BookingTraveller, $this> */
+    public function travellers(): HasMany
+    {
+        return $this->hasMany(BookingTraveller::class);
+    }
+
+    /** @return HasMany<BookingLine, $this> */
+    public function lines(): HasMany
+    {
+        return $this->hasMany(BookingLine::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** @return HasMany<SeatHold, $this> */
+    public function seatHolds(): HasMany
+    {
+        return $this->hasMany(SeatHold::class);
+    }
+
+    /**
+     * Instalments: this much by this date, in due order. Information for
+     * the invoice and a nudge for Today, never a rule the ledger enforces.
+     *
+     * @return HasMany<PaymentSchedule, $this>
+     */
+    public function schedule(): HasMany
+    {
+        return $this->hasMany(PaymentSchedule::class)->orderBy('due_on')->orderBy('sort_order')->orderBy('id');
+    }
+
+    /**
+     * The reasons behind the negative lines, taken back or not.
+     *
+     * @return HasMany<Discount, $this>
+     */
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(Discount::class)->orderBy('id');
+    }
+
+    /** @return MorphMany<CrmTask, $this> */
+    public function tasks(): MorphMany
+    {
+        return $this->morphMany(CrmTask::class, 'about')->orderBy('due_on');
+    }
+
+    /** @return HasMany<BookingStatusTransition, $this> */
+    public function transitions(): HasMany
+    {
+        return $this->hasMany(BookingStatusTransition::class)->orderBy('created_at')->orderBy('id');
+    }
+
+    /**
+     * Freeze what is being sold. Called once, when the booking is created.
+     *
+     * Not called again on save: re-snapshotting an existing booking is the
+     * bug this column exists to prevent.
+     */
+    public function captureSnapshot(): void
+    {
+        if ($this->package_snapshot === null && $this->departure !== null) {
+            $this->package_snapshot = PackageSnapshot::of($this->departure);
+        }
+    }
+
+    /**
+     * Move to a new status, recording who and why.
+     *
+     * The only way the column changes. `$actor` defaults to whoever is
+     * signed in, and stays null when nobody is — a hold expiring at 02:00
+     * has no author, and putting a name against it would be a lie in the
+     * one record whose job is not to lie.
+     */
+    public function transitionTo(string $status, ?string $reason = null, ?User $actor = null): void
+    {
+        if (! in_array($status, self::TRANSITIONS[$this->status] ?? [], true)) {
+            throw IllegalBookingTransition::from($this, $status);
+        }
+
+        $from = $this->status;
+
+        $this->forceFill(array_filter([
+            'status' => $status,
+            'confirmed_at' => $status === self::CONFIRMED ? now() : null,
+            'cancelled_at' => $status === self::CANCELLED ? now() : null,
+            'cancellation_reason' => $status === self::CANCELLED ? $reason : null,
+        ], fn ($value): bool => $value !== null))->save();
+
+        $this->transitions()->create([
+            'from_status' => $from,
+            'to_status' => $status,
+            'user_id' => ($actor ?? Auth::user())?->getKey(),
+            'reason' => $reason,
+            'created_at' => now(),
+        ]);
+    }
+
+    // ── Money ────────────────────────────────────────────────────────────
+    //
+    // Integer minor units in the columns, Money objects at the boundary
+    // ([R-7]). Nothing here multiplies or divides by 100.
+
+    public function total(): Money
+    {
+        return Money::ofMinor($this->total_minor, $this->currency);
+    }
+
+    public function paid(): Money
+    {
+        return Money::ofMinor($this->paid_minor, $this->currency);
+    }
+
+    // ── App\Services\Payments\TakesPayments ───────────────────────────────
+
+    public function paymentCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function storePaidTotal(int $minor): void
+    {
+        $this->forceFill(['paid_minor' => $minor])->save();
+    }
+
+    public function balance(): Money
+    {
+        return Money::ofMinor($this->total_minor - $this->paid_minor, $this->currency);
+    }
+
+    /**
+     * Recalculate the total from the lines.
+     *
+     * The lines are the truth; `total_minor` is a cached sum so that a list
+     * of five hundred bookings is one query rather than five hundred and
+     * one. Signed, because a discount is a negative line.
+     */
+    public function recalculateTotal(): void
+    {
+        $this->forceFill(['total_minor' => (int) $this->lines()->sum('amount_minor')])->save();
+    }
+
+    // ── Reading ──────────────────────────────────────────────────────────
+
+    /** The person operations calls. */
+    public function leadTraveller(): ?BookingTraveller
+    {
+        return $this->travellers->firstWhere('is_lead', true)
+            ?? $this->travellers->first();
+    }
+
+    /**
+     * Still a booking somebody can act on: draft, held or confirmed. Money
+     * can be charged to it and a discount given; once it has expired, been
+     * cancelled or come home, it is a record.
+     */
+    public function isLive(): bool
+    {
+        return in_array($this->status, [self::DRAFT, self::HELD, self::CONFIRMED], true);
+    }
+
+    /** Seats held or confirmed — what this booking is costing the departure. */
+    public function holdsSeats(): bool
+    {
+        return in_array($this->status, [self::HELD, self::CONFIRMED], true);
+    }
+
+    /** @param  Builder<$this>  $query */
+    public function scopeActive($query)
+    {
+        return $query->whereIn('status', [self::DRAFT, self::HELD, self::CONFIRMED]);
+    }
+
+    /** @param  Builder<$this>  $query */
+    public function scopeForDeparture($query, Departure|int $departure)
+    {
+        return $query->where('departure_id', $departure instanceof Departure ? $departure->getKey() : $departure);
+    }
+
+    /** @return list<string> */
+    protected function companyParents(): array
+    {
+        return ['customer', 'departure'];
+    }
+}

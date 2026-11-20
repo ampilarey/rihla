@@ -2,9 +2,9 @@
 
 namespace App\Support;
 
-use App\Models\Departure;
-use App\Models\DepartureFlight;
 use Carbon\CarbonInterface;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureFlight;
 
 /**
  * Where a departure is on each day, in order: Jeddah, Makkah, Madinah

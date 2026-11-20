@@ -2,7 +2,6 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\Access;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Modules\Stays\Exceptions\CalendarFeedRefused;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Filament\Host\Resources\Listings\Pages\EditListing;
 use Modules\Stays\Filament\Resources\Properties\Pages\EditProperty;
 use Modules\Stays\Filament\Resources\Properties\RelationManagers\CalendarFeedsRelationManager;

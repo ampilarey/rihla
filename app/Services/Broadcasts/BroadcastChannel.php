@@ -2,8 +2,8 @@
 
 namespace App\Services\Broadcasts;
 
-use App\Models\Booking;
 use App\Models\EmergencyBroadcast;
+use Modules\Umrah\Models\Booking;
 
 /**
  * One way of reaching a booking — §6.5.

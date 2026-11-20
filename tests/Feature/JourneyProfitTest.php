@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureCost;
 use App\Support\JourneyProfit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureCost;
 use Tests\TestCase;
 
 /**

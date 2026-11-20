@@ -4,12 +4,8 @@ namespace Modules\Companies\Tests;
 
 use App\Exceptions\DeskRefusal;
 use App\Filament\Resources\Partners\Pages\EditPartner;
-use App\Models\Departure;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\User;
-use App\Services\Documents\Reading\ReaderManager;
-use App\Services\Documents\Reading\Readers\ManualReader;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use App\Support\CompanyFeatures;
@@ -21,6 +17,10 @@ use Livewire\Livewire;
 use Modules\Companies\Services\AddCompany;
 use Modules\Companies\Services\CompanyTeam;
 use Modules\Telegram\Services\Bot;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Services\Documents\Reading\ReaderManager;
+use Modules\Umrah\Services\Documents\Reading\Readers\ManualReader;
 use Tests\TestCase;
 
 /**

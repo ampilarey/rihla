@@ -3,8 +3,6 @@
 namespace Modules\Content\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\Traveller;
 use App\Support\StudyPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +12,8 @@ use Modules\Content\Models\LearningPath;
 use Modules\Content\Models\ScholarQuestion;
 use Modules\Content\Services\Assistant\PilgrimAssistant;
 use Modules\Content\Services\Learning\Progress;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * The Learning Academy inside the Pilgrim Portal — §7.3.

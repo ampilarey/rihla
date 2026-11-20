@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\Departure;
-use App\Models\Package;
-use App\Models\PriceTier;
 use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\PriceTier;
 use Tests\TestCase;
 
 /**

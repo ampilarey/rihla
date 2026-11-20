@@ -54,7 +54,7 @@
                     <x-filament::button wire:click="checkIn" :color="$member->isCheckedIn() ? 'gray' : 'success'">{{ $member->isCheckedIn() ? 'Undo boarding' : 'Check in to '.$member->busGroup->name }}</x-filament::button>
                 @endif
                 @if ($canOpenBooking)
-                    <x-filament::button tag="a" color="gray" href="{{ \App\Filament\Resources\Bookings\BookingResource::getUrl('view', ['record' => $booking]) }}">Booking</x-filament::button>
+                    <x-filament::button tag="a" color="gray" href="{{ \Modules\Umrah\Filament\Resources\Bookings\BookingResource::getUrl('view', ['record' => $booking]) }}">Booking</x-filament::button>
                 @endif
                 <x-filament::button wire:click="clear" color="gray">Next</x-filament::button>
             </div>

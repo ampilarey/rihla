@@ -4,13 +4,9 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\BusGroups\Pages\ListBusGroups;
 use App\Filament\Resources\FlightGroups\Pages\ListFlightGroups;
-use App\Models\Booking;
 use App\Models\BusGroup;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureFlight;
 use App\Models\FlightGroup;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Operations\Buses;
 use App\Services\Operations\FlightGroups;
@@ -18,6 +14,10 @@ use App\Services\Operations\Lists;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureFlight;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

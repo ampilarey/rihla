@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\DeskRefusal;
-use App\Models\Agreement;
-use App\Models\Booking;
-use App\Services\Invoices\Documents;
 use App\Services\Portal\Agreements;
 use App\Support\CompanyDetails;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Umrah\Models\Agreement;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Services\Invoices\Documents;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

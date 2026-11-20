@@ -3,7 +3,6 @@
 namespace Modules\Stays\Console\Commands;
 
 use App\Models\Customer;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -25,6 +24,7 @@ use Modules\Stays\Services\Stays\Commission;
 use Modules\Stays\Services\Stays\Reviews;
 use Modules\Stays\Services\Stays\StayDesk;
 use Modules\Stays\Services\Stays\StayMessages;
+use Modules\Umrah\Models\Package;
 
 /**
  * A demo host to click through on the test server — §16.

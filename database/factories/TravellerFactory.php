@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Customer;
-use App\Models\Traveller;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * @extends Factory<Traveller>

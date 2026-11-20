@@ -4,10 +4,10 @@ namespace App\Filament\Pages;
 
 use App\Filament\Support\DepartureOptions;
 use App\Http\Controllers\OperationsController;
-use App\Models\Departure;
 use App\Services\Operations\Lists as ListBuilder;
 use BackedEnum;
 use Filament\Pages\Page;
+use Modules\Umrah\Models\Departure;
 use UnitEnum;
 
 /**

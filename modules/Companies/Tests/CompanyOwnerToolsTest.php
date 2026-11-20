@@ -4,9 +4,7 @@ namespace Modules\Companies\Tests;
 
 use App\Filament\Resources\Partners\Pages\EditPartner;
 use App\Filament\Resources\Partners\Pages\ListPartners;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\Access;
@@ -18,6 +16,8 @@ use Livewire\Livewire;
 use Modules\Companies\Services\AddCompany;
 use Modules\Companies\Services\CompanyUsage;
 use Modules\Telegram\Services\Bot;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
 use Tests\TestCase;
 
 /**

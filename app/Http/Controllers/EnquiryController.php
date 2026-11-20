@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Enquiry;
 use App\Models\EnquiryNote;
-use App\Models\Package;
 use App\Support\CompanyContext;
 use App\Support\PhoneNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Modules\Umrah\Models\Package;
 
 /**
  * The enquiry form on the contact page — §8.1.

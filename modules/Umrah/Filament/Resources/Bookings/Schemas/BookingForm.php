@@ -1,0 +1,291 @@
+<?php
+
+namespace Modules\Umrah\Filament\Resources\Bookings\Schemas;
+
+use App\Services\Operations\Families;
+use App\Support\Money;
+use App\Support\OfficeContact;
+use App\Support\TravelReadiness;
+use Filament\Forms\Components\Textarea;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Modules\Umrah\Filament\Resources\Bookings\Tables\BookingsTable;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\SeatHold;
+
+/**
+ * One booking, read back.
+ *
+ * Almost everything here is read-only, and that is the design rather than an
+ * omission. The amounts are what was agreed, the travellers are what was
+ * entered, and the status moves only through
+ * {@see Booking::transitionTo()} — which records who and why — reached from
+ * the actions on the page, never by editing a field.
+ *
+ * `notes` is the one editable thing: somewhere for the person who took the
+ * phone call to write what was said.
+ */
+class BookingForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make('Booking')->columns(3)->schema([
+                TextEntry::make('reference')->copyable(),
+
+                TextEntry::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => BookingsTable::COLOURS[$state] ?? 'gray'),
+
+                TextEntry::make('seats')->label('Seats'),
+
+                TextEntry::make('departure.package.title')->label('Package'),
+
+                TextEntry::make('departure.date_start')->label('Departs')->date('j M Y'),
+
+                TextEntry::make('departure.date_end')->label('Returns')->date('j M Y'),
+            ]),
+
+            Section::make('Customer')->columns(3)->schema([
+                TextEntry::make('customer.name')->label('Name'),
+                TextEntry::make('customer.phone')->label('Phone')->copyable(),
+                TextEntry::make('customer.email')->label('Email')->placeholder('—')->copyable(),
+            ]),
+
+            // Families, batch C from Hijaz: everybody the same person booked
+            // onto this departure, this booking's people and any on another
+            // of theirs, head first. Changed with the Family button.
+            Section::make('Family')
+                ->description('Everyone the same person booked onto this departure travels as one family: roomed and bussed together unless somebody decides otherwise. The head holds the family\'s documents and is the one we call.')
+                ->schema([
+                    TextEntry::make('family_contact')
+                        ->label('Who we call')
+                        ->state(fn (Booking $record): ?string => app(Families::class)->forBooking($record)?->contactWords())
+                        ->placeholder('No phone on file for the head or for the person who booked.'),
+
+                    // Phase 3a (Hijaz parity): who pays, signs and gets the
+                    // office's messages, which is often not the head.
+                    TextEntry::make('office_contact')
+                        ->label('Office contact')
+                        ->state(fn (Booking $record): ?string => OfficeContact::forBooking($record)->words($record->customer))
+                        ->placeholder('No phone on file for the office contact or for the person who booked.'),
+
+                    // A repeater would invite editing; this is a list. Passport
+                    // details are changed where they are collected, not here.
+                    TextEntry::make('travellers')
+                        // Screen-reader only, not removed: the section heading
+                        // above already names the list, and a sighted reader
+                        // seeing it twice is noise while a screen reader needs
+                        // the entry named. label('') would not do this — it
+                        // falls back to the generated headline and renders it.
+                        ->hiddenLabel()
+                        ->state(fn (Booking $record): array => self::family($record))
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->placeholder('No travellers entered yet.'),
+                ]),
+
+            Section::make('Can they actually go?')
+                ->description('A passport, a visa and an Umrah permit are three separate authorisations from three different bodies [R-4]. Computed here on every read (§5.4a) and never stored, because a stored "ready" is wrong from the moment any of the three changes — and the one time that matters is the morning somebody leaves for the airport.')
+                ->schema([
+                    TextEntry::make('readiness')
+                        ->hiddenLabel()
+                        ->state(fn (Booking $record): array => self::readiness($record))
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->placeholder('No travellers entered yet.'),
+                ]),
+
+            Section::make('Money')->columns(3)->schema([
+                TextEntry::make('total_minor')
+                    ->label('Total')
+                    ->state(fn (Booking $record): string => $record->total()->format()),
+
+                TextEntry::make('paid_minor')
+                    ->label('Paid')
+                    ->state(fn (Booking $record): string => $record->paid()->format())
+                    // Recomputed from reconciled payments under a row lock,
+                    // never typed and never incremented. A claim that
+                    // nobody has checked is not in this figure, which is
+                    // the point of the separation.
+                    ->helperText(fn (Booking $record): string => self::unchecked($record)),
+
+                TextEntry::make('balance')
+                    ->label('Balance')
+                    ->state(fn (Booking $record): string => $record->balance()->format()),
+            ]),
+
+            Section::make('Seats held')->columns(2)->schema([
+                TextEntry::make('hold_state')
+                    ->label('Hold')
+                    ->state(fn (Booking $record): string => self::holdState($record)),
+
+                // Only for a hold that is actually live. Printing the
+                // expiry of a lapsed one next to "No seats held" reads as a
+                // deadline somebody still has time to meet.
+                TextEntry::make('hold_expires')
+                    ->label('Expires')
+                    ->state(fn (Booking $record): string => $record->seatHolds
+                        ->first(fn (SeatHold $hold): bool => $hold->isLive())
+                        ?->expires_at->diffForHumans() ?? '—'),
+            ]),
+
+            Section::make('History')->schema([
+                TextEntry::make('transitions')
+                    ->hiddenLabel()
+                    // `->user->name`, not `?->`: `??` suppresses a property
+                    // access on null, so the nullsafe operator adds nothing
+                    // and static analysis says so. A *method* call is the
+                    // opposite — `$null->format() ?? 'x'` throws — which is
+                    // why `lead_price?->format()` elsewhere keeps its `?->`.
+                    ->state(fn (Booking $record): array => $record->transitions
+                        ->map(fn ($transition): string => sprintf(
+                            '%s → %s · %s%s',
+                            $transition->from_status ?? 'new',
+                            $transition->to_status,
+                            $transition->user->name ?? 'system',
+                            $transition->reason !== null ? ' · '.$transition->reason : '',
+                        ))
+                        ->all())
+                    ->listWithLineBreaks()
+                    ->bulleted()
+                    ->placeholder('Nothing recorded yet.'),
+            ])->collapsed(),
+
+            Section::make('Notes')->schema([
+                Textarea::make('notes')
+                    ->hiddenLabel()
+                    ->rows(3)
+                    ->helperText('What was said on the phone. Visible to staff only.'),
+            ]),
+        ]);
+    }
+
+    /**
+     * The family, one line each, head first: this booking's people with
+     * their room, price and ticket, and anybody on the booker's other
+     * bookings for the same departure with the booking they are on.
+     *
+     * @return list<string>
+     */
+    private static function family(Booking $booking): array
+    {
+        $family = app(Families::class)->forBooking($booking);
+
+        if ($family === null) {
+            return [];
+        }
+
+        return $family->members
+            ->map(function (BookingTraveller $line) use ($family, $booking): string {
+                $who = array_values(array_filter([
+                    $family->isHead($line) ? 'head of the family' : null,
+                    $family->relationOf($line),
+                ]));
+
+                $name = $line->traveller->full_name.($who === [] ? '' : ' ('.implode(' · ', $who).')');
+
+                if ((int) $line->booking_id !== (int) $booking->getKey()) {
+                    return $name.' — on booking '.$line->booking->reference;
+                }
+
+                return sprintf(
+                    '%s — %s, %s — %s%s',
+                    $name,
+                    ucfirst($line->occupancy),
+                    $line->pax_type,
+                    // Registered before a price (Phase 3b): said, not "MVR 0".
+                    $line->awaits_price ? 'price not set yet' : $line->money()->format(),
+                    self::ticket($line),
+                );
+            })
+            ->all();
+    }
+
+    /** " — ticket 2201234567, seat 12A", or nothing until the airline has issued one. */
+    private static function ticket(BookingTraveller $line): string
+    {
+        $parts = array_filter([
+            $line->ticket_number !== null ? 'ticket '.$line->ticket_number : null,
+            $line->seat_number !== null ? 'seat '.$line->seat_number : null,
+        ]);
+
+        return $parts === [] ? '' : ' — '.implode(', ', $parts);
+    }
+
+    /**
+     * What is claimed but not yet checked, said next to the paid figure.
+     *
+     * Without this the two numbers disagree silently: a customer has sent a
+     * slip, the booking says MVR 0 paid, and the person on the phone has no
+     * way to see that anything is waiting.
+     */
+    private static function unchecked(Booking $booking): string
+    {
+        $claimed = (int) $booking->payments()->awaitingReview()->sum('amount_minor');
+
+        if ($claimed === 0) {
+            return 'Recomputed from checked payments. Nothing is typed into this figure.';
+        }
+
+        return Money::ofMinor($claimed, $booking->currency)->format()
+            .' is claimed but not checked yet, and is not in this figure.';
+    }
+
+    /**
+     * Each traveller, and what is still missing for them.
+     *
+     * Named requirements rather than one tick, because "not ready" is
+     * useless to the person who has to fix it and "visa issued, permit not
+     * requested" is a morning's work. A Rawdah slot is deliberately absent:
+     * missing it is a disappointment, and folding it in would make a pilgrim
+     * who cannot pray in the Rawdah look like one who cannot perform Umrah.
+     *
+     * @return list<string>
+     */
+    private static function readiness(Booking $booking): array
+    {
+        return $booking->travellers
+            ->map(function (BookingTraveller $line) use ($booking): string {
+                $missing = array_keys(array_filter(
+                    TravelReadiness::forTraveller($booking, $line->traveller),
+                    fn (bool $met): bool => ! $met,
+                ));
+
+                // Words rather than a tick and a cross. A glyph reads as
+                // "check mark" to a screen reader and as nothing at all
+                // when the font lacks it, and the whole value of this
+                // section is that somebody can act on it without decoding
+                // it.
+                return $line->traveller->full_name.' — '.($missing === []
+                    ? 'ready to travel'
+                    : 'still needs '.implode(', ', array_map(
+                        fn (string $requirement): string => self::REQUIREMENT_LABELS[$requirement],
+                        $missing,
+                    )));
+            })
+            ->all();
+    }
+
+    /** @var array<string, string> */
+    private const REQUIREMENT_LABELS = [
+        TravelReadiness::PASSPORT => 'passport',
+        TravelReadiness::VISA => 'visa',
+        TravelReadiness::PERMIT => 'Umrah permit',
+    ];
+
+    private static function holdState(Booking $booking): string
+    {
+        $live = $booking->seatHolds->first(fn ($hold): bool => $hold->isLive());
+
+        if ($live !== null) {
+            return sprintf('%d seat(s) held', $live->seats);
+        }
+
+        return $booking->status === Booking::CONFIRMED
+            ? 'Seats confirmed'
+            : 'No seats held';
+    }
+}

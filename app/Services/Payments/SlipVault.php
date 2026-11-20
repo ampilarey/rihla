@@ -2,10 +2,8 @@
 
 namespace App\Services\Payments;
 
-use App\Models\Document;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
-use App\Services\Documents\Reading\ReaderManager;
 use App\Support\CompanyContext;
 use App\Support\CompanyRequest;
 use App\Support\EncryptedFile;
@@ -16,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Services\Documents\Reading\ReaderManager;
 use Throwable;
 
 /**

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\Payments\Ledger;
 use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use LogicException;
+use Modules\Umrah\Models\Booking;
 use Tests\TestCase;
 
 /**

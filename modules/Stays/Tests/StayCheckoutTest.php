@@ -2,7 +2,6 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Exceptions\CommissionNotSet;
 use App\Models\Customer;
 use App\Models\Partner;
 use App\Models\Payment;
@@ -20,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
+use Modules\Stays\Exceptions\CommissionNotSet;
 use Modules\Stays\Filament\Resources\Stays\Pages\ViewStay;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;

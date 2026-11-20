@@ -6,12 +6,12 @@ use App\Models\Announcement;
 use App\Models\EmergencyBroadcast;
 use App\Models\FamilyAccess;
 use App\Models\RollCall;
-use App\Models\Traveller;
 use App\Services\Family\Doorkeeper;
 use App\Support\JourneyProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * The Family Portal — §6.2.

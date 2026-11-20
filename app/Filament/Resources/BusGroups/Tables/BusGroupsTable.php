@@ -3,10 +3,7 @@
 namespace App\Filament\Resources\BusGroups\Tables;
 
 use App\Filament\Support\DepartureOptions;
-use App\Models\Booking;
-use App\Models\BookingTraveller;
 use App\Models\BusGroup;
-use App\Models\Departure;
 use App\Services\Operations\Buses;
 use App\Services\Operations\Families;
 use App\Support\CompanyRequest;
@@ -23,6 +20,9 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
 
 class BusGroupsTable
 {
