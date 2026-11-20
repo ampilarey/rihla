@@ -219,9 +219,9 @@ class ForgetCustomer extends Command
 
         // The pointers to the deleted replaced slips go with them.
         DB::table('payment_transactions')->whereIn('payment_id', Payment::query()
-            ->where(fn ($q) => $q->where('payable_type', Booking::class)->whereIn('payable_id', $keys['booking'] ?: [0]))
-            ->orWhere(fn ($q) => $q->where('payable_type', Stay::class)->whereIn('payable_id', $keys['stay'] ?: [0]))
-            ->orWhere(fn ($q) => $q->where('payable_type', ExcursionBooking::class)->whereIn('payable_id', $keys['excursion'] ?: [0]))
+            ->where(fn ($q) => $q->where('payable_type', (new Booking)->getMorphClass())->whereIn('payable_id', $keys['booking'] ?: [0]))
+            ->orWhere(fn ($q) => $q->where('payable_type', (new Stay)->getMorphClass())->whereIn('payable_id', $keys['stay'] ?: [0]))
+            ->orWhere(fn ($q) => $q->where('payable_type', (new ExcursionBooking)->getMorphClass())->whereIn('payable_id', $keys['excursion'] ?: [0]))
             ->pluck('id'))->whereNotNull('payload')->update(['payload' => null]);
 
         // The id, not the name — recording who was forgotten would undo
@@ -230,7 +230,7 @@ class ForgetCustomer extends Command
         AuditLog::create([
             'event' => 'forgotten',
             'channel' => AuditContext::channel(),
-            'auditable_type' => Customer::class,
+            'auditable_type' => (new Customer)->getMorphClass(),
             'auditable_id' => $customer->getKey(),
             'new_values' => ['rows' => $erased, 'files' => count($files)],
         ]);
@@ -270,9 +270,9 @@ class ForgetCustomer extends Command
         // transaction's payload.
         $payments = Payment::query()
             ->where(function ($q) use ($bookingIds, $stayIds, $excursionIds): void {
-                $q->where(fn ($b) => $b->where('payable_type', Booking::class)->whereIn('payable_id', $bookingIds ?: [0]))
-                    ->orWhere(fn ($s) => $s->where('payable_type', Stay::class)->whereIn('payable_id', $stayIds ?: [0]))
-                    ->orWhere(fn ($x) => $x->where('payable_type', ExcursionBooking::class)->whereIn('payable_id', $excursionIds ?: [0]));
+                $q->where(fn ($b) => $b->where('payable_type', (new Booking)->getMorphClass())->whereIn('payable_id', $bookingIds ?: [0]))
+                    ->orWhere(fn ($s) => $s->where('payable_type', (new Stay)->getMorphClass())->whereIn('payable_id', $stayIds ?: [0]))
+                    ->orWhere(fn ($x) => $x->where('payable_type', (new ExcursionBooking)->getMorphClass())->whereIn('payable_id', $excursionIds ?: [0]));
             })
             ->get();
 
@@ -312,10 +312,10 @@ class ForgetCustomer extends Command
         // the customer, their travellers, bookings and stays.
         if ($route === 'audited') {
             return DB::table('audit_logs')->where(function (Builder $query) use ($customer, $keys): void {
-                $query->where(fn (Builder $q) => $q->where('auditable_type', Customer::class)->where('auditable_id', $customer->getKey()))
-                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', Traveller::class)->whereIn('auditable_id', $keys['traveller'] ?: [0]))
-                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', Booking::class)->whereIn('auditable_id', $keys['booking'] ?: [0]))
-                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', Stay::class)->whereIn('auditable_id', $keys['stay'] ?: [0]));
+                $query->where(fn (Builder $q) => $q->where('auditable_type', (new Customer)->getMorphClass())->where('auditable_id', $customer->getKey()))
+                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', (new Traveller)->getMorphClass())->whereIn('auditable_id', $keys['traveller'] ?: [0]))
+                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', (new Booking)->getMorphClass())->whereIn('auditable_id', $keys['booking'] ?: [0]))
+                    ->orWhere(fn (Builder $q) => $q->where('auditable_type', (new Stay)->getMorphClass())->whereIn('auditable_id', $keys['stay'] ?: [0]));
             });
         }
 
@@ -328,11 +328,11 @@ class ForgetCustomer extends Command
         if ($route === 'morph') {
             return DB::table('crm_tasks')->where(function (Builder $query) use ($customer, $keys): void {
                 $query->where(function (Builder $q) use ($customer): void {
-                    $q->where('about_type', Customer::class)->where('about_id', $customer->getKey());
+                    $q->where('about_type', (new Customer)->getMorphClass())->where('about_id', $customer->getKey());
                 })->orWhere(function (Builder $q) use ($keys): void {
-                    $q->where('about_type', Booking::class)->whereIn('about_id', $keys['booking'] ?: [0]);
+                    $q->where('about_type', (new Booking)->getMorphClass())->whereIn('about_id', $keys['booking'] ?: [0]);
                 })->orWhere(function (Builder $q) use ($keys): void {
-                    $q->where('about_type', Enquiry::class)->whereIn('about_id', $keys['enquiry'] ?: [0]);
+                    $q->where('about_type', (new Enquiry)->getMorphClass())->whereIn('about_id', $keys['enquiry'] ?: [0]);
                 });
             });
         }
@@ -349,14 +349,14 @@ class ForgetCustomer extends Command
         if ($table === 'payments') {
             return DB::table('payments')->where(function (Builder $query) use ($keys): void {
                 $query->where(function (Builder $q) use ($keys): void {
-                    $q->where('payable_type', Booking::class)
+                    $q->where('payable_type', (new Booking)->getMorphClass())
                         ->whereIn('payable_id', $keys['booking'] ?: [0]);
                 })->orWhere(function (Builder $q) use ($keys): void {
-                    $q->where('payable_type', Stay::class)
+                    $q->where('payable_type', (new Stay)->getMorphClass())
                         ->whereIn('payable_id', $keys['stay'] ?: [0]);
                 })->orWhere(function (Builder $q) use ($keys): void {
                     // And the third (Phase 3e): an additional trip's places.
-                    $q->where('payable_type', ExcursionBooking::class)
+                    $q->where('payable_type', (new ExcursionBooking)->getMorphClass())
                         ->whereIn('payable_id', $keys['excursion'] ?: [0]);
                 });
             });
@@ -370,10 +370,10 @@ class ForgetCustomer extends Command
         if ($table === 'notices') {
             return DB::table('notices')->where(function (Builder $query) use ($keys): void {
                 $query->where(function (Builder $q) use ($keys): void {
-                    $q->where('noticeable_type', Booking::class)
+                    $q->where('noticeable_type', (new Booking)->getMorphClass())
                         ->whereIn('noticeable_id', $keys['booking'] ?: [0]);
                 })->orWhere(function (Builder $q) use ($keys): void {
-                    $q->where('noticeable_type', Stay::class)
+                    $q->where('noticeable_type', (new Stay)->getMorphClass())
                         ->whereIn('noticeable_id', $keys['stay'] ?: [0]);
                 });
             });

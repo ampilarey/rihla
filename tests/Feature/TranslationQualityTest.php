@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\GuideStep;
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use Database\Seeders\UmrahGuideSeeder;
 use Database\Seeders\WhySectionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Modules\Content\Models\GuideStep;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
 use Tests\TestCase;
 
 /**

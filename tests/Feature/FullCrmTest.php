@@ -239,7 +239,7 @@ class FullCrmTest extends TestCase
         $enquiry = $this->enquiry();
 
         CrmTask::factory()->count(2)->create([
-            'about_type' => Enquiry::class,
+            'about_type' => (new Enquiry)->getMorphClass(),
             'about_id' => $enquiry->getKey(),
         ]);
 
@@ -251,7 +251,7 @@ class FullCrmTest extends TestCase
     {
         $customer = Customer::factory()->create();
 
-        CrmTask::factory()->create(['about_type' => Customer::class, 'about_id' => $customer->getKey()]);
+        CrmTask::factory()->create(['about_type' => (new Customer)->getMorphClass(), 'about_id' => $customer->getKey()]);
 
         $this->assertCount(1, $customer->fresh()->tasks);
         $this->assertSame($customer->name, $customer->fresh()->tasks->first()->aboutLabel());
@@ -422,13 +422,13 @@ class FullCrmTest extends TestCase
         $customer = $this->travelledCustomer(3);
         $enquiry = $this->enquiry($customer);
 
-        CrmTask::factory()->create(['about_type' => Customer::class, 'about_id' => $customer->getKey()]);
-        CrmTask::factory()->create(['about_type' => Enquiry::class, 'about_id' => $enquiry->getKey()]);
+        CrmTask::factory()->create(['about_type' => (new Customer)->getMorphClass(), 'about_id' => $customer->getKey()]);
+        CrmTask::factory()->create(['about_type' => (new Enquiry)->getMorphClass(), 'about_id' => $enquiry->getKey()]);
         CrmTask::factory()->create([
-            'about_type' => Booking::class,
+            'about_type' => (new Booking)->getMorphClass(),
             'about_id' => $customer->bookings()->first()->getKey(),
         ]);
-        CrmTask::factory()->done()->create(['about_type' => Customer::class, 'about_id' => $customer->getKey()]);
+        CrmTask::factory()->done()->create(['about_type' => (new Customer)->getMorphClass(), 'about_id' => $customer->getKey()]);
 
         // Three open, and the finished one is not work.
         $this->assertCount(3, CustomerDossier::build($customer->fresh())->openTasks);

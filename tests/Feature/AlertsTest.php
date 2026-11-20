@@ -7,7 +7,6 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Enquiry;
-use App\Models\KnowledgeArticle;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Quotation;
@@ -17,6 +16,7 @@ use App\Support\Alert;
 use App\Support\Alerts;
 use App\Support\Referrals;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\KnowledgeArticle;
 use Tests\TestCase;
 
 /**
@@ -103,7 +103,7 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->count(2)->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'currency' => 'MVR',
@@ -126,7 +126,7 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDay(),
@@ -144,7 +144,7 @@ class AlertsTest extends TestCase
 
         foreach ([['MVR', 300_000], ['USD', 20_000]] as [$currency, $minor]) {
             Payment::factory()->create([
-                'payable_type' => Booking::class,
+                'payable_type' => (new Booking)->getMorphClass(),
                 'payable_id' => $booking->getKey(),
                 'status' => Payment::AWAITING_REVIEW,
                 'currency' => $currency,
@@ -300,7 +300,7 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'currency' => 'MVR',
@@ -324,7 +324,7 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'currency' => 'MVR',
@@ -352,7 +352,7 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDays(5),
@@ -376,7 +376,7 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDays(5),
@@ -436,7 +436,7 @@ class AlertsTest extends TestCase
         $booking = $this->sell($this->departure(60), 2);
 
         Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::AWAITING_REVIEW,
             'created_at' => now()->subDays(5),

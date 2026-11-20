@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\HeroBanner;
 use App\Support\Brand;
 use App\Support\Contrast;
 use Database\Seeders\HeroBannerSeeder;
@@ -13,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
+use Modules\Content\Models\HeroBanner;
 use Tests\TestCase;
 
 /**

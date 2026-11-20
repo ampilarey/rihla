@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Person;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Content\Models\Person;
 
 /**
  * @extends Factory<Person>

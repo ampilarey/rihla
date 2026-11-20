@@ -42,7 +42,7 @@ class PolymorphicPaymentTest extends TestCase
     {
         $booking = $this->booking();
         $payment = Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
         ]);
 
@@ -55,11 +55,11 @@ class PolymorphicPaymentTest extends TestCase
     {
         $booking = $this->booking();
         $mine = Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
         ]);
         Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $this->booking()->getKey(),
         ]);
 
@@ -104,7 +104,7 @@ class PolymorphicPaymentTest extends TestCase
     {
         $booking = $this->booking();
         $payment = Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'amount_minor' => 1_000_000,
         ]);

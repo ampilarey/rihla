@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\LearningModule;
-use App\Models\QuizQuestion;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Content\Models\LearningModule;
+use Modules\Content\Models\QuizQuestion;
 
 /**
  * @extends Factory<QuizQuestion>

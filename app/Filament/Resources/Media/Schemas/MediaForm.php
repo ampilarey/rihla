@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Media\Schemas;
 
 use App\Models\Media;
-use App\Models\Trip;
 use App\Support\MediaImage;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
@@ -14,6 +13,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Modules\Content\Models\Trip;
 
 /**
  * One gallery item — the fields and limits `MediaRequest` held for the

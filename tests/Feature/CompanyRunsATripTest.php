@@ -117,7 +117,7 @@ class CompanyRunsATripTest extends TestCase
 
         // The pilgrim pays in full; Finance checks it in from the payments screen.
         $payment = Payment::factory()->awaitingReview()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->id,
             'amount_minor' => $booking->total_minor,
         ]);

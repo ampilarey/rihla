@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\GuideStep;
 use Illuminate\Database\Seeder;
+use Modules\Content\Models\GuideStep;
 
 class GuideStepSeeder extends Seeder
 {

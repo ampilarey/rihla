@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\GuideStep;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Content\Models\GuideStep;
 
 /**
  * @extends Factory<GuideStep>

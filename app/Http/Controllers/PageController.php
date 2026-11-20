@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetLocale;
-use App\Models\GuideStep;
 use App\Models\Setting;
 use App\Support\CurrentSite;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -11,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Modules\Companies\Http\Controllers\CompanySiteController;
+use Modules\Content\Models\GuideStep;
 
 class PageController extends Controller
 {

@@ -4,11 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Media;
 use App\Models\Setting;
-use App\Models\Trip;
 use Database\Seeders\MediaSeeder;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Modules\Content\Models\Trip;
 use Tests\TestCase;
 
 /**

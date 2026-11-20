@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\Knowledge\KnowledgeArticleResource;
-use App\Filament\Resources\Knowledge\Pages\ListKnowledgeArticles;
-use App\Models\ArticleReference;
-use App\Models\KnowledgeArticle;
-use App\Models\Person;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Content\Filament\Resources\Knowledge\KnowledgeArticleResource;
+use Modules\Content\Filament\Resources\Knowledge\Pages\ListKnowledgeArticles;
+use Modules\Content\Models\ArticleReference;
+use Modules\Content\Models\KnowledgeArticle;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**
@@ -33,7 +33,7 @@ class KnowledgeCentreAdminTest extends TestCase
     private function sourcedArticle(): KnowledgeArticle
     {
         $article = KnowledgeArticle::factory()->create();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
 
         return $article->fresh();
     }

@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Models\Departure;
 use App\Models\Package;
 use App\Models\PriceTier;
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
 use Tests\TestCase;
 
 /**

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\KnowledgeArticle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Content\Models\KnowledgeArticle;
 
 /**
  * @extends Factory<KnowledgeArticle>

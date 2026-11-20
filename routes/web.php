@@ -1,13 +1,8 @@
 <?php
 
 use App\Filament\Pages\SocialSettings;
-use App\Filament\Resources\GuideSteps\GuideStepResource;
-use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Filament\Resources\Media\MediaResource;
-use App\Filament\Resources\WhySections\WhySectionResource;
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\TripController as AdminTripController;
-use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BooksController;
 use App\Http\Controllers\DevicesController;
@@ -21,7 +16,6 @@ use App\Http\Controllers\HostSubdomainController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\LeaderController;
-use App\Http\Controllers\LearningController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MyStayController;
 use App\Http\Controllers\OperationsController;
@@ -29,7 +23,6 @@ use App\Http\Controllers\PackageComparisonController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentSlipController;
-use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PortalAccountController;
 use App\Http\Controllers\PortalAgreementController;
 use App\Http\Controllers\PortalController;
@@ -40,16 +33,23 @@ use App\Http\Controllers\StaffInvoiceController;
 use App\Http\Controllers\StayCheckoutController;
 use App\Http\Controllers\StayReviewController;
 use App\Http\Controllers\StaysController;
-use App\Http\Controllers\TripController;
 use App\Http\Controllers\WaitlistController;
-use App\Http\Controllers\ZiyarahController;
-use App\Models\GuideStep;
 use App\Models\Media;
-use App\Models\Trip;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Modules\Companies\Http\Controllers\CompanyAppController;
 use Modules\Companies\Http\Controllers\CompanyInvoiceController;
+use Modules\Content\Filament\Resources\GuideSteps\GuideStepResource;
+use Modules\Content\Filament\Resources\HeroBanners\HeroBannerResource;
+use Modules\Content\Filament\Resources\WhySections\WhySectionResource;
+use Modules\Content\Http\Controllers\Admin\TripController as AdminTripController;
+use Modules\Content\Http\Controllers\ArticleController;
+use Modules\Content\Http\Controllers\LearningController;
+use Modules\Content\Http\Controllers\PeopleController;
+use Modules\Content\Http\Controllers\TripController;
+use Modules\Content\Http\Controllers\ZiyarahController;
+use Modules\Content\Models\GuideStep;
+use Modules\Content\Models\Trip;
 
 // Host subdomains — §16 Phase 16. `{slug}.rihla.mv` opens the host's page.
 // Registered first, and only when a domain is configured: a route with no

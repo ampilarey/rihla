@@ -10,7 +10,6 @@ use App\Filament\Resources\Enquiries\EnquiryResource;
 use App\Filament\Resources\Incidents\IncidentResource;
 use App\Filament\Resources\Packages\PackageResource;
 use App\Filament\Resources\Payments\PaymentResource;
-use App\Filament\Resources\People\PersonResource;
 use App\Filament\Resources\Permits\NusukPermitResource;
 use App\Filament\Resources\Quotations\QuotationResource;
 use App\Filament\Resources\Rooms\RoomResource;
@@ -30,7 +29,6 @@ use App\Models\NusukPermit;
 use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Payment;
-use App\Models\Person;
 use App\Models\Quotation;
 use App\Models\Room;
 use App\Models\Traveller;
@@ -47,6 +45,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Modules\Content\Filament\Resources\People\PersonResource;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**

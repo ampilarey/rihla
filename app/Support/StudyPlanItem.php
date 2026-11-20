@@ -2,9 +2,9 @@
 
 namespace App\Support;
 
-use App\Models\LearningModule;
-use App\Models\ModuleCompletion;
 use Carbon\CarbonImmutable;
+use Modules\Content\Models\LearningModule;
+use Modules\Content\Models\ModuleCompletion;
 
 /**
  * One line of a {@see StudyPlan}: a module, when it is due, and where this

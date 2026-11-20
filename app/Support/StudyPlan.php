@@ -3,12 +3,12 @@
 namespace App\Support;
 
 use App\Models\Departure;
-use App\Models\LearningModule;
-use App\Models\ModuleCompletion;
 use App\Models\Traveller;
-use App\Models\ZiyarahLocation;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Modules\Content\Models\LearningModule;
+use Modules\Content\Models\ModuleCompletion;
+use Modules\Content\Models\ZiyarahLocation;
 
 /**
  * What this pilgrim should read, and by when — §7.3's personalised study

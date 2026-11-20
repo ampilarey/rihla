@@ -9,7 +9,6 @@ use App\Models\Departure;
 use App\Models\DepartureFlight;
 use App\Models\DepartureHotel;
 use App\Models\Island;
-use App\Models\Person;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Operations\Lists;
@@ -18,6 +17,7 @@ use App\Support\DepartureRoute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**

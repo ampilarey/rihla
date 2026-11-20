@@ -5,12 +5,12 @@ namespace Tests\Feature;
 use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\Traveller;
-use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\AuditContext;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\Trip;
 use Tests\TestCase;
 
 /**
@@ -46,7 +46,7 @@ class AuditLogTest extends TestCase
     {
         $trip = $this->trip();
 
-        $log = AuditLog::where('auditable_type', Trip::class)
+        $log = AuditLog::where('auditable_type', (new Trip)->getMorphClass())
             ->where('auditable_id', $trip->id)
             ->sole();
 
@@ -102,7 +102,7 @@ class AuditLogTest extends TestCase
 
         $user->update(['password' => 'a-new-password', 'name' => 'Renamed']);
 
-        $logs = AuditLog::where('auditable_type', User::class)->get();
+        $logs = AuditLog::where('auditable_type', (new User)->getMorphClass())->get();
 
         $this->assertNotEmpty($logs);
 
@@ -148,7 +148,7 @@ class AuditLogTest extends TestCase
             'status' => 'upcoming',
         ]);
 
-        $log = AuditLog::where('auditable_type', Trip::class)->latestFirst()->first();
+        $log = AuditLog::where('auditable_type', (new Trip)->getMorphClass())->latestFirst()->first();
 
         $this->assertNotNull($log, 'Creating a trip through the panel recorded nothing.');
         $this->assertSame($admin->id, $log->user_id);
@@ -173,7 +173,7 @@ class AuditLogTest extends TestCase
         $this->actingAs($admin);
         $trip = $this->trip();
 
-        $log = AuditLog::where('auditable_type', Trip::class)->sole();
+        $log = AuditLog::where('auditable_type', (new Trip)->getMorphClass())->sole();
         $this->assertSame($admin->id, $log->user_id);
 
         $admin->delete();
@@ -195,7 +195,7 @@ class AuditLogTest extends TestCase
 
         $this->assertSame(
             0,
-            AuditLog::where('auditable_type', AuditLog::class)->count(),
+            AuditLog::where('auditable_type', (new AuditLog)->getMorphClass())->count(),
             'The audit log recorded itself.',
         );
     }
@@ -237,7 +237,7 @@ class AuditLogTest extends TestCase
         $traveller = Traveller::factory()->create(['passport_number' => 'A1234567']);
         $traveller->update(['passport_number' => 'B7654321']);
 
-        $logs = AuditLog::where('auditable_type', Traveller::class)->get();
+        $logs = AuditLog::where('auditable_type', (new Traveller)->getMorphClass())->get();
 
         $this->assertNotEmpty($logs);
 
@@ -260,7 +260,7 @@ class AuditLogTest extends TestCase
         $booking->forceFill(['notes' => 'Wheelchair at Velana'])->save();
 
         $this->assertNotEmpty(
-            AuditLog::where('auditable_type', Booking::class)->get(),
+            AuditLog::where('auditable_type', (new Booking)->getMorphClass())->get(),
         );
     }
 
@@ -300,7 +300,7 @@ class AuditLogTest extends TestCase
             'status' => 'upcoming',
         ]);
 
-        $this->assertSame(AuditContext::STAFF, AuditLog::where('auditable_type', Trip::class)->latestFirst()->first()->channel);
+        $this->assertSame(AuditContext::STAFF, AuditLog::where('auditable_type', (new Trip)->getMorphClass())->latestFirst()->first()->channel);
 
         // An entry point that knows says so, and the rows say it too.
         AuditContext::use(AuditContext::TELEGRAM);

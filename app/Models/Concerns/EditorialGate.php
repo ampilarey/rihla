@@ -3,14 +3,14 @@
 namespace App\Models\Concerns;
 
 use App\Exceptions\EditorialStandardNotMet;
-use App\Models\ArticleReference;
-use App\Models\Person;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Modules\Content\Models\ArticleReference;
+use Modules\Content\Models\Person;
 
 /**
  * The editorial standard §7.1 asks for, in one place.

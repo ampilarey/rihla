@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\GuideStep;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\GuideStep;
 use Tests\TestCase;
 
 /**

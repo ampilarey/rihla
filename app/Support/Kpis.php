@@ -11,13 +11,13 @@ use App\Models\Document;
 use App\Models\DocumentVersion;
 use App\Models\Enquiry;
 use App\Models\EnquiryNote;
-use App\Models\LearningModule;
-use App\Models\ModuleCompletion;
 use App\Models\NusukPermit;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Modules\Content\Models\LearningModule;
+use Modules\Content\Models\ModuleCompletion;
 
 /**
  * The dozen numbers §10.5 says are worth instrumenting — §8.5's dashboard.

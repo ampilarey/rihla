@@ -3,12 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Models\Setting;
-use App\Models\Trip;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Modules\Content\Models\Trip;
 
 /**
  * Refuse a production deploy for the reasons a backup cannot cover.

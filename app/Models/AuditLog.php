@@ -68,7 +68,7 @@ class AuditLog extends Model
         $query->orderByDesc('created_at')->orderByDesc('id');
     }
 
-    /** The class basename, for display: "Trip" rather than "App\Models\Trip". */
+    /** The class basename, for display: "Trip" rather than "Modules\Content\Models\Trip". */
     public function getSubjectAttribute(): string
     {
         return class_basename($this->auditable_type);

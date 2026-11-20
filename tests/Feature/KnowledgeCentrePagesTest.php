@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\ArticleReference;
-use App\Models\KnowledgeArticle;
-use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\ArticleReference;
+use Modules\Content\Models\KnowledgeArticle;
+use Modules\Content\Models\Person;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -140,7 +140,7 @@ class KnowledgeCentrePagesTest extends TestCase
         $article = $this->published();
 
         ArticleReference::create([
-            'referenceable_type' => KnowledgeArticle::class,
+            'referenceable_type' => (new KnowledgeArticle)->getMorphClass(),
             'referenceable_id' => $article->getKey(),
             'kind' => ArticleReference::HADITH,
             'citation' => 'Placeholder citation for a test fixture.',

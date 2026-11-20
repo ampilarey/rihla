@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\LocationMisconception;
-use App\Models\ZiyarahLocation;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Content\Models\LocationMisconception;
+use Modules\Content\Models\ZiyarahLocation;
 
 /**
  * @extends Factory<LocationMisconception>

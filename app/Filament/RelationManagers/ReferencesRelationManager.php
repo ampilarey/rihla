@@ -2,7 +2,6 @@
 
 namespace App\Filament\RelationManagers;
 
-use App\Models\ArticleReference;
 use App\Models\Concerns\EditorialGate;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -16,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Content\Models\ArticleReference;
 
 /**
  * The sources — §7.1's "every claim carries a source".

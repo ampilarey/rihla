@@ -9,8 +9,6 @@ use App\Models\DepartureCost;
 use App\Models\Document;
 use App\Models\Enquiry;
 use App\Models\EnquiryNote;
-use App\Models\LearningModule;
-use App\Models\ModuleCompletion;
 use App\Models\NusukPermit;
 use App\Models\Traveller;
 use App\Models\User;
@@ -18,6 +16,8 @@ use App\Support\JourneyProfit;
 use App\Support\Kpi;
 use App\Support\Kpis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\LearningModule;
+use Modules\Content\Models\ModuleCompletion;
 use Tests\TestCase;
 
 /**

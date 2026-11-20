@@ -7,12 +7,12 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Package;
-use App\Models\Person;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**

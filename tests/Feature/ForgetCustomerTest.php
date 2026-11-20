@@ -91,7 +91,7 @@ class ForgetCustomerTest extends TestCase
         ]);
 
         $payment = Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::SUCCEEDED,
             'amount_minor' => 4500000,
@@ -225,7 +225,7 @@ class ForgetCustomerTest extends TestCase
         [$customer, , $booking] = $this->somebodyWhoTravelled();
 
         $payment = Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::SUCCEEDED,
         ]);
@@ -413,7 +413,7 @@ class ForgetCustomerTest extends TestCase
         ]);
 
         $payment = Payment::factory()->create([
-            'payable_type' => Stay::class,
+            'payable_type' => (new Stay)->getMorphClass(),
             'payable_id' => $stay->getKey(),
             'payer_name' => 'Aishath Real Person',
         ]);
@@ -542,7 +542,7 @@ class ForgetCustomerTest extends TestCase
             'property_id' => Property::factory()->create()->id,
             'room_type_id' => RoomType::factory()->create()->id,
         ]);
-        $payment = Payment::factory()->create(['payable_type' => Stay::class, 'payable_id' => $stay->getKey(), 'status' => Payment::SUCCEEDED]);
+        $payment = Payment::factory()->create(['payable_type' => (new Stay)->getMorphClass(), 'payable_id' => $stay->getKey(), 'status' => Payment::SUCCEEDED]);
         app(SlipVault::class)->attach($payment, UploadedFile::fake()->createWithContent('first.pdf', 'first slip'));
         $first = (string) $payment->fresh()->slip_path;
         app(SlipVault::class)->attach($payment->fresh(), UploadedFile::fake()->createWithContent('second.pdf', 'second slip'));

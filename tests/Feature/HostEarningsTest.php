@@ -51,7 +51,7 @@ class HostEarningsTest extends TestCase
     private function paid(Stay $stay, int $minor, string $collector): void
     {
         $payment = Payment::factory()->succeeded()->create([
-            'payable_type' => Stay::class, 'payable_id' => $stay->id, 'currency' => $stay->currency, 'amount_minor' => $minor,
+            'payable_type' => (new Stay)->getMorphClass(), 'payable_id' => $stay->id, 'currency' => $stay->currency, 'amount_minor' => $minor,
         ]);
         $payment->forceFill(['collected_by' => $collector])->save();
     }

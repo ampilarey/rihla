@@ -384,7 +384,7 @@ class HostBookingsTest extends TestCase
 
         // Even pushed through the path that confirms on a paid deposit.
         app(StayBooking::class)->settle(Payment::factory()->create([
-            'payable_type' => Stay::class, 'payable_id' => $stay->id, 'currency' => 'USD', 'amount_minor' => 1,
+            'payable_type' => (new Stay)->getMorphClass(), 'payable_id' => $stay->id, 'currency' => 'USD', 'amount_minor' => 1,
         ]));
         $this->assertSame(Stay::HELD, $stay->fresh()->status);
     }
@@ -394,7 +394,7 @@ class HostBookingsTest extends TestCase
         $stay = $this->stay(Stay::HELD, ['expires_at' => now()->addDay()]);
 
         app(StayBooking::class)->settle(Payment::factory()->create([
-            'payable_type' => Stay::class, 'payable_id' => $stay->id, 'currency' => 'USD', 'amount_minor' => 3000,
+            'payable_type' => (new Stay)->getMorphClass(), 'payable_id' => $stay->id, 'currency' => 'USD', 'amount_minor' => 3000,
         ]));
 
         $this->assertSame(Stay::CONFIRMED, $stay->fresh()->status);

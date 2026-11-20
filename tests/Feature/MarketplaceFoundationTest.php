@@ -380,7 +380,7 @@ class MarketplaceFoundationTest extends TestCase
     public function test_money_is_rihlas_unless_a_host_is_recorded_as_taking_it(): void
     {
         $payment = Payment::create([
-            'payable_type' => Stay::class, 'payable_id' => Stay::factory()->create()->id,
+            'payable_type' => (new Stay)->getMorphClass(), 'payable_id' => Stay::factory()->create()->id,
             'method' => Payment::CASH, 'currency' => 'USD', 'amount_minor' => 5000,
             'collected_by' => Payment::COLLECTED_BY_HOST, 'partner_id' => Partner::factory()->create()->id,
         ])->fresh();

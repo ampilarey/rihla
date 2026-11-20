@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Setting;
-use App\Models\Trip;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Modules\Content\Models\Trip;
 use Tests\TestCase;
 
 /**

@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Models\HeroBanner;
 use App\Models\User;
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Content\Models\HeroBanner;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
 use Tests\TestCase;
 
 /**

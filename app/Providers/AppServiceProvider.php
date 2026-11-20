@@ -3,14 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Announcement;
-use App\Models\Article;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\EmergencyBroadcast;
-use App\Models\GuideStep;
-use App\Models\HeroBanner;
-use App\Models\KnowledgeArticle;
 use App\Models\Media;
 use App\Models\Package;
 use App\Models\Partner;
@@ -20,11 +16,8 @@ use App\Models\Review;
 use App\Models\Setting;
 use App\Models\Stay;
 use App\Models\Traveller;
-use App\Models\Trip;
 use App\Models\User;
 use App\Models\WaitlistEntry;
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use App\Observers\AuditObserver;
 use App\Observers\CoverImageObserver;
 use App\Observers\LostStayObserver;
@@ -47,6 +40,13 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Pulse\Facades\Pulse;
 use Modules\Companies\Models\CompanyInvoice;
+use Modules\Content\Models\Article;
+use Modules\Content\Models\GuideStep;
+use Modules\Content\Models\HeroBanner;
+use Modules\Content\Models\KnowledgeArticle;
+use Modules\Content\Models\Trip;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
 use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider

@@ -2,11 +2,11 @@
 
 namespace App\Support;
 
-use App\Models\KnowledgeArticle;
-use App\Models\LearningModule;
-use App\Models\ScholarQuestion;
-use App\Models\ZiyarahLocation;
 use Illuminate\Support\Collection;
+use Modules\Content\Models\KnowledgeArticle;
+use Modules\Content\Models\LearningModule;
+use Modules\Content\Models\ScholarQuestion;
+use Modules\Content\Models\ZiyarahLocation;
 
 /**
  * Everything waiting on a scholar, in one list — §6.4.

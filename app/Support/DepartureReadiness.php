@@ -6,11 +6,11 @@ use App\Models\Booking;
 use App\Models\BookingTraveller;
 use App\Models\Departure;
 use App\Models\DepartureFlight;
-use App\Models\ModuleCompletion;
 use App\Models\Traveller;
 use App\Models\WaitlistEntry;
 use App\Services\Operations\Buses;
 use Illuminate\Database\Eloquent\Collection;
+use Modules\Content\Models\ModuleCompletion;
 
 /**
  * Is this departure ready to fly — §8.2's "journey workspace", the half of

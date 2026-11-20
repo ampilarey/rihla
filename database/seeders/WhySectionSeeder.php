@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use Illuminate\Database\Seeder;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
 
 class WhySectionSeeder extends Seeder
 {

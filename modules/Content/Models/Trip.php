@@ -1,0 +1,142 @@
+<?php
+
+namespace Modules\Content\Models;
+
+use App\Models\Media;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
+use Spatie\Translatable\HasTranslations;
+
+class Trip extends Model
+{
+    use HasFactory, HasTranslations;
+
+    protected $fillable = [
+        'title',
+        'slug',
+        'date_start',
+        'date_end',
+        'location',
+        'summary',
+        'details',
+        'price_from_mvr',
+        'status',
+        'cover_image',
+        'is_published',
+    ];
+
+    /**
+     * Stored as `{"en": "...", "dv": "..."}` and read back in the request's
+     * locale, falling back to English.
+     *
+     * These four used to exist twice over: once plainly and once as a `*_dv`
+     * twin, on a table that also had a `locale` column saying the whole row
+     * was one language. See the migration that merged them.
+     *
+     * The slug is deliberately not here. It is the trip's public URL, and one
+     * trip has one URL — the locale is already a path segment in front of it.
+     *
+     * @var array<int, string>
+     */
+    public array $translatable = ['title', 'location', 'summary', 'details'];
+
+    protected $casts = [
+        'date_start' => 'date',
+        'date_end' => 'date',
+        'price_from_mvr' => 'integer',
+        'is_published' => 'boolean',
+    ];
+
+    const STATUS_CURRENT = 'current';
+
+    const STATUS_UPCOMING = 'upcoming';
+
+    const STATUS_PAST = 'past';
+
+    const STATUSES = [
+        self::STATUS_CURRENT,
+        self::STATUS_UPCOMING,
+        self::STATUS_PAST,
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($trip) {
+            if (empty($trip->slug)) {
+                $trip->slug = \Str::slug($trip->title);
+            }
+        });
+
+        static::updating(function ($trip) {
+            if ($trip->isDirty('title') && empty($trip->slug)) {
+                $trip->slug = \Str::slug($trip->title);
+            }
+        });
+
+        // The sitemap lists every published trip and is cached for an hour.
+        // Without this, publishing a trip would leave it out of the sitemap
+        // for up to an hour after it went live.
+        // Must return nothing. Cache::forget() returns false when the key is
+        // not cached, and a model-event listener returning false halts the
+        // rest of the listeners for that event — which silently suppressed
+        // every later listener on Trip's saved and deleted events.
+        $bustSitemap = function (): void {
+            Cache::forget('sitemap.xml');
+        };
+
+        static::saved($bustSitemap);
+        static::deleted($bustSitemap);
+    }
+
+    /** @return HasMany<Media, $this> */
+    public function media(): HasMany
+    {
+        return $this->hasMany(Media::class)->orderBy('sort_order');
+    }
+
+    /** @return HasMany<Media, $this> */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(Media::class)->where('type', 'photo')->orderBy('sort_order');
+    }
+
+    /** @return HasMany<Media, $this> */
+    public function videos(): HasMany
+    {
+        return $this->hasMany(Media::class)->where('type', 'video')->orderBy('sort_order');
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true);
+    }
+
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopeCurrent($query)
+    {
+        return $query->byStatus(self::STATUS_CURRENT);
+    }
+
+    public function scopeUpcoming($query)
+    {
+        return $query->byStatus(self::STATUS_UPCOMING);
+    }
+
+    public function scopePast($query)
+    {
+        return $query->byStatus(self::STATUS_PAST);
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+}

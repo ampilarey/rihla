@@ -75,7 +75,7 @@ class HostStatementsTest extends TestCase
     public function test_a_month_is_issued_once_per_currency_with_its_figures(): void
     {
         $stay = $this->marketplace(20000, 3000);
-        $payment = Payment::factory()->succeeded()->create(['payable_type' => Stay::class, 'payable_id' => $stay->id, 'currency' => 'USD', 'amount_minor' => 20000]);
+        $payment = Payment::factory()->succeeded()->create(['payable_type' => (new Stay)->getMorphClass(), 'payable_id' => $stay->id, 'currency' => 'USD', 'amount_minor' => 20000]);
         $payment->forceFill(['collected_by' => Payment::COLLECTED_BY_RIHLA])->save();
         $this->marketplace(10000, 1500, 'EUR');
 

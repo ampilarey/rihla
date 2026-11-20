@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Trip;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\Trip;
 use Tests\TestCase;
 
 /**

@@ -6,7 +6,6 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Incident;
-use App\Models\Person;
 use App\Models\RollCall;
 use App\Models\RollCallMark;
 use App\Models\Traveller;
@@ -17,6 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**

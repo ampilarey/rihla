@@ -228,7 +228,7 @@ class AnonymiseTest extends TestCase
     public function test_the_audit_log_and_sessions_are_emptied_rather_than_scrubbed(): void
     {
         DB::table('audit_logs')->insert([
-            'auditable_type' => Customer::class,
+            'auditable_type' => (new Customer)->getMorphClass(),
             'auditable_id' => 1,
             'event' => 'updated',
             'user_name' => 'A Real Member Of Staff',

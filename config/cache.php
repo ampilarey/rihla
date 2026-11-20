@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
 
 return [
 

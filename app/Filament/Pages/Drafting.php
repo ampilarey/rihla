@@ -2,9 +2,9 @@
 
 namespace App\Filament\Pages;
 
-use App\Services\Assistant\StaffDrafter;
 use BackedEnum;
 use Filament\Pages\Page;
+use Modules\Content\Services\Assistant\StaffDrafter;
 use UnitEnum;
 
 /**

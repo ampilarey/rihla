@@ -342,7 +342,7 @@ class StayNoticeTest extends TestCase
 
         $stay->delete();
 
-        $this->assertSame(0, Notice::where('noticeable_type', Stay::class)->count());
+        $this->assertSame(0, Notice::where('noticeable_type', (new Stay)->getMorphClass())->count());
     }
 
     public function test_deleting_a_booking_takes_its_notices_with_it(): void
@@ -354,7 +354,7 @@ class StayNoticeTest extends TestCase
 
         $booking->delete();
 
-        $this->assertSame(0, Notice::where('noticeable_type', Booking::class)->count());
+        $this->assertSame(0, Notice::where('noticeable_type', (new Booking)->getMorphClass())->count());
     }
 
     /** The partner says yes: requested → held, with the deposit clock on. */
