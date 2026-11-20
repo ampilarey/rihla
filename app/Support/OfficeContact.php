@@ -3,9 +3,9 @@
 namespace App\Support;
 
 use App\Models\Customer;
-use App\Services\Operations\TravellingFamily;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Operations\TravellingFamily;
 
 /**
  * Who the office deals with about a booking, and on which number —

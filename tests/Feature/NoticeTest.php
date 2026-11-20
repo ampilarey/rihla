@@ -8,7 +8,6 @@ use App\Models\Customer;
 use App\Models\Notice;
 use App\Models\User;
 use App\Services\Notices\Sweep;
-use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
@@ -16,6 +15,7 @@ use Livewire\Livewire;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Tests\TestCase;
 
 /**

@@ -5,12 +5,12 @@ namespace App\Http\Middleware;
 use App\Providers\Filament\CompanyPanelProvider;
 use App\Providers\Filament\HostPanelProvider;
 use App\Providers\Filament\StaffPanelProvider;
-use App\Services\Family\Doorkeeper;
-use App\Services\Portal\Gatekeeper;
 use App\Support\Csp;
 use Closure;
 use Illuminate\Http\Request;
 use Modules\Stays\Services\Stays\StayGatekeeper;
+use Modules\Umrah\Services\Family\Doorkeeper;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

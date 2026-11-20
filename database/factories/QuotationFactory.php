@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Enquiry;
-use App\Models\Quotation;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\Quotation;
 
 /** @extends Factory<Quotation> */
 class QuotationFactory extends Factory

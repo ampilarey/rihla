@@ -1,6 +1,6 @@
 # Modules: moving the code into one folder per line of business
 
-**Asked for by the owner, November 2026.** The code was in Laravel's standard
+**Asked for by the owner, November 2026. Done, November 2026: every line of business is a module.** The code was in Laravel's standard
 layout, sorted by kind of file: 112 models in one folder, every screen in one
 tree, one routes file. This plan moves it into **modules**, one per line of
 business, each holding its own models, services, screens, commands and tests.
@@ -18,7 +18,7 @@ only with the full suite, Larastan and the MySQL job green.
 | **Companies** | Company invoices, memberships, sites, support grants and visits; adding, billing, exporting and closing a company; the company panel's own pages | ✅ moved |
 | **Content** | Trips, articles, the knowledge centre, the Umrah guide, hero banners, the *why* blocks, learning paths and quizzes, ziyarah locations, the assistant | ✅ moved |
 | **Stays** | Properties, rooms, units, photos, rates, blocked dates, stays and their guests, charges, messages and reviews, hosts' memberships, pages and statements, calendars, payouts; the host panel | ✅ moved |
-| **Umrah** | Packages, price tiers, departures and everything on them, bookings, travellers, seat holds, the waitlist, quotations, documents and reading, visas, Nusuk permits, rooming, buses, flights, roll calls, cards, excursions, incidents, broadcasts, the portal and the family portal, enquiries and the CRM | last, the largest |
+| **Umrah** | Packages, price tiers, departures and everything on them, bookings, travellers, seat holds, the waitlist, quotations, documents and reading, visas, Nusuk permits, rooming, buses, flights, roll calls, cards, excursions, incidents, broadcasts, the portal and the family portal, enquiries and the CRM | ✅ moved (parts A and B) |
 
 Customers and payments stay in Core because Umrah and Stays both use them.
 So does what keeps companies apart: `CompanyContext`, the company gate,

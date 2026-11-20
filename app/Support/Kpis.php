@@ -3,8 +3,6 @@
 namespace App\Support;
 
 use App\Models\Customer;
-use App\Models\Enquiry;
-use App\Models\EnquiryNote;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
@@ -17,6 +15,8 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureCost;
 use Modules\Umrah\Models\Document;
 use Modules\Umrah\Models\DocumentVersion;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\EnquiryNote;
 use Modules\Umrah\Models\NusukPermit;
 
 /**

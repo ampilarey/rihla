@@ -3,10 +3,10 @@
 namespace App\Support;
 
 use App\Models\Customer;
-use App\Models\Enquiry;
 use Illuminate\Support\Collection;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Enquiry;
 
 /**
  * Who has been quiet long enough to be worth a phone call — §8.1's

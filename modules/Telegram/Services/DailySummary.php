@@ -2,12 +2,12 @@
 
 namespace Modules\Telegram\Services;
 
-use App\Models\CrmTask;
 use App\Models\Payment;
 use App\Models\User;
 use App\Support\DepartureReadiness;
 use Illuminate\Database\Eloquent\Collection;
 use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\CrmTask;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureChecklistItem;
 use Modules\Umrah\Models\Document;

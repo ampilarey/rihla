@@ -3,12 +3,11 @@
 namespace Modules\Umrah\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\PortalAgreementController;
 use App\Models\Payment;
-use App\Services\Portal\Agreements;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\ExcursionBooking;
 use Modules\Umrah\Services\Invoices\Documents;
+use Modules\Umrah\Services\Portal\Agreements;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

@@ -2,10 +2,7 @@
 
 namespace Modules\Umrah\Models;
 
-use App\Models\BusGroup;
-use App\Models\Card;
 use App\Models\Concerns\BelongsToCompany;
-use App\Models\FlightGroup;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -36,11 +33,11 @@ class BookingTraveller extends Model
         // are issued and printed on the manifest the airline is handed.
         'ticket_number', 'seat_number',
         // Which coach, and whether they have boarded it. Written by
-        // App\Services\Operations\Buses and the Scan page, never by the
+        // Modules\Umrah\Services\Operations\Buses and the Scan page, never by the
         // booking form.
         'bus_group_id', 'checked_in_at',
         // Which flight group (companies plan, Phase 3c). Written by
-        // App\Services\Operations\FlightGroups and Buses, never by a form.
+        // Modules\Umrah\Services\Operations\FlightGroups and Buses, never by a form.
         'flight_group_id',
     ];
 

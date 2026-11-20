@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
-use App\Models\Enquiry;
-use App\Models\EnquiryNote;
 use App\Models\User;
 use App\Support\JourneyProfit;
 use App\Support\Kpi;
@@ -16,6 +14,8 @@ use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureCost;
 use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\EnquiryNote;
 use Modules\Umrah\Models\NusukPermit;
 use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;

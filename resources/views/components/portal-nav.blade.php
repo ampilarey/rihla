@@ -35,7 +35,7 @@
     </a>
 
     {{-- The agreement (Phase 3h, part 3), only once the company has terms. --}}
-    @if(\App\Services\Portal\Agreements::offered())
+    @if(\Modules\Umrah\Services\Portal\Agreements::offered())
         <a href="{{ route('portal.agreement', ['locale' => app()->getLocale()]) }}"
            @class([
                'inline-flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium',

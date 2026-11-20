@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
-use App\Models\EmergencyBroadcast;
-use App\Models\Enquiry;
 use App\Models\Notice;
 use App\Models\Payment;
 use App\Models\User;
@@ -22,6 +20,8 @@ use Modules\Stays\Models\StayGuest;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DocumentVersion;
+use Modules\Umrah\Models\EmergencyBroadcast;
+use Modules\Umrah\Models\Enquiry;
 use Modules\Umrah\Models\Package;
 use Modules\Umrah\Models\Traveller;
 use Modules\Umrah\Services\Documents\DocumentWallet;

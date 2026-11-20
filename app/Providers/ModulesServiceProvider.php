@@ -59,10 +59,15 @@ use Modules\Telegram\Models\TelegramLinkCode;
 use Modules\Telegram\Models\TelegramUpdate;
 use Modules\Telegram\TelegramServiceProvider;
 use Modules\Umrah\Models\Agreement;
+use Modules\Umrah\Models\Announcement;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\BookingLine;
 use Modules\Umrah\Models\BookingStatusTransition;
 use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\BroadcastDelivery;
+use Modules\Umrah\Models\BusGroup;
+use Modules\Umrah\Models\Card;
+use Modules\Umrah\Models\CrmTask;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureChecklistItem;
 use Modules\Umrah\Models\DepartureCost;
@@ -75,14 +80,28 @@ use Modules\Umrah\Models\Discount;
 use Modules\Umrah\Models\Document;
 use Modules\Umrah\Models\DocumentExtraction;
 use Modules\Umrah\Models\DocumentVersion;
+use Modules\Umrah\Models\EmergencyBroadcast;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\EnquiryNote;
 use Modules\Umrah\Models\ExcursionBooking;
 use Modules\Umrah\Models\ExcursionParticipant;
+use Modules\Umrah\Models\FamilyAccess;
+use Modules\Umrah\Models\FlightGroup;
+use Modules\Umrah\Models\Incident;
+use Modules\Umrah\Models\IncidentNote;
 use Modules\Umrah\Models\ItineraryItem;
 use Modules\Umrah\Models\NusukPermit;
 use Modules\Umrah\Models\NusukPermitEvent;
+use Modules\Umrah\Models\OperationsLogEntry;
 use Modules\Umrah\Models\Package;
 use Modules\Umrah\Models\PaymentSchedule;
+use Modules\Umrah\Models\PortalAccess;
 use Modules\Umrah\Models\PriceTier;
+use Modules\Umrah\Models\Quotation;
+use Modules\Umrah\Models\RollCall;
+use Modules\Umrah\Models\RollCallMark;
+use Modules\Umrah\Models\Room;
+use Modules\Umrah\Models\RoomAssignment;
 use Modules\Umrah\Models\SeatHold;
 use Modules\Umrah\Models\Traveller;
 use Modules\Umrah\Models\VisaApplication;
@@ -195,6 +214,25 @@ class ModulesServiceProvider extends ServiceProvider
         'App\Models\NusukPermitEvent' => NusukPermitEvent::class,
         'App\Models\ExcursionBooking' => ExcursionBooking::class,
         'App\Models\ExcursionParticipant' => ExcursionParticipant::class,
+        'App\Models\BusGroup' => BusGroup::class,
+        'App\Models\Card' => Card::class,
+        'App\Models\FlightGroup' => FlightGroup::class,
+        'App\Models\Room' => Room::class,
+        'App\Models\RoomAssignment' => RoomAssignment::class,
+        'App\Models\RollCall' => RollCall::class,
+        'App\Models\RollCallMark' => RollCallMark::class,
+        'App\Models\Incident' => Incident::class,
+        'App\Models\IncidentNote' => IncidentNote::class,
+        'App\Models\OperationsLogEntry' => OperationsLogEntry::class,
+        'App\Models\Announcement' => Announcement::class,
+        'App\Models\EmergencyBroadcast' => EmergencyBroadcast::class,
+        'App\Models\BroadcastDelivery' => BroadcastDelivery::class,
+        'App\Models\FamilyAccess' => FamilyAccess::class,
+        'App\Models\PortalAccess' => PortalAccess::class,
+        'App\Models\CrmTask' => CrmTask::class,
+        'App\Models\Enquiry' => Enquiry::class,
+        'App\Models\EnquiryNote' => EnquiryNote::class,
+        'App\Models\Quotation' => Quotation::class,
     ];
 
     public function register(): void

@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Card;
 use App\Models\Customer;
 use App\Models\Partner;
 use App\Models\User;
-use App\Services\Operations\Cards;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use App\Support\CompanyFeatures;
@@ -17,8 +15,10 @@ use Illuminate\Support\Facades\Gate;
 use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Card;
 use Modules\Umrah\Models\Traveller;
 use Modules\Umrah\Services\Documents\Reading\Duplicates;
+use Modules\Umrah\Services\Operations\Cards;
 use Tests\TestCase;
 
 /**

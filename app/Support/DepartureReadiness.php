@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Services\Operations\Buses;
 use Illuminate\Database\Eloquent\Collection;
 use Modules\Content\Models\ModuleCompletion;
 use Modules\Umrah\Models\Booking;
@@ -11,6 +10,7 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureFlight;
 use Modules\Umrah\Models\Traveller;
 use Modules\Umrah\Models\WaitlistEntry;
+use Modules\Umrah\Services\Operations\Buses;
 
 /**
  * Is this departure ready to fly — §8.2's "journey workspace", the half of

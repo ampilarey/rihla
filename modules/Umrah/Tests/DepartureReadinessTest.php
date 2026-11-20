@@ -3,13 +3,13 @@
 namespace Modules\Umrah\Tests;
 
 use App\Models\Customer;
-use App\Models\Room;
 use App\Support\DepartureReadiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Content\Models\Person;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Room;
 use Modules\Umrah\Models\Traveller;
 use Modules\Umrah\Models\WaitlistEntry;
 use Tests\TestCase;

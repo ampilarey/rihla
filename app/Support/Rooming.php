@@ -2,11 +2,11 @@
 
 namespace App\Support;
 
-use App\Models\Room;
 use Illuminate\Support\Collection;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Room;
 use Modules\Umrah\Models\Traveller;
 
 /**

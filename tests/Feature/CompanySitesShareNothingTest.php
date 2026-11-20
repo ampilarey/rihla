@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\Partner;
 use App\Models\User;
-use App\Services\Portal\Gatekeeper;
 use App\Support\CompanyContext;
 use App\Support\SiteAddress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,6 +14,7 @@ use Modules\Stays\Models\HostPage;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\Package;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Tests\TestCase;
 
 /**

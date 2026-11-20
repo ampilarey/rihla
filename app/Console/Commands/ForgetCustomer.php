@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\AuditLog;
 use App\Models\Customer;
-use App\Models\Enquiry;
 use App\Models\Payment;
 use App\Support\Anonymisation;
 use App\Support\AuditContext;
@@ -17,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Modules\Stays\Models\Stay;
 use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Enquiry;
 use Modules\Umrah\Models\ExcursionBooking;
 use Modules\Umrah\Models\Traveller;
 

@@ -3,9 +3,6 @@
 namespace Modules\Umrah\Filament\Resources\Excursions\Tables;
 
 use App\Filament\Support\DepartureOptions;
-use App\Services\Operations\Buses;
-use App\Services\Operations\Excursions;
-use App\Services\Operations\Families;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -27,6 +24,9 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureExcursion;
 use Modules\Umrah\Models\ExcursionBooking;
 use Modules\Umrah\Models\ExcursionParticipant;
+use Modules\Umrah\Services\Operations\Buses;
+use Modules\Umrah\Services\Operations\Excursions;
+use Modules\Umrah\Services\Operations\Families;
 
 class ExcursionsTable
 {

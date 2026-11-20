@@ -7,7 +7,6 @@ use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Payments\Ledger;
-use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use App\Support\Contact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,6 +17,7 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\Package;
 use Modules\Umrah\Models\Traveller;
 use Modules\Umrah\Services\Invoices\Documents;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Tests\TestCase;
 
 /**

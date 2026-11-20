@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Customers\Pages;
 
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\Customer;
-use App\Services\Portal\Gatekeeper;
 use App\Support\CustomerDossier;
 use App\Support\ReferralCredit;
 use App\Support\Referrals;
@@ -12,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 
 /**
  * Everything this office knows about one person — §8.1's customer 360.

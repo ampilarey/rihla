@@ -4,10 +4,8 @@ namespace Modules\Companies\Tests;
 
 use App\Filament\Resources\Partners\Pages\EditPartner;
 use App\Models\Customer;
-use App\Models\Enquiry;
 use App\Models\Partner;
 use App\Models\User;
-use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use App\Support\Brand;
 use App\Support\CompanyContext;
@@ -26,10 +24,12 @@ use Modules\Companies\Models\CompanySite;
 use Modules\Companies\Services\AddCompany;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Enquiry;
 use Modules\Umrah\Models\Package;
 use Modules\Umrah\Models\PriceTier;
 use Modules\Umrah\Models\WaitlistEntry;
 use Modules\Umrah\Services\Booking\Waitlist;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Tests\TestCase;
 
 /**

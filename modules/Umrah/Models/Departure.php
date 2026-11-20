@@ -3,7 +3,6 @@
 namespace Modules\Umrah\Models;
 
 use App\Exceptions\DeskRefusal;
-use App\Models\BusGroup;
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\User;
 use App\Support\Audience;

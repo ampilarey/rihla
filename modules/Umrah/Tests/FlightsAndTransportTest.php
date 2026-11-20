@@ -4,8 +4,6 @@ namespace Modules\Umrah\Tests;
 
 use App\Models\Customer;
 use App\Models\User;
-use App\Services\Family\Doorkeeper;
-use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use App\Support\Anonymisation;
 use App\Support\DepartureReadiness;
@@ -22,6 +20,8 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureFlight;
 use Modules\Umrah\Models\DepartureTransfer;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Family\Doorkeeper;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Tests\TestCase;
 
 /**

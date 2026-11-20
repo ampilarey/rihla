@@ -4,10 +4,7 @@ namespace Modules\Umrah\Tests;
 
 use App\Models\AuditLog;
 use App\Models\Customer;
-use App\Models\FlightGroup;
 use App\Models\User;
-use App\Services\Operations\FlightGroups;
-use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use App\Support\DepartureRoute;
 use App\Support\SendToCustomer;
@@ -15,7 +12,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureFlight;
+use Modules\Umrah\Models\FlightGroup;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Operations\FlightGroups;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Tests\TestCase;
 
 /**

@@ -6,7 +6,6 @@ use App\Filament\Resources\Customers\Pages\ViewCustomer;
 use App\Models\Customer;
 use App\Models\Island;
 use App\Models\User;
-use App\Services\Operations\Lists;
 use App\Support\Access;
 use App\Support\DepartureRoute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,6 +17,7 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureFlight;
 use Modules\Umrah\Models\DepartureHotel;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Operations\Lists;
 use Tests\TestCase;
 
 /**

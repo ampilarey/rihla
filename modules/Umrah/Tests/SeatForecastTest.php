@@ -2,12 +2,12 @@
 
 namespace Modules\Umrah\Tests;
 
-use App\Filament\Pages\Forecast;
 use App\Models\Customer;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\SeatForecast;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Umrah\Filament\Pages\Forecast;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\Package;

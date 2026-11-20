@@ -4,7 +4,6 @@ namespace Modules\Umrah\Filament\Resources\ExcursionBookings\Tables;
 
 use App\Exceptions\DeskRefusal;
 use App\Models\Payment;
-use App\Services\Operations\Excursions;
 use App\Services\Payments\Gateways;
 use App\Support\CompanyRequest;
 use App\Support\Money;
@@ -22,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\Umrah\Models\DepartureExcursion;
 use Modules\Umrah\Models\ExcursionBooking;
 use Modules\Umrah\Models\ExcursionParticipant;
+use Modules\Umrah\Services\Operations\Excursions;
 
 class ExcursionBookingsTable
 {

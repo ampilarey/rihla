@@ -2,17 +2,13 @@
 
 namespace App\Providers;
 
-use App\Models\Announcement;
 use App\Models\Customer;
-use App\Models\EmergencyBroadcast;
 use App\Models\Media;
 use App\Models\Partner;
 use App\Models\Setting;
 use App\Models\User;
 use App\Observers\AuditObserver;
 use App\Observers\CoverImageObserver;
-use App\Services\Family\Doorkeeper;
-use App\Services\Portal\Gatekeeper;
 use App\Support\CanonicalUrl;
 use App\Support\CompanyContext;
 use App\Support\CurrentSite;
@@ -41,12 +37,16 @@ use Modules\Stays\Models\Review;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Observers\LostStayObserver;
 use Modules\Stays\Services\Stays\StayGatekeeper;
+use Modules\Umrah\Models\Announcement;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\EmergencyBroadcast;
 use Modules\Umrah\Models\Package;
 use Modules\Umrah\Models\PriceTier;
 use Modules\Umrah\Models\Traveller;
 use Modules\Umrah\Models\WaitlistEntry;
+use Modules\Umrah\Services\Family\Doorkeeper;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider

@@ -1,0 +1,25 @@
+<?php
+
+namespace Modules\Umrah\Filament\Resources\Tasks\Pages;
+
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
+use Modules\Umrah\Filament\Resources\Tasks\CrmTaskResource;
+
+class ListCrmTasks extends ListRecords
+{
+    protected static string $resource = CrmTaskResource::class;
+
+    protected static ?string $title = 'Follow-ups';
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            CreateAction::make()->label('Add a follow-up')
+                // Whoever may not assign work owns what they make.
+                ->mutateDataUsing(fn (array $data): array => auth()->user()?->can('task.assign') === true
+                    ? $data
+                    : [...$data, 'owner_id' => auth()->id()]),
+        ];
+    }
+}

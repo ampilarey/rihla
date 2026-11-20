@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Pages\Profitability;
 use App\Models\Customer;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Umrah\Filament\Pages\Profitability;
 use Modules\Umrah\Filament\Resources\Costs\DepartureCostResource;
 use Modules\Umrah\Filament\Resources\Costs\Pages\CreateDepartureCost;
 use Modules\Umrah\Filament\Resources\Costs\Pages\ListDepartureCosts;

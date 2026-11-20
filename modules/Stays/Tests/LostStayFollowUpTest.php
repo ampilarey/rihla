@@ -2,9 +2,7 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Filament\Resources\Enquiries\Pages\ListEnquiries;
 use App\Models\Customer;
-use App\Models\Enquiry;
 use App\Models\User;
 use App\Support\Access;
 use Carbon\CarbonImmutable;
@@ -15,6 +13,8 @@ use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Services\Stays\StayAllocator;
 use Modules\Stays\Services\Stays\StayBooking;
+use Modules\Umrah\Filament\Resources\Enquiries\Pages\ListEnquiries;
+use Modules\Umrah\Models\Enquiry;
 use Tests\TestCase;
 
 /**

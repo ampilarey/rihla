@@ -4,7 +4,6 @@ namespace App\Services\Finance;
 
 use App\Models\LedgerEntry;
 use App\Models\Payment;
-use App\Services\Operations\ListDocument;
 use App\Support\JourneyProfit;
 use App\Support\Money;
 use App\Support\Rates;
@@ -17,6 +16,7 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureCost;
 use Modules\Umrah\Models\DepartureExcursion;
 use Modules\Umrah\Models\ExcursionBooking;
+use Modules\Umrah\Services\Operations\ListDocument;
 
 /**
  * The company books — batch C from Hijaz, as the owner chose: a cash book

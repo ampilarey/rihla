@@ -3,9 +3,6 @@
 namespace Modules\Umrah\Tests;
 
 use App\Exceptions\DeskRefusal;
-use App\Filament\Pages\Forecast;
-use App\Filament\Pages\Lists;
-use App\Filament\Pages\Profitability;
 use App\Filament\Pages\Today;
 use App\Filament\Support\DepartureOptions;
 use App\Models\Customer;
@@ -19,6 +16,9 @@ use Livewire\Livewire;
 use Modules\Telegram\Services\DailySummary;
 use Modules\Umrah\Exceptions\IllegalDepartureTransition;
 use Modules\Umrah\Filament\Pages\DepartureBoard;
+use Modules\Umrah\Filament\Pages\Forecast;
+use Modules\Umrah\Filament\Pages\Lists;
+use Modules\Umrah\Filament\Pages\Profitability;
 use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
 use Modules\Umrah\Filament\Resources\Packages\PackageResource;
 use Modules\Umrah\Filament\Resources\Packages\Pages\EditPackage;

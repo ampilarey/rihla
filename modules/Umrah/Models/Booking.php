@@ -4,7 +4,6 @@ namespace Modules\Umrah\Models;
 
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Concerns\HasNotices;
-use App\Models\CrmTask;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\User;

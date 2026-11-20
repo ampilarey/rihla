@@ -5,8 +5,6 @@ namespace Modules\Umrah\Tests;
 use App\Exceptions\DeskRefusal;
 use App\Models\Customer;
 use App\Models\User;
-use App\Services\Portal\Agreements;
-use App\Services\Portal\Gatekeeper;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -18,6 +16,8 @@ use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\Document;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Portal\Agreements;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Tests\TestCase;
 
 /**

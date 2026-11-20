@@ -7,7 +7,6 @@ use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\Finance\Books;
-use App\Services\Operations\Excursions;
 use App\Services\Payments\Gateways;
 use App\Services\Payments\Ledger;
 use App\Support\Access;
@@ -21,6 +20,7 @@ use Modules\Umrah\Models\Departure;
 use Modules\Umrah\Models\DepartureExcursion;
 use Modules\Umrah\Models\ExcursionBooking;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Operations\Excursions;
 use Tests\TestCase;
 
 /**

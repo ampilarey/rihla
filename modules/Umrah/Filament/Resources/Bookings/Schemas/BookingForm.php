@@ -2,7 +2,6 @@
 
 namespace Modules\Umrah\Filament\Resources\Bookings\Schemas;
 
-use App\Services\Operations\Families;
 use App\Support\Money;
 use App\Support\OfficeContact;
 use App\Support\TravelReadiness;
@@ -14,6 +13,7 @@ use Modules\Umrah\Filament\Resources\Bookings\Tables\BookingsTable;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\BookingTraveller;
 use Modules\Umrah\Models\SeatHold;
+use Modules\Umrah\Services\Operations\Families;
 
 /**
  * One booking, read back.
