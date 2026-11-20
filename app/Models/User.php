@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Exceptions\LastSuperAdmin;
-use App\Services\Companies\SupportAccess;
 use App\Support\Access;
 use App\Support\CompanyRole;
 use App\Support\PhoneNumber;
@@ -22,6 +21,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Modules\Companies\Models\SupportGrant;
+use Modules\Companies\Services\SupportAccess;
 use Modules\Telegram\Models\TelegramLink;
 use Spatie\Permission\Traits\HasRoles;
 

@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Models\Announcement;
 use App\Models\Article;
 use App\Models\Booking;
-use App\Models\CompanyInvoice;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\EmergencyBroadcast;
@@ -47,6 +46,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Pulse\Facades\Pulse;
+use Modules\Companies\Models\CompanyInvoice;
 use Spatie\Translatable\Facades\Translatable;
 
 class AppServiceProvider extends ServiceProvider

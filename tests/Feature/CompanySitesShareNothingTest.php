@@ -9,12 +9,12 @@ use App\Models\HostPage;
 use App\Models\Package;
 use App\Models\Partner;
 use App\Models\User;
-use App\Services\Companies\AddCompany;
 use App\Services\Portal\Gatekeeper;
 use App\Support\CompanyContext;
 use App\Support\SiteAddress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Modules\Companies\Services\AddCompany;
 use Tests\TestCase;
 
 /**

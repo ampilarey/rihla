@@ -3,12 +3,9 @@
 namespace Tests\Feature;
 
 use App\Exceptions\DeskRefusal;
-use App\Filament\Company\Pages\Auth\Login as CompanyLogin;
 use App\Filament\Resources\Customers\Pages\ListCustomers;
 use App\Models\Customer;
 use App\Models\User;
-use App\Services\Companies\AddCompany;
-use App\Services\Companies\CompanyTeam;
 use App\Support\Access;
 use App\Support\CompanyRole;
 use Filament\Facades\Filament;
@@ -16,6 +13,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
+use Modules\Companies\Filament\Pages\Auth\Login as CompanyLogin;
+use Modules\Companies\Services\AddCompany;
+use Modules\Companies\Services\CompanyTeam;
 use Tests\TestCase;
 
 /**

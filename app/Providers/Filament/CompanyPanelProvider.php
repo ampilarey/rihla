@@ -3,9 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Filament\BottomNav;
-use App\Filament\Company\OverdueInvoiceBanner;
-use App\Filament\Company\Pages\Auth\Login;
-use App\Filament\Company\Pages\Dashboard;
 use App\Filament\InitialsAvatarProvider;
 use App\Filament\Pages\Books;
 use App\Filament\Pages\DepartureBoard;
@@ -75,6 +72,9 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Modules\Companies\Filament\OverdueInvoiceBanner;
+use Modules\Companies\Filament\Pages\Auth\Login;
+use Modules\Companies\Filament\Pages\Dashboard;
 use Modules\Telegram\Filament\Pages\Telegram;
 
 /**
@@ -179,8 +179,9 @@ class CompanyPanelProvider extends PanelProvider
             ->tenant(Partner::class, slugAttribute: 'slug', ownershipRelationship: 'company')
             ->tenantMenu(fn (): bool => (auth()->user()?->companies()->count() ?? 0) > 1)
             ->tenantMiddleware([UseTenantCompany::class, RecordSupportVisit::class], isPersistent: true)
-            ->discoverResources(in: app_path('Filament/Company/Resources'), for: 'App\Filament\Company\Resources')
-            ->discoverPages(in: app_path('Filament/Company/Pages'), for: 'App\Filament\Company\Pages')
+            // The company panel's own pages live in the Companies module
+            // (docs/MODULES_PLAN.md); the shared screens are listed below.
+            ->discoverPages(in: base_path('modules/Companies/Filament/Pages'), for: 'Modules\Companies\Filament\Pages')
             ->resources(self::RESOURCES)
             ->pages([Dashboard::class, ...self::PAGES])
             // The home page's cards and charts (Phase 3g), each behind its permission.

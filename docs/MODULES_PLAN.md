@@ -14,13 +14,17 @@ only with the full suite, Larastan and the MySQL job green.
 | Module | Holds | Status |
 |---|---|---|
 | **Core** (stays in `app/`) | Users and roles, companies and hosts as records (`Partner`), customers, payments and the ledger, settings, the audit trail, media, notices, the three panels' providers, and the shared support classes | stays where it is |
-| **Telegram** | The staff bot: links, link codes, updates, the router, the notifier, the daily summary, the webhook, and its page | **first, the pilot** |
-| **Companies** | Company invoices, memberships, sites, support grants and visits; adding, billing, exporting and closing a company; the company panel's own pages | |
+| **Telegram** | The staff bot: links, link codes, updates, the router, the notifier, the daily summary, the webhook, and its page | ✅ moved (#220) |
+| **Companies** | Company invoices, memberships, sites, support grants and visits; adding, billing, exporting and closing a company; the company panel's own pages | ✅ moved |
 | **Content** | Trips, articles, the knowledge centre, the Umrah guide, hero banners, the *why* blocks, learning paths and quizzes, ziyarah locations, the assistant | |
 | **Stays** | Properties, rooms, units, photos, rates, blocked dates, stays and their guests, charges, messages and reviews, hosts' memberships, pages and statements, calendars, payouts; the host panel | |
 | **Umrah** | Packages, price tiers, departures and everything on them, bookings, travellers, seat holds, the waitlist, quotations, documents and reading, visas, Nusuk permits, rooming, buses, flights, roll calls, cards, excursions, incidents, broadcasts, the portal and the family portal, enquiries and the CRM | last, the largest |
 
 Customers and payments stay in Core because Umrah and Stays both use them.
+So does what keeps companies apart: `CompanyContext`, the company gate,
+`BelongsToCompany`, the company-site middleware and the cross-company test
+suites. Every Umrah record in every module depends on them, so they are not
+the Companies module's.
 
 ## How a module is laid out
 

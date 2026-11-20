@@ -5,6 +5,12 @@ namespace App\Providers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Modules\Companies\CompaniesServiceProvider;
+use Modules\Companies\Models\CompanyInvoice;
+use Modules\Companies\Models\CompanyMembership;
+use Modules\Companies\Models\CompanySite;
+use Modules\Companies\Models\SupportGrant;
+use Modules\Companies\Models\SupportVisit;
 use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Models\TelegramLinkCode;
 use Modules\Telegram\Models\TelegramUpdate;
@@ -19,6 +25,7 @@ class ModulesServiceProvider extends ServiceProvider
     /** @var list<class-string<ServiceProvider>> */
     public const MODULES = [
         TelegramServiceProvider::class,
+        CompaniesServiceProvider::class,
     ];
 
     /**
@@ -37,6 +44,11 @@ class ModulesServiceProvider extends ServiceProvider
         'App\Models\TelegramLink' => TelegramLink::class,
         'App\Models\TelegramLinkCode' => TelegramLinkCode::class,
         'App\Models\TelegramUpdate' => TelegramUpdate::class,
+        'App\Models\CompanyInvoice' => CompanyInvoice::class,
+        'App\Models\CompanyMembership' => CompanyMembership::class,
+        'App\Models\CompanySite' => CompanySite::class,
+        'App\Models\SupportGrant' => SupportGrant::class,
+        'App\Models\SupportVisit' => SupportVisit::class,
     ];
 
     public function register(): void
