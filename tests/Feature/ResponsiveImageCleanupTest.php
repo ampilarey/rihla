@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\Package;
 use App\Support\ResponsiveImage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Modules\Content\Models\Article;
 use Modules\Content\Models\HeroBanner;
+use Modules\Umrah\Models\Package;
 use Tests\TestCase;
 
 /**

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\CrmTask;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\CrmTask;
 
 /** @extends Factory<CrmTask> */
 class CrmTaskFactory extends Factory

@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Http\Middleware\SetLocale;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -14,6 +13,7 @@ use Modules\Content\Models\Trip;
 use Modules\Stays\Models\HostPage;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;
+use Modules\Umrah\Models\Package;
 
 /**
  * Structured data and per-locale link tags.

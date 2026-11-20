@@ -2,15 +2,15 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
-use App\Models\CrmTask;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Enquiry;
 use App\Models\Payment;
-use App\Models\Quotation;
 use Illuminate\Support\Collection;
 use Modules\Content\Models\ScholarQuestion;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\CrmTask;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\Quotation;
 
 /**
  * Everything this office knows about one person — §8.1's customer 360.

@@ -3,9 +3,9 @@
 namespace Modules\Content\Models;
 
 use App\Models\Concerns\BelongsToCompany;
-use App\Models\Traveller;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * One question put to the pilgrim assistant, and what came back — §9.6.

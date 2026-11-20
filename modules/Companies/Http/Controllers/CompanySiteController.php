@@ -3,14 +3,14 @@
 namespace Modules\Companies\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\EnquiryController;
-use App\Models\Departure;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Support\CurrentSite;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Companies\Models\CompanySite;
+use Modules\Umrah\Http\Controllers\EnquiryController;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 
 /**
  * A company's own home and contact pages — companies plan, Phase 4a.

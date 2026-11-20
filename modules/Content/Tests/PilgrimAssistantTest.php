@@ -2,7 +2,6 @@
 
 namespace Modules\Content\Tests;
 
-use App\Models\Traveller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Modules\Content\Models\AssistantExchange;
@@ -11,6 +10,7 @@ use Modules\Content\Models\Person;
 use Modules\Content\Services\Assistant\AnthropicProvider;
 use Modules\Content\Services\Assistant\Corpus;
 use Modules\Content\Services\Assistant\PilgrimAssistant;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

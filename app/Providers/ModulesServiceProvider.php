@@ -58,6 +58,56 @@ use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Models\TelegramLinkCode;
 use Modules\Telegram\Models\TelegramUpdate;
 use Modules\Telegram\TelegramServiceProvider;
+use Modules\Umrah\Models\Agreement;
+use Modules\Umrah\Models\Announcement;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingLine;
+use Modules\Umrah\Models\BookingStatusTransition;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\BroadcastDelivery;
+use Modules\Umrah\Models\BusGroup;
+use Modules\Umrah\Models\Card;
+use Modules\Umrah\Models\CrmTask;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureChecklistItem;
+use Modules\Umrah\Models\DepartureCost;
+use Modules\Umrah\Models\DepartureEvent;
+use Modules\Umrah\Models\DepartureExcursion;
+use Modules\Umrah\Models\DepartureFlight;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\DepartureTransfer;
+use Modules\Umrah\Models\Discount;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\DocumentExtraction;
+use Modules\Umrah\Models\DocumentVersion;
+use Modules\Umrah\Models\EmergencyBroadcast;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\EnquiryNote;
+use Modules\Umrah\Models\ExcursionBooking;
+use Modules\Umrah\Models\ExcursionParticipant;
+use Modules\Umrah\Models\FamilyAccess;
+use Modules\Umrah\Models\FlightGroup;
+use Modules\Umrah\Models\Incident;
+use Modules\Umrah\Models\IncidentNote;
+use Modules\Umrah\Models\ItineraryItem;
+use Modules\Umrah\Models\NusukPermit;
+use Modules\Umrah\Models\NusukPermitEvent;
+use Modules\Umrah\Models\OperationsLogEntry;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\PaymentSchedule;
+use Modules\Umrah\Models\PortalAccess;
+use Modules\Umrah\Models\PriceTier;
+use Modules\Umrah\Models\Quotation;
+use Modules\Umrah\Models\RollCall;
+use Modules\Umrah\Models\RollCallMark;
+use Modules\Umrah\Models\Room;
+use Modules\Umrah\Models\RoomAssignment;
+use Modules\Umrah\Models\SeatHold;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Models\VisaApplication;
+use Modules\Umrah\Models\VisaApplicationEvent;
+use Modules\Umrah\Models\WaitlistEntry;
+use Modules\Umrah\UmrahServiceProvider;
 
 /**
  * The modules — docs/MODULES_PLAN.md. One folder per line of business under
@@ -71,6 +121,7 @@ class ModulesServiceProvider extends ServiceProvider
         CompaniesServiceProvider::class,
         ContentServiceProvider::class,
         StaysServiceProvider::class,
+        UmrahServiceProvider::class,
     ];
 
     /**
@@ -133,6 +184,55 @@ class ModulesServiceProvider extends ServiceProvider
         'App\Models\StayDiscount' => StayDiscount::class,
         'App\Models\StayGuest' => StayGuest::class,
         'App\Models\StayMessage' => StayMessage::class,
+        'App\Models\Package' => Package::class,
+        'App\Models\PriceTier' => PriceTier::class,
+        'App\Models\Departure' => Departure::class,
+        'App\Models\DepartureChecklistItem' => DepartureChecklistItem::class,
+        'App\Models\DepartureCost' => DepartureCost::class,
+        'App\Models\DepartureEvent' => DepartureEvent::class,
+        'App\Models\DepartureExcursion' => DepartureExcursion::class,
+        'App\Models\DepartureFlight' => DepartureFlight::class,
+        'App\Models\DepartureHotel' => DepartureHotel::class,
+        'App\Models\DepartureTransfer' => DepartureTransfer::class,
+        'App\Models\ItineraryItem' => ItineraryItem::class,
+        'App\Models\Booking' => Booking::class,
+        'App\Models\BookingLine' => BookingLine::class,
+        'App\Models\BookingStatusTransition' => BookingStatusTransition::class,
+        'App\Models\BookingTraveller' => BookingTraveller::class,
+        'App\Models\Discount' => Discount::class,
+        'App\Models\PaymentSchedule' => PaymentSchedule::class,
+        'App\Models\SeatHold' => SeatHold::class,
+        'App\Models\WaitlistEntry' => WaitlistEntry::class,
+        'App\Models\Traveller' => Traveller::class,
+        'App\Models\Agreement' => Agreement::class,
+        'App\Models\Document' => Document::class,
+        'App\Models\DocumentExtraction' => DocumentExtraction::class,
+        'App\Models\DocumentVersion' => DocumentVersion::class,
+        'App\Models\VisaApplication' => VisaApplication::class,
+        'App\Models\VisaApplicationEvent' => VisaApplicationEvent::class,
+        'App\Models\NusukPermit' => NusukPermit::class,
+        'App\Models\NusukPermitEvent' => NusukPermitEvent::class,
+        'App\Models\ExcursionBooking' => ExcursionBooking::class,
+        'App\Models\ExcursionParticipant' => ExcursionParticipant::class,
+        'App\Models\BusGroup' => BusGroup::class,
+        'App\Models\Card' => Card::class,
+        'App\Models\FlightGroup' => FlightGroup::class,
+        'App\Models\Room' => Room::class,
+        'App\Models\RoomAssignment' => RoomAssignment::class,
+        'App\Models\RollCall' => RollCall::class,
+        'App\Models\RollCallMark' => RollCallMark::class,
+        'App\Models\Incident' => Incident::class,
+        'App\Models\IncidentNote' => IncidentNote::class,
+        'App\Models\OperationsLogEntry' => OperationsLogEntry::class,
+        'App\Models\Announcement' => Announcement::class,
+        'App\Models\EmergencyBroadcast' => EmergencyBroadcast::class,
+        'App\Models\BroadcastDelivery' => BroadcastDelivery::class,
+        'App\Models\FamilyAccess' => FamilyAccess::class,
+        'App\Models\PortalAccess' => PortalAccess::class,
+        'App\Models\CrmTask' => CrmTask::class,
+        'App\Models\Enquiry' => Enquiry::class,
+        'App\Models\EnquiryNote' => EnquiryNote::class,
+        'App\Models\Quotation' => Quotation::class,
     ];
 
     public function register(): void

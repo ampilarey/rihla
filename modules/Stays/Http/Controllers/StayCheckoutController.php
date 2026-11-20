@@ -2,9 +2,6 @@
 
 namespace Modules\Stays\Http\Controllers;
 
-use App\Exceptions\CommissionNotSet;
-use App\Exceptions\NotSoldToAudience;
-use App\Exceptions\RoomNotAvailable;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Support\Audience;
@@ -14,6 +11,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Modules\Stays\Exceptions\CommissionNotSet;
+use Modules\Stays\Exceptions\NotSoldToAudience;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;

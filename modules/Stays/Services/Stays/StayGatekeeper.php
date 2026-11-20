@@ -3,12 +3,12 @@
 namespace Modules\Stays\Services\Stays;
 
 use App\Models\User;
-use App\Services\Portal\Gatekeeper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Models\StayAccess;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 
 /**
  * Issuing, checking and revoking the way into a guest's own stay — §16.7.

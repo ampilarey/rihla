@@ -2,11 +2,9 @@
 
 namespace Modules\Companies\Tests;
 
-use App\Models\Booking;
 use App\Models\Partner;
 use App\Models\Payment;
 use App\Models\User;
-use App\Services\Invoices\Documents;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Support\Access;
 use App\Support\CompanyContext;
@@ -21,6 +19,8 @@ use Modules\Companies\Filament\Pages\CompanySettings;
 use Modules\Companies\Filament\Pages\Team;
 use Modules\Companies\Models\CompanyMembership;
 use Modules\Companies\Services\AddCompany;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Services\Invoices\Documents;
 use Tests\TestCase;
 
 /**

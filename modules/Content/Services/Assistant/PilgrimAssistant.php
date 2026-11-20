@@ -2,10 +2,10 @@
 
 namespace Modules\Content\Services\Assistant;
 
-use App\Models\Traveller;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Modules\Content\Models\AssistantExchange;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * The pilgrim assistant — §9.6, and mostly the half of §9.6 that says no.

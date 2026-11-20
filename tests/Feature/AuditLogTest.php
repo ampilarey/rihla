@@ -3,14 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\AuditLog;
-use App\Models\Booking;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\AuditContext;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Content\Models\Trip;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

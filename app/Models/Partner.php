@@ -21,6 +21,7 @@ use Modules\Stays\Models\Payout;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\Review;
 use Modules\Stays\Models\Stay;
+use Modules\Umrah\Models\Package;
 
 /**
  * The guesthouse owner — §15.4 (Phase 9.1).

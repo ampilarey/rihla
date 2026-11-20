@@ -4,11 +4,7 @@ namespace Modules\Companies\Tests;
 
 use App\Filament\Resources\Partners\Pages\EditPartner;
 use App\Filament\Resources\Partners\Pages\ListPartners;
-use App\Models\Booking;
-use App\Models\Departure;
-use App\Models\Package;
 use App\Models\Partner;
-use App\Models\PriceTier;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\CompanyContext;
@@ -19,6 +15,10 @@ use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Modules\Companies\Filament\Pages\Website;
 use Modules\Companies\Models\CompanySite;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\PriceTier;
 use Tests\TestCase;
 
 /**

@@ -2,10 +2,7 @@
 
 namespace Modules\Stays\Http\Controllers;
 
-use App\Exceptions\NotSoldToAudience;
-use App\Exceptions\RoomNotAvailable;
 use App\Http\Controllers\Controller;
-use App\Models\Package;
 use App\Models\Setting;
 use App\Support\Audience;
 use App\Support\Contact;
@@ -19,6 +16,8 @@ use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Modules\Stays\Exceptions\NotSoldToAudience;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\PropertyPhoto;
 use Modules\Stays\Models\RoomType;
@@ -27,6 +26,7 @@ use Modules\Stays\Services\Stays\GreenTax;
 use Modules\Stays\Services\Stays\ShareCard;
 use Modules\Stays\Services\Stays\StayAddons;
 use Modules\Stays\Support\StayFilters;
+use Modules\Umrah\Models\Package;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**

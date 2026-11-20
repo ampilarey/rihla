@@ -34,7 +34,7 @@
                 <ul class="divide-y divide-cream-deep">
                     @foreach ($flights as $flight)
                         <li class="py-3">
-                            <span class="block text-sm text-ink-muted">{{ \App\Models\DepartureFlight::directionLabel($flight->direction) }}</span>
+                            <span class="block text-sm text-ink-muted">{{ \Modules\Umrah\Models\DepartureFlight::directionLabel($flight->direction) }}</span>
                             <span dir="ltr" class="block font-medium text-ink">{{ $flight->airline }} {{ $flight->flight_number }} &middot; {{ $flight->from_airport }} → {{ $flight->to_airport }}</span>
                             <span class="block text-sm text-ink" dir="ltr">
                                 Departs {{ $flight->departs_at->format('D j M, H:i') }}@if ($flight->arrives_at) &middot; arrives {{ $flight->arrives_at->format('D j M, H:i') }}@endif

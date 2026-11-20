@@ -3,9 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
-use App\Models\Enquiry;
 use App\Models\Partner;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\Assignees;
@@ -23,6 +21,8 @@ use Modules\Companies\Services\CompanyTeam;
 use Modules\Companies\Services\SupportAccess;
 use Modules\Content\Models\AssistantExchange;
 use Modules\Telegram\Services\Notifier;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 use ZipArchive;
 

@@ -2,14 +2,8 @@
 
 namespace App\Filament;
 
-use App\Filament\Pages\DepartureBoard;
-use App\Filament\Pages\Lists;
-use App\Filament\Pages\Scan;
 use App\Filament\Pages\Today;
-use App\Filament\Resources\Bookings\BookingResource;
-use App\Filament\Resources\BusGroups\BusGroupResource;
 use App\Filament\Resources\Customers\CustomerResource;
-use App\Filament\Resources\Documents\DocumentResource;
 use App\Filament\Resources\Payments\PaymentResource;
 use Filament\Facades\Filament;
 use Modules\Stays\Filament\Host\Pages\Calendar;
@@ -18,6 +12,12 @@ use Modules\Stays\Filament\Host\Pages\Housekeeping;
 use Modules\Stays\Filament\Host\Pages\Messages;
 use Modules\Stays\Filament\Host\Resources\Bookings\BookingResource as HostBookingResource;
 use Modules\Stays\Support\HostContext;
+use Modules\Umrah\Filament\Pages\DepartureBoard;
+use Modules\Umrah\Filament\Pages\Lists;
+use Modules\Umrah\Filament\Pages\Scan;
+use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
+use Modules\Umrah\Filament\Resources\BusGroups\BusGroupResource;
+use Modules\Umrah\Filament\Resources\Documents\DocumentResource;
 use Throwable;
 
 /**

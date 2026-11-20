@@ -2,11 +2,11 @@
 
 namespace Modules\Content\Services\Learning;
 
-use App\Models\Traveller;
 use Illuminate\Support\Collection;
 use Modules\Content\Models\LearningModule;
 use Modules\Content\Models\ModuleCompletion;
 use Modules\Content\Models\QuizQuestion;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * Recording what somebody has read and how their last quiz attempt went —

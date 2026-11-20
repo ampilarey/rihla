@@ -2,9 +2,9 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
-use App\Models\SeatHold;
 use Illuminate\Support\Facades\Session;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\SeatHold;
 
 /**
  * Where a visitor is in the booking flow.

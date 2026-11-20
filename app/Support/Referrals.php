@@ -2,12 +2,12 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
-use App\Models\CrmTask;
 use App\Models\Customer;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\CrmTask;
 
 /**
  * Who sends Rihla people — the other half of §8.1's referral tracking.

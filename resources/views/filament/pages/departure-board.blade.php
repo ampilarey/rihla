@@ -35,7 +35,7 @@
                     DepartureBoardTest::test_the_severity_badges_render.
                 --}}
                 <x-slot name="afterHeader">
-                    <x-filament::badge :color="\App\Filament\Resources\Packages\RelationManagers\DeparturesRelationManager::STAGE_COLOURS[$departure->status] ?? 'gray'">
+                    <x-filament::badge :color="\Modules\Umrah\Filament\Resources\Packages\RelationManagers\DeparturesRelationManager::STAGE_COLOURS[$departure->status] ?? 'gray'">
                         {{ $departure->statusLabel() }}
                     </x-filament::badge>
 
@@ -83,7 +83,7 @@
                         @foreach ($moves as $to => $label)
                             <x-filament::button
                                 size="sm"
-                                :color="$to === \App\Models\Departure::SETTLED ? 'success' : 'gray'"
+                                :color="$to === \Modules\Umrah\Models\Departure::SETTLED ? 'success' : 'gray'"
                                 wire:click="move({{ $departure->getKey() }}, '{{ $to }}')"
                                 wire:confirm="{{ $label }}: {{ $departure->package?->title ?? 'this departure' }}, {{ $departure->startLabel('j M Y') }}?"
                             >{{ $label }}</x-filament::button>

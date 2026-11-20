@@ -2,15 +2,15 @@
 
 namespace Modules\Telegram\Services;
 
-use App\Models\Booking;
-use App\Models\Document;
-use App\Models\DocumentExtraction;
 use App\Models\Payment;
 use App\Models\User;
 use App\Providers\Filament\CompanyPanelProvider;
 use App\Support\CompanyDetails;
 use Illuminate\Support\Facades\Log;
 use Modules\Telegram\Models\TelegramLink;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\DocumentExtraction;
 use Throwable;
 
 /**

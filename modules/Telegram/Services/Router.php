@@ -2,15 +2,8 @@
 
 namespace Modules\Telegram\Services;
 
-use App\Models\Booking;
-use App\Models\BusGroup;
-use App\Models\Departure;
-use App\Models\DepartureHotel;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Invoices\Documents;
-use App\Services\Operations\Lists;
 use App\Services\Payments\Drivers\BankTransfer;
 use App\Services\Payments\SlipVault;
 use App\Support\AuditContext;
@@ -24,6 +17,13 @@ use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Models\TelegramUpdate;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BusGroup;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Invoices\Documents;
+use Modules\Umrah\Services\Operations\Lists;
 
 /**
  * Turns one Telegram update into one reply — batch A4 from Hijaz.

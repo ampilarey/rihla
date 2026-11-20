@@ -2,8 +2,6 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Exceptions\NotSoldToAudience;
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Customer;
 use App\Models\Partner;
 use App\Models\User;
@@ -12,6 +10,8 @@ use App\Support\Audience;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Stays\Exceptions\NotSoldToAudience;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Filament\Resources\Properties\Pages\EditProperty;
 use Modules\Stays\Filament\Resources\Properties\RelationManagers\RatesRelationManager;
 use Modules\Stays\Filament\Resources\Properties\RelationManagers\RoomTypesRelationManager;

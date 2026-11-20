@@ -5,9 +5,7 @@ namespace Tests\Feature;
 use App\Exceptions\GatewayNotConfigured;
 use App\Exceptions\IllegalPaymentTransition;
 use App\Models\AuditLog;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Models\User;
@@ -22,6 +20,8 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
 use Tests\TestCase;
 
 /**

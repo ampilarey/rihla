@@ -2,18 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DocumentVersion;
-use App\Models\EmergencyBroadcast;
-use App\Models\Enquiry;
 use App\Models\Notice;
-use App\Models\Package;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Documents\DocumentWallet;
 use App\Services\Payments\SlipVault;
 use App\Support\Anonymisation;
 use App\Support\Forgetting;
@@ -25,6 +17,14 @@ use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Models\StayGuest;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DocumentVersion;
+use Modules\Umrah\Models\EmergencyBroadcast;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Documents\DocumentWallet;
 use Tests\TestCase;
 
 /**

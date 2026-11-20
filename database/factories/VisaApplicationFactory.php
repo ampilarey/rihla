@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\Booking;
-use App\Models\Traveller;
-use App\Models\VisaApplication;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Models\VisaApplication;
 
 /**
  * @extends Factory<VisaApplication>

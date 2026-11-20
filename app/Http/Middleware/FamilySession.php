@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\Family\Doorkeeper;
 use Closure;
 use Illuminate\Http\Request;
+use Modules\Umrah\Services\Family\Doorkeeper;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Modules\Companies\Http\Controllers\CompanySiteController;
 use Modules\Content\Models\GuideStep;
+use Modules\Umrah\Http\Controllers\EnquiryController;
 
 class PageController extends Controller
 {

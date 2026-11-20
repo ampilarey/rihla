@@ -53,7 +53,7 @@
                         . ' · ' . $instalment->outstanding()->format() . ' still owed'"
                 >
                     <x-slot name="footer">
-                        <x-filament::link :href="\App\Filament\Resources\Bookings\BookingResource::getUrl('edit', ['record' => $instalment->booking])" size="sm">
+                        <x-filament::link :href="\Modules\Umrah\Filament\Resources\Bookings\BookingResource::getUrl('edit', ['record' => $instalment->booking])" size="sm">
                             Open the booking
                         </x-filament::link>
                     </x-slot>

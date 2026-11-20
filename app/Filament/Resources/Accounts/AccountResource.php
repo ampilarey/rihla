@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Accounts;
 
 use App\Filament\Resources\Accounts\Pages\ListAccounts;
 use App\Models\Account;
-use App\Models\DepartureExcursion;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -15,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Umrah\Models\DepartureExcursion;
 use UnitEnum;
 
 /**

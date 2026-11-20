@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Package;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Umrah\Models\Package;
 
 /**
  * @extends Factory<Package>

@@ -107,7 +107,7 @@ class Preflight extends Command
      * on every deploy rather than assume.
      *
      * A warning, not a failure: the `SELECT … FOR UPDATE` row lock in
-     * App\Services\Booking\SeatAllocator still carries the guarantee. What
+     * Modules\Umrah\Services\Booking\SeatAllocator still carries the guarantee. What
      * is missing is the net underneath it.
      */
     private function checkCapacityConstraint(): void

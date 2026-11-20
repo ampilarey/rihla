@@ -3,12 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Pages\Books as BooksPage;
-use App\Filament\Pages\DepartureBoard;
-use App\Filament\Resources\Bookings\BookingResource;
 use App\Filament\Resources\Payments\PaymentResource;
-use App\Models\Booking;
-use App\Models\BookingTraveller;
-use App\Models\Departure;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\Finance\Books;
@@ -16,6 +11,11 @@ use App\Support\Money;
 use Filament\Facades\Filament;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Modules\Umrah\Filament\Pages\DepartureBoard;
+use Modules\Umrah\Filament\Resources\Bookings\BookingResource;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
 
 /**
  * The figures at the top of the home page (companies plan, Phase 3g, from

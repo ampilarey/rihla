@@ -2,11 +2,11 @@
 
 namespace App\Services\Notices;
 
-use App\Models\Booking;
 use App\Models\Notice;
 use App\Support\TravelReadiness;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Services\Stays\StayBooking;
+use Modules\Umrah\Models\Booking;
 
 /**
  * Turning records into things somebody needs to be told — §11.2's list.

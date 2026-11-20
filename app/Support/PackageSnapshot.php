@@ -2,9 +2,9 @@
 
 namespace App\Support;
 
-use App\Models\Departure;
-use App\Models\DepartureHotel;
-use App\Models\PriceTier;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureHotel;
+use Modules\Umrah\Models\PriceTier;
 
 /**
  * What was sold, frozen at the moment of sale.

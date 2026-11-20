@@ -2,16 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use App\Models\Notice;
 use App\Models\Partner;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Booking\SeatAllocator;
-use App\Services\Documents\DocumentWallet;
 use App\Services\Payments\SlipVault;
 use App\Support\Access;
 use App\Support\CompanyContext;
@@ -24,6 +19,11 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Services\Bot;
 use Modules\Telegram\Services\Linker;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Booking\SeatAllocator;
+use Modules\Umrah\Services\Documents\DocumentWallet;
 use Tests\TestCase;
 
 /**

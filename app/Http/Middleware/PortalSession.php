@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\Portal\Gatekeeper;
 use Closure;
 use Illuminate\Http\Request;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

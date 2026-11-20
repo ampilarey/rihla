@@ -2,12 +2,12 @@
 
 namespace Modules\Content\Tests;
 
-use App\Models\Departure;
-use App\Models\Package;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Content\Models\Person;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 use Tests\TestCase;
 
 /**

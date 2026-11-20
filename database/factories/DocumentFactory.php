@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Document;
-use App\Models\Traveller;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * @extends Factory<Document>

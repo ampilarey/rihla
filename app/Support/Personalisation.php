@@ -2,11 +2,11 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
+use Modules\Umrah\Models\Booking;
 
 /**
  * What the site may honestly say to the person reading it — §4.2's

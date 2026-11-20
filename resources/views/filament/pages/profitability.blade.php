@@ -101,7 +101,7 @@
                         icon="heroicon-o-list-bullet"
                         heading="Where the money went"
                         :description="$journey->costsByCategory
-                            ->map(fn ($byCurrency, $category) => (new \App\Models\DepartureCost(['category' => $category]))->categoryLabel()
+                            ->map(fn ($byCurrency, $category) => (new \Modules\Umrah\Models\DepartureCost(['category' => $category]))->categoryLabel()
                                 . ' ' . $byCurrency->map(fn ($m) => (string) $m)->implode(' + '))
                             ->implode(' · ')"
                     />

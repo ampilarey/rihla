@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
  * The plan is explicit (§5.2): overbooking must be prevented by a
  * **DB-level constraint, not just an app check**. The application already
  * takes a `SELECT … FOR UPDATE` row lock on the departure before it touches
- * the counters (App\Services\Booking\SeatAllocator), and that lock is what
+ * the counters (Modules\Umrah\Services\Booking\SeatAllocator), and that lock is what
  * makes two simultaneous bookings take turns. This constraint is the
  * backstop underneath it: a console command, a tinker session, a future
  * import script or a code path that forgets the lock cannot leave the row in

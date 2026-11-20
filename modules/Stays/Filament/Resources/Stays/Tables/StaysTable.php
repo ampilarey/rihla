@@ -2,7 +2,6 @@
 
 namespace Modules\Stays\Filament\Resources\Stays\Tables;
 
-use App\Exceptions\RoomNotAvailable;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
@@ -11,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\Stay;
 use Modules\Stays\Services\Stays\StayBooking;
 

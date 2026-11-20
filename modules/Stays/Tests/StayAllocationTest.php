@@ -2,9 +2,9 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Exceptions\RoomNotAvailable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Stays\Exceptions\IllegalStayTransition;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;
 use Modules\Stays\Models\Stay;

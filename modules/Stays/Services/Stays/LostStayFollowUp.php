@@ -2,9 +2,9 @@
 
 namespace Modules\Stays\Services\Stays;
 
-use App\Models\Enquiry;
 use App\Support\Money;
 use Modules\Stays\Models\Stay;
+use Modules\Umrah\Models\Enquiry;
 
 /**
  * A stay that fell through becomes somebody to ring — §15.7.

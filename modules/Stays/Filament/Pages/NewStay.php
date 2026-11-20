@@ -2,8 +2,6 @@
 
 namespace Modules\Stays\Filament\Pages;
 
-use App\Exceptions\NotSoldToAudience;
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Customer;
 use App\Support\Audience;
 use BackedEnum;
@@ -21,6 +19,8 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
+use Modules\Stays\Exceptions\NotSoldToAudience;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Filament\Resources\Stays\StayResource;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\RoomType;

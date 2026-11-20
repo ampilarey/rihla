@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Departure;
-use App\Models\Package;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 
 /**
  * @extends Factory<Departure>

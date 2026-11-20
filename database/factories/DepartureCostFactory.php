@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Departure;
-use App\Models\DepartureCost;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureCost;
 
 /** @extends Factory<DepartureCost> */
 class DepartureCostFactory extends Factory

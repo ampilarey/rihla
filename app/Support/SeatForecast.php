@@ -2,12 +2,12 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
 
 /**
  * Will this departure fill? — §8.5's forecasting.

@@ -3,13 +3,8 @@
 namespace Tests\Feature;
 
 use App\Filament\Pages\NeedsAttention;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Enquiry;
-use App\Models\Package;
 use App\Models\Payment;
-use App\Models\Quotation;
 use App\Models\User;
 use App\Support\Access;
 use App\Support\Alert;
@@ -17,6 +12,11 @@ use App\Support\Alerts;
 use App\Support\Referrals;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Content\Models\KnowledgeArticle;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\Quotation;
 use Tests\TestCase;
 
 /**

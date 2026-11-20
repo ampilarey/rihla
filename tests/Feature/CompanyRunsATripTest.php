@@ -2,19 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\Packages\Pages\CreatePackage;
 use App\Filament\Resources\Payments\Pages\ListPayments;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Document;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Booking\BookingDesk;
-use App\Services\Documents\DocumentWallet;
 use App\Support\Access;
 use App\Support\CompanyContext;
 use Filament\Facades\Filament;
@@ -26,6 +18,14 @@ use Livewire\Livewire;
 use Modules\Companies\Filament\Pages\CompanySettings;
 use Modules\Companies\Filament\Pages\Team;
 use Modules\Companies\Services\AddCompany;
+use Modules\Umrah\Filament\Resources\Packages\Pages\CreatePackage;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Booking\BookingDesk;
+use Modules\Umrah\Services\Documents\DocumentWallet;
 use Tests\TestCase;
 
 /**

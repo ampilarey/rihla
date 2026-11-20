@@ -2,10 +2,10 @@
 
 namespace Modules\Content\Models;
 
-use App\Models\Traveller;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * What one person has read and how their last attempt at its quiz went.

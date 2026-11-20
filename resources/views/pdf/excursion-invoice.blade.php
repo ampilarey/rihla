@@ -65,7 +65,7 @@
     </tr>
 </table>
 
-@if($excursionBooking->status === \App\Models\ExcursionBooking::CANCELLED)
+@if($excursionBooking->status === \Modules\Umrah\Models\ExcursionBooking::CANCELLED)
     <p><strong>These places were cancelled.</strong></p>
 @endif
 

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Enquiry;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Umrah\Models\Enquiry;
 
 /**
  * @extends Factory<Enquiry>

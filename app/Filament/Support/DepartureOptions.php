@@ -2,7 +2,7 @@
 
 namespace App\Filament\Support;
 
-use App\Models\Departure;
+use Modules\Umrah\Models\Departure;
 
 /**
  * "Ramadan Umrah (14 Mar 2027)" for every departure a form or filter might

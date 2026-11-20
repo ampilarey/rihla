@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Models\DocumentVersion;
 use App\Models\Payment;
 use App\Support\CompanyContext;
 use App\Support\EncryptedFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Modules\Umrah\Models\DocumentVersion;
 use Throwable;
 
 /**

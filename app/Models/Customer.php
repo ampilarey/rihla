@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
-use App\Services\Portal\Gatekeeper;
 use App\Support\CustomerDossier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\CrmTask;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Enquiry;
+use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Portal\Gatekeeper;
 
 /**
  * The person who books and pays.

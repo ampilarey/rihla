@@ -2,8 +2,6 @@
 
 namespace Modules\Companies\Tests;
 
-use App\Models\Departure;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Support\CompanyContext;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -11,6 +9,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Modules\Content\Models\Person;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
 use Tests\TestCase;
 
 /**

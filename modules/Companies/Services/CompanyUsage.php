@@ -2,15 +2,15 @@
 
 namespace Modules\Companies\Services;
 
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Document;
-use App\Models\Package;
 use App\Models\Partner;
-use App\Models\Traveller;
 use App\Support\CompanyContext;
 use Modules\Companies\Models\CompanyMembership;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Document;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\Traveller;
 
 /**
  * How much a company uses Rihla, as counts and never contents — companies

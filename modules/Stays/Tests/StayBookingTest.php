@@ -2,12 +2,12 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Exceptions\RoomNotAvailable;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Services\Payments\Ledger;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Stays\Exceptions\RoomNotAvailable;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Models\Rate;
 use Modules\Stays\Models\RoomType;

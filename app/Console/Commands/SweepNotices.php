@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Booking;
 use App\Models\Notice;
 use App\Services\Notices\Sweep;
 use App\Support\CompanyContext;
 use Illuminate\Console\Command;
+use Modules\Umrah\Models\Booking;
 
 /**
  * Raise what is outstanding — a cron line, not a queue worker.

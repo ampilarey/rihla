@@ -2,9 +2,9 @@
 
 namespace Modules\Stays\Tests;
 
-use App\Models\Enquiry;
 use App\Support\Services;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Umrah\Models\Enquiry;
 use Tests\TestCase;
 
 /**

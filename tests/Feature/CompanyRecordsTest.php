@@ -3,20 +3,20 @@
 namespace Tests\Feature;
 
 use App\Exceptions\CompanyMismatch;
-use App\Models\Booking;
-use App\Models\BookingTraveller;
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Payment;
-use App\Models\Traveller;
 use App\Support\CompanyContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Modules\Stays\Models\Stay;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BookingTraveller;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\Package;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

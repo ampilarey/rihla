@@ -2,18 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\ExchangeRates\ExchangeRateResource;
 use App\Filament\Resources\ExchangeRates\Pages\CreateExchangeRate;
 use App\Filament\Resources\Payments\Pages\ListPayments;
-use App\Models\Booking;
 use App\Models\Customer;
-use App\Models\Departure;
-use App\Models\DepartureCost;
 use App\Models\ExchangeRate;
 use App\Models\Payment;
-use App\Models\PriceTier;
-use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Payments\Ledger;
 use App\Support\Access;
@@ -28,6 +22,12 @@ use InvalidArgumentException;
 use Livewire\Livewire;
 use Modules\Telegram\Services\Bot;
 use Modules\Telegram\Services\Linker;
+use Modules\Umrah\Filament\Resources\Bookings\Pages\EditBooking;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureCost;
+use Modules\Umrah\Models\PriceTier;
+use Modules\Umrah\Models\Traveller;
 use Tests\TestCase;
 
 /**

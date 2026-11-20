@@ -2,10 +2,10 @@
 
 namespace App\Support;
 
-use App\Models\Booking;
-use App\Models\Departure;
-use App\Models\DepartureCost;
 use Illuminate\Support\Collection;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\DepartureCost;
 
 /**
  * What a departure made, and what it cost — §8.4's per-journey

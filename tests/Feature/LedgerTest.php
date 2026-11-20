@@ -6,7 +6,6 @@ use App\Exceptions\DeskRefusal;
 use App\Filament\Resources\Accounts\Pages\ListAccounts;
 use App\Filament\Resources\LedgerEntries\Pages\ListLedgerEntries;
 use App\Models\Account;
-use App\Models\Departure;
 use App\Models\LedgerCategory;
 use App\Models\LedgerEntry;
 use App\Models\User;
@@ -18,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Modules\Umrah\Models\Departure;
 use Tests\TestCase;
 
 /**

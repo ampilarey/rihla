@@ -2,8 +2,6 @@
 
 namespace Modules\Stays\Filament\Host\Resources\Packages;
 
-use App\Filament\Resources\Packages\Schemas\PackageForm;
-use App\Models\Package;
 use App\Models\Partner;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -25,6 +23,8 @@ use Modules\Stays\Filament\Host\Resources\Packages\Pages\EditPackage;
 use Modules\Stays\Filament\Host\Resources\Packages\Pages\ListPackages;
 use Modules\Stays\Models\Property;
 use Modules\Stays\Support\HostContext;
+use Modules\Umrah\Filament\Resources\Packages\Schemas\PackageForm;
+use Modules\Umrah\Models\Package;
 
 /**
  * Packages a host builds — §16 Phase 16.
