@@ -6,10 +6,6 @@ use App\Filament\Resources\Partners\PartnerResource;
 use App\Models\AuditLog;
 use App\Models\Partner;
 use App\Providers\Filament\CompanyPanelProvider;
-use App\Services\Companies\CompanyBilling;
-use App\Services\Companies\CompanyExport;
-use App\Services\Companies\CompanyStanding;
-use App\Services\Companies\SupportAccess;
 use App\Support\AuditContext;
 use App\Support\CompanyFeatures;
 use Filament\Actions\Action;
@@ -19,6 +15,10 @@ use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Modules\Companies\Services\CompanyBilling;
+use Modules\Companies\Services\CompanyExport;
+use Modules\Companies\Services\CompanyStanding;
+use Modules\Companies\Services\SupportAccess;
 
 /**
  * No DeleteAction, matching the table: a partner with properties cannot be

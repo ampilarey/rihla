@@ -10,8 +10,6 @@ use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BooksController;
-use App\Http\Controllers\CompanyAppController;
-use App\Http\Controllers\CompanyInvoiceController;
 use App\Http\Controllers\DevicesController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EnquiryController;
@@ -50,6 +48,8 @@ use App\Models\Media;
 use App\Models\Trip;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Modules\Companies\Http\Controllers\CompanyAppController;
+use Modules\Companies\Http\Controllers\CompanyInvoiceController;
 
 // Host subdomains — §16 Phase 16. `{slug}.rihla.mv` opens the host's page.
 // Registered first, and only when a domain is configured: a route with no

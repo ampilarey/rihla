@@ -11,7 +11,6 @@ use App\Models\Departure;
 use App\Models\Payment;
 use App\Models\Traveller;
 use App\Models\User;
-use App\Services\Companies\AddCompany;
 use App\Services\Payments\Gateways;
 use App\Support\Access;
 use App\Support\CompanyContext;
@@ -19,6 +18,7 @@ use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
+use Modules\Companies\Services\AddCompany;
 use Tests\TestCase;
 
 /**

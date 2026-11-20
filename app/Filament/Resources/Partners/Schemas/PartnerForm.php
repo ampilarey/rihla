@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Partners\Schemas;
 
 use App\Models\Partner;
-use App\Services\Companies\CompanyUsage;
 use App\Support\CompanyFeatures;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -14,6 +13,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
+use Modules\Companies\Services\CompanyUsage;
 
 class PartnerForm
 {

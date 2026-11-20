@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\CompanySite;
+use Modules\Companies\Models\CompanySite;
 
 /**
  * Rihla's brand colours, swapped for a company's on its own site —

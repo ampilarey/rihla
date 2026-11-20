@@ -3,12 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Models\Partner;
-use App\Models\SupportVisit;
 use App\Models\User;
-use App\Services\Companies\SupportAccess;
 use Closure;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
+use Modules\Companies\Models\SupportVisit;
+use Modules\Companies\Services\SupportAccess;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

@@ -12,6 +12,7 @@ use App\Models\WhySection;
 use App\Support\CurrentSite;
 use App\Support\Personalisation;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\Companies\Http\Controllers\CompanySiteController;
 
 class HomeController extends Controller
 {

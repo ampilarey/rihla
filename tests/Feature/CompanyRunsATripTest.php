@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Company\Pages\CompanySettings;
-use App\Filament\Company\Pages\Team;
 use App\Filament\Resources\Packages\Pages\CreatePackage;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Models\Booking;
@@ -16,7 +14,6 @@ use App\Models\Payment;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Booking\BookingDesk;
-use App\Services\Companies\AddCompany;
 use App\Services\Documents\DocumentWallet;
 use App\Support\Access;
 use App\Support\CompanyContext;
@@ -26,6 +23,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Modules\Companies\Filament\Pages\CompanySettings;
+use Modules\Companies\Filament\Pages\Team;
+use Modules\Companies\Services\AddCompany;
 use Tests\TestCase;
 
 /**

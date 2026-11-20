@@ -23,7 +23,7 @@
 
 @section('content')
     {{-- Each theme opens its own way (Phase 4b). --}}
-    @if ($site->theme === \App\Models\CompanySite::MINIMAL)
+    @if ($site->theme === \Modules\Companies\Models\CompanySite::MINIMAL)
         <section class="container mx-auto px-4 pt-12 pb-6 md:pt-20">
             <h1 class="max-w-3xl text-3xl font-bold text-[color:var(--site-primary)] md:text-5xl" dir="auto">{{ $company->name }}</h1>
             @if ($tagline)
@@ -34,7 +34,7 @@
                 <img src="{{ $site->coverUrl() }}" alt="" class="mt-10 aspect-[16/7] w-full rounded-2xl object-cover" fetchpriority="high">
             @endif
         </section>
-    @elseif ($site->theme === \App\Models\CompanySite::BOLD)
+    @elseif ($site->theme === \Modules\Companies\Models\CompanySite::BOLD)
         <section class="bg-[var(--site-accent)] text-[color:var(--site-on-accent)]">
             <div class="container mx-auto px-4 pb-16 pt-6 text-center md:pb-24">
                 @if ($tagline)
@@ -61,7 +61,7 @@
         </section>
     @endif
 
-    @if ($site->theme === \App\Models\CompanySite::BOLD)
+    @if ($site->theme === \Modules\Companies\Models\CompanySite::BOLD)
         {{-- The bold theme's heading is the tagline; the name still has to be the page's one h1. --}}
         <h1 class="sr-only">{{ $company->name }}</h1>
     @endif

@@ -2,9 +2,9 @@
 
 namespace App\Support;
 
-use App\Models\CompanySite;
 use App\Models\Partner;
 use Illuminate\Database\QueryException;
+use Modules\Companies\Models\CompanySite;
 
 /**
  * Whose website this request is — companies plan, Phase 4a.

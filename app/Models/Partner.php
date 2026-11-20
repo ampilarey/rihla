@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
+use Modules\Companies\Models\CompanyInvoice;
+use Modules\Companies\Models\CompanySite;
 
 /**
  * The guesthouse owner — §15.4 (Phase 9.1).

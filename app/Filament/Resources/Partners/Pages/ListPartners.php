@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Partners\Pages;
 
 use App\Filament\Resources\Partners\PartnerResource;
 use App\Providers\Filament\CompanyPanelProvider;
-use App\Services\Companies\AddCompany;
 use App\Support\CompanyFeatures;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -13,6 +12,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Modules\Companies\Services\AddCompany;
 
 class ListPartners extends ListRecords
 {
