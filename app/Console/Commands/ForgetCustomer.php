@@ -8,7 +8,6 @@ use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\ExcursionBooking;
 use App\Models\Payment;
-use App\Models\Stay;
 use App\Models\Traveller;
 use App\Support\Anonymisation;
 use App\Support\AuditContext;
@@ -19,6 +18,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Modules\Stays\Models\Stay;
 
 /**
  * Honour a deletion request for one person — §10.4.

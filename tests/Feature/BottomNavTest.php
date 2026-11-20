@@ -3,13 +3,13 @@
 namespace Tests\Feature;
 
 use App\Filament\BottomNav;
-use App\Models\HostMembership;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\Access;
-use App\Support\HostRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Modules\Stays\Models\HostMembership;
+use Modules\Stays\Support\HostRole;
 use Tests\TestCase;
 
 /**

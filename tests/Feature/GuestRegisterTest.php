@@ -5,14 +5,14 @@ namespace Tests\Feature;
 use App\Casts\EncryptedIdentifier;
 use App\Exceptions\RoomNotAvailable;
 use App\Models\Customer;
-use App\Models\Property;
-use App\Models\RoomType;
-use App\Models\Stay;
-use App\Models\StayGuest;
-use App\Services\Stays\StayBooking;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Models\StayGuest;
+use Modules\Stays\Services\Stays\StayBooking;
 use Tests\TestCase;
 
 /**

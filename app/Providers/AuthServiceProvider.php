@@ -56,7 +56,6 @@ use App\Support\CompanyContext;
 use App\Support\CompanyFeatures;
 use App\Support\CompanyRequest;
 use App\Support\CompanyRole;
-use App\Support\HostContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -76,6 +75,7 @@ use Modules\Content\Policies\PersonPolicy;
 use Modules\Content\Policies\TripPolicy;
 use Modules\Content\Policies\WhyFeaturePolicy;
 use Modules\Content\Policies\WhySectionPolicy;
+use Modules\Stays\Support\HostContext;
 
 class AuthServiceProvider extends ServiceProvider
 {

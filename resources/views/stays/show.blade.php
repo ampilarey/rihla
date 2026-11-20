@@ -64,7 +64,7 @@
             <p dir="auto" class="text-ink-muted">
                 {{ collect([$property->island, $property->atoll])->filter()->implode(', ') }}
                 @if($property->kind)
-                    <span aria-hidden="true">·</span> {{ \App\Models\Property::kindLabel($property->kind) }}
+                    <span aria-hidden="true">·</span> {{ \Modules\Stays\Models\Property::kindLabel($property->kind) }}
                 @endif
             </p>
             @if($rating)

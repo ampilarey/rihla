@@ -2,13 +2,13 @@
 
 namespace Modules\Companies\Models;
 
-use App\Models\HostPage;
 use App\Models\Partner;
 use App\Support\Brand;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Modules\Stays\Models\HostPage;
 use Spatie\Translatable\HasTranslations;
 
 /**

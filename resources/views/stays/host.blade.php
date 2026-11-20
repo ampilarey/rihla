@@ -23,7 +23,7 @@
 --}}
 @section('content')
 @php($primary = $page->primary())
-@php($order = $page->layout === \App\Models\HostPage::GRID
+@php($order = $page->layout === \Modules\Stays\Models\HostPage::GRID
     ? ['listings', 'packages', 'about', 'reviews', 'gallery', 'map', 'faq', 'contact']
     : ['about', 'listings', 'packages', 'reviews', 'gallery', 'map', 'faq', 'contact'])
 
@@ -118,7 +118,7 @@
                                         <p dir="auto" class="text-sm text-ink-muted">
                                             {{ collect([$property->island, $property->atoll])->filter()->implode(', ') }}
                                             @if($property->kind)
-                                                <span aria-hidden="true">·</span> {{ \App\Models\Property::kindLabel($property->kind) }}
+                                                <span aria-hidden="true">·</span> {{ \Modules\Stays\Models\Property::kindLabel($property->kind) }}
                                             @endif
                                         </p>
                                         <p dir="auto" class="mt-2 grow text-sm text-ink-muted">{{ $property->summary }}</p>

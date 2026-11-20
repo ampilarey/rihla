@@ -167,7 +167,7 @@
                                 <label class="inline-flex items-center gap-2 text-sm text-ink">
                                     <input type="checkbox" name="kind[]" value="{{ $kind }}" @checked(in_array($kind, $filters->kinds, true))
                                            class="rounded border border-gray-500 text-wine-600 focus:ring-wine-500">
-                                    {{ \App\Models\Property::kindLabel($kind) }}
+                                    {{ \Modules\Stays\Models\Property::kindLabel($kind) }}
                                 </label>
                             @endforeach
                         </div>
@@ -210,7 +210,7 @@
                             <p dir="auto" class="text-sm text-ink-muted">
                                 {{ collect([$property->island, $property->atoll])->filter()->implode(', ') }}
                                 @if($property->kind)
-                                    <span aria-hidden="true">·</span> {{ \App\Models\Property::kindLabel($property->kind) }}
+                                    <span aria-hidden="true">·</span> {{ \Modules\Stays\Models\Property::kindLabel($property->kind) }}
                                 @endif
                             </p>
 

@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Schema;
  * guards here — it is the only one. That is what makes the MySQL
  * concurrency test in `StayLockTest` the whole guarantee rather than a
  * confirmation of it, and why every write path must go through
- * App\Services\Stays\StayAllocator.
+ * Modules\Stays\Services\Stays\StayAllocator.
  */
 return new class extends Migration
 {

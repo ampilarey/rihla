@@ -3,9 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Partner;
-use App\Models\Property;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Stays\Models\Property;
 
 /**
  * @extends Factory<Property>

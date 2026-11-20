@@ -4,15 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use App\Models\Partner;
-use App\Models\Property;
-use App\Models\RoomType;
-use App\Models\Stay;
-use App\Services\Stays\GreenTax;
-use App\Services\Stays\StayBooking;
 use App\Support\Services;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Services\Stays\GreenTax;
+use Modules\Stays\Services\Stays\StayBooking;
 use Tests\TestCase;
 
 /**

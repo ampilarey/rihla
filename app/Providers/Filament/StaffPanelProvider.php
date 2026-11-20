@@ -76,6 +76,8 @@ class StaffPanelProvider extends PanelProvider
             ->discoverPages(in: base_path('modules/Telegram/Filament/Pages'), for: 'Modules\\Telegram\\Filament\\Pages')
             ->discoverResources(in: base_path('modules/Content/Filament/Resources'), for: 'Modules\\Content\\Filament\\Resources')
             ->discoverPages(in: base_path('modules/Content/Filament/Pages'), for: 'Modules\\Content\\Filament\\Pages')
+            ->discoverResources(in: base_path('modules/Stays/Filament/Resources'), for: 'Modules\\Stays\\Filament\\Resources')
+            ->discoverPages(in: base_path('modules/Stays/Filament/Pages'), for: 'Modules\\Stays\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
             ])

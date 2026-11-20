@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
-use App\Services\Stays\LostStayFollowUp;
 use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Services\Stays\LostStayFollowUp;
 
 /**
  * Somebody who asked — §8.1's minimal CRM.

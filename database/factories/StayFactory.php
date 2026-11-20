@@ -3,12 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Customer;
-use App\Models\Property;
-use App\Models\RoomType;
-use App\Models\Stay;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
+use Modules\Stays\Models\Stay;
 
 /**
  * @extends Factory<Stay>

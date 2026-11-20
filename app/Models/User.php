@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\Companies\Models\SupportGrant;
 use Modules\Companies\Services\SupportAccess;
 use Modules\Content\Models\Person;
+use Modules\Stays\Models\HostMembership;
 use Modules\Telegram\Models\TelegramLink;
 use Spatie\Permission\Traits\HasRoles;
 

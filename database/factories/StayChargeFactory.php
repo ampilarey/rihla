@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Stay;
-use App\Models\StayCharge;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Models\StayCharge;
 
 /** @extends Factory<StayCharge> */
 class StayChargeFactory extends Factory

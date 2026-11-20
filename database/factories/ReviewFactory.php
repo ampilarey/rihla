@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Review;
-use App\Models\Stay;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\Review;
+use Modules\Stays\Models\Stay;
 
 /**
  * A review of a completed stay. Public by default — `waiting()` for one

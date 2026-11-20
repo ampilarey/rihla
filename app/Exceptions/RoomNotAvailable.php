@@ -2,8 +2,8 @@
 
 namespace App\Exceptions;
 
-use App\Models\RoomType;
 use Carbon\CarbonInterface;
+use Modules\Stays\Models\RoomType;
 use RuntimeException;
 
 /**

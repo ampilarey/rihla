@@ -8,13 +8,13 @@ use App\Http\Middleware\RequireSecondFactor;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ServeCompanySite;
 use App\Http\Middleware\SetLocale;
-use App\Http\Middleware\StaySession;
 use App\Http\Middleware\UseRequestedCompany;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Modules\Stays\Http\Middleware\StaySession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(

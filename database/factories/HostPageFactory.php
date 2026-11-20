@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\HostPage;
 use App\Models\Partner;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\HostPage;
 
 /** @extends Factory<HostPage> */
 class HostPageFactory extends Factory

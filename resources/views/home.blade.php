@@ -37,11 +37,11 @@
                  It goes to host sign-up when that is open, and to a person
                  on WhatsApp until then: a link to a page that answers 404
                  is the one thing this strip is written never to show. --}}
-            @if (\App\Http\Controllers\StaysController::openTypes() !== [])
-                @php($listYours = \App\Filament\Host\Pages\RegisterHost::isOpen()
+            @if (\Modules\Stays\Http\Controllers\StaysController::openTypes() !== [])
+                @php($listYours = \Modules\Stays\Filament\Host\Pages\RegisterHost::isOpen()
                     ? route('filament.host.auth.register')
                     : \App\Support\Contact::whatsappUrl(__('messages.I would like to list my property on Rihla.')))
-                <a href="{{ $listYours }}" @unless(\App\Filament\Host\Pages\RegisterHost::isOpen()) target="_blank" rel="noopener noreferrer" @endunless
+                <a href="{{ $listYours }}" @unless(\Modules\Stays\Filament\Host\Pages\RegisterHost::isOpen()) target="_blank" rel="noopener noreferrer" @endunless
                    class="card flex items-center gap-4 p-4 text-start transition-shadow hover:shadow-lg sm:col-span-2">
                     <span class="text-2xl" aria-hidden="true">🔑</span>
                     <span>

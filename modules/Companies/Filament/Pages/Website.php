@@ -3,10 +3,7 @@
 namespace Modules\Companies\Filament\Pages;
 
 use App\Filament\Concerns\EditsTranslations;
-use App\Filament\Host\Pages\MyPage;
-use App\Filament\Resources\Properties\Schemas\PropertyForm;
 use App\Http\Middleware\SetLocale;
-use App\Models\HostPage;
 use App\Models\Partner;
 use App\Support\CompanyRole;
 use App\Support\CurrentSite;
@@ -28,6 +25,9 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Modules\Companies\Models\CompanySite;
+use Modules\Stays\Filament\Host\Pages\MyPage;
+use Modules\Stays\Filament\Resources\Properties\Schemas\PropertyForm;
+use Modules\Stays\Models\HostPage;
 
 /**
  * The company's own website — companies plan, Phase 4a.

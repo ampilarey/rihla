@@ -31,28 +31,28 @@
         <h2 id="my-stay-status-heading" dir="auto" class="mb-2 text-lg font-bold text-ink">{{ __('messages.Where it stands') }}</h2>
         <p dir="auto" class="text-brand-body">
             @switch($stay->status)
-                @case(\App\Models\Stay::REQUESTED)
+                @case(\Modules\Stays\Models\Stay::REQUESTED)
                     {{ __('messages.We have asked the host. We will confirm within 24 hours, and you pay nothing until then.') }}
                     @break
-                @case(\App\Models\Stay::HELD)
+                @case(\Modules\Stays\Models\Stay::HELD)
                     {{ __('messages.The host has your room. Pay the deposit to keep it.') }}
                     @if($stay->expires_at)
                         <strong>{{ __('messages.Held until :time.', ['time' => $stay->expires_at->isoFormat('D MMM YYYY, HH:mm')]) }}</strong>
                     @endif
                     @break
-                @case(\App\Models\Stay::CONFIRMED)
+                @case(\Modules\Stays\Models\Stay::CONFIRMED)
                     {{ __('messages.Your stay is booked.') }}
                     @break
-                @case(\App\Models\Stay::CHECKED_IN)
+                @case(\Modules\Stays\Models\Stay::CHECKED_IN)
                     {{ __('messages.Welcome — you are checked in.') }}
                     @break
-                @case(\App\Models\Stay::COMPLETED)
+                @case(\Modules\Stays\Models\Stay::COMPLETED)
                     {{ __('messages.Thank you for staying.') }}
                     @break
-                @case(\App\Models\Stay::DECLINED)
+                @case(\Modules\Stays\Models\Stay::DECLINED)
                     {{ __('messages.The host could not take this booking. You have paid nothing.') }}
                     @break
-                @case(\App\Models\Stay::EXPIRED)
+                @case(\Modules\Stays\Models\Stay::EXPIRED)
                     {{ __('messages.The hold ran out before the deposit arrived, so the room went back on sale.') }}
                     @break
                 @default
@@ -66,7 +66,7 @@
     @endif
 
     {{-- §16.11: once the stay is over, the review — or the one they wrote. --}}
-    @if($stay->status === \App\Models\Stay::COMPLETED)
+    @if($stay->status === \Modules\Stays\Models\Stay::COMPLETED)
         @include('stays._review', ['stay' => $stay, 'action' => route('my-stay.review')])
     @endif
 
@@ -125,7 +125,7 @@
     </section>
 
     {{-- §16.11: one conversation with the host and Rihla. --}}
-    @unless(in_array($stay->status, [\App\Models\Stay::DECLINED, \App\Models\Stay::EXPIRED], true))
+    @unless(in_array($stay->status, [\Modules\Stays\Models\Stay::DECLINED, \Modules\Stays\Models\Stay::EXPIRED], true))
         <section id="stay-messages" class="card mb-6" aria-labelledby="my-stay-messages-heading">
             <h2 id="my-stay-messages-heading" dir="auto" class="mb-2 text-lg font-bold text-ink">{{ __('messages.Messages') }}</h2>
 
@@ -134,7 +134,7 @@
             @else
                 <ol class="mb-4 space-y-3">
                     @foreach($messages as $message)
-                        <li class="rounded-xl px-4 py-3 text-sm {{ $message->sender === \App\Models\StayMessage::GUEST ? 'ms-8 bg-cream-deep' : 'me-8 border border-gray-200 bg-white' }}">
+                        <li class="rounded-xl px-4 py-3 text-sm {{ $message->sender === \Modules\Stays\Models\StayMessage::GUEST ? 'ms-8 bg-cream-deep' : 'me-8 border border-gray-200 bg-white' }}">
                             <p class="text-xs text-ink-muted">
                                 <span dir="auto" class="font-semibold text-ink">{{ $message->senderLabel() }}</span>
                                 · <time datetime="{{ $message->sent_at->toIso8601String() }}">{{ $message->sent_at->isoFormat('D MMM, HH:mm') }}</time>
@@ -148,7 +148,7 @@
             <form method="POST" action="{{ route('my-stay.messages') }}">
                 @csrf
                 <label for="stay-message-body" class="sr-only">{{ __('messages.Your message') }}</label>
-                <textarea id="stay-message-body" name="body" rows="3" maxlength="{{ \App\Models\StayMessage::MAX_LENGTH }}" dir="auto" required
+                <textarea id="stay-message-body" name="body" rows="3" maxlength="{{ \Modules\Stays\Models\StayMessage::MAX_LENGTH }}" dir="auto" required
                           class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink focus:border-wine-500 focus:ring-wine-500">{{ old('body') }}</textarea>
                 @error('body')
                     <p dir="auto" class="mt-1 text-sm text-error" role="alert">{{ $message }}</p>
@@ -168,7 +168,7 @@
                 @csrf
                 <button type="submit" class="btn-outline">{{ __('messages.Cancel this stay') }}</button>
             </form>
-        @elseif(in_array($stay->status, [\App\Models\Stay::HELD, \App\Models\Stay::CONFIRMED], true))
+        @elseif(in_array($stay->status, [\Modules\Stays\Models\Stay::HELD, \Modules\Stays\Models\Stay::CONFIRMED], true))
             {{-- Outside the window: say what the policy keeps and offer a
                  person, rather than a button that would refuse. --}}
             <p dir="auto" class="mb-4 text-sm text-brand-body">
@@ -182,7 +182,7 @@
         @endif
     </section>
 
-    @if(! in_array($stay->status, [\App\Models\Stay::DECLINED, \App\Models\Stay::EXPIRED, \App\Models\Stay::CANCELLED], true))
+    @if(! in_array($stay->status, [\Modules\Stays\Models\Stay::DECLINED, \Modules\Stays\Models\Stay::EXPIRED, \Modules\Stays\Models\Stay::CANCELLED], true))
         <p class="mb-6 text-center">
             <a href="{{ route('my-stay.confirmation') }}" class="inline-block py-1 text-sm text-wine-700 underline hover:no-underline">
                 {{ __('messages.Download your stay summary (PDF)') }}

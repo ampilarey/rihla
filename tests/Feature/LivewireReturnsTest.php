@@ -2,22 +2,22 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Host\Pages\Calendar;
-use App\Filament\Host\Pages\Dashboard;
-use App\Filament\Host\Resources\Bookings\Pages\ViewBooking;
 use App\Models\Customer;
-use App\Models\HostMembership;
 use App\Models\Partner;
-use App\Models\Property;
-use App\Models\RoomType;
-use App\Models\Stay;
-use App\Models\StayGuest;
 use App\Models\User;
-use App\Support\HostRole;
 use App\Support\LivewireReturns;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Stays\Filament\Host\Pages\Calendar;
+use Modules\Stays\Filament\Host\Pages\Dashboard;
+use Modules\Stays\Filament\Host\Resources\Bookings\Pages\ViewBooking;
+use Modules\Stays\Models\HostMembership;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Models\StayGuest;
+use Modules\Stays\Support\HostRole;
 use Tests\TestCase;
 
 /**

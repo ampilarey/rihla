@@ -14,6 +14,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 use Modules\Companies\Models\CompanyInvoice;
 use Modules\Companies\Models\CompanySite;
+use Modules\Stays\Models\HostInvitation;
+use Modules\Stays\Models\HostMembership;
+use Modules\Stays\Models\HostPage;
+use Modules\Stays\Models\Payout;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\Review;
+use Modules\Stays\Models\Stay;
 
 /**
  * The guesthouse owner — §15.4 (Phase 9.1).

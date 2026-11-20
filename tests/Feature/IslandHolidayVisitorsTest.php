@@ -4,14 +4,14 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Departure;
-use App\Models\HostPage;
 use App\Models\Package;
 use App\Models\PriceTier;
-use App\Models\Property;
-use App\Models\RoomType;
 use App\Support\Services;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Stays\Models\HostPage;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
 use Tests\TestCase;
 
 /**

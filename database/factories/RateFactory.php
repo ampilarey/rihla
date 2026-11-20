@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Rate;
-use App\Models\RoomType;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\Rate;
+use Modules\Stays\Models\RoomType;
 
 /**
  * @extends Factory<Rate>

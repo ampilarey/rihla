@@ -32,6 +32,28 @@ use Modules\Content\Models\Trip;
 use Modules\Content\Models\WhyFeature;
 use Modules\Content\Models\WhySection;
 use Modules\Content\Models\ZiyarahLocation;
+use Modules\Stays\Models\BlockedDate;
+use Modules\Stays\Models\CalendarFeed;
+use Modules\Stays\Models\HostInvitation;
+use Modules\Stays\Models\HostMembership;
+use Modules\Stays\Models\HostPage;
+use Modules\Stays\Models\HostStatement;
+use Modules\Stays\Models\Payout;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\PropertyAddon;
+use Modules\Stays\Models\PropertyPhoto;
+use Modules\Stays\Models\PropertyUnit;
+use Modules\Stays\Models\Rate;
+use Modules\Stays\Models\Review;
+use Modules\Stays\Models\ReviewInvitation;
+use Modules\Stays\Models\RoomType;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Models\StayAccess;
+use Modules\Stays\Models\StayCharge;
+use Modules\Stays\Models\StayDiscount;
+use Modules\Stays\Models\StayGuest;
+use Modules\Stays\Models\StayMessage;
+use Modules\Stays\StaysServiceProvider;
 use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Models\TelegramLinkCode;
 use Modules\Telegram\Models\TelegramUpdate;
@@ -48,6 +70,7 @@ class ModulesServiceProvider extends ServiceProvider
         TelegramServiceProvider::class,
         CompaniesServiceProvider::class,
         ContentServiceProvider::class,
+        StaysServiceProvider::class,
     ];
 
     /**
@@ -89,6 +112,27 @@ class ModulesServiceProvider extends ServiceProvider
         'App\Models\WhyFeature' => WhyFeature::class,
         'App\Models\WhySection' => WhySection::class,
         'App\Models\ZiyarahLocation' => ZiyarahLocation::class,
+        'App\Models\BlockedDate' => BlockedDate::class,
+        'App\Models\CalendarFeed' => CalendarFeed::class,
+        'App\Models\HostInvitation' => HostInvitation::class,
+        'App\Models\HostMembership' => HostMembership::class,
+        'App\Models\HostPage' => HostPage::class,
+        'App\Models\HostStatement' => HostStatement::class,
+        'App\Models\Payout' => Payout::class,
+        'App\Models\Property' => Property::class,
+        'App\Models\PropertyAddon' => PropertyAddon::class,
+        'App\Models\PropertyPhoto' => PropertyPhoto::class,
+        'App\Models\PropertyUnit' => PropertyUnit::class,
+        'App\Models\Rate' => Rate::class,
+        'App\Models\Review' => Review::class,
+        'App\Models\ReviewInvitation' => ReviewInvitation::class,
+        'App\Models\RoomType' => RoomType::class,
+        'App\Models\Stay' => Stay::class,
+        'App\Models\StayAccess' => StayAccess::class,
+        'App\Models\StayCharge' => StayCharge::class,
+        'App\Models\StayDiscount' => StayDiscount::class,
+        'App\Models\StayGuest' => StayGuest::class,
+        'App\Models\StayMessage' => StayMessage::class,
     ];
 
     public function register(): void

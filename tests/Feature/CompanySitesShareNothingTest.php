@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
-use App\Models\HostPage;
 use App\Models\Package;
 use App\Models\Partner;
 use App\Models\User;
@@ -15,6 +14,7 @@ use App\Support\SiteAddress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Modules\Companies\Services\AddCompany;
+use Modules\Stays\Models\HostPage;
 use Tests\TestCase;
 
 /**

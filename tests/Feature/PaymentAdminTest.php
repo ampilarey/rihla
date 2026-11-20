@@ -9,20 +9,20 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\Payment;
-use App\Models\Property;
-use App\Models\RoomType;
-use App\Models\Stay;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\SlipVault;
-use App\Services\Stays\StayBooking;
 use App\Support\Access;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Services\Stays\StayBooking;
 use Tests\TestCase;
 
 /**

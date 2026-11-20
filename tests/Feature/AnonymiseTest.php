@@ -10,7 +10,6 @@ use App\Models\Enquiry;
 use App\Models\Package;
 use App\Models\Partner;
 use App\Models\PortalAccess;
-use App\Models\Property;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Documents\DocumentWallet;
@@ -22,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Modules\Stays\Models\Property;
 use Tests\TestCase;
 
 /**

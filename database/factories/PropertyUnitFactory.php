@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\PropertyUnit;
-use App\Models\RoomType;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\PropertyUnit;
+use Modules\Stays\Models\RoomType;
 
 /** @extends Factory<PropertyUnit> */
 class PropertyUnitFactory extends Factory

@@ -7,7 +7,6 @@ use App\Filament\Resources\Packages\Pages\CreatePackage;
 use App\Models\Booking;
 use App\Models\Departure;
 use App\Models\Package;
-use App\Models\Property;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Nusuk\PermitDesk;
@@ -17,6 +16,7 @@ use App\Support\Services;
 use App\Support\TravelReadiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Stays\Models\Property;
 use Tests\TestCase;
 
 /**
