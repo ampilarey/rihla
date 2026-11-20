@@ -113,7 +113,7 @@ class PolymorphicPaymentTest extends TestCase
         $ledger->reconcile($payment);
         $refund = $ledger->refund($payment, Money::ofMinor(400_000, 'MVR'));
 
-        $this->assertSame(Booking::class, $refund->payable_type);
+        $this->assertSame((new Booking)->getMorphClass(), $refund->payable_type);
         $this->assertSame($booking->getKey(), $refund->payable_id);
         $this->assertSame(600_000, $booking->refresh()->paid_minor);
     }

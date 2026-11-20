@@ -11,12 +11,12 @@ use App\Models\Departure;
 use App\Models\Package;
 use App\Models\Partner;
 use App\Models\Payment;
-use App\Models\Stay;
 use App\Models\Traveller;
 use App\Support\CompanyContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Stays\Models\Stay;
 use Tests\TestCase;
 
 /**

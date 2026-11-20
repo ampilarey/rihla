@@ -9,7 +9,7 @@
                 <x-filament::callout
                     color="gray"
                     icon="heroicon-o-envelope"
-                    :heading="$invitation->email . ' — ' . \App\Support\HostRole::label($invitation->role)"
+                    :heading="$invitation->email . ' — ' . \Modules\Stays\Support\HostRole::label($invitation->role)"
                     :description="'Sent ' . $invitation->created_at->diffForHumans() . ', works until ' . $invitation->expires_at->format('j M Y') . '.'">
                     <x-slot name="footer">
                         <x-filament::button size="sm" color="danger" wire:click="revokeInvitation({{ $invitation->id }})">Cancel invitation</x-filament::button>

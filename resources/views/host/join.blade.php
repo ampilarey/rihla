@@ -8,7 +8,7 @@
     <div class="card">
         <h1 dir="auto" class="mb-2 text-2xl font-bold text-ink">Join {{ $invitation->partner->name }}</h1>
         <p dir="auto" class="mb-4 text-ink-muted">
-            You have been invited as <strong class="text-ink">{{ \App\Support\HostRole::label($invitation->role) }}</strong>,
+            You have been invited as <strong class="text-ink">{{ \Modules\Stays\Support\HostRole::label($invitation->role) }}</strong>,
             for <span dir="ltr">{{ $invitation->email }}</span>.
         </p>
 

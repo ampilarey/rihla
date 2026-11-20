@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Partner;
-use App\Models\Property;
-use App\Models\RoomType;
 use App\Support\Services;
 use Illuminate\Database\Seeder;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
 
 /**
  * One guesthouse, so the Lighthouse job has a real Stays page to audit —

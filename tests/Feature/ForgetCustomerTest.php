@@ -11,10 +11,6 @@ use App\Models\Enquiry;
 use App\Models\Notice;
 use App\Models\Package;
 use App\Models\Payment;
-use App\Models\Property;
-use App\Models\RoomType;
-use App\Models\Stay;
-use App\Models\StayGuest;
 use App\Models\Traveller;
 use App\Models\User;
 use App\Services\Documents\DocumentWallet;
@@ -25,6 +21,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\RoomType;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Models\StayGuest;
 use Tests\TestCase;
 
 /**

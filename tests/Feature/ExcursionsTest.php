@@ -195,7 +195,7 @@ class ExcursionsTest extends TestCase
             ->assertHasNoTableActionErrors();
 
         $payment = Payment::query()->sole();
-        $this->assertSame(ExcursionBooking::class, $payment->payable_type);
+        $this->assertSame((new ExcursionBooking)->getMorphClass(), $payment->payable_type);
         $this->assertSame('SAR 300', $payment->money()->format());
         $this->assertSame(Payment::PENDING, $payment->status);
 

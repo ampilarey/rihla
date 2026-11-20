@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Booking\SeatAllocator;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -230,7 +231,10 @@ final class Ledger
      */
     private function payableFor(Payment $payment): Model
     {
-        $type = (string) $payment->payable_type;
+        // Through the morph map first: a model moved into a module keeps
+        // writing its old class name (docs/MODULES_PLAN.md), and that name
+        // is no longer a class.
+        $type = Relation::getMorphedModel((string) $payment->payable_type) ?? (string) $payment->payable_type;
 
         // The *string* is checked before the morph is resolved, and that
         // order matters: a payable_type naming a class this application no

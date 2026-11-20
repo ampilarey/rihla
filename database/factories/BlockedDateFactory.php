@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\BlockedDate;
-use App\Models\RoomType;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\BlockedDate;
+use Modules\Stays\Models\RoomType;
 
 /**
  * @extends Factory<BlockedDate>

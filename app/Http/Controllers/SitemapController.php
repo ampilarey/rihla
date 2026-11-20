@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetLocale;
-use App\Models\HostPage;
 use App\Models\Package;
 use App\Models\Partner;
 use App\Support\CurrentSite;
@@ -13,6 +12,8 @@ use Illuminate\Support\Facades\URL;
 use Modules\Content\Models\Article;
 use Modules\Content\Models\Trip;
 use Modules\Content\Models\ZiyarahLocation;
+use Modules\Stays\Http\Controllers\StaysController;
+use Modules\Stays\Models\HostPage;
 
 class SitemapController extends Controller
 {

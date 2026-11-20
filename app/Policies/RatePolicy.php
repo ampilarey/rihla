@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Policies\Concerns\ChecksPermissions;
-use App\Support\HostRole;
+use Modules\Stays\Support\HostRole;
 
 class RatePolicy
 {

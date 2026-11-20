@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Property;
-use App\Models\PropertyAddon;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\PropertyAddon;
 
 /** @extends Factory<PropertyAddon> */
 class PropertyAddonFactory extends Factory

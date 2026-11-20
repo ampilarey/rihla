@@ -3,9 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Filament\BottomNav;
-use App\Filament\Host\Pages\Dashboard;
-use App\Filament\Host\Pages\RegisterHost;
-use App\Filament\Host\Widgets\Today;
 use App\Filament\InitialsAvatarProvider;
 use App\Http\Middleware\RequireSecondFactor;
 use App\Models\Partner;
@@ -24,6 +21,9 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Modules\Stays\Filament\Host\Pages\Dashboard;
+use Modules\Stays\Filament\Host\Pages\RegisterHost;
+use Modules\Stays\Filament\Host\Widgets\Today;
 
 /**
  * The host panel, at /host — §16.6, ADR 0008 decision 6.
@@ -61,8 +61,9 @@ class HostPanelProvider extends PanelProvider
             ])
             ->tenant(Partner::class, slugAttribute: 'slug')
             ->tenantMenu(fn (): bool => (auth()->user()?->hosts()->count() ?? 0) > 1)
-            ->discoverResources(in: app_path('Filament/Host/Resources'), for: 'App\Filament\Host\Resources')
-            ->discoverPages(in: app_path('Filament/Host/Pages'), for: 'App\Filament\Host\Pages')
+            // The host panel lives in the Stays module (docs/MODULES_PLAN.md).
+            ->discoverResources(in: base_path('modules/Stays/Filament/Host/Resources'), for: 'Modules\Stays\Filament\Host\Resources')
+            ->discoverPages(in: base_path('modules/Stays/Filament/Host/Pages'), for: 'Modules\Stays\Filament\Host\Pages')
             ->pages([Dashboard::class])
             ->widgets([Today::class])
             // The five things somebody does most, along the bottom of a

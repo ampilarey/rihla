@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\Property;
-use App\Models\PropertyPhoto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Stays\Models\Property;
+use Modules\Stays\Models\PropertyPhoto;
 
 /** @extends Factory<PropertyPhoto> */
 class PropertyPhotoFactory extends Factory

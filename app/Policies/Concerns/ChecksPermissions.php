@@ -3,9 +3,9 @@
 namespace App\Policies\Concerns;
 
 use App\Models\User;
-use App\Support\HostContext;
-use App\Support\HostRole;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Stays\Support\HostContext;
+use Modules\Stays\Support\HostRole;
 
 /**
  * Maps the five resource actions onto `<resource>.<action>` permissions.

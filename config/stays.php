@@ -16,7 +16,7 @@ return [
     |
     | Expiry is never trusted to a scheduler. A lapsed hold is reclaimed
     | inside the same row lock the next hold takes — see
-    | App\Services\Stays\StayAllocator — because this application runs on
+    | Modules\Stays\Services\Stays\StayAllocator — because this application runs on
     | cPanel shared hosting, where a misconfigured cron means dates stay
     | held for ever and a guesthouse reads as full while it is empty.
     |

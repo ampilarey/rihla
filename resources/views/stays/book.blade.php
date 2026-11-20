@@ -158,7 +158,7 @@
                                    @checked(in_array((string) $addon->getKey(), array_map('strval', (array) old('addons', [])), true))>
                             <span dir="auto">
                                 <span class="font-medium">{{ $addon->name }}</span>
-                                — {{ $each->format() }} {{ $addon->pricingLabel() }}@if($addon->pricing === \App\Models\PropertyAddon::PER_PERSON && $guests > 1) ({{ __('messages.:amount for your party', ['amount' => \App\Support\Money::ofMinor($each->minor * $addon->quantityFor($guests), $each->currency)->format()]) }})@endif
+                                — {{ $each->format() }} {{ $addon->pricingLabel() }}@if($addon->pricing === \Modules\Stays\Models\PropertyAddon::PER_PERSON && $guests > 1) ({{ __('messages.:amount for your party', ['amount' => \App\Support\Money::ofMinor($each->minor * $addon->quantityFor($guests), $each->currency)->format()]) }})@endif
                                 @if($addon->description)
                                     <span class="block text-xs text-ink-muted">{{ $addon->description }}</span>
                                 @endif

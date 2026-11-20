@@ -17,7 +17,7 @@ only with the full suite, Larastan and the MySQL job green.
 | **Telegram** | The staff bot: links, link codes, updates, the router, the notifier, the daily summary, the webhook, and its page | ✅ moved (#220) |
 | **Companies** | Company invoices, memberships, sites, support grants and visits; adding, billing, exporting and closing a company; the company panel's own pages | ✅ moved |
 | **Content** | Trips, articles, the knowledge centre, the Umrah guide, hero banners, the *why* blocks, learning paths and quizzes, ziyarah locations, the assistant | ✅ moved |
-| **Stays** | Properties, rooms, units, photos, rates, blocked dates, stays and their guests, charges, messages and reviews, hosts' memberships, pages and statements, calendars, payouts; the host panel | |
+| **Stays** | Properties, rooms, units, photos, rates, blocked dates, stays and their guests, charges, messages and reviews, hosts' memberships, pages and statements, calendars, payouts; the host panel | ✅ moved |
 | **Umrah** | Packages, price tiers, departures and everything on them, bookings, travellers, seat holds, the waitlist, quotations, documents and reading, visas, Nusuk permits, rooming, buses, flights, roll calls, cards, excursions, incidents, broadcasts, the portal and the family portal, enquiries and the CRM | last, the largest |
 
 Customers and payments stay in Core because Umrah and Stays both use them.

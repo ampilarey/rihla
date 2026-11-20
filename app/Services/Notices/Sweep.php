@@ -4,9 +4,9 @@ namespace App\Services\Notices;
 
 use App\Models\Booking;
 use App\Models\Notice;
-use App\Models\Stay;
-use App\Services\Stays\StayBooking;
 use App\Support\TravelReadiness;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Services\Stays\StayBooking;
 
 /**
  * Turning records into things somebody needs to be told — §11.2's list.

@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\Property;
+use Modules\Stays\Models\Property;
 
 /**
  * Who a stay is sold to — §16.3 decision 6.

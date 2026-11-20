@@ -57,7 +57,7 @@
                         <li>
                             <a href="{{ $this->stayUrl($stay) }}">
                                 <span style="font-weight: 600;">{{ $stay->customer?->name ?? $stay->reference }}</span>
-                                <x-filament::badge :color="\App\Filament\Host\Resources\Bookings\BookingResource::statusColour($stay->status)">{{ \App\Filament\Host\Resources\Bookings\BookingResource::statusLabel($stay->status) }}</x-filament::badge>
+                                <x-filament::badge :color="\Modules\Stays\Filament\Host\Resources\Bookings\BookingResource::statusColour($stay->status)">{{ \Modules\Stays\Filament\Host\Resources\Bookings\BookingResource::statusLabel($stay->status) }}</x-filament::badge>
                                 <span class="rihla-cal-detail" style="flex-basis: 100%;">{{ $stay->check_in->format('D j M') }} → {{ $stay->check_out->format('D j M') }} · {{ $item['room'] }}</span>
                             </a>
                         </li>
@@ -87,16 +87,16 @@
                                     <div>{{ $row['label'] }}</div>
                                     <div class="rihla-cal-detail" style="font-weight: 400;">{{ $row['detail'] }}</div>
                                 </th>
-                                @foreach (\App\Filament\Host\Pages\Calendar::runs($row['cells']) as $run)
+                                @foreach (\Modules\Stays\Filament\Host\Pages\Calendar::runs($row['cells']) as $run)
                                     @php($here = $run['stays'])
                                     @php($night = \Carbon\CarbonImmutable::parse($run['night']))
                                     <td colspan="{{ $run['span'] }}" class="rihla-cal-line" style="padding: 1px; height: 2.25rem;">
                                         @if ($here !== [])
                                             @php($stay = $here[0])
                                             <a href="{{ $this->stayUrl($stay) }}"
-                                               title="{{ $stay->reference }} · {{ $stay->customer?->name }} · {{ $stay->check_in->format('j M') }} – {{ $stay->check_out->format('j M') }} · {{ \App\Filament\Host\Resources\Bookings\BookingResource::statusLabel($stay->status) }}{{ count($here) > 1 ? ' · and '.(count($here) - 1).' more' : '' }}"
-                                               class="{{ $stay->status === \App\Models\Stay::REQUESTED ? 'rihla-cal-request' : 'rihla-cal-stay' }}"
-                                               style="display: block; height: 100%; min-height: 2.1rem; padding: 0.15rem 0.3rem; border-radius: 0.25rem; text-decoration: none; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; {{ \App\Filament\Host\Pages\Calendar::style($stay) }}">
+                                               title="{{ $stay->reference }} · {{ $stay->customer?->name }} · {{ $stay->check_in->format('j M') }} – {{ $stay->check_out->format('j M') }} · {{ \Modules\Stays\Filament\Host\Resources\Bookings\BookingResource::statusLabel($stay->status) }}{{ count($here) > 1 ? ' · and '.(count($here) - 1).' more' : '' }}"
+                                               class="{{ $stay->status === \Modules\Stays\Models\Stay::REQUESTED ? 'rihla-cal-request' : 'rihla-cal-stay' }}"
+                                               style="display: block; height: 100%; min-height: 2.1rem; padding: 0.15rem 0.3rem; border-radius: 0.25rem; text-decoration: none; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; {{ \Modules\Stays\Filament\Host\Pages\Calendar::style($stay) }}">
                                                 {{ count($here) > 1 ? count($here).' bookings' : $stay->customer?->name }}
                                             </a>
                                         @elseif ($row['unit'] !== null && $run['night'] >= $today)

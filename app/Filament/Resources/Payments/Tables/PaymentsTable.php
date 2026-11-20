@@ -6,10 +6,8 @@ use App\Exceptions\RoomNotAvailable;
 use App\Models\Booking;
 use App\Models\ExcursionBooking;
 use App\Models\Payment;
-use App\Models\Stay;
 use App\Services\Payments\Ledger;
 use App\Services\Payments\SlipVault;
-use App\Services\Stays\StayBooking;
 use App\Support\CompanyRequest;
 use App\Support\Money;
 use Filament\Actions\Action;
@@ -21,6 +19,8 @@ use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Modules\Stays\Models\Stay;
+use Modules\Stays\Services\Stays\StayBooking;
 
 class PaymentsTable
 {

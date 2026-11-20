@@ -1,0 +1,433 @@
+<?php
+
+namespace Modules\Stays\Models;
+
+use App\Models\Concerns\HasNotices;
+use App\Models\Customer;
+use App\Models\Partner;
+use App\Models\Payment;
+use App\Models\User;
+use App\Services\Payments\TakesPayments;
+use App\Support\Money;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Modules\Stays\Exceptions\IllegalStayTransition;
+
+/**
+ * Somebody's nights in a guesthouse — §15.4 (Phase 9.2).
+ *
+ * The dates are **half-open**: `check_in` is slept, `check_out` is not. A
+ * stay from the 3rd to the 5th occupies the 3rd and the 4th, and the next
+ * guest may check in on the 5th. Every overlap query in this application
+ * depends on that, and reading it the other way double-books every
+ * changeover day.
+ *
+ * Only two statuses take a room off the calendar — {@see HELD} and
+ * {@see CONFIRMED} — and {@see OCCUPYING} is the single list every
+ * availability question asks about. A third status added later that should
+ * hold dates and is not put in that list produces an overbooking with no
+ * failing test anywhere, so the list is stated once and read everywhere.
+ */
+class Stay extends Model implements TakesPayments
+{
+    use HasFactory, HasNotices;
+
+    protected $fillable = [
+        'customer_id', 'property_id', 'room_type_id', 'audience',
+        'check_in', 'check_out', 'nights', 'adults', 'children',
+        'currency', 'rate_snapshot', 'total_minor', 'deposit_minor', 'paid_minor',
+        'status', 'requested_at', 'partner_confirmed_at', 'deposit_due_at', 'expires_at',
+        'special_requests', 'source', 'unit_id', 'created_via', 'created_by',
+    ];
+
+    // ── Who made it — §16.5 ──────────────────────────────────────────────
+    //
+    // The commission and settlement snapshots, and the arrival and
+    // departure times, are deliberately not fillable: each is written by
+    // the one action that owns it, never by a form.
+
+    /** A guest, through the site. Every stay before §16 was one of these. */
+    public const VIA_GUEST = 'guest';
+
+    /** The host, from their own panel — a phone call, a walk-in. */
+    public const VIA_HOST = 'host';
+
+    /** Rihla's staff, taking a phone booking. */
+    public const VIA_STAFF = 'staff';
+
+    /** @var list<string> */
+    public const CREATED_VIA = [self::VIA_GUEST, self::VIA_HOST, self::VIA_STAFF];
+
+    // ── The status machine ───────────────────────────────────────────────
+
+    /** The customer's ask. Holds no dates — anyone else may still book them. */
+    public const REQUESTED = 'requested';
+
+    /** The partner said yes. The dates are off the calendar and the clock is running. */
+    public const HELD = 'held';
+
+    /** The deposit is paid. The dates are theirs. */
+    public const CONFIRMED = 'confirmed';
+
+    /** They arrived. */
+    public const CHECKED_IN = 'checked_in';
+
+    /** They stayed and went home. */
+    public const COMPLETED = 'completed';
+
+    /** The partner said no. Final. */
+    public const DECLINED = 'declined';
+
+    /** The hold ran out before the deposit arrived. Final. */
+    public const EXPIRED = 'expired';
+
+    public const CANCELLED = 'cancelled';
+
+    /** @var list<string> */
+    public const STATUSES = [
+        self::REQUESTED, self::HELD, self::CONFIRMED, self::CHECKED_IN,
+        self::COMPLETED, self::DECLINED, self::EXPIRED, self::CANCELLED,
+    ];
+
+    /**
+     * The statuses that take a room off the calendar.
+     *
+     * This list *is* the no-double-booking rule's definition of "taken". A
+     * status that should hold dates and is missing here oversells the room
+     * silently — no error, no failing test, just two families at one door.
+     * `StayAvailabilityTest` asserts the membership of this list directly
+     * rather than only its consequences.
+     *
+     * `requested` is deliberately absent: §15.2 decision 1 makes a request
+     * cost the customer nothing until a real room is theirs, which means it
+     * cannot take the room away from anybody else either.
+     *
+     * @var list<string>
+     */
+    public const OCCUPYING = [self::HELD, self::CONFIRMED];
+
+    /**
+     * Where each status may go next.
+     *
+     * `expired` and `declined` are final, for the reason a lapsed booking
+     * is: reviving one means re-taking dates somebody else may now hold, at
+     * a rate that may have changed, under terms that may have changed — a
+     * new stay wearing an old reference. The row remains as the record that
+     * they asked.
+     *
+     * @var array<string, list<string>>
+     */
+    public const TRANSITIONS = [
+        self::REQUESTED => [self::HELD, self::DECLINED, self::CANCELLED],
+        self::HELD => [self::CONFIRMED, self::EXPIRED, self::CANCELLED],
+        self::CONFIRMED => [self::CHECKED_IN, self::CANCELLED],
+        self::CHECKED_IN => [self::COMPLETED],
+        self::COMPLETED => [],
+        self::DECLINED => [],
+        self::EXPIRED => [],
+        self::CANCELLED => [],
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'check_in' => 'date',
+        'check_out' => 'date',
+        'nights' => 'integer',
+        'adults' => 'integer',
+        'children' => 'integer',
+        'rate_snapshot' => 'array',
+        'total_minor' => 'integer',
+        'deposit_minor' => 'integer',
+        'paid_minor' => 'integer',
+        'requested_at' => 'datetime',
+        'partner_confirmed_at' => 'datetime',
+        'deposit_due_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'confirmed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+        'checked_in_at' => 'datetime',
+        'checked_out_at' => 'datetime',
+        'commission_pct_snapshot' => 'integer',
+        'commission_minor' => 'integer',
+        'host_net_minor' => 'integer',
+    ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => self::REQUESTED,
+        'currency' => 'USD',
+        'audience' => 'tourist',
+        'created_via' => self::VIA_GUEST,
+    ];
+
+    protected static function booted(): void
+    {
+        // Minted from the primary key, which only exists after the insert.
+        // Deriving it from a count races: two requests in the same second
+        // read the same count, both get the same reference, and the unique
+        // index turns one into a 500. Booking records the same lesson.
+        static::created(function (self $stay): void {
+            if ($stay->reference === null) {
+                $stay->forceFill(['reference' => $stay->makeReference()])->saveQuietly();
+            }
+        });
+    }
+
+    public function makeReference(): string
+    {
+        return sprintf(
+            '%s-%s-%s',
+            config('stays.reference.prefix', 'RIH-S'),
+            ($this->created_at ?? now())->format('Y'),
+            str_pad((string) $this->getKey(), (int) config('stays.reference.pad', 4), '0', STR_PAD_LEFT),
+        );
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'reference';
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<Property, $this> */
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    /**
+     * The host whose building this is — §16.6.
+     *
+     * Through the property, because a stay has no host column of its own
+     * and should not grow one: a second copy of "whose is this" is a
+     * second thing to keep right. The host panel's tenant scope walks this.
+     *
+     * @return HasOneThrough<Partner, Property, $this>
+     */
+    public function partner(): HasOneThrough
+    {
+        return $this->hasOneThrough(Partner::class, Property::class, 'id', 'id', 'property_id', 'partner_id');
+    }
+
+    /** @return BelongsTo<RoomType, $this> */
+    public function roomType(): BelongsTo
+    {
+        return $this->belongsTo(RoomType::class);
+    }
+
+    /**
+     * The physical room, once reception has put them in one.
+     *
+     * @return BelongsTo<PropertyUnit, $this>
+     */
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(PropertyUnit::class, 'unit_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Money recorded against this stay, by any method — §8.6 made payments
+     * polymorphic; this is the stay's side of it.
+     *
+     * @return MorphMany<Payment, $this>
+     */
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(Payment::class, 'payable')->orderBy('id');
+    }
+
+    /** @return HasMany<StayCharge, $this> */
+    public function charges(): HasMany
+    {
+        return $this->hasMany(StayCharge::class)->orderBy('id');
+    }
+
+    /**
+     * The guest's review, once they have written it — §16.11. One per stay.
+     *
+     * @return HasOne<Review, $this>
+     */
+    public function review(): HasOne
+    {
+        return $this->hasOne(Review::class);
+    }
+
+    /**
+     * The conversation about this stay — §16.11.
+     *
+     * @return HasMany<StayMessage, $this>
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(StayMessage::class)->orderBy('sent_at')->orderBy('id');
+    }
+
+    /**
+     * Who actually slept there — §15.6 (Phase 11).
+     *
+     * Not the same list as "the customer": one person books a room for
+     * four, and Maldivian law wants all four.
+     *
+     * @return HasMany<StayGuest, $this>
+     */
+    public function guests(): HasMany
+    {
+        return $this->hasMany(StayGuest::class)->orderByDesc('is_lead')->orderBy('id');
+    }
+
+    // ── Scopes ───────────────────────────────────────────────────────────
+
+    /** @param Builder<$this> $query */
+    public function scopeOccupying($query)
+    {
+        return $query->whereIn('status', self::OCCUPYING);
+    }
+
+    /**
+     * Stays overlapping the half-open range `[$from, $until)`.
+     *
+     * Two half-open ranges overlap when each starts before the other ends.
+     * The comparison is strict on both sides precisely *because* they are
+     * half-open: a stay checking out on the 5th and one checking in on the
+     * 5th share no night, and `<=` here would refuse a booking the
+     * guesthouse can honour.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeOverlapping($query, CarbonInterface $from, CarbonInterface $until)
+    {
+        return $query
+            ->whereDate('check_in', '<', $until->toDateString())
+            ->whereDate('check_out', '>', $from->toDateString());
+    }
+
+    /** A hold whose clock has run out and whose dates should go back. */
+    public function scopeLapsed($query)
+    {
+        return $query
+            ->where('status', self::HELD)
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now());
+    }
+
+    // ── Money ────────────────────────────────────────────────────────────
+
+    public function total(): Money
+    {
+        return Money::ofMinor($this->total_minor, $this->currency);
+    }
+
+    public function deposit(): Money
+    {
+        return Money::ofMinor($this->deposit_minor, $this->currency);
+    }
+
+    public function paid(): Money
+    {
+        return Money::ofMinor($this->paid_minor, $this->currency);
+    }
+
+    /** What is still owed, floored at zero — an overpayment is not a debt. */
+    public function outstanding(): Money
+    {
+        return Money::ofMinor(max(0, $this->total_minor - $this->paid_minor), $this->currency);
+    }
+
+    /**
+     * Has the deposit this stay was held for actually landed — **with Rihla**?
+     *
+     * §16.9: money a host records at the property is the guest's, and
+     * counts towards what they have paid, but it is not the deposit that
+     * confirms a marketplace stay. Counting it would let a host confirm a
+     * stay whose booking deposit — Rihla's commission — never arrived.
+     */
+    public function depositIsPaid(): bool
+    {
+        return $this->deposit_minor > 0 && $this->paidToRihla()->minor >= $this->deposit_minor;
+    }
+
+    /**
+     * What Rihla holds: the paid total less what the host took.
+     *
+     * Worked out from the cached total rather than a second SUM so that a
+     * stay with no host payments — every stay before §16 — answers exactly
+     * as it always did.
+     */
+    public function paidToRihla(): Money
+    {
+        return Money::ofMinor($this->paid_minor - $this->paidToHost()->minor, $this->currency);
+    }
+
+    /** What the host has recorded taking at the property, refunds netted. */
+    public function paidToHost(): Money
+    {
+        if (! $this->exists) {
+            return Money::ofMinor(0, $this->currency);
+        }
+
+        $minor = (int) $this->payments()
+            ->reorder()
+            ->where('collected_by', Payment::COLLECTED_BY_HOST)
+            ->succeeded()
+            ->sum('amount_minor');
+
+        return Money::ofMinor($minor, $this->currency);
+    }
+
+    // ── App\Services\Payments\TakesPayments ───────────────────────────────
+
+    public function paymentCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function storePaidTotal(int $minor): void
+    {
+        $this->forceFill(['paid_minor' => $minor])->save();
+    }
+
+    // ── Moving between statuses ──────────────────────────────────────────
+
+    /** Does this stay have the room, as far as everybody else is concerned? */
+    public function isOccupying(): bool
+    {
+        return in_array($this->status, self::OCCUPYING, true);
+    }
+
+    /**
+     * The only way the status column changes.
+     *
+     * @throws IllegalStayTransition
+     */
+    public function transitionTo(string $status, ?string $reason = null): void
+    {
+        if (! in_array($status, self::TRANSITIONS[$this->status] ?? [], true)) {
+            throw IllegalStayTransition::from($this, $status);
+        }
+
+        $this->forceFill(array_filter([
+            'status' => $status,
+            'confirmed_at' => $status === self::CONFIRMED ? now() : null,
+            'cancelled_at' => in_array($status, [self::CANCELLED, self::DECLINED], true) ? now() : null,
+            'cancellation_reason' => in_array($status, [self::CANCELLED, self::DECLINED], true) ? $reason : null,
+        ], fn ($value): bool => $value !== null))->save();
+    }
+}
