@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Person;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Modules\Content\Models\Person;
 
 /**
  * Which staff account is which person — the gap §6.3 runs into.

@@ -3,18 +3,18 @@
 namespace Tests\Feature;
 
 use App\Filament\Pages\SocialSettings;
-use App\Filament\Resources\GuideSteps\GuideStepResource;
-use App\Filament\Resources\GuideSteps\Pages\ListGuideSteps;
-use App\Filament\Resources\HeroBanners\HeroBannerResource;
 use App\Filament\Resources\Media\MediaResource;
-use App\Filament\Resources\WhySections\WhySectionResource;
-use App\Models\GuideStep;
 use App\Models\Setting;
-use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Content\Filament\Resources\GuideSteps\GuideStepResource;
+use Modules\Content\Filament\Resources\GuideSteps\Pages\ListGuideSteps;
+use Modules\Content\Filament\Resources\HeroBanners\HeroBannerResource;
+use Modules\Content\Filament\Resources\WhySections\WhySectionResource;
+use Modules\Content\Models\GuideStep;
+use Modules\Content\Models\Trip;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;

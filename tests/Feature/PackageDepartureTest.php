@@ -7,12 +7,12 @@ use App\Models\DepartureHotel;
 use App\Models\ItineraryItem;
 use App\Models\Package;
 use App\Models\PriceTier;
-use App\Models\Trip;
 use App\Support\Money;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Content\Models\Trip;
 use Tests\TestCase;
 
 /**

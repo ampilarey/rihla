@@ -64,7 +64,7 @@ class ReferralsTest extends TestCase
     private function noteAbout(Customer $customer, string $when): CrmTask
     {
         $task = CrmTask::create([
-            'about_type' => Customer::class,
+            'about_type' => (new Customer)->getMorphClass(),
             'about_id' => $customer->getKey(),
             'subject' => 'Ring them',
             'due_on' => now()->toDateString(),

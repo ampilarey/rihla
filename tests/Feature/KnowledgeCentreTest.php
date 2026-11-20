@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Exceptions\EditorialStandardNotMet;
-use App\Models\ArticleReference;
-use App\Models\KnowledgeArticle;
-use App\Models\Person;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\ArticleReference;
+use Modules\Content\Models\KnowledgeArticle;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**
@@ -53,7 +53,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_article_with_a_source_can_be_approved(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
 
         $article->fresh()->approve($this->scholar(), 'Checked the citation.');
 
@@ -70,7 +70,7 @@ class KnowledgeCentreTest extends TestCase
 
         $this->assertStringContainsString('No source', (string) $article->whyNotApprovable());
 
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
 
         $this->assertNull($article->fresh()->whyNotApprovable());
     }
@@ -92,7 +92,7 @@ class KnowledgeCentreTest extends TestCase
         $this->expectExceptionMessage('must carry a grading');
 
         ArticleReference::create([
-            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
+            'referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey(),
             'kind' => ArticleReference::HADITH,
             'citation' => 'Placeholder collection 1',
         ]);
@@ -103,7 +103,7 @@ class KnowledgeCentreTest extends TestCase
         $article = $this->article();
 
         $reference = ArticleReference::create([
-            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
+            'referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey(),
             'kind' => ArticleReference::QURAN,
             'citation' => 'Placeholder citation',
         ]);
@@ -120,7 +120,7 @@ class KnowledgeCentreTest extends TestCase
         $article = $this->article();
 
         $reference = ArticleReference::create([
-            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
+            'referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey(),
             'kind' => ArticleReference::QURAN,
             'citation' => 'Placeholder citation',
             'grading' => ArticleReference::SAHIH,
@@ -143,7 +143,7 @@ class KnowledgeCentreTest extends TestCase
         $article = $this->article();
 
         ArticleReference::factory()->hadith(ArticleReference::DAIF)->create([
-            'referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey(),
+            'referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey(),
             'note' => 'Included as a caution — pilgrims are often told this.',
         ]);
 
@@ -194,7 +194,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_unapproved_article_cannot_be_published(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
 
         $this->expectException(EditorialStandardNotMet::class);
         $this->expectExceptionMessage('non-negotiable');
@@ -205,7 +205,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_article_in_review_cannot_be_published(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
         $article->sendForReview();
 
         $this->expectException(EditorialStandardNotMet::class);
@@ -216,7 +216,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_an_approved_article_publishes_and_names_its_scholar(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
 
         $article->fresh()->approve($this->scholar());
         $article->fresh()->publish();
@@ -237,7 +237,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_approval_alone_does_not_put_it_on_the_site(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
 
         $article->fresh()->approve($this->scholar());
 
@@ -260,7 +260,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_withdrawing_takes_it_down_and_keeps_the_reason(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
         $article->fresh()->approve($this->scholar());
         $article->fresh()->publish();
 
@@ -278,7 +278,7 @@ class KnowledgeCentreTest extends TestCase
     {
         $waiting = $this->article();
         ArticleReference::factory()->create([
-            'referenceable_type' => KnowledgeArticle::class,
+            'referenceable_type' => (new KnowledgeArticle)->getMorphClass(),
             'referenceable_id' => $waiting->getKey(),
         ]);
         $waiting->sendForReview();
@@ -287,7 +287,7 @@ class KnowledgeCentreTest extends TestCase
 
         $done = $this->article();
         ArticleReference::factory()->create([
-            'referenceable_type' => KnowledgeArticle::class,
+            'referenceable_type' => (new KnowledgeArticle)->getMorphClass(),
             'referenceable_id' => $done->getKey(),
         ]);
         $done->fresh()->approve($this->scholar());
@@ -334,7 +334,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_a_change_to_a_published_article_by_a_non_reviewer_takes_it_back_to_the_scholar(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
         $article->fresh()->approve($this->scholar());
         $article->fresh()->publish();
         $this->assertTrue($article->fresh()->isLive());
@@ -353,7 +353,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_a_reviewers_edit_and_a_slug_change_leave_it_live(): void
     {
         $article = $this->article();
-        ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
         $article->fresh()->approve($this->scholar());
         $article->fresh()->publish();
 
@@ -374,7 +374,7 @@ class KnowledgeCentreTest extends TestCase
     public function test_changing_a_source_on_a_published_article_takes_it_back_too(): void
     {
         $article = $this->article();
-        $reference = ArticleReference::factory()->create(['referenceable_type' => KnowledgeArticle::class, 'referenceable_id' => $article->getKey()]);
+        $reference = ArticleReference::factory()->create(['referenceable_type' => (new KnowledgeArticle)->getMorphClass(), 'referenceable_id' => $article->getKey()]);
         $article->fresh()->approve($this->scholar());
         $article->fresh()->publish();
 

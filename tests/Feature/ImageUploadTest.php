@@ -2,11 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\GuideSteps\Pages\CreateGuideStep;
-use App\Filament\Resources\GuideSteps\Pages\EditGuideStep;
 use App\Filament\Resources\Media\Pages\CreateMedia;
 use App\Filament\Resources\Media\Pages\EditMedia;
-use App\Models\GuideStep;
 use App\Models\Media;
 use App\Models\User;
 use App\Support\Access;
@@ -15,6 +12,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Modules\Content\Filament\Resources\GuideSteps\Pages\CreateGuideStep;
+use Modules\Content\Filament\Resources\GuideSteps\Pages\EditGuideStep;
+use Modules\Content\Models\GuideStep;
 use Tests\TestCase;
 
 /**

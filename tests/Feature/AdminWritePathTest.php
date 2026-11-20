@@ -5,11 +5,11 @@ namespace Tests\Feature;
 use App\Filament\Resources\Media\Pages\CreateMedia;
 use App\Filament\Resources\Media\Pages\ListMedia;
 use App\Models\Media;
-use App\Models\Trip;
 use App\Models\User;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Modules\Content\Models\Trip;
 use Tests\TestCase;
 
 /**

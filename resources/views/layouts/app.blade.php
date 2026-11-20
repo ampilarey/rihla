@@ -258,15 +258,15 @@
                                 {{-- Moved to the staff panel (§9.2). Linked there
                                      directly rather than through the redirect,
                                      so the menu does not bounce people. --}}
-                                <a href="{{ \App\Filament\Resources\HeroBanners\HeroBannerResource::getUrl('index') }}" 
+                                <a href="{{ \Modules\Content\Filament\Resources\HeroBanners\HeroBannerResource::getUrl('index') }}" 
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Hero Banners') }}
                                 </a>
-                                <a href="{{ \App\Filament\Resources\WhySections\WhySectionResource::getUrl('index') }}" 
+                                <a href="{{ \Modules\Content\Filament\Resources\WhySections\WhySectionResource::getUrl('index') }}" 
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Why Section') }}
                                 </a>
-                                <a href="{{ \App\Filament\Resources\GuideSteps\GuideStepResource::getUrl('index') }}" 
+                                <a href="{{ \Modules\Content\Filament\Resources\GuideSteps\GuideStepResource::getUrl('index') }}" 
                                    class="text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-3 py-1">
                                     {{ __('Guide Steps') }}
                                 </a>
@@ -365,11 +365,11 @@
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Manage Media') }}
                             </a>
-                            <a href="{{ \App\Filament\Resources\HeroBanners\HeroBannerResource::getUrl('index') }}" 
+                            <a href="{{ \Modules\Content\Filament\Resources\HeroBanners\HeroBannerResource::getUrl('index') }}" 
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Hero Banners') }}
                             </a>
-                            <a href="{{ \App\Filament\Resources\GuideSteps\GuideStepResource::getUrl('index') }}" 
+                            <a href="{{ \Modules\Content\Filament\Resources\GuideSteps\GuideStepResource::getUrl('index') }}" 
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Guide Steps') }}
                             </a>

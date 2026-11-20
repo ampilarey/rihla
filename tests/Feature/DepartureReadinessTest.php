@@ -6,12 +6,12 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Departure;
 use App\Models\DepartureHotel;
-use App\Models\Person;
 use App\Models\Room;
 use App\Models\Traveller;
 use App\Models\WaitlistEntry;
 use App\Support\DepartureReadiness;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**

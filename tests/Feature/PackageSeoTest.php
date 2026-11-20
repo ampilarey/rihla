@@ -4,10 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Departure;
 use App\Models\Package;
-use App\Models\Person;
 use App\Models\PriceTier;
 use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\Content\Models\Person;
 use Tests\TestCase;
 
 /**

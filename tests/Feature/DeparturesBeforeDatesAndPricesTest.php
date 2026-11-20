@@ -102,7 +102,7 @@ class DeparturesBeforeDatesAndPricesTest extends TestCase
         $this->assertSame(0, $booking->total_minor);
 
         try {
-            Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->id, 'amount_minor' => 100_000]);
+            Payment::factory()->create(['payable_type' => (new Booking)->getMorphClass(), 'payable_id' => $booking->id, 'amount_minor' => 100_000]);
             $this->fail('Money was taken on a booking with no price.');
         } catch (DeskRefusal $refusal) {
             $this->assertStringContainsString('no price yet', $refusal->getMessage());
@@ -117,7 +117,7 @@ class DeparturesBeforeDatesAndPricesTest extends TestCase
         $this->assertCount(1, $booking->lines, 'A seat line, for the invoice.');
 
         // And now money can come in.
-        Payment::factory()->create(['payable_type' => Booking::class, 'payable_id' => $booking->id, 'amount_minor' => 100_000]);
+        Payment::factory()->create(['payable_type' => (new Booking)->getMorphClass(), 'payable_id' => $booking->id, 'amount_minor' => 100_000]);
         $this->assertSame(1, Payment::count());
     }
 

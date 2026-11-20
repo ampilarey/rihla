@@ -2,17 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\GuideStep;
-use App\Models\HeroBanner;
 use App\Models\Media;
-use App\Models\Trip;
 use App\Models\User;
-use App\Models\WhyFeature;
-use App\Models\WhySection;
 use App\Support\Access;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
+use Modules\Content\Models\GuideStep;
+use Modules\Content\Models\HeroBanner;
+use Modules\Content\Models\Trip;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
 use Tests\TestCase;
 
 /**

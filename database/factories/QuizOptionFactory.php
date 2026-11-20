@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\QuizOption;
-use App\Models\QuizQuestion;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Content\Models\QuizOption;
+use Modules\Content\Models\QuizQuestion;
 
 /** @extends Factory<QuizOption> */
 class QuizOptionFactory extends Factory

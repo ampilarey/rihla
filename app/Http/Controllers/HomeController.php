@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Departure;
-use App\Models\HeroBanner;
 use App\Models\Media;
 use App\Models\Package;
 use App\Models\Setting;
-use App\Models\Trip;
-use App\Models\WhySection;
 use App\Support\CurrentSite;
 use App\Support\Personalisation;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Companies\Http\Controllers\CompanySiteController;
+use Modules\Content\Models\HeroBanner;
+use Modules\Content\Models\Trip;
+use Modules\Content\Models\WhySection;
 
 class HomeController extends Controller
 {

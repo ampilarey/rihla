@@ -13,7 +13,7 @@ return [
     | scholar-approved content.
     |
     | Turning it on is not sufficient to make it answer. The hard
-    | constraints in App\Services\Assistant\PilgrimAssistant are in code,
+    | constraints in Modules\Content\Services\Assistant\PilgrimAssistant are in code,
     | not in the prompt: no approved source that matches the question means
     | no answer, whatever the key is set to.
     |

@@ -131,7 +131,7 @@ class Payment extends Model
         // parity). Here, on the row, so every way money arrives meets it:
         // the desk, a slip, the bot, the checkout, the customer's own page.
         static::creating(function (self $payment): void {
-            $booking = $payment->payable_type === (new Booking)->getMorphClass() || $payment->payable_type === Booking::class
+            $booking = $payment->payable_type === (new Booking)->getMorphClass()
                 ? Booking::query()->find($payment->payable_id)
                 : null;
 
@@ -190,7 +190,7 @@ class Payment extends Model
         // The type is read before the relation is touched, so money against
         // something else costs no query — and cannot fail trying to
         // instantiate a class this side of the app does not know about.
-        if ($this->payable_type !== Booking::class) {
+        if ($this->payable_type !== (new Booking)->getMorphClass()) {
             return null;
         }
 
@@ -208,7 +208,7 @@ class Payment extends Model
      */
     public function bookingKey(): ?int
     {
-        return $this->payable_type === Booking::class ? (int) $this->payable_id : null;
+        return $this->payable_type === (new Booking)->getMorphClass() ? (int) $this->payable_id : null;
     }
 
     /**

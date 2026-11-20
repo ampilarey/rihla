@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KnowledgeArticle;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Modules\Content\Models\KnowledgeArticle;
 
 /**
  * The public Knowledge Centre — §7.1.

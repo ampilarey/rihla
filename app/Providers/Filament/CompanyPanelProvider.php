@@ -37,7 +37,6 @@ use App\Filament\Resources\Notices\NoticeResource;
 use App\Filament\Resources\OperationsLog\OperationsLogEntryResource;
 use App\Filament\Resources\Packages\PackageResource;
 use App\Filament\Resources\Payments\PaymentResource;
-use App\Filament\Resources\People\PersonResource;
 use App\Filament\Resources\Permits\NusukPermitResource;
 use App\Filament\Resources\Quotations\QuotationResource;
 use App\Filament\Resources\RollCalls\RollCallResource;
@@ -75,6 +74,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Modules\Companies\Filament\OverdueInvoiceBanner;
 use Modules\Companies\Filament\Pages\Auth\Login;
 use Modules\Companies\Filament\Pages\Dashboard;
+use Modules\Content\Filament\Resources\People\PersonResource;
 use Modules\Telegram\Filament\Pages\Telegram;
 
 /**

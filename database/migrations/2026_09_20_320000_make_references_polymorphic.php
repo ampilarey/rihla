@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\KnowledgeArticle;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +39,7 @@ return new class extends Migration
         DB::table('article_references')
             ->whereNotNull('knowledge_article_id')
             ->update([
-                'referenceable_type' => KnowledgeArticle::class,
+                'referenceable_type' => 'App\Models\KnowledgeArticle',
                 'referenceable_id' => DB::raw('knowledge_article_id'),
             ]);
 
@@ -89,7 +88,7 @@ return new class extends Migration
         });
 
         DB::table('article_references')
-            ->where('referenceable_type', KnowledgeArticle::class)
+            ->where('referenceable_type', 'App\Models\KnowledgeArticle')
             ->update(['knowledge_article_id' => DB::raw('referenceable_id')]);
 
         // The same order as up(), for the same reason: every index naming

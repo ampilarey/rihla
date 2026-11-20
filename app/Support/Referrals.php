@@ -198,7 +198,7 @@ final class Referrals
         }
 
         return CrmTask::query()
-            ->where('about_type', Customer::class)
+            ->where('about_type', (new Customer)->getMorphClass())
             ->whereIn('about_id', $customerIds)
             ->selectRaw('about_id, MAX(created_at) as last_at')
             ->groupBy('about_id')

@@ -4,7 +4,6 @@ namespace App\Filament\Pages;
 
 use App\Exceptions\IllegalDepartureTransition;
 use App\Models\Departure;
-use App\Models\ZiyarahLocation;
 use App\Support\DepartureReadiness;
 use App\Support\StudyPlan;
 use BackedEnum;
@@ -12,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Modules\Content\Models\ZiyarahLocation;
 use UnitEnum;
 
 /**

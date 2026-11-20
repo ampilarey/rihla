@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\ZiyarahLocation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Content\Models\ZiyarahLocation;
 
 /**
  * @extends Factory<ZiyarahLocation>

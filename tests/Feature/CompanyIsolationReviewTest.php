@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AssistantExchange;
 use App\Models\Customer;
 use App\Models\Enquiry;
 use App\Models\Partner;
@@ -22,6 +21,7 @@ use Modules\Companies\Services\AddCompany;
 use Modules\Companies\Services\CompanyExport;
 use Modules\Companies\Services\CompanyTeam;
 use Modules\Companies\Services\SupportAccess;
+use Modules\Content\Models\AssistantExchange;
 use Modules\Telegram\Services\Notifier;
 use Tests\TestCase;
 use ZipArchive;
@@ -94,7 +94,7 @@ class CompanyIsolationReviewTest extends TestCase
     public function test_the_migration_removes_hashes_already_in_the_trail(): void
     {
         $id = DB::table('audit_logs')->insertGetId([
-            'event' => 'updated', 'auditable_type' => Customer::class, 'auditable_id' => 1,
+            'event' => 'updated', 'auditable_type' => (new Customer)->getMorphClass(), 'auditable_id' => 1,
             'old_values' => null, 'new_values' => json_encode(['portal_password' => '$2y$04$abc', 'name' => 'Aminath']),
             'created_at' => now(),
         ]);

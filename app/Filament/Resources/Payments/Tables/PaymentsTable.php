@@ -155,7 +155,7 @@ class PaymentsTable
         return Action::make('receipt')
             // The receipt template is a booking's; a stay payment threw
             // inside it (site audit).
-            ->visible(fn (Payment $record): bool => $record->payable_type === Booking::class
+            ->visible(fn (Payment $record): bool => $record->payable_type === (new Booking)->getMorphClass()
                 && $record->status === Payment::SUCCEEDED
                 && auth()->user()?->can('payment.view') === true)
             ->label(fn (Payment $record): string => $record->isRefund() ? 'Refund note' : 'Receipt')

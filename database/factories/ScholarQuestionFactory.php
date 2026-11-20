@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\ScholarQuestion;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Content\Models\ScholarQuestion;
 
 /**
  * @extends Factory<ScholarQuestion>

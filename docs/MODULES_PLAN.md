@@ -16,7 +16,7 @@ only with the full suite, Larastan and the MySQL job green.
 | **Core** (stays in `app/`) | Users and roles, companies and hosts as records (`Partner`), customers, payments and the ledger, settings, the audit trail, media, notices, the three panels' providers, and the shared support classes | stays where it is |
 | **Telegram** | The staff bot: links, link codes, updates, the router, the notifier, the daily summary, the webhook, and its page | ✅ moved (#220) |
 | **Companies** | Company invoices, memberships, sites, support grants and visits; adding, billing, exporting and closing a company; the company panel's own pages | ✅ moved |
-| **Content** | Trips, articles, the knowledge centre, the Umrah guide, hero banners, the *why* blocks, learning paths and quizzes, ziyarah locations, the assistant | |
+| **Content** | Trips, articles, the knowledge centre, the Umrah guide, hero banners, the *why* blocks, learning paths and quizzes, ziyarah locations, the assistant | ✅ moved |
 | **Stays** | Properties, rooms, units, photos, rates, blocked dates, stays and their guests, charges, messages and reviews, hosts' memberships, pages and statements, calendars, payouts; the host panel | |
 | **Umrah** | Packages, price tiers, departures and everything on them, bookings, travellers, seat holds, the waitlist, quotations, documents and reading, visas, Nusuk permits, rooming, buses, flights, roll calls, cards, excursions, incidents, broadcasts, the portal and the family portal, enquiries and the CRM | last, the largest |
 
@@ -46,9 +46,10 @@ the module's screens beside its own.
 ## The three rules that keep a move from breaking anything
 
 1. **A moved model keeps the class name already stored in the database.**
-   Four columns hold a model's class name: `payments.payable_type`,
-   `notices.noticeable_type`, `audit_logs.auditable_type` and spatie's
-   `model_type`. `ModulesServiceProvider::LEGACY_NAMES` maps each moved model's
+   Six columns hold a model's class name: `payments.payable_type`,
+   `notices.noticeable_type`, `audit_logs.auditable_type`,
+   `article_references.referenceable_type`, `crm_tasks.about_type` and
+   spatie's `model_type`. `ModulesServiceProvider::LEGACY_NAMES` maps each moved model's
    old name to its new class through `Relation::morphMap()`. That means:
    - existing rows still resolve;
    - new rows keep the old name, so nothing has to be migrated;
@@ -59,8 +60,16 @@ the module's screens beside its own.
 2. **Cached objects.** A model whose instances are cached is listed in
    `cache.serializable_classes`. The list names the new class, and each
    deploy clears the cache (the deploy script already does).
-3. **Factories.** A moved model's factory moves with it. Its `newFactory()`
-   names the factory, so Laravel's naming guess is never relied on.
+3. **Factories stay in `database/factories`**, named after the model.
+   `ModulesServiceProvider` teaches Laravel's guess about modules in both
+   directions (model to factory and factory to model).
+4. **A migration keeps the literal it wrote.** A data migration that wrote a
+   class name (`make_references_polymorphic`) keeps the old string, not
+   `X::class`, so a fresh database matches a deployed one.
+5. **A cache key that holds serialised models is versioned when they move.**
+   The deploy does not clear the application cache, so the homepage's
+   `WhySection` key moved to `.v2` rather than unserialising old entries
+   as incomplete objects.
 
 ## Order, and why
 

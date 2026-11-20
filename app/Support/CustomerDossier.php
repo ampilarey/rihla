@@ -9,8 +9,8 @@ use App\Models\Departure;
 use App\Models\Enquiry;
 use App\Models\Payment;
 use App\Models\Quotation;
-use App\Models\ScholarQuestion;
 use Illuminate\Support\Collection;
+use Modules\Content\Models\ScholarQuestion;
 
 /**
  * Everything this office knows about one person — §8.1's customer 360.
@@ -72,9 +72,9 @@ final class CustomerDossier
                 ->open()
                 ->where(function ($query) use ($customer, $bookings, $enquiries) {
                     $query
-                        ->where(fn ($q) => $q->where('about_type', Customer::class)->where('about_id', $customer->getKey()))
-                        ->orWhere(fn ($q) => $q->where('about_type', Booking::class)->whereIn('about_id', $bookings->pluck('id')))
-                        ->orWhere(fn ($q) => $q->where('about_type', Enquiry::class)->whereIn('about_id', $enquiries->pluck('id')));
+                        ->where(fn ($q) => $q->where('about_type', (new Customer)->getMorphClass())->where('about_id', $customer->getKey()))
+                        ->orWhere(fn ($q) => $q->where('about_type', (new Booking)->getMorphClass())->whereIn('about_id', $bookings->pluck('id')))
+                        ->orWhere(fn ($q) => $q->where('about_type', (new Enquiry)->getMorphClass())->whereIn('about_id', $enquiries->pluck('id')));
                 })
                 ->with('owner')
                 ->orderBy('due_on')

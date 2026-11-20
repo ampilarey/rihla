@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\LearningPath;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Modules\Content\Models\LearningPath;
 
 /** @extends Factory<LearningPath> */
 class LearningPathFactory extends Factory

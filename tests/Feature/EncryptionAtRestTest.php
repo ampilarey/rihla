@@ -125,7 +125,7 @@ class EncryptionAtRestTest extends TestCase
         ]);
 
         $payment = Payment::factory()->create([
-            'payable_type' => Booking::class,
+            'payable_type' => (new Booking)->getMorphClass(),
             'payable_id' => $booking->getKey(),
             'status' => Payment::PENDING,
         ]);

@@ -2,15 +2,36 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Modules\Companies\CompaniesServiceProvider;
 use Modules\Companies\Models\CompanyInvoice;
 use Modules\Companies\Models\CompanyMembership;
 use Modules\Companies\Models\CompanySite;
 use Modules\Companies\Models\SupportGrant;
 use Modules\Companies\Models\SupportVisit;
+use Modules\Content\ContentServiceProvider;
+use Modules\Content\Models\Article;
+use Modules\Content\Models\ArticleReference;
+use Modules\Content\Models\AssistantExchange;
+use Modules\Content\Models\GuideStep;
+use Modules\Content\Models\HeroBanner;
+use Modules\Content\Models\KnowledgeArticle;
+use Modules\Content\Models\LearningModule;
+use Modules\Content\Models\LearningPath;
+use Modules\Content\Models\LocationMisconception;
+use Modules\Content\Models\ModuleCompletion;
+use Modules\Content\Models\Person;
+use Modules\Content\Models\QuizOption;
+use Modules\Content\Models\QuizQuestion;
+use Modules\Content\Models\ScholarQuestion;
+use Modules\Content\Models\Trip;
+use Modules\Content\Models\WhyFeature;
+use Modules\Content\Models\WhySection;
+use Modules\Content\Models\ZiyarahLocation;
 use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Models\TelegramLinkCode;
 use Modules\Telegram\Models\TelegramUpdate;
@@ -26,6 +47,7 @@ class ModulesServiceProvider extends ServiceProvider
     public const MODULES = [
         TelegramServiceProvider::class,
         CompaniesServiceProvider::class,
+        ContentServiceProvider::class,
     ];
 
     /**
@@ -49,6 +71,24 @@ class ModulesServiceProvider extends ServiceProvider
         'App\Models\CompanySite' => CompanySite::class,
         'App\Models\SupportGrant' => SupportGrant::class,
         'App\Models\SupportVisit' => SupportVisit::class,
+        'App\Models\Article' => Article::class,
+        'App\Models\ArticleReference' => ArticleReference::class,
+        'App\Models\AssistantExchange' => AssistantExchange::class,
+        'App\Models\GuideStep' => GuideStep::class,
+        'App\Models\HeroBanner' => HeroBanner::class,
+        'App\Models\KnowledgeArticle' => KnowledgeArticle::class,
+        'App\Models\LearningModule' => LearningModule::class,
+        'App\Models\LearningPath' => LearningPath::class,
+        'App\Models\LocationMisconception' => LocationMisconception::class,
+        'App\Models\ModuleCompletion' => ModuleCompletion::class,
+        'App\Models\Person' => Person::class,
+        'App\Models\QuizOption' => QuizOption::class,
+        'App\Models\QuizQuestion' => QuizQuestion::class,
+        'App\Models\ScholarQuestion' => ScholarQuestion::class,
+        'App\Models\Trip' => Trip::class,
+        'App\Models\WhyFeature' => WhyFeature::class,
+        'App\Models\WhySection' => WhySection::class,
+        'App\Models\ZiyarahLocation' => ZiyarahLocation::class,
     ];
 
     public function register(): void
@@ -61,6 +101,25 @@ class ModulesServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Relation::morphMap(self::LEGACY_NAMES);
+
+        // Factories stay in database/factories, named after the model. Laravel
+        // guesses both directions from App\Models, so a model in a module
+        // would look for Database\Factories\Modules\…\XFactory and a factory
+        // would build an App\Models class that no longer exists.
+        Factory::guessFactoryNamesUsing(
+            fn (string $model): string => 'Database\\Factories\\'.class_basename($model).'Factory',
+        );
+        Factory::guessModelNamesUsing(function (Factory $factory): string {
+            $name = Str::replaceLast('Factory', '', class_basename($factory));
+
+            foreach (['App\\Models\\', ...array_map(fn (string $module): string => 'Modules\\'.$module.'\\Models\\', self::names())] as $namespace) {
+                if (class_exists($namespace.$name)) {
+                    return $namespace.$name;
+                }
+            }
+
+            return 'App\\Models\\'.$name;
+        });
     }
 
     /**

@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Modules\Content\Models\Person;
+use Modules\Content\Models\Trip;
 
 /**
  * One dated run of a Package.

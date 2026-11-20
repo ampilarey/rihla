@@ -306,7 +306,7 @@ class CrmAdminTest extends TestCase
         ]);
 
         CrmTask::factory()->create([
-            'about_type' => Customer::class,
+            'about_type' => (new Customer)->getMorphClass(),
             'about_id' => $customer->getKey(),
             'subject' => 'Ring them about next season',
         ]);

@@ -40,4 +40,33 @@ class ModulesTest extends TestCase
 
         $this->assertEqualsCanonicalizing($folders, ModulesServiceProvider::names());
     }
+
+    /**
+     * Comparing a stored class-name column with `X::class` is right only
+     * until X moves into a module; then the rows hold the old name and the
+     * comparison silently matches nothing. `(new X)->getMorphClass()` is
+     * right before and after.
+     */
+    public function test_no_code_compares_a_stored_class_name_with_a_class_constant(): void
+    {
+        $columns = '(referenceable|about|auditable|noticeable|payable)_type';
+        $offenders = [];
+
+        foreach (['app', 'modules'] as $folder) {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(base_path($folder), \FilesystemIterator::SKIP_DOTS)) as $file) {
+                if ($file->getExtension() !== 'php') {
+                    continue;
+                }
+
+                $source = (string) file_get_contents($file->getPathname());
+
+                if (preg_match("/'{$columns}'\\s*(,|=>)\\s*[A-Z]\\w*::class/", $source) === 1
+                    || preg_match("/->{$columns}\\s*(===|!==|==)\\s*[A-Z]\\w*::class/", $source) === 1) {
+                    $offenders[] = $file->getPathname();
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders);
+    }
 }
