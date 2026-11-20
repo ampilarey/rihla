@@ -75,17 +75,17 @@
              own way. Literal class strings, so Tailwind compiles each. --}}
         @php
             $siteHeader = match ($site->theme) {
-                \App\Models\CompanySite::MINIMAL => 'bg-white text-[color:var(--site-primary)] border-b-4 border-[color:var(--site-accent)]',
-                \App\Models\CompanySite::BOLD => 'bg-[var(--site-accent)] text-[color:var(--site-on-accent)] text-center',
+                \Modules\Companies\Models\CompanySite::MINIMAL => 'bg-white text-[color:var(--site-primary)] border-b-4 border-[color:var(--site-accent)]',
+                \Modules\Companies\Models\CompanySite::BOLD => 'bg-[var(--site-accent)] text-[color:var(--site-on-accent)] text-center',
                 default => 'bg-[var(--site-accent)] text-[color:var(--site-on-accent)]',
             };
-            $siteHeaderInner = $site->theme === \App\Models\CompanySite::BOLD
+            $siteHeaderInner = $site->theme === \Modules\Companies\Models\CompanySite::BOLD
                 ? 'container mx-auto flex flex-col items-center gap-3 px-4 py-6'
                 : 'container mx-auto flex flex-wrap items-center justify-between gap-4 px-4 py-4';
         @endphp
         <header class="{{ $siteHeader }}">
             <div class="{{ $siteHeaderInner }}">
-                <a href="{{ route('home') }}" class="flex items-center gap-3 font-semibold {{ $site->theme === \App\Models\CompanySite::BOLD ? 'text-2xl' : 'text-lg' }}" dir="auto">
+                <a href="{{ route('home') }}" class="flex items-center gap-3 font-semibold {{ $site->theme === \Modules\Companies\Models\CompanySite::BOLD ? 'text-2xl' : 'text-lg' }}" dir="auto">
                     @if ($site->logoUrl())
                         <img src="{{ $site->logoUrl() }}" alt="{{ $siteName }}" class="h-12 w-auto rounded bg-white p-1">
                     @else
