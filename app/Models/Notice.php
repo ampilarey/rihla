@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use Modules\Stays\Models\Stay;
 use Modules\Transport\Models\BoatBooking;
+use Modules\Transport\Models\TransportRequest;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 
@@ -103,7 +104,7 @@ class Notice extends Model
         self::VISA_ISSUED, self::PERMIT_ISSUED, self::DEPARTURE_SOON,
         self::STAY_CONFIRMED, self::DEPOSIT_DUE, self::BALANCE_DUE, self::CHECK_IN_SOON,
         self::STAY_REQUESTED, self::REVIEW_REQUESTED,
-        self::SAILING_CANCELLED,
+        self::SAILING_CANCELLED, self::TRANSPORT_QUOTED,
     ];
 
     /**
@@ -121,6 +122,12 @@ class Notice extends Model
      * phone they typed is who staff message.
      */
     public const SAILING_CANCELLED = 'sailing_cancelled';
+
+    /**
+     * A cargo or charter request has a price — docs/TRANSPORT_PLAN.md
+     * (T4). Staff send it by WhatsApp; the asker's status page shows it too.
+     */
+    public const TRANSPORT_QUOTED = 'transport_quoted';
 
     public const ONCE = [self::STAY_REQUESTED, self::REVIEW_REQUESTED, self::SAILING_CANCELLED];
 
@@ -141,6 +148,8 @@ class Notice extends Model
         self::DEPOSIT_DUE, self::BALANCE_DUE,
         // A boat that will not sail: somebody must move them or refund them.
         self::SAILING_CANCELLED,
+        // A price waiting to be paid.
+        self::TRANSPORT_QUOTED,
     ];
 
     /**
@@ -175,7 +184,7 @@ class Notice extends Model
     {
         $owner = $this->noticeable;
 
-        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking
+        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking || $owner instanceof TransportRequest
             ? $owner->customer
             : null;
     }
@@ -189,7 +198,7 @@ class Notice extends Model
         $owner = $this->noticeable;
 
         return $this->customer()->name
-            ?? ($owner instanceof BoatBooking ? $owner->contact_name : null)
+            ?? ($owner instanceof BoatBooking || $owner instanceof TransportRequest ? $owner->contact_name : null)
             ?? 'Unknown';
     }
 
@@ -208,6 +217,7 @@ class Notice extends Model
             $owner instanceof Booking => $owner->departure?->date_start,
             $owner instanceof Stay => $owner->check_in,
             $owner instanceof BoatBooking => $owner->sailing?->departs_at,
+            $owner instanceof TransportRequest => $owner->wanted_on,
             default => null,
         };
     }
@@ -217,7 +227,7 @@ class Notice extends Model
     {
         $owner = $this->noticeable;
 
-        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking
+        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking || $owner instanceof TransportRequest
             ? $owner->reference
             : null;
     }
@@ -318,7 +328,7 @@ class Notice extends Model
         $number = match (true) {
             $this->noticeable instanceof Booking => OfficeContact::forBooking($this->noticeable)->phone,
             // The phone the booker gave for this booking, customer or not.
-            $this->noticeable instanceof BoatBooking => $this->noticeable->contact_phone,
+            $this->noticeable instanceof BoatBooking, $this->noticeable instanceof TransportRequest => $this->noticeable->contact_phone,
             default => $this->customer()?->phone,
         };
 
@@ -349,6 +359,7 @@ class Notice extends Model
             self::STAY_REQUESTED => 'Stay requested',
             self::REVIEW_REQUESTED => 'Ask for a review',
             self::SAILING_CANCELLED => 'Sailing cancelled',
+            self::TRANSPORT_QUOTED => 'Cargo or charter quoted',
             default => 'Unknown',
         };
     }

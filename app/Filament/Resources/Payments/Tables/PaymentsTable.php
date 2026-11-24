@@ -45,7 +45,8 @@ class PaymentsTable
                     ->description(fn (Payment $record): ?string => $record->payable instanceof ExcursionBooking
                         // An additional trip's money says whose places it is for (Phase 3e).
                         ? $record->payable->reference.' · '.$record->payable->excursion->title
-                        : $record->booking()?->reference),
+                        // Anything else names itself: a stay, a boat booking, a cargo request.
+                        : ($record->booking()->reference ?? $record->payable?->getAttribute('reference'))),
 
                 TextColumn::make('amount_minor')
                     ->label('Amount')

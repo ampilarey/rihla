@@ -12,6 +12,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Transport\Filament\RecordPayment;
 use Modules\Transport\Filament\Resources\BoatBookings\Pages\ManageBoatBookings;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Services\TransportDesk;
@@ -83,6 +84,7 @@ class BoatBookingResource extends Resource
             ->defaultSort('id', 'desc')
             ->filters([SelectFilter::make('status')->options(BoatBooking::STATUSES)])
             ->recordActions([
+                RecordPayment::action(fn (Model $record): bool => $record instanceof BoatBooking && $record->holdsSeats() && $record->owed()->minor > 0),
                 Action::make('confirm')
                     ->label('Confirm')
                     ->icon('heroicon-o-check')

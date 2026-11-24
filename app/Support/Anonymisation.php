@@ -164,6 +164,10 @@ final class Anonymisation
         // itself and is kept.
         'boat_bookings' => ['contact_name' => 'name', 'contact_phone' => 'phone'],
         'boat_tickets' => ['full_name' => 'name'],
+        // Cargo and charter requests (T4): who asked, what they are sending,
+        // and anything they or staff wrote about it.
+        'transport_requests' => ['contact_name' => 'name', 'contact_phone' => 'phone', 'cargo_description' => 'text', 'notes' => 'text', 'quote_note' => 'text', 'cancelled_reason' => 'text'],
+        'transport_request_events' => ['note' => 'text'],
         'stay_guests' => [
             'full_name' => 'name', 'id_number' => 'name', 'nationality' => 'name',
             'date_of_birth' => 'null',

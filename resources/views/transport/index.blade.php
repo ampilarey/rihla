@@ -45,6 +45,11 @@
         </div>
     </form>
 
+    <p dir="auto" class="mb-6 text-sm text-brand-body">
+        {{ __('messages.Need cargo moved or a whole boat?') }}
+        <a href="{{ route('transport.requests.create') }}" class="text-wine-700 underline hover:no-underline">{{ __('messages.Ask for a price') }}</a>
+    </p>
+
     @if($sailings->isEmpty())
         <p dir="auto" class="card text-brand-body">{{ __('messages.No sailings in the week from that date. Try another date or route.') }}</p>
     @else

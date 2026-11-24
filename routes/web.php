@@ -37,6 +37,7 @@ use Modules\Stays\Http\Controllers\StayCheckoutController;
 use Modules\Stays\Http\Controllers\StayReviewController;
 use Modules\Stays\Http\Controllers\StaysController;
 use Modules\Transport\Http\Controllers\BoatController;
+use Modules\Transport\Http\Controllers\TransportRequestController;
 use Modules\Umrah\Http\Controllers\BookingController;
 use Modules\Umrah\Http\Controllers\DocumentController;
 use Modules\Umrah\Http\Controllers\EnquiryController;
@@ -299,6 +300,13 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         // BookingFlowTest::test_no_checkout_url_carries_a_booking_identifier.
         Route::get('/boats/tickets/{key}', [BoatController::class, 'tickets'])
             ->where('key', '[A-Za-z0-9]{40}')->name('transport.tickets');
+
+        // Cargo and charters (T4): asked for, quoted, paid, delivered.
+        Route::get('/boats/request', [TransportRequestController::class, 'create'])->name('transport.requests.create');
+        Route::post('/boats/request', [TransportRequestController::class, 'store'])
+            ->middleware('throttle:public-form')->name('transport.requests.store');
+        Route::get('/boats/requests/{key}', [TransportRequestController::class, 'show'])
+            ->where('key', '[A-Za-z0-9]{40}')->name('transport.requests.show');
     });
 
     // The guest's own stay — §16.7. Entered by a link that is spent for a
