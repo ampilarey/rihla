@@ -2,6 +2,7 @@
 
 namespace Modules\Umrah\Models;
 
+use App\Http\Controllers\SitemapController;
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Partner;
 use App\Support\Audience;
@@ -137,8 +138,14 @@ class Package extends Model
         // Must return nothing: Cache::forget() returns false when the key is
         // not cached, and a model-event listener returning false halts every
         // later listener for that event.
-        $bustSitemap = function (): void {
+        $bustSitemap = function (self $package): void {
             Cache::forget('sitemap.xml');
+
+            // And the owning company's own sitemap (security review): an
+            // unpublished package stayed on it for up to an hour.
+            if ($package->getAttribute('company_id') !== null) {
+                Cache::forget(SitemapController::companyCacheKey((int) $package->getAttribute('company_id')));
+            }
         };
 
         static::saved($bustSitemap);

@@ -18,10 +18,20 @@
          its logo or none, never Rihla's (companies plan, Phase 4a). --}}
     @php
         $errorCompany = app(\App\Support\CurrentSite::class)->company();
-        $errorName = $errorCompany?->name ?? config('app.name');
-        $errorMark = $errorCompany ? $errorCompany->site?->logoUrl() : '/images/icon-192.png';
+        // An address that reads as a company's but serves no live site — a
+        // suspended company, an unknown name, a deeper name — says nobody's
+        // name (security review): "Rihla Travels" there told a visitor the
+        // address was Rihla's.
+        $errorHost = request()->getHost();
+        $errorNoBrand = $errorCompany === null && (
+            \App\Support\CurrentSite::label($errorHost) !== null
+            || \App\Support\CurrentSite::isStrayName($errorHost)
+            || \App\Support\CurrentSite::ownDomain($errorHost) !== null
+        );
+        $errorName = $errorNoBrand ? null : ($errorCompany?->name ?? config('app.name'));
+        $errorMark = $errorNoBrand ? null : ($errorCompany ? $errorCompany->site?->logoUrl() : '/images/icon-192.png');
     @endphp
-    <title>@yield('title') — {{ $errorName }}</title>
+    <title>@yield('title'){{ $errorName ? ' — '.$errorName : '' }}</title>
     @if ($errorMark)
         <link rel="icon" type="image/png" sizes="32x32" href="{{ $errorCompany ? $errorMark : '/favicon-32x32.png' }}">
     @endif

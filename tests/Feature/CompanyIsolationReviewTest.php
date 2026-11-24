@@ -11,6 +11,7 @@ use App\Support\CompanyContext;
 use App\Support\CompanyDetails;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Mail\Transport\ArrayTransport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -21,8 +22,13 @@ use Modules\Companies\Services\CompanyTeam;
 use Modules\Companies\Services\SupportAccess;
 use Modules\Content\Models\AssistantExchange;
 use Modules\Telegram\Services\Notifier;
+use Modules\Umrah\Models\Booking;
+use Modules\Umrah\Models\BroadcastDelivery;
+use Modules\Umrah\Models\Departure;
+use Modules\Umrah\Models\EmergencyBroadcast;
 use Modules\Umrah\Models\Enquiry;
 use Modules\Umrah\Models\Traveller;
+use Modules\Umrah\Services\Broadcasts\Channels\EmailChannel;
 use Tests\TestCase;
 use ZipArchive;
 
@@ -183,5 +189,53 @@ class CompanyIsolationReviewTest extends TestCase
 
         $this->assertSame('GST TIN 1000999GST001', CompanyDetails::taxNote());
         $this->assertNull($this->context->as($a->id, fn (): ?string => CompanyDetails::taxNote()));
+    }
+
+    public function test_a_companys_emergency_email_carries_the_companys_name(): void
+    {
+        config(['mail.from.address' => 'noreply@rihla.test', 'mail.from.name' => 'Rihla Travels']);
+        $coral = app(AddCompany::class)('Coral Umrah', 'Aishath', 'coral@example.com');
+        $coral->forceFill(['email' => 'office@coral.example'])->save();
+
+        [$broadcast, $booking] = $this->context->as($coral->id, function (): array {
+            $departure = Departure::factory()->withSeats(4)->create();
+            $booking = Booking::factory()->create(['departure_id' => $departure->id, 'customer_id' => Customer::factory()->create(['email' => 'pilgrim@example.mv'])->id]);
+
+            return [EmergencyBroadcast::create(['departure_id' => $departure->id, 'headline' => 'Everybody is safe.', 'body' => 'The group is accounted for.']), $booking];
+        });
+
+        $this->assertSame(BroadcastDelivery::DELIVERED, $this->context->as($coral->id, fn (): array => (new EmailChannel)->deliver($broadcast, $booking))['status']);
+
+        /** @var ArrayTransport $transport */
+        $transport = app('mailer')->getSymfonyTransport();
+        $email = $transport->messages()->last()?->getOriginalMessage();
+        $this->assertNotNull($email);
+        $this->assertSame('Coral Umrah', $email->getFrom()[0]->getName());
+        $this->assertSame('office@coral.example', $email->getReplyTo()[0]->getAddress());
+    }
+
+    public function test_a_companys_sitemap_names_its_main_address_whichever_was_asked(): void
+    {
+        config(['companies.site_domain' => 'rihla.test']);
+        $coral = app(AddCompany::class)('Coral Umrah', 'Aishath', 'coral@example.com');
+        $coral->forceFill(['site_enabled' => true, 'registration_paid_at' => now(), 'site_domain' => 'coralumrah.test'])->save();
+        $coral->site->forceFill(['published_at' => now()])->save();
+
+        // Asked on the name first: every URL is still on the own domain.
+        $xml = $this->get('http://'.$coral->slug.'.rihla.test/sitemap.xml')->assertOk()->getContent();
+        $this->assertStringContainsString('http://coralumrah.test/', (string) $xml);
+        $this->assertStringNotContainsString($coral->slug.'.rihla.test', (string) $xml);
+        $this->get('http://'.$coral->slug.'.rihla.test/robots.txt')->assertOk()->assertSee('Sitemap: http://coralumrah.test/sitemap.xml', false);
+    }
+
+    public function test_a_company_address_with_no_live_site_says_nobodys_name(): void
+    {
+        config(['companies.site_domain' => 'rihla.test']);
+
+        $page = $this->get('http://nobody-here.rihla.test/en')->assertNotFound()->getContent();
+        $this->assertStringNotContainsString('Rihla', (string) preg_replace('/<style.*?<\/style>/s', '', (string) $page));
+
+        // rihla.mv's own 404 still says it is Rihla's.
+        $this->get(config('app.url').'/en/no-such-page')->assertNotFound()->assertSee('Rihla');
     }
 }
