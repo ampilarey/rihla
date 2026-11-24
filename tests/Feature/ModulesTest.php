@@ -29,7 +29,15 @@ class ModulesTest extends TestCase
             }
 
             $legacy = array_search($class, ModulesServiceProvider::LEGACY_NAMES, true);
-            $this->assertNotFalse($legacy, $class.' is not in ModulesServiceProvider::LEGACY_NAMES.');
+
+            // Born in a module: no old name exists, and none may be pinned.
+            if (in_array($class, ModulesServiceProvider::BORN_IN_MODULES, true)) {
+                $this->assertFalse($legacy, $class.' is born in a module and in LEGACY_NAMES.');
+
+                continue;
+            }
+
+            $this->assertNotFalse($legacy, $class.' is in neither ModulesServiceProvider::LEGACY_NAMES nor BORN_IN_MODULES.');
             $this->assertSame($legacy, (new $class)->getMorphClass(), $class.' must keep writing its old name.');
         }
     }

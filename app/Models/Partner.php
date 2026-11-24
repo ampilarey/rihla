@@ -67,7 +67,10 @@ class Partner extends Model
     public const KIND_AGENCY = 'agency';
 
     /** @var list<string> */
-    public const KINDS = [self::KIND_GUESTHOUSE, self::KIND_HOMESTAY, self::KIND_RENTAL_OWNER, self::KIND_AGENCY];
+    /** A boat operator — docs/TRANSPORT_PLAN.md. Rihla's own boats belong to Rihla's own row. */
+    public const KIND_OPERATOR = 'operator';
+
+    public const KINDS = [self::KIND_GUESTHOUSE, self::KIND_HOMESTAY, self::KIND_RENTAL_OWNER, self::KIND_AGENCY, self::KIND_OPERATOR];
 
     // ── Whether Rihla has checked them ───────────────────────────────────
 

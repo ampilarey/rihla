@@ -569,6 +569,16 @@ final class Access
         // says who may start that flow on somebody else's behalf.
         'stay.book',
 
+        // Transport — docs/TRANSPORT_PLAN.md. Seeing boats, routes, sailings
+        // and bookings; managing the boats, routes and timetable; taking a
+        // booking for a caller; and scanning passengers on board. No delete:
+        // a booking is cancelled, a sailing is cancelled, both with a reason.
+        'transport.viewAny',
+        'transport.view',
+        'transport.manage',
+        'transport.book',
+        'transport.board',
+
         // Guests' reviews — §16.11. Read, and hide (with a reason the author
         // is shown) or unhide. No create — a review is a guest's — and no
         // delete: a hidden review is kept, the record of what was said.
@@ -914,6 +924,7 @@ final class Access
             // Runs the operation: all content, plus settings and bookings.
             self::OPERATIONS_MANAGER => array_merge(
                 ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny', 'telegram.link'],
+                ['transport.viewAny', 'transport.view', 'transport.manage', 'transport.book', 'transport.board'],
                 $bookings,
                 ['booking.discount'],
                 $documents,
@@ -1028,6 +1039,9 @@ final class Access
                 // Drafts a reply to an enquiry, then edits and sends it
                 // themselves. §9.6's human in the loop is this person.
                 ['admin.access', 'draft.use', 'telegram.link'],
+                // Books seats on a boat for a caller; the timetable is the
+                // Operations Manager's.
+                ['transport.viewAny', 'transport.view', 'transport.book'],
                 $bookings,
                 // Collects documents and sends them back to the customer who
                 // mislaid them, so it uploads and downloads. Verifying is

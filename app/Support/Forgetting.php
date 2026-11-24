@@ -104,6 +104,11 @@ final class Forgetting
         // way a traveller's records are reached through the traveller.
         'stay_guests' => 'stay',
 
+        // Seats on a boat and the passengers on them (docs/TRANSPORT_PLAN.md):
+        // the booker's own, and their passengers through the booking.
+        'boat_bookings' => 'customer',
+        'boat_tickets' => 'boat_booking',
+
         // A stay's bill — §16.5. The host may have written the guest into
         // a line ("cake for Aishath"); reached through the stay, the way
         // the register is.

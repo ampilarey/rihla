@@ -15,6 +15,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Modules\Stays\Models\Stay;
+use Modules\Transport\Models\BoatBooking;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Enquiry;
 use Modules\Umrah\Models\ExcursionBooking;
@@ -135,6 +136,7 @@ class ForgetCustomer extends Command
                 ->filter(fn ($row): bool => PhoneNumber::key($row->phone) === $phoneKey))
             ->pluck('id')->map(fn ($id): int => (int) $id)->unique()->values()->all();
         $stayIds = DB::table('stays')->where('customer_id', $customer->getKey())->pluck('id')->all();
+        $boatBookingIds = DB::table('boat_bookings')->where('customer_id', $customer->getKey())->pluck('id')->all();
         // The third payable (companies plan, Phase 3e): an additional trip's
         // places, paid in riyal. Theirs as the booker, or through a booking.
         $excursionIds = DB::table('excursion_bookings')
@@ -155,6 +157,8 @@ class ForgetCustomer extends Command
             'enquiry' => $enquiryIds,
             'stay' => $stayIds,
             'excursion' => $excursionIds,
+            // Seats on a boat (docs/TRANSPORT_PLAN.md): the customer's own.
+            'boat_booking' => $boatBookingIds,
             'document' => $documentIds,
             'version' => $versionIds,
             'incident' => $incidentIds,
@@ -166,12 +170,12 @@ class ForgetCustomer extends Command
             'self' => 'id', 'customer' => 'customer_id', 'traveller' => 'traveller_id',
             'booking' => 'booking_id', 'enquiry' => 'enquiry_id', 'document' => 'document_id', 'version' => 'document_version_id',
             'incident' => 'incident_id', 'visa' => 'visa_application_id', 'permit' => 'nusuk_permit_id',
-            'stay' => 'stay_id',
+            'stay' => 'stay_id', 'boat_booking' => 'boat_booking_id',
         ];
 
         $this->line($dry ? 'Would erase:' : 'Erasing:');
 
-        $files = $this->files($documentIds, $bookingIds, $stayIds, $excursionIds);
+        $files = $this->files($documentIds, $bookingIds, $stayIds, $excursionIds, $boatBookingIds);
         $erased = 0;
 
         DB::transaction(function () use ($keys, $columns, $customer, $dry, &$erased): void {
@@ -222,6 +226,7 @@ class ForgetCustomer extends Command
             ->where(fn ($q) => $q->where('payable_type', (new Booking)->getMorphClass())->whereIn('payable_id', $keys['booking'] ?: [0]))
             ->orWhere(fn ($q) => $q->where('payable_type', (new Stay)->getMorphClass())->whereIn('payable_id', $keys['stay'] ?: [0]))
             ->orWhere(fn ($q) => $q->where('payable_type', (new ExcursionBooking)->getMorphClass())->whereIn('payable_id', $keys['excursion'] ?: [0]))
+            ->orWhere(fn ($q) => $q->where('payable_type', (new BoatBooking)->getMorphClass())->whereIn('payable_id', $keys['boat_booking'] ?: [0]))
             ->pluck('id'))->whereNotNull('payload')->update(['payload' => null]);
 
         // The id, not the name — recording who was forgotten would undo
@@ -252,7 +257,7 @@ class ForgetCustomer extends Command
      * @param  list<int>  $bookingIds
      * @return list<array{string, string}>
      */
-    private function files(array $documentIds, array $bookingIds, array $stayIds = [], array $excursionIds = []): array
+    private function files(array $documentIds, array $bookingIds, array $stayIds = [], array $excursionIds = [], array $boatBookingIds = []): array
     {
         $files = [];
 
@@ -269,10 +274,11 @@ class ForgetCustomer extends Command
         // SlipVault keeps the superseded file and records it in the
         // transaction's payload.
         $payments = Payment::query()
-            ->where(function ($q) use ($bookingIds, $stayIds, $excursionIds): void {
+            ->where(function ($q) use ($bookingIds, $stayIds, $excursionIds, $boatBookingIds): void {
                 $q->where(fn ($b) => $b->where('payable_type', (new Booking)->getMorphClass())->whereIn('payable_id', $bookingIds ?: [0]))
                     ->orWhere(fn ($s) => $s->where('payable_type', (new Stay)->getMorphClass())->whereIn('payable_id', $stayIds ?: [0]))
-                    ->orWhere(fn ($x) => $x->where('payable_type', (new ExcursionBooking)->getMorphClass())->whereIn('payable_id', $excursionIds ?: [0]));
+                    ->orWhere(fn ($x) => $x->where('payable_type', (new ExcursionBooking)->getMorphClass())->whereIn('payable_id', $excursionIds ?: [0]))
+                    ->orWhere(fn ($t) => $t->where('payable_type', (new BoatBooking)->getMorphClass())->whereIn('payable_id', $boatBookingIds ?: [0]));
             })
             ->get();
 
@@ -358,6 +364,10 @@ class ForgetCustomer extends Command
                     // And the third (Phase 3e): an additional trip's places.
                     $q->where('payable_type', (new ExcursionBooking)->getMorphClass())
                         ->whereIn('payable_id', $keys['excursion'] ?: [0]);
+                })->orWhere(function (Builder $q) use ($keys): void {
+                    // And a boat's seats (docs/TRANSPORT_PLAN.md).
+                    $q->where('payable_type', (new BoatBooking)->getMorphClass())
+                        ->whereIn('payable_id', $keys['boat_booking'] ?: [0]);
                 });
             });
         }
