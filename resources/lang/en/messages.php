@@ -1053,4 +1053,8 @@ return [
     'Held' => 'Held',
     'Confirmed' => 'Confirmed',
     'Lapsed' => 'Lapsed',
+    // Boarding and cancellations — docs/TRANSPORT_PLAN.md (T3).
+    'This sailing is cancelled.' => 'This sailing is cancelled.',
+    'We will contact you to move you to another sailing or refund what you paid.' => 'We will contact you to move you to another sailing or refund what you paid.',
+    'On board :time' => 'On board :time',
 ];

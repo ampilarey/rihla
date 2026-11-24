@@ -385,6 +385,9 @@ class ForgetCustomer extends Command
                 })->orWhere(function (Builder $q) use ($keys): void {
                     $q->where('noticeable_type', (new Stay)->getMorphClass())
                         ->whereIn('noticeable_id', $keys['stay'] ?: [0]);
+                })->orWhere(function (Builder $q) use ($keys): void {
+                    $q->where('noticeable_type', (new BoatBooking)->getMorphClass())
+                        ->whereIn('noticeable_id', $keys['boat_booking'] ?: [0]);
                 });
             });
         }

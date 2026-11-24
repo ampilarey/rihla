@@ -17,6 +17,16 @@
         <p dir="auto" class="mt-1 text-sm text-ink-muted">{{ __('messages.Keep this page: its address is your key to these tickets.') }}</p>
     </header>
 
+    @if($booking->sailing->status === \Modules\Transport\Models\Sailing::CANCELLED)
+        <div role="alert" dir="auto" class="card mb-6 border-s-4 border-s-error">
+            <p class="font-bold text-ink">{{ __('messages.This sailing is cancelled.') }}</p>
+            @if($booking->sailing->cancelled_reason)
+                <p class="mt-1 text-brand-body">{{ $booking->sailing->cancelled_reason }}</p>
+            @endif
+            <p class="mt-1 text-sm text-ink-muted">{{ __('messages.We will contact you to move you to another sailing or refund what you paid.') }}</p>
+        </div>
+    @endif
+
     <section class="card mb-6" aria-labelledby="boat-booking-heading">
         <h2 id="boat-booking-heading" dir="auto" class="mb-3 text-lg font-bold text-ink">{{ __('messages.Booking') }}</h2>
         <dl dir="auto" class="space-y-2 text-sm text-ink">
@@ -54,7 +64,7 @@
             @foreach($booking->tickets as $ticket)
                 <li class="card text-center">
                     <p dir="auto" class="font-bold text-ink">{{ $ticket->full_name }}</p>
-                    <p dir="auto" class="mb-3 text-sm text-ink-muted">{{ $ticket->is_child ? __('messages.Child') : __('messages.Adult') }}</p>
+                    <p dir="auto" class="mb-3 text-sm text-ink-muted">{{ $ticket->is_child ? __('messages.Child') : __('messages.Adult') }}@if($ticket->boarded_at) · {{ __('messages.On board :time', ['time' => $ticket->boarded_at->format('H:i')]) }}@endif</p>
                     <img src="{{ $qr[$ticket->id] }}" alt="{{ __('messages.Boarding code for :name', ['name' => $ticket->full_name]) }}" width="240" height="240" class="mx-auto">
                 </li>
             @endforeach

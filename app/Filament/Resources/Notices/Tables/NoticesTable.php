@@ -27,9 +27,7 @@ class NoticesTable
                 // no dot in it is never walked.
                 TextColumn::make('who')
                     ->label('Who')
-                    // `->`, not `?->`: `??` already suppresses the null, and the
-                    // nullsafe would be dead syntax static analysis reports.
-                    ->state(fn (Notice $record): string => $record->customer()->name ?? 'Unknown')
+                    ->state(fn (Notice $record): string => $record->recipientName())
                     ->description(fn (Notice $record): string => (string) $record->subjectReference()),
 
                 TextColumn::make('headline')

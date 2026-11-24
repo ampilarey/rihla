@@ -12,6 +12,9 @@ use Illuminate\Support\Carbon;
  * nothing by itself.
  *
  * @property Carbon|null $boarded_at
+ * @property int|null $boarded_by
+ * @property string $full_name
+ * @property string $token
  */
 class BoatTicket extends Model
 {
