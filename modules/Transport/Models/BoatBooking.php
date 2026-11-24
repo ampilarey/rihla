@@ -2,6 +2,7 @@
 
 namespace Modules\Transport\Models;
 
+use App\Models\Concerns\HasNotices;
 use App\Models\Customer;
 use App\Services\Payments\TakesPayments;
 use App\Support\Money;
@@ -20,6 +21,8 @@ use Illuminate\Support\Carbon;
  */
 class BoatBooking extends Model implements TakesPayments
 {
+    use HasNotices;
+
     public const HELD = 'held';
 
     public const CONFIRMED = 'confirmed';

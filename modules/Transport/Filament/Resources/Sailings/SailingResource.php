@@ -23,6 +23,7 @@ use Modules\Transport\Filament\Resources\Sailings\Pages\ManageSailings;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\Sailing;
 use Modules\Transport\Models\Vessel;
+use Modules\Transport\Services\Manifest;
 use Modules\Transport\Services\TransportDesk;
 use UnitEnum;
 
@@ -111,7 +112,7 @@ class SailingResource extends Resource
             ->filters([
                 SelectFilter::make('status')->options(Sailing::STATUSES),
             ])
-            ->recordActions([self::bookAction(), self::cancelAction()])
+            ->recordActions([self::bookAction(), self::manifestAction(), self::departAction(), self::cancelAction()])
             ->emptyStateHeading('No sailings yet')
             ->emptyStateDescription('Add one, or add a timetable to create a run of them.');
     }
@@ -144,6 +145,41 @@ class SailingResource extends Resource
                 } catch (DeskRefusal $refusal) {
                     Notification::make()->danger()->title($refusal->getMessage())->send();
                 }
+            });
+    }
+
+    /** Who is booked and who boarded, for the crew, the operator and the coast guard. */
+    public static function manifestAction(): Action
+    {
+        return Action::make('manifest')
+            ->label('Manifest')
+            ->icon('heroicon-o-document-arrow-down')
+            ->color('gray')
+            ->visible(fn (Sailing $record): bool => $record->status !== Sailing::CANCELLED && auth()->user()?->can('transport.view') === true)
+            ->action(function (Sailing $record) {
+                $manifest = app(Manifest::class);
+                $manifest->audit($record, auth()->user());
+
+                return response()->streamDownload(
+                    fn () => print ($manifest->pdf($record)->output()),
+                    $manifest->filename($record),
+                    ['Content-Type' => 'application/pdf'],
+                );
+            });
+    }
+
+    public static function departAction(): Action
+    {
+        return Action::make('depart')
+            ->label('Mark departed')
+            ->icon('heroicon-o-arrow-right-circle')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalDescription('Boarding closes and the manifest is final.')
+            ->visible(fn (Sailing $record): bool => in_array($record->status, [Sailing::SCHEDULED, Sailing::BOARDING], true) && auth()->user()?->can('transport.board') === true)
+            ->action(function (Sailing $record): void {
+                app(TransportDesk::class)->depart($record);
+                Notification::make()->success()->title('Departed')->send();
             });
     }
 

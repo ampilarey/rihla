@@ -4,10 +4,12 @@ namespace Modules\Transport\Services;
 
 use App\Exceptions\DeskRefusal;
 use App\Models\Customer;
+use App\Models\Notice;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Telegram\Services\Notifier;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\BoatTicket;
@@ -190,7 +192,11 @@ final class TransportDesk
         return $created;
     }
 
-    /** Cancel a sailing, with a reason, and every booking on it. */
+    /**
+     * Cancel a sailing, with a reason, and every booking on it. Every booker
+     * is put on the staff notice queue with the reason, to be told by
+     * WhatsApp, and their tickets page says so.
+     */
     public function cancelSailing(Sailing $sailing, string $reason): int
     {
         $reason = trim($reason);
@@ -199,18 +205,105 @@ final class TransportDesk
             throw new DeskRefusal('Say why: every booker will be told.');
         }
 
-        return DB::transaction(function () use ($sailing, $reason): int {
+        $cancelled = DB::transaction(function () use ($sailing, $reason): array {
             $locked = $this->lock($sailing);
 
             if ($locked->status === Sailing::CANCELLED || $locked->status === Sailing::DEPARTED) {
                 throw new DeskRefusal('That sailing has already '.($locked->status === Sailing::DEPARTED ? 'left' : 'been cancelled').'.');
             }
 
-            $cancelled = $locked->bookings()->whereIn('status', BoatBooking::HOLDS_SEATS)->update(['status' => BoatBooking::CANCELLED, 'held_until' => null]);
+            $ids = $locked->bookings()->whereIn('status', BoatBooking::HOLDS_SEATS)->pluck('id')->all();
+            BoatBooking::query()->whereKey($ids)->update(['status' => BoatBooking::CANCELLED, 'held_until' => null]);
             $locked->forceFill(['status' => Sailing::CANCELLED, 'cancelled_reason' => $reason, 'seats_taken' => 0])->save();
+            $sailing->setRawAttributes($locked->getAttributes(), sync: true);
 
-            return $cancelled;
+            return $ids;
         });
+
+        $when = $sailing->departs_at->format('D j M, H:i');
+        $label = $sailing->route()->firstOrFail()->label();
+
+        BoatBooking::query()->whereKey($cancelled)->each(function (BoatBooking $booking) use ($when, $label, $reason): void {
+            Notice::raise(
+                $booking,
+                Notice::SAILING_CANCELLED,
+                'Your boat '.$label.' on '.$when.' is cancelled',
+                $reason."\n\nBooking ".$booking->reference.'. Reply here and we will move you to another sailing or refund what you paid.',
+            );
+        });
+
+        if ($cancelled !== []) {
+            app(Notifier::class)->tell('transport.book', '⛔ Sailing cancelled: '.$label.', '.$when.'. '.count($cancelled)
+                .' booking(s) to tell; they are on the notice queue. Reason: '.$reason);
+        }
+
+        return count($cancelled);
+    }
+
+    /**
+     * Find a ticket from what the crew scanned or typed: the QR link, the
+     * bare token, or `rihla-boat:` and the token (the first T2 codes).
+     */
+    public function resolve(string $code): ?BoatTicket
+    {
+        $code = trim($code);
+
+        if (str_contains($code, 't=')) {
+            parse_str((string) parse_url($code, PHP_URL_QUERY), $query);
+            $code = is_string($query['t'] ?? null) ? $query['t'] : '';
+        }
+
+        $code = (string) preg_replace('/^rihla-boat:/', '', $code);
+
+        if (preg_match('/^[A-Za-z0-9]{40}$/', $code) !== 1) {
+            return null;
+        }
+
+        return BoatTicket::query()->where('token', $code)->first();
+    }
+
+    /** Tick a passenger on board. Only a confirmed booking boards. */
+    public function board(BoatTicket $ticket, ?User $by = null): void
+    {
+        $booking = $ticket->booking()->firstOrFail();
+        $sailing = $booking->sailing()->firstOrFail();
+
+        if ($ticket->boarded_at !== null) {
+            throw new DeskRefusal($ticket->full_name.' boarded at '.$ticket->boarded_at->format('H:i').'.');
+        }
+
+        if (in_array($sailing->status, [Sailing::CANCELLED, Sailing::DEPARTED], true)) {
+            throw new DeskRefusal('That sailing has '.($sailing->status === Sailing::DEPARTED ? 'left' : 'been cancelled').'.');
+        }
+
+        if ($booking->status !== BoatBooking::CONFIRMED) {
+            throw new DeskRefusal($booking->status === BoatBooking::HELD
+                ? 'Booking '.$booking->reference.' is not paid or confirmed yet. Take the fare and confirm it first.'
+                : 'Booking '.$booking->reference.' is '.strtolower(BoatBooking::STATUSES[$booking->status] ?? $booking->status).': this ticket is not valid.');
+        }
+
+        $ticket->forceFill(['boarded_at' => now(), 'boarded_by' => $by?->getKey()])->save();
+
+        // The first passenger on closes the sale: nobody books a boat that is loading.
+        if ($sailing->status === Sailing::SCHEDULED) {
+            $sailing->forceFill(['status' => Sailing::BOARDING])->save();
+        }
+    }
+
+    /** A mistaken scan, undone. */
+    public function unboard(BoatTicket $ticket): void
+    {
+        $ticket->forceFill(['boarded_at' => null, 'boarded_by' => null])->save();
+    }
+
+    /** The boat has left: boarding is closed and the manifest is final. */
+    public function depart(Sailing $sailing): void
+    {
+        if (in_array($sailing->status, [Sailing::CANCELLED, Sailing::DEPARTED], true)) {
+            throw new DeskRefusal('That sailing has already '.($sailing->status === Sailing::DEPARTED ? 'left' : 'been cancelled').'.');
+        }
+
+        $sailing->forceFill(['status' => Sailing::DEPARTED])->save();
     }
 
     private function lock(Sailing $sailing): Sailing

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Modules\Telegram\Services\Notifier;
+use Modules\Transport\Filament\Pages\BoatScan;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\Sailing;
@@ -116,7 +117,7 @@ class BoatController extends Controller
     /** The booker's key to their tickets: a random link, nothing to sign in to. */
     public static function ticketUrl(BoatBooking $booking): string
     {
-        return route('transport.tickets', ['key' => $booking->tickets_key]);
+        return route('transport.tickets', ['locale' => app()->getLocale(), 'key' => $booking->tickets_key]);
     }
 
     /**
@@ -168,6 +169,10 @@ class BoatController extends Controller
             ->mapWithKeys(fn (Island $island): array => [$island->id => $island->name])->all();
     }
 
+    /**
+     * A link to the crew's boarding page, so any phone's camera opens it.
+     * The token alone opens nothing: the page needs a signed-in crew member.
+     */
     private function qr(string $token): string
     {
         return (string) (new QRCode(new QROptions([
@@ -177,6 +182,6 @@ class BoatController extends Controller
             'scale' => 6,
             'addQuietzone' => true,
             'imageTransparent' => false,
-        ])))->render('rihla-boat:'.$token);
+        ])))->render(BoatScan::getUrl(['t' => $token], panel: 'staff'));
     }
 }

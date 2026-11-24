@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use Modules\Stays\Models\Stay;
+use Modules\Transport\Models\BoatBooking;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 
@@ -102,6 +103,7 @@ class Notice extends Model
         self::VISA_ISSUED, self::PERMIT_ISSUED, self::DEPARTURE_SOON,
         self::STAY_CONFIRMED, self::DEPOSIT_DUE, self::BALANCE_DUE, self::CHECK_IN_SOON,
         self::STAY_REQUESTED, self::REVIEW_REQUESTED,
+        self::SAILING_CANCELLED,
     ];
 
     /**
@@ -113,7 +115,14 @@ class Notice extends Model
      *
      * @var list<string>
      */
-    public const ONCE = [self::STAY_REQUESTED, self::REVIEW_REQUESTED];
+    /**
+     * A boat sailing was cancelled — docs/TRANSPORT_PLAN.md (T3). About a
+     * boat booking, whose booker may have no customer record at all: the
+     * phone they typed is who staff message.
+     */
+    public const SAILING_CANCELLED = 'sailing_cancelled';
+
+    public const ONCE = [self::STAY_REQUESTED, self::REVIEW_REQUESTED, self::SAILING_CANCELLED];
 
     /**
      * The ones a customer must act on, as opposed to be pleased about.
@@ -130,6 +139,8 @@ class Notice extends Model
         // running out behind it. "We are waiting to be paid" is exactly
         // the kind of thing this queue exists to put in front of somebody.
         self::DEPOSIT_DUE, self::BALANCE_DUE,
+        // A boat that will not sail: somebody must move them or refund them.
+        self::SAILING_CANCELLED,
     ];
 
     /**
@@ -164,9 +175,22 @@ class Notice extends Model
     {
         $owner = $this->noticeable;
 
-        return $owner instanceof Booking || $owner instanceof Stay
+        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking
             ? $owner->customer
             : null;
+    }
+
+    /**
+     * Who the queue says it is for. A boat booked online has no customer,
+     * only the name the booker typed.
+     */
+    public function recipientName(): string
+    {
+        $owner = $this->noticeable;
+
+        return $this->customer()->name
+            ?? ($owner instanceof BoatBooking ? $owner->contact_name : null)
+            ?? 'Unknown';
     }
 
     /**
@@ -183,6 +207,7 @@ class Notice extends Model
         return match (true) {
             $owner instanceof Booking => $owner->departure?->date_start,
             $owner instanceof Stay => $owner->check_in,
+            $owner instanceof BoatBooking => $owner->sailing?->departs_at,
             default => null,
         };
     }
@@ -192,7 +217,7 @@ class Notice extends Model
     {
         $owner = $this->noticeable;
 
-        return $owner instanceof Booking || $owner instanceof Stay
+        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking
             ? $owner->reference
             : null;
     }
@@ -290,9 +315,12 @@ class Notice extends Model
     public function whatsappUrl(): ?string
     {
         // About a booking, the office contact for it (Phase 3a); else the customer.
-        $number = $this->noticeable instanceof Booking
-            ? OfficeContact::forBooking($this->noticeable)->phone
-            : $this->customer()?->phone;
+        $number = match (true) {
+            $this->noticeable instanceof Booking => OfficeContact::forBooking($this->noticeable)->phone,
+            // The phone the booker gave for this booking, customer or not.
+            $this->noticeable instanceof BoatBooking => $this->noticeable->contact_phone,
+            default => $this->customer()?->phone,
+        };
 
         if (blank($number)) {
             return null;
@@ -320,6 +348,7 @@ class Notice extends Model
             self::CHECK_IN_SOON => 'Check-in coming up',
             self::STAY_REQUESTED => 'Stay requested',
             self::REVIEW_REQUESTED => 'Ask for a review',
+            self::SAILING_CANCELLED => 'Sailing cancelled',
             default => 'Unknown',
         };
     }
