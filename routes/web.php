@@ -36,6 +36,7 @@ use Modules\Stays\Http\Controllers\MyStayController;
 use Modules\Stays\Http\Controllers\StayCheckoutController;
 use Modules\Stays\Http\Controllers\StayReviewController;
 use Modules\Stays\Http\Controllers\StaysController;
+use Modules\Transport\Http\Controllers\BoatController;
 use Modules\Umrah\Http\Controllers\BookingController;
 use Modules\Umrah\Http\Controllers\DocumentController;
 use Modules\Umrah\Http\Controllers\EnquiryController;
@@ -286,6 +287,19 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         ->middleware('throttle:stay-book')->name('stays.book.store');
 
     Route::get('/stays/{property}', [StaysController::class, 'show'])->name('stays.show');
+
+    // Boats between islands — docs/TRANSPORT_PLAN.md (T2). Off is a 404;
+    // coming soon shows the timetable without selling a seat.
+    Route::middleware('service:transport')->group(function () {
+        Route::get('/boats', [BoatController::class, 'index'])->name('transport.index');
+        Route::get('/boats/sailings/{sailing}/book', [BoatController::class, 'book'])->name('transport.book');
+        Route::post('/boats/sailings/{sailing}/book', [BoatController::class, 'store'])
+            ->middleware('throttle:stay-book')->name('transport.book.store');
+        // Found by a random key, never the counted reference — see
+        // BookingFlowTest::test_no_checkout_url_carries_a_booking_identifier.
+        Route::get('/boats/tickets/{key}', [BoatController::class, 'tickets'])
+            ->where('key', '[A-Za-z0-9]{40}')->name('transport.tickets');
+    });
 
     // The guest's own stay — §16.7. Entered by a link that is spent for a
     // session, exactly as the Pilgrim Portal is, and behind its own gate:

@@ -66,7 +66,22 @@ final class Services
             'stays_guesthouses' => ['label' => 'Guesthouses', 'default' => self::OFF, 'route' => 'stays.guesthouses'],
             'stays_island_holidays' => ['label' => 'Island holidays', 'default' => self::OFF, 'route' => 'stays.island-holidays'],
             'stays_rooms' => ['label' => 'Rooms in Malé', 'default' => self::OFF, 'route' => 'stays.rooms'],
+            // Boats between islands — docs/TRANSPORT_PLAN.md (T2). Off until
+            // the owner has a timetable to sell.
+            'transport' => ['label' => 'Boats', 'default' => self::OFF, 'route' => 'transport.index'],
         ];
+    }
+
+    /**
+     * The Stays strands only — what the Stays menu, footer column and
+     * homepage card list. Transport is its own menu item, not a strand of
+     * Stays.
+     *
+     * @return array<string, array{label: string, default: string, route: string}>
+     */
+    public static function staysCatalogue(): array
+    {
+        return array_filter(self::catalogue(), fn (string $key): bool => str_starts_with($key, 'stays_'), ARRAY_FILTER_USE_KEY);
     }
 
     /**
