@@ -31,8 +31,8 @@ class SitemapController extends Controller
         // a host already matched to a live company, so not a header anybody
         // can poison the cache with — and the cache is the company's own.
         if (($company = app(CurrentSite::class)->company()) !== null) {
-            URL::forceRootUrl(request()->getSchemeAndHttpHost());
-            $xml = Cache::remember('sitemap.xml.company.'.$company->getKey(), now()->addHour(), fn () => $this->render($this->companyEntries()));
+            self::useCompanyRoot($company);
+            $xml = Cache::remember(self::companyCacheKey((int) $company->getKey()), now()->addHour(), fn () => $this->render($this->companyEntries()));
 
             return response($xml, 200, ['Content-Type' => 'application/xml']);
         }
@@ -62,7 +62,33 @@ class SitemapController extends Controller
             return response((string) file_get_contents(public_path('robots.txt')), 200, ['Content-Type' => 'text/plain']);
         }
 
+        $company = app(CurrentSite::class)->company();
+
+        if ($company !== null) {
+            self::useCompanyRoot($company);
+        }
+
         return response("User-agent: *\nAllow: /\n\nSitemap: ".url('/sitemap.xml')."\n", 200, ['Content-Type' => 'text/plain']);
+    }
+
+    /**
+     * Every URL a company's sitemap names is on its main address — its own
+     * domain when it has one, else its name under the companies domain —
+     * whichever of its addresses the crawler asked (security review). The
+     * sitemap is cached for an hour, so the first host to ask used to be
+     * the one every crawler was told about.
+     */
+    private static function useCompanyRoot(Partner $company): void
+    {
+        $host = CurrentSite::hostOf($company) ?? request()->getHost();
+
+        URL::forceRootUrl(request()->getScheme().'://'.$host);
+    }
+
+    /** The cache key for one company's sitemap; cleared when its packages change. */
+    public static function companyCacheKey(int $companyId): string
+    {
+        return 'sitemap.xml.company.'.$companyId;
     }
 
     /**

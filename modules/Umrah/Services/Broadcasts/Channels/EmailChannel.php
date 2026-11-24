@@ -2,6 +2,7 @@
 
 namespace Modules\Umrah\Services\Broadcasts\Channels;
 
+use App\Models\Partner;
 use Illuminate\Support\Facades\Mail;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\BroadcastDelivery;
@@ -66,10 +67,27 @@ final class EmailChannel implements BroadcastChannel
             ];
         }
 
+        // A company's broadcast is the company speaking (security review): its
+        // name on the envelope, and replies to its own address. The sending
+        // address stays the configured one, the only one the mail server
+        // will relay for.
+        $company = Partner::query()->find($broadcast->getAttribute('company_id'));
+        $sender = $company !== null && ! $company->is_rihla ? $company : null;
+
         try {
             Mail::raw(
                 $broadcast->headline."\n\n".$broadcast->body,
-                fn ($message) => $message->to($address)->subject($broadcast->headline),
+                function ($message) use ($address, $broadcast, $sender): void {
+                    $message->to($address)->subject($broadcast->headline);
+
+                    if ($sender !== null) {
+                        $message->from((string) config('mail.from.address'), $sender->name);
+
+                        if (filled($sender->email)) {
+                            $message->replyTo((string) $sender->email, $sender->name);
+                        }
+                    }
+                },
             );
         } catch (\Throwable $e) {
             // The message, not the stack: this ends up in front of a member
