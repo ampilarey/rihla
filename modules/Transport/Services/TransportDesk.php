@@ -67,6 +67,7 @@ final class TransportDesk
                 'sailing_id' => $locked->getKey(),
                 'customer_id' => $customer?->getKey(),
                 'reference' => 'pending-'.Str::random(16),
+                'tickets_key' => Str::random(40),
                 'contact_name' => trim($contactName),
                 'contact_phone' => trim($contactPhone),
                 'seats' => $seats,

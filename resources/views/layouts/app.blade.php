@@ -148,7 +148,7 @@
          once its service is not off, so with every Stays service still at
          its default the group renders nothing — proved in
          StaysNavigationTest by planting a state and watching it appear. --}}
-    @php($staysNavItems = collect(\App\Support\Services::catalogue())->reject(fn ($meta, $key) => \App\Support\Services::isOff($key))->map(fn ($meta) => ['route' => $meta['route'], 'label' => $meta['label']])->values())
+    @php($staysNavItems = collect(\App\Support\Services::staysCatalogue())->reject(fn ($meta, $key) => \App\Support\Services::isOff($key))->map(fn ($meta) => ['route' => $meta['route'], 'label' => $meta['label']])->values())
     {{-- Umrah Plus appears under the Umrah menu only once one is published
          — §15.3 (Phase 8.7). Under Umrah and not a tab of its own: an Umrah
          with a Turkey extension is an Umrah product, which is the owner's
@@ -316,6 +316,11 @@
                                     @endforeach
                                 </x-site-nav-dropdown>
                             @endif
+                            @unless (\App\Support\Services::isOff('transport'))
+                                <x-site-nav-link href="{{ route('transport.index') }}" :active="request()->routeIs('transport.*')">
+                                    {{ __('messages.Boats') }}
+                                </x-site-nav-link>
+                            @endunless
                             <x-site-nav-link href="{{ route('trips.index') }}" :active="request()->routeIs('trips.*')">
                                 {{ __('Trips') }}
                             </x-site-nav-link>
@@ -420,6 +425,12 @@
                                     @endforeach
                                 </x-site-nav-accordion>
                             @endif
+                            @unless (\App\Support\Services::isOff('transport'))
+                                <a href="{{ route('transport.index') }}"
+                                   class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                    {{ __('messages.Boats') }}
+                                </a>
+                            @endunless
                             <a href="{{ route('trips.index') }}"
                                class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                 {{ __('Trips') }}

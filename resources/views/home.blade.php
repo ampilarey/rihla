@@ -13,7 +13,7 @@
     service is not off — the same registry gate the nav uses (§15.3, Phase
     8.1/8.2) — so this never links to a page nobody can reach yet.
 --}}
-@php($staysHomeItem = collect(\App\Support\Services::catalogue())->reject(fn ($meta, $key) => \App\Support\Services::isOff($key))->map(fn ($meta) => ['route' => $meta['route'], 'label' => $meta['label']])->first())
+@php($staysHomeItem = collect(\App\Support\Services::staysCatalogue())->reject(fn ($meta, $key) => \App\Support\Services::isOff($key))->map(fn ($meta) => ['route' => $meta['route'], 'label' => $meta['label']])->first())
 @php($whatWeDoGrid = $staysHomeItem ? 'max-w-3xl sm:grid-cols-2' : 'max-w-sm')
 <section class="section-y bg-white">
     <div class="container mx-auto px-4">
