@@ -33,6 +33,8 @@ Schedule::command('stays:expire-holds')->everyTenMinutes()->withoutOverlapping(1
 
 Schedule::command('bookings:expire-holds')->everyTenMinutes()->withoutOverlapping(10);
 
+Schedule::command('transport:expire-holds')->everyTenMinutes()->withoutOverlapping(10);
+
 Schedule::command('notices:sweep')->hourly()->withoutOverlapping(10);
 
 // The one retention rule in the system (config/assistant.php) was never

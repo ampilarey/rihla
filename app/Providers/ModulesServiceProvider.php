@@ -58,6 +58,12 @@ use Modules\Telegram\Models\TelegramLink;
 use Modules\Telegram\Models\TelegramLinkCode;
 use Modules\Telegram\Models\TelegramUpdate;
 use Modules\Telegram\TelegramServiceProvider;
+use Modules\Transport\Models\BoatBooking;
+use Modules\Transport\Models\BoatRoute;
+use Modules\Transport\Models\BoatTicket;
+use Modules\Transport\Models\Sailing;
+use Modules\Transport\Models\Vessel;
+use Modules\Transport\TransportServiceProvider;
 use Modules\Umrah\Models\Agreement;
 use Modules\Umrah\Models\Announcement;
 use Modules\Umrah\Models\Booking;
@@ -122,6 +128,7 @@ class ModulesServiceProvider extends ServiceProvider
         ContentServiceProvider::class,
         StaysServiceProvider::class,
         UmrahServiceProvider::class,
+        TransportServiceProvider::class,
     ];
 
     /**
@@ -233,6 +240,23 @@ class ModulesServiceProvider extends ServiceProvider
         'App\Models\Enquiry' => Enquiry::class,
         'App\Models\EnquiryNote' => EnquiryNote::class,
         'App\Models\Quotation' => Quotation::class,
+    ];
+
+    /**
+     * Models written in a module from the start, which never had another
+     * class name, so nothing in the database holds an old one. Every module
+     * model is in this list or in LEGACY_NAMES — ModulesTest fails
+     * otherwise — so a model moved out of app/ cannot slip through as
+     * "new" and leave its rows unresolvable.
+     *
+     * @var list<class-string<Model>>
+     */
+    public const BORN_IN_MODULES = [
+        Vessel::class,
+        BoatRoute::class,
+        Sailing::class,
+        BoatBooking::class,
+        BoatTicket::class,
     ];
 
     public function register(): void

@@ -159,6 +159,11 @@ final class Anonymisation
         // here is plaintext — which reads back correctly because
         // App\Casts\EncryptedIdentifier tolerates both. A strict cast
         // would throw on every read after this command ran.
+        // Transport (docs/TRANSPORT_PLAN.md): the booker's name and phone,
+        // and each passenger's name. The ticket token opens nothing by
+        // itself and is kept.
+        'boat_bookings' => ['contact_name' => 'name', 'contact_phone' => 'phone'],
+        'boat_tickets' => ['full_name' => 'name'],
         'stay_guests' => [
             'full_name' => 'name', 'id_number' => 'name', 'nationality' => 'name',
             'date_of_birth' => 'null',
@@ -360,6 +365,11 @@ final class Anonymisation
         // business billing another: an amount, a month and a bank
         // reference; nobody is named in a row.
         'company_invoices',
+        // Boats, routes and the timetable (docs/TRANSPORT_PLAN.md): an
+        // operator's equipment and schedule; nobody is named.
+        'vessels',
+        'boat_routes',
+        'sailings',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',
