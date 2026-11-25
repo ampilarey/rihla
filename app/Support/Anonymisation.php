@@ -242,6 +242,7 @@ final class Anonymisation
         // them now, and AnonymiseTest checks every name against the schema.
         'room_assignments' => [],
         'notices' => ['headline' => 'text', 'body' => 'text'],
+        'notice_emails' => ['address' => 'email', 'last_error' => 'text'],
         'announcements' => ['headline' => 'text', 'body' => 'text'],
         'emergency_broadcasts' => ['headline' => 'text', 'body' => 'text'],
         'waitlist_entries' => ['notes' => 'text'],

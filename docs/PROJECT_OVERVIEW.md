@@ -1,204 +1,61 @@
-# 🌍 Rihla Travels - Project Overview
+# Rihla — Project Overview
 
-## 🎯 Vision & Mission
+*Rewritten November 2026, after Transport and the travel agency were built.
+The earlier version described a brochure site on Laravel 11; that site is
+long gone. For anything deeper than this page, follow the links.*
 
-**Rihla Travels** is a comprehensive digital platform designed to provide exceptional travel experiences, particularly specializing in Islamic travel services including Umrah and Hajj packages. The platform combines modern web technology with culturally sensitive design to serve both English and Dhivehi-speaking communities.
+## What Rihla is
 
-### Core Vision
-To become the leading digital gateway for travel services in the Maldives, providing seamless booking experiences, comprehensive travel information, and dedicated support for Islamic pilgrimage journeys.
+One Laravel application that runs **five businesses** for a Maldivian travel
+company, each a module under `modules/` (see [MODULES_PLAN.md](MODULES_PLAN.md)):
 
-### Mission Statement
-Empowering travelers with reliable information, transparent pricing, and exceptional service through an intuitive, multilingual platform that respects cultural values and provides comprehensive travel guidance.
+| Part | Module | What it does | Plan |
+|---|---|---|---|
+| **Rihla's own Umrah** | `Umrah`, `Content` | Packages and departures, online booking with seat holds, travellers and their documents (encrypted, read by OCR or Claude and accepted by a person), visas and Nusuk permits, rooming, buses, cards and the Scan page, lists and manifests, the departure lifecycle, the books, the family portal, the pilgrim's guide and learning academy | [WEBSITE_UPGRADE_PLAN.md](WEBSITE_UPGRADE_PLAN.md) |
+| **Other Umrah companies** | `Companies` | Each company has its own panel (`/company/{slug}`), its own website at a subdomain or its own domain, its own Telegram bot, the features it pays for, and monthly billing by Rihla | [UMRAH_COMPANIES_PLAN.md](UMRAH_COMPANIES_PLAN.md) |
+| **Stays** | `Stays` | Guesthouses, island holidays and rooms in Malé, sold for hosts who run their own panel (`/host`), with commission and statements | §15–16 of the upgrade plan, ADR 0008 |
+| **Boats** | `Transport` | Scheduled sailings sold online with QR tickets, boarding by scan, manifests, cargo and charter quotes, and outside operators with their own panel (`/operator`), commission and statements | [TRANSPORT_PLAN.md](TRANSPORT_PLAN.md) |
+| **Travel agency** | `Travel` | "Plan my trip" for flights, hotels and visas abroad: quoted options the customer chooses online, issued tickets on their trip page, and a visa desk for other countries. Live supplier booking (A4) waits for a supplier account | [TRAVEL_AGENCY_PLAN.md](TRAVEL_AGENCY_PLAN.md) |
 
-## 🎯 Target Platform & Audience
+`app/` is the shared core: users and roles, partners (companies, hosts,
+operators), customers, the payment ledger, notices, media, settings, the
+audit trail, and the company-isolation machinery. `modules/Telegram` is the
+staff bot that every part reports through.
 
-### Primary Audience
-- **Islamic Travelers**: Individuals and families seeking Umrah, Hajj, and other religious pilgrimage packages
-- **General Travelers**: Tourists interested in international travel packages
-- **Local Community**: Dhivehi-speaking customers requiring native language support
+## Who uses it
 
-### Geographic Focus
-- **Primary**: Maldives (local market)
-- **Secondary**: Regional Islamic travel market
-- **Expansion**: International travelers interested in Islamic pilgrimage
+- **Customers**, on the public site in English, Dhivehi and Arabic (Dhivehi
+  and Arabic fall back to English where no trustworthy translation exists).
+  Every public part can be switched off, "coming soon" or on from Settings.
+- **Rihla's staff**, in the Filament panel at `/staff`, each by role
+  (Operations Manager, Booking Staff, Finance, Visa Staff, Pilgrim Support,
+  Content Manager, Tour Leader, Reporting, Scholar and Super Admin) —
+  permissions in `App\Support\Access`.
+- **An Umrah company's staff** at `/company/{slug}`, a **guesthouse's team** at
+  `/host/{slug}`, a **boat operator's owner and crew** at `/operator/{slug}` —
+  each let in by a membership, never by a Rihla role.
 
-### Device Compatibility
-- **Mobile-First**: Responsive design optimized for mobile devices
-- **Desktop**: Full-featured experience on larger screens
-- **Tablet**: Optimized interface for tablet users
+## How money moves
 
-## 🏢 Business Context
+Every payable (an Umrah booking, a stay, an additional trip, a boat booking, a
+cargo request, a trip) takes payments through one ledger. Bank transfer and
+cash are recorded by staff and only count once Finance verifies them; card
+payment arrives with a BML merchant account. Three currencies (MVR, USD, SAR)
+with one rate table. See [BOOKS.md](BOOKS.md) and [CURRENCIES.md](CURRENCIES.md).
 
-### Market Position
-Rihla Travels operates in the competitive travel industry with a specialized focus on:
-- **Religious Tourism**: Umrah and Hajj package specialization
-- **Cultural Sensitivity**: Multilingual support with RTL language handling
-- **Local Expertise**: Deep understanding of Maldivian market needs
-- **Digital Innovation**: Modern web platform with advanced features
+## How customers are told things
 
-### Business Model
-- **Travel Package Sales**: Commission-based revenue from travel bookings
-- **Service Fees**: Premium services and consultation fees
-- **Partnership Revenue**: Commissions from airline and hotel partners
+A **notice** is raised for each piece of news (a confirmed booking, a document
+needed, a sailing cancelled, a price quoted…). Staff chase it from the queue
+with a ready-written WhatsApp message, and `notices:email` also e-mails it to
+anybody who gave an address, once real SMTP settings are in `.env`.
 
-## 💎 Core Value Propositions
+## Stack and hosting
 
-### ✨ For Travelers
-1. **Comprehensive Information**: Detailed trip descriptions with multilingual support
-2. **Islamic Guidance**: Specialized Umrah/Hajj guide with step-by-step instructions
-3. **Direct Communication**: WhatsApp integration for instant support
-4. **Visual Experience**: Rich media galleries with photos and videos
-5. **Transparent Pricing**: Clear pricing information without hidden fees
-
-### 🔧 For Business Operations
-1. **Efficient Management**: Full admin panel for content and trip management
-2. **Automated Processing**: Image optimization and media handling
-3. **Multi-language Support**: Easy content management for different languages
-4. **Social Integration**: Comprehensive social media platform integration
-5. **Performance Optimized**: Fast loading and mobile-optimized experience
-
-## 🚀 Key Differentiators
-
-### Technical Advantages
-1. **Modern Architecture**: Built on Laravel 11 with latest PHP 8.2+ features
-2. **Progressive Enhancement**: Responsive design with offline capabilities
-3. **Image Optimization**: Automatic WebP conversion and multiple image sizes
-4. **SEO Optimized**: Clean URLs, meta tags, and structured data
-5. **Performance Focused**: Optimized database queries and asset delivery
-
-### Content Management
-1. **Multilingual CMS**: Easy content creation in English and Dhivehi
-2. **Rich Media Support**: Advanced image and video handling
-3. **Flexible Layouts**: Customizable hero banners and feature sections
-4. **Guide System**: Comprehensive step-by-step travel guidance
-5. **Social Integration**: Native support for multiple social platforms
-
-### User Experience
-1. **Cultural Sensitivity**: RTL support and culturally appropriate design
-2. **Mobile Optimization**: Touch-friendly interface optimized for mobile
-3. **WhatsApp Integration**: Direct communication channel throughout the site
-4. **Intuitive Navigation**: Clear information architecture and user flows
-5. **Accessibility**: WCAG compliant design principles
-
-## 👥 User Roles & Personas
-
-### 🧑‍💼 Admin Users
-- **Content Managers**: Manage trips, media, and site content
-- **System Administrators**: Handle technical configuration and maintenance
-- **Business Managers**: Oversee settings, social media, and business operations
-
-### 👤 End Users
-- **Trip Seekers**: Browse and inquire about travel packages
-- **Islamic Travelers**: Access Umrah/Hajj guidance and information
-- **Returning Customers**: Access previous booking information and offers
-
-### 🌐 Public Visitors
-- **Information Seekers**: Browse general travel information
-- **Social Media Followers**: Access social media integrations
-- **Prospective Customers**: Initial research and contact
-
-## 🛠️ Technical Highlights
-
-### Architecture Decisions
-1. **Laravel Framework**: Robust MVC architecture with built-in security
-2. **TailwindCSS**: Utility-first CSS framework for rapid development
-3. **Alpine.js**: Lightweight JavaScript framework for interactivity
-4. **Vite**: Fast build tool for modern asset compilation
-5. **MySQL**: Reliable database with optimized schema design
-
-### Performance Optimizations
-1. **Image Processing**: Automatic WebP conversion and multiple sizes
-2. **Asset Optimization**: Minified CSS/JS and optimized loading
-3. **Database Indexing**: Optimized queries and proper indexing
-4. **Caching Strategy**: Laravel's built-in caching mechanisms
-5. **CDN Ready**: Optimized for content delivery networks
-
-### Security Features
-1. **Authentication**: Laravel Breeze with secure session management
-2. **Authorization**: Role-based access control for admin functions
-3. **Input Validation**: Comprehensive form validation and sanitization
-4. **File Upload Security**: Secure image processing and storage
-5. **CSRF Protection**: Built-in Laravel security features
-
-## 🎯 MVP Feature Set
-
-### Phase 1: Core Platform ✅
-- [x] **Public Website**: Home, trips, gallery, contact pages
-- [x] **Trip Management**: Complete CRUD for travel packages
-- [x] **Media Gallery**: Photo and video management
-- [x] **Admin Panel**: Content management system
-- [x] **Multi-language**: English and Dhivehi support
-
-### Phase 2: Enhanced Features ✅
-- [x] **Islamic Guide**: Comprehensive Umrah/Hajj guidance
-- [x] **Social Integration**: YouTube, Facebook, Instagram, TikTok
-- [x] **WhatsApp Integration**: Direct communication features
-- [x] **Hero Banners**: Customizable homepage sections
-- [x] **Why Sections**: Feature highlights with custom styling
-
-### Phase 3: Advanced Features (Future)
-- [ ] **Booking System**: Online trip booking and payment
-- [ ] **User Accounts**: Customer registration and profiles
-- [ ] **Email Notifications**: Automated booking confirmations
-- [ ] **Advanced Analytics**: Trip performance and user behavior
-- [ ] **API Integration**: Third-party travel service APIs
-
-## 📊 Success Metrics
-
-### Technical Performance
-- **Page Load Time**: < 3 seconds average load time
-- **Mobile Performance**: 90+ Lighthouse score on mobile
-- **Uptime**: 99.9% availability target
-- **Security**: Zero critical security vulnerabilities
-
-### User Engagement
-- **Page Views**: Consistent monthly traffic growth
-- **Contact Conversion**: High inquiry-to-booking ratio
-- **WhatsApp Engagement**: Active communication through integrated channels
-- **Return Visits**: Strong user retention and repeat visits
-
-### Business Impact
-- **Lead Generation**: Consistent inquiry volume from the platform
-- **Brand Recognition**: Increased visibility in the travel market
-- **Operational Efficiency**: Reduced manual content management overhead
-- **Customer Satisfaction**: High satisfaction scores for user experience
-
-## ⚠️ Risk Assessment & Mitigation
-
-### Technical Risks
-1. **Scalability Concerns**: Database optimization and caching strategies implemented
-2. **Performance Issues**: Regular monitoring and optimization procedures
-3. **Security Vulnerabilities**: Regular security updates and monitoring
-4. **Browser Compatibility**: Cross-browser testing and fallback strategies
-
-### Business Risks
-1. **Market Competition**: Unique value proposition and specialized focus
-2. **Content Management**: User-friendly admin interface and training
-3. **Language Support**: Proper RTL implementation and testing
-4. **Mobile Usage**: Mobile-first design and testing approach
-
-### Operational Risks
-1. **Data Loss**: Regular backup procedures and data validation
-2. **Accessibility**: WCAG compliance and testing procedures
-3. **Compliance**: Legal and regulatory compliance considerations
-4. **Maintenance**: Regular update schedule and monitoring procedures
-
-## 🔄 Future Roadmap
-
-### Short-term Goals (3-6 months)
-- Enhanced booking system with payment integration
-- Advanced analytics and reporting dashboard
-- Mobile app development planning
-- SEO optimization and content strategy
-
-### Long-term Vision (6-12 months)
-- Multi-city expansion support
-- Partner integration and API development
-- Advanced personalization features
-- Mobile application launch
-
----
-
-**Document Version**: 1.0  
-**Last Updated**: December 2024  
-**Next Review**: March 2025
+Laravel 13 on PHP 8.3+, Filament 5 and Livewire, Tailwind, Vite and Alpine,
+MySQL in production (SQLite in tests), hosted on cPanel with **no queue
+worker**: everything scheduled runs from one cron line (`schedule:run`), see
+ADR 0002. Merging to `main` deploys to test.rihla.mv after CI passes;
+production is deployed by hand with `scripts/deploy-production.sh`
+([PRODUCTION_PROMOTION.md](PRODUCTION_PROMOTION.md)). Working rules and the
+traps that cost a cycle each are in `AGENTS.md`.

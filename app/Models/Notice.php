@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use Modules\Stays\Models\Stay;
@@ -203,6 +204,21 @@ class Notice extends Model
         return $owner instanceof Booking || $owner instanceof Stay
             ? $owner->customer
             : null;
+    }
+
+    /** Where to e-mail this notice, or null when nobody gave an address. */
+    public function recipientEmail(): ?string
+    {
+        $owner = $this->noticeable;
+        $address = $owner instanceof NoticeSubject ? $owner->noticeEmail() : $this->customer()?->email;
+
+        return filled($address) && filter_var($address, FILTER_VALIDATE_EMAIL) !== false ? (string) $address : null;
+    }
+
+    /** @return HasOne<NoticeEmail, $this> */
+    public function email(): HasOne
+    {
+        return $this->hasOne(NoticeEmail::class);
     }
 
     /**

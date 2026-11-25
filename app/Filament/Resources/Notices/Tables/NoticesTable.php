@@ -28,7 +28,10 @@ class NoticesTable
                 TextColumn::make('who')
                     ->label('Who')
                     ->state(fn (Notice $record): string => $record->recipientName())
-                    ->description(fn (Notice $record): string => (string) $record->subjectReference()),
+                    // "· e-mailed" once notices:email has sent it, so nobody
+                    // WhatsApps the same news a second time without knowing.
+                    ->description(fn (Notice $record): string => trim((string) $record->subjectReference()
+                        .($record->email?->sent_at !== null ? ' · e-mailed '.$record->email->sent_at->format('j M H:i') : ''), ' ·')),
 
                 TextColumn::make('headline')
                     ->label('What they need to know')
@@ -64,7 +67,7 @@ class NoticesTable
             ->defaultSort('created_at', 'desc')
             // Eager-loaded, or the Who column is a query per row on a
             // screen whose whole point is a long list.
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('noticeable'))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['noticeable', 'email']))
             ->filters([
                 Filter::make('needs_chasing')
                     ->label('Owes us something, not yet chased')

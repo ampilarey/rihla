@@ -214,4 +214,20 @@ class TransportRequestTest extends TestCase
         $this->assertStringNotContainsString('Includes loading', (string) DB::table('notices')->where('noticeable_id', $made->id)->value('body'));
         $this->assertStringNotContainsString('Includes loading', (string) DB::table('transport_request_events')->where('transport_request_id', $made->id)->where('status', 'quoted')->value('note'));
     }
+
+    public function test_staff_take_a_request_for_somebody_on_the_phone(): void
+    {
+        Livewire::actingAs($this->staff())->test(ManageTransportRequests::class)
+            ->callAction('new', data: [
+                'kind' => 'charter', 'origin_island_id' => $this->from->id, 'destination_island_id' => $this->to->id,
+                'wanted_on' => '2026-12-02', 'passengers' => 14, 'contact_name' => 'Hassan', 'contact_phone' => '7790001',
+            ])
+            ->assertNotified();
+
+        $made = TransportRequest::query()->sole();
+        $this->assertSame(TransportRequest::CHARTER, $made->kind);
+        $this->assertSame(14, $made->passengers);
+        $this->assertSame(TransportRequest::REQUESTED, $made->status);
+
+    }
 }

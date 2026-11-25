@@ -37,6 +37,10 @@ Schedule::command('transport:expire-holds')->everyTenMinutes()->withoutOverlappi
 
 Schedule::command('notices:sweep')->hourly()->withoutOverlapping(10);
 
+// Each new notice by e-mail too, when the customer gave an address and the
+// site has real SMTP settings; staff still chase from the queue.
+Schedule::command('notices:email')->everyFiveMinutes()->withoutOverlapping(10);
+
 // The one retention rule in the system (config/assistant.php) was never
 // scheduled, so it was never applied (site audit).
 Schedule::command('assistant:prune')->daily()->withoutOverlapping(30);

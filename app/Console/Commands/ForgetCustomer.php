@@ -174,11 +174,16 @@ class ForgetCustomer extends Command
             'permit' => $permitIds,
         ];
 
+        // Their notices' e-mails: reached through the notices themselves, which
+        // hang off every kind of record a person can own.
+        $keys['notice'] = DB::table('notices')->where(fn (Builder $query) => self::ownedBy($query, 'noticeable', $keys))
+            ->pluck('id')->map(fn ($id): int => (int) $id)->all();
+
         $columns = [
             'self' => 'id', 'customer' => 'customer_id', 'traveller' => 'traveller_id',
             'booking' => 'booking_id', 'enquiry' => 'enquiry_id', 'document' => 'document_id', 'version' => 'document_version_id',
             'incident' => 'incident_id', 'visa' => 'visa_application_id', 'permit' => 'nusuk_permit_id',
-            'stay' => 'stay_id', 'boat_booking' => 'boat_booking_id', 'transport_request' => 'transport_request_id', 'travel_request' => 'travel_request_id',
+            'stay' => 'stay_id', 'boat_booking' => 'boat_booking_id', 'transport_request' => 'transport_request_id', 'travel_request' => 'travel_request_id', 'notice' => 'notice_id',
         ];
 
         $this->line($dry ? 'Would erase:' : 'Erasing:');

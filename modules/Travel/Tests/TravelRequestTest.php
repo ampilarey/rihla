@@ -184,4 +184,19 @@ class TravelRequestTest extends TestCase
         $this->assertStringNotContainsString('Wheelchair', (string) $row->notes);
         $this->assertStringNotContainsString('Window seat', (string) DB::table('travel_quote_options')->where('travel_request_id', $made->id)->value('details'));
     }
+
+    public function test_staff_take_a_trip_request_for_somebody_on_the_phone(): void
+    {
+        Livewire::actingAs($this->staff())->test(ManageTravelRequests::class)
+            ->callAction('new', data: [
+                'wants' => ['flight', 'visa'], 'origin' => 'Malé', 'destination' => 'Istanbul', 'depart_on' => '2027-01-10',
+                'adults' => 2, 'children' => 0, 'contact_name' => 'Ahmed Rasheed', 'contact_phone' => '7790002', 'contact_email' => 'ahmed@example.com',
+            ])
+            ->assertNotified();
+
+        $made = TravelRequest::query()->sole();
+        $this->assertSame('flight and visa', $made->wants());
+        $this->assertSame('ahmed@example.com', $made->contact_email);
+
+    }
 }

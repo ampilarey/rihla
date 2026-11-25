@@ -3,6 +3,7 @@
 namespace Modules\Umrah\Services\Broadcasts\Channels;
 
 use App\Models\Partner;
+use App\Support\OutgoingMail;
 use Illuminate\Support\Facades\Mail;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\BroadcastDelivery;
@@ -24,8 +25,6 @@ use Modules\Umrah\Services\Broadcasts\BroadcastChannel;
 final class EmailChannel implements BroadcastChannel
 {
     /** Mailers that go nowhere a person will look. */
-    private const NOT_REALLY_SENDING = ['log', 'array', 'null'];
-
     public function key(): string
     {
         return 'email';
@@ -33,27 +32,12 @@ final class EmailChannel implements BroadcastChannel
 
     public function isAvailable(): bool
     {
-        $mailer = (string) config('mail.default');
-
-        if (in_array($mailer, self::NOT_REALLY_SENDING, true)) {
-            return false;
-        }
-
-        // A configured mailer with nothing to send *from* bounces on the
-        // first message, which during an emergency is the worst moment to
-        // find out.
-        return filled(config('mail.from.address'));
+        return OutgoingMail::isReal();
     }
 
     public function whyUnavailable(): string
     {
-        $mailer = (string) config('mail.default');
-
-        if (in_array($mailer, self::NOT_REALLY_SENDING, true)) {
-            return 'Email is set to "'.$mailer.'", which writes to a log rather than sending. Real SMTP settings are needed.';
-        }
-
-        return 'No from-address is configured, so any email sent would bounce.';
+        return OutgoingMail::whyNot() ?? '';
     }
 
     public function deliver(EmergencyBroadcast $broadcast, Booking $booking): array

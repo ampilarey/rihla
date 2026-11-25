@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\BottomNav;
 use App\Filament\InitialsAvatarProvider;
 use App\Http\Middleware\RequireSecondFactor;
 use App\Models\Partner;
@@ -14,6 +15,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -66,6 +68,8 @@ class OperatorPanelProvider extends PanelProvider
             ->tenantMenu(fn (): bool => (auth()->user()?->operators()->count() ?? 0) > 1)
             ->resources(self::RESOURCES)
             ->pages([Dashboard::class, BoatScan::class])
+            // The things a crew member does most, along the bottom of a phone.
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => BottomNav::render())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
