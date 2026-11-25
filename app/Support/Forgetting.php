@@ -108,6 +108,8 @@ final class Forgetting
         // the booker's own, and their passengers through the booking.
         'boat_bookings' => 'customer',
         'boat_tickets' => 'boat_booking',
+        'transport_requests' => 'customer',
+        'transport_request_events' => 'transport_request',
 
         // A stay's bill — §16.5. The host may have written the guest into
         // a line ("cake for Aishath"); reached through the stay, the way

@@ -62,6 +62,8 @@ use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\BoatTicket;
 use Modules\Transport\Models\Sailing;
+use Modules\Transport\Models\TransportRequest;
+use Modules\Transport\Models\TransportRequestEvent;
 use Modules\Transport\Models\Vessel;
 use Modules\Transport\TransportServiceProvider;
 use Modules\Umrah\Models\Agreement;
@@ -257,6 +259,8 @@ class ModulesServiceProvider extends ServiceProvider
         Sailing::class,
         BoatBooking::class,
         BoatTicket::class,
+        TransportRequest::class,
+        TransportRequestEvent::class,
     ];
 
     public function register(): void

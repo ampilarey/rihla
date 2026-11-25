@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Modules\Stays\Models\Stay;
 use Modules\Transport\Models\BoatBooking;
+use Modules\Transport\Models\TransportRequest;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Enquiry;
 use Modules\Umrah\Models\ExcursionBooking;
@@ -137,6 +138,7 @@ class ForgetCustomer extends Command
             ->pluck('id')->map(fn ($id): int => (int) $id)->unique()->values()->all();
         $stayIds = DB::table('stays')->where('customer_id', $customer->getKey())->pluck('id')->all();
         $boatBookingIds = DB::table('boat_bookings')->where('customer_id', $customer->getKey())->pluck('id')->all();
+        $transportRequestIds = DB::table('transport_requests')->where('customer_id', $customer->getKey())->pluck('id')->all();
         // The third payable (companies plan, Phase 3e): an additional trip's
         // places, paid in riyal. Theirs as the booker, or through a booking.
         $excursionIds = DB::table('excursion_bookings')
@@ -159,6 +161,8 @@ class ForgetCustomer extends Command
             'excursion' => $excursionIds,
             // Seats on a boat (docs/TRANSPORT_PLAN.md): the customer's own.
             'boat_booking' => $boatBookingIds,
+            // A cargo or charter request (T4): the customer's own.
+            'transport_request' => $transportRequestIds,
             'document' => $documentIds,
             'version' => $versionIds,
             'incident' => $incidentIds,
@@ -170,12 +174,12 @@ class ForgetCustomer extends Command
             'self' => 'id', 'customer' => 'customer_id', 'traveller' => 'traveller_id',
             'booking' => 'booking_id', 'enquiry' => 'enquiry_id', 'document' => 'document_id', 'version' => 'document_version_id',
             'incident' => 'incident_id', 'visa' => 'visa_application_id', 'permit' => 'nusuk_permit_id',
-            'stay' => 'stay_id', 'boat_booking' => 'boat_booking_id',
+            'stay' => 'stay_id', 'boat_booking' => 'boat_booking_id', 'transport_request' => 'transport_request_id',
         ];
 
         $this->line($dry ? 'Would erase:' : 'Erasing:');
 
-        $files = $this->files($documentIds, $bookingIds, $stayIds, $excursionIds, $boatBookingIds);
+        $files = $this->files($documentIds, $keys);
         $erased = 0;
 
         DB::transaction(function () use ($keys, $columns, $customer, $dry, &$erased): void {
@@ -222,12 +226,8 @@ class ForgetCustomer extends Command
         }
 
         // The pointers to the deleted replaced slips go with them.
-        DB::table('payment_transactions')->whereIn('payment_id', Payment::query()
-            ->where(fn ($q) => $q->where('payable_type', (new Booking)->getMorphClass())->whereIn('payable_id', $keys['booking'] ?: [0]))
-            ->orWhere(fn ($q) => $q->where('payable_type', (new Stay)->getMorphClass())->whereIn('payable_id', $keys['stay'] ?: [0]))
-            ->orWhere(fn ($q) => $q->where('payable_type', (new ExcursionBooking)->getMorphClass())->whereIn('payable_id', $keys['excursion'] ?: [0]))
-            ->orWhere(fn ($q) => $q->where('payable_type', (new BoatBooking)->getMorphClass())->whereIn('payable_id', $keys['boat_booking'] ?: [0]))
-            ->pluck('id'))->whereNotNull('payload')->update(['payload' => null]);
+        DB::table('payment_transactions')->whereIn('payment_id', self::paymentsOf($keys)->pluck('id'))
+            ->whereNotNull('payload')->update(['payload' => null]);
 
         // The id, not the name — recording who was forgotten would undo
         // the forgetting. This row says a request was honoured and when,
@@ -254,10 +254,10 @@ class ForgetCustomer extends Command
      * paths that name them.
      *
      * @param  list<int>  $documentIds
-     * @param  list<int>  $bookingIds
+     * @param  array<string, list<int>>  $keys
      * @return list<array{string, string}>
      */
-    private function files(array $documentIds, array $bookingIds, array $stayIds = [], array $excursionIds = [], array $boatBookingIds = []): array
+    private function files(array $documentIds, array $keys): array
     {
         $files = [];
 
@@ -273,14 +273,7 @@ class ForgetCustomer extends Command
         // disk with its path nulled), and the slip each payment replaced —
         // SlipVault keeps the superseded file and records it in the
         // transaction's payload.
-        $payments = Payment::query()
-            ->where(function ($q) use ($bookingIds, $stayIds, $excursionIds, $boatBookingIds): void {
-                $q->where(fn ($b) => $b->where('payable_type', (new Booking)->getMorphClass())->whereIn('payable_id', $bookingIds ?: [0]))
-                    ->orWhere(fn ($s) => $s->where('payable_type', (new Stay)->getMorphClass())->whereIn('payable_id', $stayIds ?: [0]))
-                    ->orWhere(fn ($x) => $x->where('payable_type', (new ExcursionBooking)->getMorphClass())->whereIn('payable_id', $excursionIds ?: [0]))
-                    ->orWhere(fn ($t) => $t->where('payable_type', (new BoatBooking)->getMorphClass())->whereIn('payable_id', $boatBookingIds ?: [0]));
-            })
-            ->get();
+        $payments = Payment::query()->whereIn('id', self::paymentsOf($keys)->select('id'))->get();
 
         foreach ($payments as $payment) {
             if ($payment->slip_path !== null && $payment->slip_path !== '') {
@@ -353,23 +346,7 @@ class ForgetCustomer extends Command
         // guesthouse deposit would have survived a deletion request that
         // reported itself honoured. Phase 11 (§15.6) closes it.
         if ($table === 'payments') {
-            return DB::table('payments')->where(function (Builder $query) use ($keys): void {
-                $query->where(function (Builder $q) use ($keys): void {
-                    $q->where('payable_type', (new Booking)->getMorphClass())
-                        ->whereIn('payable_id', $keys['booking'] ?: [0]);
-                })->orWhere(function (Builder $q) use ($keys): void {
-                    $q->where('payable_type', (new Stay)->getMorphClass())
-                        ->whereIn('payable_id', $keys['stay'] ?: [0]);
-                })->orWhere(function (Builder $q) use ($keys): void {
-                    // And the third (Phase 3e): an additional trip's places.
-                    $q->where('payable_type', (new ExcursionBooking)->getMorphClass())
-                        ->whereIn('payable_id', $keys['excursion'] ?: [0]);
-                })->orWhere(function (Builder $q) use ($keys): void {
-                    // And a boat's seats (docs/TRANSPORT_PLAN.md).
-                    $q->where('payable_type', (new BoatBooking)->getMorphClass())
-                        ->whereIn('payable_id', $keys['boat_booking'] ?: [0]);
-                });
-            });
+            return self::paymentsOf($keys);
         }
 
         // Notices hang off a polymorphic owner since §15.7, so there is no
@@ -378,18 +355,7 @@ class ForgetCustomer extends Command
         // guesthouse has confirmed" is the person's name, in a table a
         // deletion request has already reported clean.
         if ($table === 'notices') {
-            return DB::table('notices')->where(function (Builder $query) use ($keys): void {
-                $query->where(function (Builder $q) use ($keys): void {
-                    $q->where('noticeable_type', (new Booking)->getMorphClass())
-                        ->whereIn('noticeable_id', $keys['booking'] ?: [0]);
-                })->orWhere(function (Builder $q) use ($keys): void {
-                    $q->where('noticeable_type', (new Stay)->getMorphClass())
-                        ->whereIn('noticeable_id', $keys['stay'] ?: [0]);
-                })->orWhere(function (Builder $q) use ($keys): void {
-                    $q->where('noticeable_type', (new BoatBooking)->getMorphClass())
-                        ->whereIn('noticeable_id', $keys['boat_booking'] ?: [0]);
-                });
-            });
+            return DB::table('notices')->where(fn (Builder $query) => self::ownedBy($query, 'noticeable', $keys));
         }
 
         if ($table === 'quotations') {
@@ -421,5 +387,48 @@ class ForgetCustomer extends Command
         }
 
         return $matches->first();
+    }
+
+    /**
+     * Every polymorphic owner a person's money or notices can hang off, and
+     * the key list that holds theirs. One list, so a new payable cannot be
+     * reached by the payments query and missed by the slip files, the
+     * transaction payloads or the notices — four copies of it nearly did.
+     *
+     * @return array<string, string> morph class => key in $keys
+     */
+    private static function owners(): array
+    {
+        return [
+            (new Booking)->getMorphClass() => 'booking',
+            (new Stay)->getMorphClass() => 'stay',
+            // An additional trip's places (Phase 3e).
+            (new ExcursionBooking)->getMorphClass() => 'excursion',
+            // A boat's seats, and a cargo or charter request (docs/TRANSPORT_PLAN.md).
+            (new BoatBooking)->getMorphClass() => 'boat_booking',
+            (new TransportRequest)->getMorphClass() => 'transport_request',
+        ];
+    }
+
+    /**
+     * This person's payments, whichever of their records each is for.
+     *
+     * @param  array<string, list<int>>  $keys
+     */
+    private static function paymentsOf(array $keys): Builder
+    {
+        return DB::table('payments')->where(fn (Builder $query) => self::ownedBy($query, 'payable', $keys));
+    }
+
+    /**
+     * `{$morph}_type`/`{$morph}_id` naming any of this person's owners.
+     *
+     * @param  array<string, list<int>>  $keys
+     */
+    private static function ownedBy(Builder $query, string $morph, array $keys): void
+    {
+        foreach (self::owners() as $type => $key) {
+            $query->orWhere(fn (Builder $q) => $q->where($morph.'_type', $type)->whereIn($morph.'_id', ($keys[$key] ?? []) ?: [0]));
+        }
     }
 }
