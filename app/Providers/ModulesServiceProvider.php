@@ -68,6 +68,7 @@ use Modules\Transport\Models\TransportRequest;
 use Modules\Transport\Models\TransportRequestEvent;
 use Modules\Transport\Models\Vessel;
 use Modules\Transport\TransportServiceProvider;
+use Modules\Travel\Models\TravelDocument;
 use Modules\Travel\Models\TravelQuoteOption;
 use Modules\Travel\Models\TravelRequest;
 use Modules\Travel\Models\TravelRequestEvent;
@@ -273,6 +274,7 @@ class ModulesServiceProvider extends ServiceProvider
         TravelRequest::class,
         TravelQuoteOption::class,
         TravelRequestEvent::class,
+        TravelDocument::class,
     ];
 
     public function register(): void

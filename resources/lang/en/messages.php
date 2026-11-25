@@ -1104,4 +1104,11 @@ return [
     'Thank you. Your choice is saved; pay as shown below.' => 'Thank you. Your choice is saved; pay as shown below.',
     'Travel' => 'Travel',
     'Accepted' => 'Accepted',
+    // Travel agency — fulfilment (A2).
+    'Your tickets and documents' => 'Your tickets and documents',
+    'Download' => 'Download',
+    'E-ticket' => 'E-ticket',
+    'Hotel voucher' => 'Hotel voucher',
+    'Other' => 'Other',
+    'Booked. Your tickets and documents are below.' => 'Booked. Your tickets and documents are below.',
 ];

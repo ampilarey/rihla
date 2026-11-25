@@ -7,9 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Support\CompanyDetails;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
+use Modules\Travel\Models\TravelDocument;
 use Modules\Travel\Models\TravelRequest;
+use Modules\Travel\Services\TravelDocuments;
 use Modules\Travel\Services\TravelRequests;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 /**
  * "Plan my trip" — docs/TRAVEL_AGENCY_PLAN.md (A1). A request is an
@@ -74,7 +78,7 @@ class TravelController extends Controller
     public function show(string $key): View
     {
         $made = $this->find($key);
-        $made->load(['options', 'events', 'acceptedOption']);
+        $made->load(['options', 'events', 'acceptedOption', 'documents']);
         $bank = CompanyDetails::bank();
         $account = $bank['accounts'][$made->currency] ?? null;
 
@@ -96,6 +100,26 @@ class TravelController extends Controller
         }
 
         return redirect()->to(self::statusUrl($made))->with('status', __('messages.Thank you. Your choice is saved; pay as shown below.'));
+    }
+
+    /** A ticket, voucher or visa, for whoever holds the trip page's key. */
+    public function document(string $key, int $document, TravelDocuments $documents): Response
+    {
+        $made = $this->find($key);
+        /** @var TravelDocument $file */
+        $file = $made->documents()->whereKey($document)->firstOrFail();
+
+        try {
+            $download = $documents->download($file, null, 'customer');
+        } catch (DeskRefusal) {
+            abort(404);
+        }
+
+        return response($download['contents'], 200, [
+            'Content-Type' => $download['mime'],
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $download['name'], 'document'),
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     public static function statusUrl(TravelRequest $made): string

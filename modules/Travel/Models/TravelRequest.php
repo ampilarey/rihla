@@ -53,6 +53,9 @@ class TravelRequest extends Model implements NoticeSubject, TakesPayments
 
     public const PAID = 'paid';
 
+    /** Tickets, vouchers or visas uploaded and the customer told (A2). */
+    public const ISSUED = 'issued';
+
     public const CANCELLED = 'cancelled';
 
     /** @var array<string, string> */
@@ -61,6 +64,7 @@ class TravelRequest extends Model implements NoticeSubject, TakesPayments
         self::QUOTED => 'Quoted',
         self::ACCEPTED => 'Accepted',
         self::PAID => 'Paid',
+        self::ISSUED => 'Issued',
         self::CANCELLED => 'Cancelled',
     ];
 
@@ -100,6 +104,12 @@ class TravelRequest extends Model implements NoticeSubject, TakesPayments
     public function acceptedOption(): BelongsTo
     {
         return $this->belongsTo(TravelQuoteOption::class, 'accepted_option_id');
+    }
+
+    /** @return HasMany<TravelDocument, $this> */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(TravelDocument::class)->orderBy('id');
     }
 
     /** @return HasMany<TravelRequestEvent, $this> */

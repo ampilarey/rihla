@@ -148,7 +148,7 @@ final class TravelRequests
             $locked = TravelRequest::query()->whereKey($request->getKey())->lockForUpdate()->firstOrFail();
 
             if ($locked->status !== TravelRequest::QUOTED) {
-                throw new DeskRefusal($locked->status === TravelRequest::ACCEPTED || $locked->status === TravelRequest::PAID
+                throw new DeskRefusal(in_array($locked->status, [TravelRequest::ACCEPTED, TravelRequest::PAID, TravelRequest::ISSUED], true)
                     ? 'You have already chosen an option.'
                     : 'There is nothing to choose yet.');
             }
@@ -192,7 +192,7 @@ final class TravelRequests
             throw new DeskRefusal('Say why: the customer will see it.');
         }
 
-        if (in_array($request->status, [TravelRequest::PAID, TravelRequest::CANCELLED], true) || $request->paid_minor > 0) {
+        if (in_array($request->status, [TravelRequest::PAID, TravelRequest::ISSUED, TravelRequest::CANCELLED], true) || $request->paid_minor > 0) {
             throw new DeskRefusal($request->status === TravelRequest::CANCELLED ? 'It is already cancelled.' : 'Money has arrived for it: refund the payment first, then cancel.');
         }
 

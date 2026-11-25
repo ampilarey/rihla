@@ -90,7 +90,23 @@
                 <p dir="auto" class="mt-3 text-sm text-ink-muted">{{ __('messages.Or pay in cash at our office. We book as soon as the money arrives.') }}</p>
             @elseif($made->status === $T::PAID)
                 <p dir="auto" class="mt-4 font-medium text-ink">{{ __('messages.Paid. We are booking it and will send your tickets here.') }}</p>
+            @elseif($made->status === $T::ISSUED)
+                <p dir="auto" class="mt-4 font-medium text-ink">{{ __('messages.Booked. Your tickets and documents are below.') }}</p>
             @endif
+        </section>
+    @endif
+
+    @if($made->documents->isNotEmpty())
+        <section class="card mb-6" aria-labelledby="trip-docs-heading">
+            <h2 id="trip-docs-heading" dir="auto" class="mb-3 text-lg font-bold text-ink">{{ __('messages.Your tickets and documents') }}</h2>
+            <ul class="space-y-2">
+                @foreach($made->documents as $document)
+                    <li class="flex flex-wrap items-center justify-between gap-3">
+                        <span dir="auto" class="text-ink">{{ $document->label }} <span class="text-sm text-ink-muted">· {{ __('messages.'.\Modules\Travel\Models\TravelDocument::KINDS[$document->kind]) }}</span></span>
+                        <a href="{{ route('travel.requests.document', ['key' => $made->status_key, 'document' => $document->id]) }}" class="btn-primary">{{ __('messages.Download') }}</a>
+                    </li>
+                @endforeach
+            </ul>
         </section>
     @endif
 

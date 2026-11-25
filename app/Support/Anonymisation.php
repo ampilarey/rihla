@@ -172,6 +172,9 @@ final class Anonymisation
         'travel_requests' => ['contact_name' => 'name', 'contact_phone' => 'phone', 'contact_email' => 'email', 'notes' => 'text', 'cancelled_reason' => 'text'],
         'travel_quote_options' => ['details' => 'text'],
         'travel_request_events' => ['note' => 'text'],
+        // The file it points at is deleted with the person, and the pointer
+        // cannot be null.
+        'travel_documents' => ['original_name' => 'text', 'path' => 'gone'],
         'stay_guests' => [
             'full_name' => 'name', 'id_number' => 'name', 'nationality' => 'name',
             'date_of_birth' => 'null',
