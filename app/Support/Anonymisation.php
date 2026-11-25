@@ -374,6 +374,10 @@ final class Anonymisation
         'vessels',
         'boat_routes',
         'sailings',
+        // A boat operator's people and statements (T5): who works where and
+        // money between businesses, as host_memberships and host_statements.
+        'operator_memberships',
+        'operator_statements',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',

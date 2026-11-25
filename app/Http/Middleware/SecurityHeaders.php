@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Providers\Filament\CompanyPanelProvider;
 use App\Providers\Filament\HostPanelProvider;
+use App\Providers\Filament\OperatorPanelProvider;
 use App\Providers\Filament\StaffPanelProvider;
 use App\Support\Csp;
 use Closure;
@@ -170,6 +171,8 @@ class SecurityHeaders
             || $request->is(HostPanelProvider::PATH, HostPanelProvider::PATH.'/*')
             // And each Umrah company's panel (companies plan, Phase 2a).
             || $request->is(CompanyPanelProvider::PATH, CompanyPanelProvider::PATH.'/*')
+            // And each boat operator's (docs/TRANSPORT_PLAN.md, T5).
+            || $request->is(OperatorPanelProvider::PATH, OperatorPanelProvider::PATH.'/*')
             || ($pulse !== '' && $request->is($pulse, $pulse.'/*'));
     }
 

@@ -61,6 +61,8 @@ use Modules\Telegram\TelegramServiceProvider;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\BoatTicket;
+use Modules\Transport\Models\OperatorMembership;
+use Modules\Transport\Models\OperatorStatement;
 use Modules\Transport\Models\Sailing;
 use Modules\Transport\Models\TransportRequest;
 use Modules\Transport\Models\TransportRequestEvent;
@@ -261,6 +263,8 @@ class ModulesServiceProvider extends ServiceProvider
         BoatTicket::class,
         TransportRequest::class,
         TransportRequestEvent::class,
+        OperatorMembership::class,
+        OperatorStatement::class,
     ];
 
     public function register(): void

@@ -16,6 +16,7 @@ use Modules\Transport\Filament\RecordPayment;
 use Modules\Transport\Filament\Resources\BoatBookings\Pages\ManageBoatBookings;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Services\TransportDesk;
+use Modules\Transport\Support\OperatorContext;
 use UnitEnum;
 
 /**
@@ -26,6 +27,28 @@ use UnitEnum;
 class BoatBookingResource extends Resource
 {
     protected static ?string $model = BoatBooking::class;
+
+    /**
+     * Shared with the operator panel (T5), which scopes by OperatorContext
+     * below rather than by Filament's tenant relation: a sailing or a
+     * booking reaches its operator through its route.
+     */
+    protected static bool $isScopedToTenant = false;
+
+    /** @return Builder<Model> */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $id = OperatorContext::id();
+
+        if ($id !== null) {
+            $query->whereHas('sailing.route', fn (Builder $route) => $route->where('partner_id', $id));
+        } elseif (OperatorContext::inPanel()) {
+            $query->whereRaw('1 = 0');
+        }
+
+        return $query;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-ticket';
 

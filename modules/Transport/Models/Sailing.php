@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Modules\Transport\Support\OperatorContext;
 
 /**
  * One departure of a route, on one boat, at one time —
@@ -58,6 +59,12 @@ class Sailing extends Model
 
             if ($vessel->partner_id !== $route->partner_id) {
                 throw new DeskRefusal('That boat belongs to another operator.');
+            }
+
+            // Inside an operator's panel, only their own routes.
+            $operator = OperatorContext::id();
+            if ($operator !== null && $route->partner_id !== $operator) {
+                throw new DeskRefusal('That route belongs to another operator.');
             }
 
             if ($sailing->seats_total > $vessel->seats) {

@@ -89,6 +89,9 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
             // Or by a live support grant a company's Owner gave (Phase 5c).
             'company' => $this->companies()->exists()
                 || SupportGrant::query()->live()->where('requested_by', $this->getKey())->exists(),
+            // A boat operator's people (docs/TRANSPORT_PLAN.md, T5), by an
+            // accepted membership, as a host's team gets into /host.
+            'operator' => $this->operators()->exists(),
             default => $this->can('admin.access'),
         };
     }
@@ -119,6 +122,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
                 ->values();
         }
 
+        if ($panel->getId() === 'operator') {
+            return $this->operators()->where('status', '!=', Partner::STATUS_SUSPENDED)->orderBy('name')->get();
+        }
+
         return $this->hosts()
             ->where('status', '!=', Partner::STATUS_SUSPENDED)
             ->orderBy('name')
@@ -139,9 +146,30 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
                     || SupportAccess::liveFor($tenant, $this) !== null);
         }
 
+        if (Filament::getCurrentPanel()?->getId() === 'operator') {
+            return $tenant instanceof Partner
+                && ! $tenant->isSuspended()
+                && $this->operators()->whereKey($tenant->getKey())->exists();
+        }
+
         return $tenant instanceof Partner
             && ! $tenant->isSuspended()
             && $this->hosts()->whereKey($tenant->getKey())->exists();
+    }
+
+    /**
+     * The boat operators this person works for, accepted memberships only —
+     * docs/TRANSPORT_PLAN.md (T5).
+     *
+     * @return BelongsToMany<Partner, $this>
+     */
+    public function operators(): BelongsToMany
+    {
+        return $this->belongsToMany(Partner::class, 'operator_memberships')
+            ->withPivot(['role', 'accepted_at'])
+            ->withTimestamps()
+            ->wherePivotNotNull('accepted_at')
+            ->where('kind', Partner::KIND_OPERATOR);
     }
 
     /**

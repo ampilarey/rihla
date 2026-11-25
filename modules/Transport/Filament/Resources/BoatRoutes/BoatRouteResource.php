@@ -15,16 +15,40 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Transport\Filament\Operators;
 use Modules\Transport\Filament\Resources\BoatRoutes\Pages\ManageBoatRoutes;
 use Modules\Transport\Models\BoatRoute;
+use Modules\Transport\Support\OperatorContext;
 use UnitEnum;
 
 /** Operators' routes and fares — docs/TRANSPORT_PLAN.md, T1. */
 class BoatRouteResource extends Resource
 {
     protected static ?string $model = BoatRoute::class;
+
+    /**
+     * Shared with the operator panel (T5), which scopes by OperatorContext
+     * below rather than by Filament's tenant relation: a sailing or a
+     * booking reaches its operator through its route.
+     */
+    protected static bool $isScopedToTenant = false;
+
+    /** @return Builder<Model> */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $id = OperatorContext::id();
+
+        if ($id !== null) {
+            $query->where('partner_id', $id);
+        } elseif (OperatorContext::inPanel()) {
+            $query->whereRaw('1 = 0');
+        }
+
+        return $query;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map';
 
@@ -65,7 +89,9 @@ class BoatRouteResource extends Resource
             ->dehydrateStateUsing(fn ($state): ?int => $state === null || $state === '' ? null : (int) round(((float) $state) * 100));
 
         return $schema->columns(2)->components([
-            Select::make('partner_id')->label('Operator')->options(fn (): array => Operators::options())->required()->searchable(),
+            Select::make('partner_id')->label('Operator')->options(fn (): array => Operators::options())->required()->searchable()
+                // Inside an operator's panel it is always theirs (the model sets it).
+                ->hidden(fn (): bool => OperatorContext::inPanel()),
             TextInput::make('duration_minutes')->label('Crossing time (minutes)')->integer()->required()->minValue(1)->maxValue(1440),
             IslandSelect::make('origin_island_id')->label('From')->required(),
             IslandSelect::make('destination_island_id')->label('To')->required()->different('origin_island_id'),

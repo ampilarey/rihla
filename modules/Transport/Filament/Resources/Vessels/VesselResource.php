@@ -12,16 +12,40 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Transport\Filament\Operators;
 use Modules\Transport\Filament\Resources\Vessels\Pages\ManageVessels;
 use Modules\Transport\Models\Vessel;
+use Modules\Transport\Support\OperatorContext;
 use UnitEnum;
 
 /** Operators' boats — docs/TRANSPORT_PLAN.md, T1. */
 class VesselResource extends Resource
 {
     protected static ?string $model = Vessel::class;
+
+    /**
+     * Shared with the operator panel (T5), which scopes by OperatorContext
+     * below rather than by Filament's tenant relation: a sailing or a
+     * booking reaches its operator through its route.
+     */
+    protected static bool $isScopedToTenant = false;
+
+    /** @return Builder<Model> */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $id = OperatorContext::id();
+
+        if ($id !== null) {
+            $query->where('partner_id', $id);
+        } elseif (OperatorContext::inPanel()) {
+            $query->whereRaw('1 = 0');
+        }
+
+        return $query;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-lifebuoy';
 
@@ -56,7 +80,9 @@ class VesselResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('partner_id')->label('Operator')->options(fn (): array => Operators::options())->required()->searchable(),
+            Select::make('partner_id')->label('Operator')->options(fn (): array => Operators::options())->required()->searchable()
+                // Inside an operator's panel it is always theirs (the model sets it).
+                ->hidden(fn (): bool => OperatorContext::inPanel()),
             TextInput::make('name')->required()->maxLength(80),
             Select::make('kind')->options(Vessel::KINDS)->required()->default(Vessel::SPEEDBOAT),
             TextInput::make('seats')->integer()->required()->minValue(1)->maxValue(500),

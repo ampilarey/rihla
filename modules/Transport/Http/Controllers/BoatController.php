@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Modules\Telegram\Services\Notifier;
-use Modules\Transport\Filament\Pages\BoatScan;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\Sailing;
@@ -182,6 +181,6 @@ class BoatController extends Controller
             'scale' => 6,
             'addQuietzone' => true,
             'imageTransparent' => false,
-        ])))->render(BoatScan::getUrl(['t' => $token], panel: 'staff'));
+        ])))->render(BoatScanRedirect::urlFor($token));
     }
 }

@@ -78,6 +78,9 @@ final class TransportDesk
                 'status' => BoatBooking::HELD,
                 'held_until' => $heldUntil ?? now()->addMinutes((int) config('transport.hold_minutes', 15)),
                 'booked_by' => $by?->getKey(),
+                // Rihla's cut of a seat sold online, frozen now (T5). A seat
+                // somebody books at a desk carries none.
+                'commission_pct' => $by === null ? (int) ($route->operator->commission_pct ?? 0) : null,
             ])->save();
             $booking->forceFill(['reference' => sprintf('RIH-T-%s-%05d', now()->format('Y'), $booking->getKey())])->save();
 

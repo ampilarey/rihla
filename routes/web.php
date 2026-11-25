@@ -37,6 +37,7 @@ use Modules\Stays\Http\Controllers\StayCheckoutController;
 use Modules\Stays\Http\Controllers\StayReviewController;
 use Modules\Stays\Http\Controllers\StaysController;
 use Modules\Transport\Http\Controllers\BoatController;
+use Modules\Transport\Http\Controllers\BoatScanRedirect;
 use Modules\Transport\Http\Controllers\TransportRequestController;
 use Modules\Umrah\Http\Controllers\BookingController;
 use Modules\Umrah\Http\Controllers\DocumentController;
@@ -393,6 +394,10 @@ Route::get('/api/guide-steps', [PageController::class, 'guideStepsApi'])->name('
 // registered by URL::defaults() does not get substituted into it — that would
 // make every switch link point at the language the visitor is already reading.
 Route::get('/lang/{code}', [PageController::class, 'setLocale'])->name('locale.switch');
+
+// A boat ticket's QR (docs/TRANSPORT_PLAN.md, T3/T5): signed-in crew are sent
+// to the boarding page of the panel they work in. Not locale-prefixed.
+Route::get('/boat-scan', BoatScanRedirect::class)->middleware('auth')->name('transport.scan');
 
 // Authenticated routes
 //

@@ -25,6 +25,7 @@ use Modules\Transport\Models\Sailing;
 use Modules\Transport\Models\Vessel;
 use Modules\Transport\Services\Manifest;
 use Modules\Transport\Services\TransportDesk;
+use Modules\Transport\Support\OperatorContext;
 use UnitEnum;
 
 /**
@@ -35,6 +36,28 @@ use UnitEnum;
 class SailingResource extends Resource
 {
     protected static ?string $model = Sailing::class;
+
+    /**
+     * Shared with the operator panel (T5), which scopes by OperatorContext
+     * below rather than by Filament's tenant relation: a sailing or a
+     * booking reaches its operator through its route.
+     */
+    protected static bool $isScopedToTenant = false;
+
+    /** @return Builder<Model> */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $id = OperatorContext::id();
+
+        if ($id !== null) {
+            $query->whereHas('route', fn (Builder $route) => $route->where('partner_id', $id));
+        } elseif (OperatorContext::inPanel()) {
+            $query->whereRaw('1 = 0');
+        }
+
+        return $query;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clock';
 
@@ -69,14 +92,14 @@ class SailingResource extends Resource
     /** @return array<int, string> */
     public static function routeOptions(): array
     {
-        return BoatRoute::query()->where('is_active', true)->with(['origin', 'destination'])->get()
+        return BoatRoute::query()->where('is_active', true)->when(OperatorContext::id(), fn ($q, int $id) => $q->where('partner_id', $id))->with(['origin', 'destination'])->get()
             ->mapWithKeys(fn (BoatRoute $route): array => [$route->getKey() => $route->label()])->all();
     }
 
     /** @return array<int, string> */
     public static function vesselOptions(): array
     {
-        return Vessel::query()->where('is_active', true)->orderBy('name')->get()
+        return Vessel::query()->where('is_active', true)->when(OperatorContext::id(), fn ($q, int $id) => $q->where('partner_id', $id))->orderBy('name')->get()
             ->mapWithKeys(fn (Vessel $vessel): array => [$vessel->getKey() => $vessel->name.' ('.$vessel->seats.' seats)'])->all();
     }
 

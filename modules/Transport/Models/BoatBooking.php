@@ -18,6 +18,10 @@ use Illuminate\Support\Carbon;
  * which keeps the sailing's seat counter.
  *
  * @property Carbon|null $held_until
+ * @property int|null $commission_pct
+ * @property int $paid_minor
+ * @property int $total_minor
+ * @property string $currency
  */
 class BoatBooking extends Model implements TakesPayments
 {
@@ -49,6 +53,7 @@ class BoatBooking extends Model implements TakesPayments
         'total_minor' => 'integer',
         'paid_minor' => 'integer',
         'held_until' => 'datetime',
+        'commission_pct' => 'integer',
     ];
 
     /** @return BelongsTo<Sailing, $this> */
