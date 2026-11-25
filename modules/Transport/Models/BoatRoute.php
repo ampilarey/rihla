@@ -2,12 +2,14 @@
 
 namespace Modules\Transport\Models;
 
+use App\Exceptions\DeskRefusal;
 use App\Models\Island;
 use App\Models\Partner;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Transport\Support\OperatorContext;
 
 /**
  * An operator's route from one island to another, with its fares —
@@ -17,6 +19,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class BoatRoute extends Model
 {
     protected $fillable = ['partner_id', 'origin_island_id', 'destination_island_id', 'duration_minutes', 'currency', 'adult_fare_minor', 'child_fare_minor', 'is_active', 'notes'];
+
+    protected static function booted(): void
+    {
+        // Inside an operator's panel everything they make is theirs, and
+        // nothing of another operator's can be saved, whatever the form sent.
+        static::saving(function (self $model): void {
+            $operator = OperatorContext::id();
+
+            if ($operator === null) {
+                return;
+            }
+
+            if ($model->exists && (int) $model->getOriginal('partner_id') !== $operator) {
+                throw new DeskRefusal('That belongs to another operator.');
+            }
+
+            $model->partner_id = $operator;
+        });
+    }
 
     protected $casts = [
         'duration_minutes' => 'integer',

@@ -54,7 +54,7 @@ Operations Manager holds all of them. Booking Staff hold the read and book permi
 | **T2** ✅ | **Booking online.** Search by from, to and date. The booker picks a sailing and gives the passengers' names and a phone number. Seats are held, then the booker sees payment instructions and a "my tickets" page with a QR code per passenger. A Telegram alert goes to staff. | A visitor books two seats without phoning, and their QR tickets open on a phone. |
 | **T3** ✅ | **Boarding.** A manifest PDF per sailing, and a QR scan that marks each passenger boarded. Cancelling a sailing tells every booker. | The crew checks a full boat on board from a phone, and the manifest shows who boarded. |
 | **T4** ✅ | **Cargo and charters.** Request forms, a staff quote, a payment against the quote, and status updates (received, loaded, delivered). | A cargo request goes from form to delivered with a paid quote. |
-| **T5** | **Other operators.** An operator panel, as hosts have one: their boats, routes, sailings, bookings and manifests. Rihla's commission on online seats, and monthly statements, as for hosts. | An outside operator runs their timetable from their own panel. |
+| **T5** ✅ | **Other operators.** An operator panel, as hosts have one: their boats, routes, sailings, bookings and manifests. Rihla's commission on online seats, and monthly statements, as for hosts. | An outside operator runs their timetable from their own panel. |
 
 ## Not in this plan
 - Live boat tracking.

@@ -17,6 +17,7 @@ use Modules\Transport\Filament\Resources\Sailings\SailingResource;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\Vessel;
 use Modules\Transport\Services\TransportDesk;
+use Modules\Transport\Support\OperatorContext;
 
 class ManageSailings extends ManageRecords
 {
@@ -43,8 +44,8 @@ class ManageSailings extends ManageRecords
                 ->action(function (array $data): void {
                     try {
                         $created = app(TransportDesk::class)->schedule(
-                            BoatRoute::query()->findOrFail($data['boat_route_id']),
-                            Vessel::query()->findOrFail($data['vessel_id']),
+                            BoatRoute::query()->when(OperatorContext::id(), fn ($q, int $id) => $q->where('partner_id', $id))->findOrFail($data['boat_route_id']),
+                            Vessel::query()->when(OperatorContext::id(), fn ($q, int $id) => $q->where('partner_id', $id))->findOrFail($data['vessel_id']),
                             CarbonImmutable::parse($data['from']),
                             CarbonImmutable::parse($data['to'])->endOfDay(),
                             array_map('intval', (array) $data['weekdays']),

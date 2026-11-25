@@ -10,6 +10,7 @@ use Livewire\Attributes\Locked;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\BoatTicket;
 use Modules\Transport\Services\TransportDesk;
+use Modules\Transport\Support\OperatorContext;
 use UnitEnum;
 
 /**
@@ -58,6 +59,13 @@ class BoatScan extends Page
     public function lookup(): void
     {
         $ticket = app(TransportDesk::class)->resolve($this->code);
+
+        // An operator's crew boards their own boats only (T5).
+        $operator = OperatorContext::id();
+        if ($ticket !== null && $operator !== null && $ticket->booking()->firstOrFail()->sailing()->firstOrFail()->route()->firstOrFail()->partner_id !== $operator) {
+            $ticket = null;
+        }
+
         $this->ticketId = $ticket?->getKey();
 
         if ($ticket === null) {

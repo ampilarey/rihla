@@ -42,6 +42,8 @@ use Modules\Content\Policies\TripPolicy;
 use Modules\Content\Policies\WhyFeaturePolicy;
 use Modules\Content\Policies\WhySectionPolicy;
 use Modules\Stays\Support\HostContext;
+use Modules\Transport\Models\OperatorMembership;
+use Modules\Transport\Support\OperatorContext;
 use Modules\Umrah\Models\Announcement;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
@@ -159,6 +161,35 @@ class AuthServiceProvider extends ServiceProvider
                 && CompanyFeatures::allows($company, $ability);
         });
 
+        // Inside a boat operator's panel (docs/TRANSPORT_PLAN.md, T5) the
+        // membership answers every ability by name, and nothing outside the
+        // transport area is granted there at all. It runs before Super Admin
+        // and spatie for the reason the company gate does: a Rihla role must
+        // not speak inside somebody else's panel.
+        Gate::before(function ($user, string $ability) {
+            $operator = OperatorContext::current();
+
+            if ($operator === null && ! OperatorContext::inPanel()) {
+                return null;
+            }
+
+            // Permission names only (`transport.board`). A bare policy ability
+            // (`create`, `viewAny`) falls through to the model's policy, which
+            // asks by permission name and lands back here; Filament asks one
+            // for every action, and refusing it hid the "Add a boat" button.
+            if (! str_contains($ability, '.')) {
+                return null;
+            }
+
+            $role = $operator === null ? null : OperatorMembership::query()
+                ->where('partner_id', $operator->getKey())
+                ->where('user_id', $user->getKey())
+                ->whereNotNull('accepted_at')
+                ->value('role');
+
+            return in_array($ability, OperatorMembership::ABILITIES[$role] ?? [], true);
+        });
+
         // Super Admin is granted everything here rather than by holding every
         // permission. A permission added later is then covered automatically,
         // instead of silently locking out the one role that must never be
@@ -169,7 +200,7 @@ class AuthServiceProvider extends ServiceProvider
             // (site audit): the grant below answered before the host
             // policies could, so a reception member who was also staff
             // held every host ability at that host.
-            if (HostContext::current() !== null || CompanyRequest::current() !== null) {
+            if (HostContext::current() !== null || CompanyRequest::current() !== null || OperatorContext::inPanel()) {
                 return null;
             }
 
