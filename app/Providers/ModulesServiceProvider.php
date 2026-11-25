@@ -72,6 +72,8 @@ use Modules\Travel\Models\TravelDocument;
 use Modules\Travel\Models\TravelQuoteOption;
 use Modules\Travel\Models\TravelRequest;
 use Modules\Travel\Models\TravelRequestEvent;
+use Modules\Travel\Models\TravelVisaApplication;
+use Modules\Travel\Models\VisaProduct;
 use Modules\Travel\TravelServiceProvider;
 use Modules\Umrah\Models\Agreement;
 use Modules\Umrah\Models\Announcement;
@@ -275,6 +277,8 @@ class ModulesServiceProvider extends ServiceProvider
         TravelQuoteOption::class,
         TravelRequestEvent::class,
         TravelDocument::class,
+        VisaProduct::class,
+        TravelVisaApplication::class,
     ];
 
     public function register(): void

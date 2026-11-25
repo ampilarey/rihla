@@ -96,6 +96,33 @@
         </section>
     @endif
 
+    @foreach($made->visaApplications as $visa)
+        <section class="card mb-6" aria-labelledby="visa-{{ $visa->id }}-heading">
+            <h2 id="visa-{{ $visa->id }}-heading" dir="auto" class="mb-1 text-lg font-bold text-ink">
+                {{ __('messages.Visa: :what for :name', ['what' => $visa->product->label(), 'name' => $visa->applicant_name]) }}
+            </h2>
+            <p dir="auto" class="mb-3 text-sm text-ink-muted">{{ __('messages.'.\Modules\Travel\Models\TravelVisaApplication::STATUSES[$visa->status]) }}@if($visa->decision_note) · {{ $visa->decision_note }}@endif</p>
+            <ul class="space-y-3">
+                @foreach($visa->checklist as $i => $line)
+                    <li class="flex flex-wrap items-center justify-between gap-3">
+                        <span dir="auto" class="text-ink">{{ $line['item'] }}</span>
+                        @if($line['received_at'])
+                            <span dir="auto" class="text-sm font-medium text-success-dark">{{ __('messages.Received') }}</span>
+                        @elseif($visa->status === \Modules\Travel\Models\TravelVisaApplication::COLLECTING)
+                            <form method="POST" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2"
+                                  action="{{ route('travel.requests.visa-document', ['key' => $made->status_key, 'application' => $visa->id, 'item' => $i]) }}">
+                                @csrf
+                                <label class="sr-only" for="visa-{{ $visa->id }}-{{ $i }}">{{ $line['item'] }}</label>
+                                <input id="visa-{{ $visa->id }}-{{ $i }}" type="file" name="file" required accept=".pdf,.jpg,.jpeg,.png" class="text-sm text-ink">
+                                <button type="submit" class="btn-primary">{{ __('messages.Send') }}</button>
+                            </form>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endforeach
+
     @if($made->documents->isNotEmpty())
         <section class="card mb-6" aria-labelledby="trip-docs-heading">
             <h2 id="trip-docs-heading" dir="auto" class="mb-3 text-lg font-bold text-ink">{{ __('messages.Your tickets and documents') }}</h2>

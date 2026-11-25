@@ -584,6 +584,9 @@ final class Access
         'travel.viewAny',
         'travel.view',
         'travel.quote',
+        // The visa list for other countries (A3): what to apply for, what it
+        // needs, how long and how much.
+        'travel.manage',
 
         // Guests' reviews — §16.11. Read, and hide (with a reason the author
         // is shown) or unhide. No create — a review is a guest's — and no
@@ -931,7 +934,7 @@ final class Access
             self::OPERATIONS_MANAGER => array_merge(
                 ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny', 'telegram.link'],
                 ['transport.viewAny', 'transport.view', 'transport.manage', 'transport.book', 'transport.board'],
-                ['travel.viewAny', 'travel.view', 'travel.quote'],
+                ['travel.viewAny', 'travel.view', 'travel.quote', 'travel.manage'],
                 $bookings,
                 ['booking.discount'],
                 $documents,

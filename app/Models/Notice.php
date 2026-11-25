@@ -103,7 +103,7 @@ class Notice extends Model
         self::VISA_ISSUED, self::PERMIT_ISSUED, self::DEPARTURE_SOON,
         self::STAY_CONFIRMED, self::DEPOSIT_DUE, self::BALANCE_DUE, self::CHECK_IN_SOON,
         self::STAY_REQUESTED, self::REVIEW_REQUESTED,
-        self::SAILING_CANCELLED, self::TRANSPORT_QUOTED, self::TRAVEL_QUOTED, self::TRAVEL_ISSUED,
+        self::SAILING_CANCELLED, self::TRANSPORT_QUOTED, self::TRAVEL_QUOTED, self::TRAVEL_ISSUED, self::TRAVEL_VISA_DECIDED,
     ];
 
     /**
@@ -136,6 +136,9 @@ class Notice extends Model
 
     /** The trip is booked and its documents are on the customer's page (A2). */
     public const TRAVEL_ISSUED = 'travel_issued';
+
+    /** A visa for another country was approved or refused (A3). */
+    public const TRAVEL_VISA_DECIDED = 'travel_visa_decided';
 
     public const ONCE = [self::STAY_REQUESTED, self::REVIEW_REQUESTED, self::SAILING_CANCELLED];
 
@@ -378,6 +381,7 @@ class Notice extends Model
             self::TRANSPORT_QUOTED => 'Cargo or charter quoted',
             self::TRAVEL_QUOTED => 'Trip options ready',
             self::TRAVEL_ISSUED => 'Trip documents ready',
+            self::TRAVEL_VISA_DECIDED => 'Visa decision',
             default => 'Unknown',
         };
     }

@@ -2,6 +2,7 @@
 
 namespace Modules\Transport\Filament\Resources\Vessels;
 
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -23,6 +24,8 @@ use UnitEnum;
 /** Operators' boats — docs/TRANSPORT_PLAN.md, T1. */
 class VesselResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = Vessel::class;
 
     /**

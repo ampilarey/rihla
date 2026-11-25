@@ -1111,4 +1111,13 @@ return [
     'Hotel voucher' => 'Hotel voucher',
     'Other' => 'Other',
     'Booked. Your tickets and documents are below.' => 'Booked. Your tickets and documents are below.',
+    // Travel agency — the visa desk (A3).
+    'Visas we handle' => 'Visas we handle',
+    'About :count working day|About :count working days' => 'About :count working day|About :count working days',
+    'You will need:' => 'You will need:',
+    'Another country? Ask; we handle others on request.' => 'Another country? Ask; we handle others on request.',
+    'Visa: :what for :name' => 'Visa: :what for :name',
+    'Thank you, we have it.' => 'Thank you, we have it.',
+    'Collecting documents' => 'Collecting documents',
+    'Approved' => 'Approved',
 ];

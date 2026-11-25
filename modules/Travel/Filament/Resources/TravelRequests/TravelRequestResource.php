@@ -4,6 +4,7 @@ namespace Modules\Travel\Filament\Resources\TravelRequests;
 
 use App\Exceptions\DeskRefusal;
 use App\Filament\Actions\RecordPayment;
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -22,8 +23,10 @@ use Modules\Travel\Filament\Resources\TravelRequests\Pages\ManageTravelRequests;
 use Modules\Travel\Models\TravelDocument;
 use Modules\Travel\Models\TravelQuoteOption;
 use Modules\Travel\Models\TravelRequest;
+use Modules\Travel\Models\VisaProduct;
 use Modules\Travel\Services\TravelDocuments;
 use Modules\Travel\Services\TravelRequests;
+use Modules\Travel\Services\VisaDesk;
 use UnitEnum;
 
 /**
@@ -33,6 +36,8 @@ use UnitEnum;
  */
 class TravelRequestResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = TravelRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
@@ -158,6 +163,20 @@ class TravelRequestResource extends Resource
                     ->modalDescription(fn (TravelRequest $record): string => $record->documents()->count().' document(s) uploaded. The customer is told their documents are ready.')
                     ->action(function (TravelRequest $record): void {
                         self::attempt(fn () => app(TravelDocuments::class)->markIssued($record, auth()->user()), 'Issued');
+                    }),
+                Action::make('visa')
+                    ->label('Start visa application')
+                    ->icon('heroicon-o-identification')
+                    ->color('gray')
+                    ->visible(fn (TravelRequest $record): bool => $canQuote() && $record->wants_visa && $record->status !== TravelRequest::CANCELLED)
+                    ->schema([
+                        Select::make('product')->label('Visa')->required()->searchable()
+                            ->options(fn (): array => VisaProduct::query()->where('is_active', true)->orderBy('country')->get()
+                                ->mapWithKeys(fn (VisaProduct $v): array => [$v->id => $v->label()])->all()),
+                        TextInput::make('applicant')->label('Applicant, as on the passport')->required()->maxLength(120),
+                    ])
+                    ->action(function (TravelRequest $record, array $data): void {
+                        self::attempt(fn () => app(VisaDesk::class)->open($record, VisaProduct::query()->findOrFail($data['product']), (string) $data['applicant'], auth()->user()), 'Visa application started');
                     }),
                 Action::make('cancel')
                     ->label('Cancel')

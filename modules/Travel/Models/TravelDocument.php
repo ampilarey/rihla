@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $original_name
  * @property string|null $mime
  * @property int $size_bytes
+ * @property int|null $visa_application_id
+ * @property bool $from_customer
  */
 class TravelDocument extends Model
 {
@@ -26,7 +28,7 @@ class TravelDocument extends Model
 
     protected $fillable = [];
 
-    protected $casts = ['size_bytes' => 'integer'];
+    protected $casts = ['size_bytes' => 'integer', 'from_customer' => 'boolean'];
 
     /** @return BelongsTo<TravelRequest, $this> */
     public function request(): BelongsTo

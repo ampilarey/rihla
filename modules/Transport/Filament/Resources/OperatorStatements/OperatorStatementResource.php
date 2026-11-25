@@ -2,6 +2,7 @@
 
 namespace Modules\Transport\Filament\Resources\OperatorStatements;
 
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
@@ -22,6 +23,8 @@ use UnitEnum;
  */
 class OperatorStatementResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = OperatorStatement::class;
 
     protected static bool $isScopedToTenant = false;

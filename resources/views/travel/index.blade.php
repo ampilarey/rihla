@@ -16,6 +16,25 @@
         </div>
     @endif
 
+    @if($visas->isNotEmpty())
+        <details class="card mb-6">
+            <summary dir="auto" class="cursor-pointer font-bold text-ink">{{ __('messages.Visas we handle') }}</summary>
+            <ul class="mt-3 space-y-4">
+                @foreach($visas as $visa)
+                    <li dir="auto">
+                        <p class="font-medium text-ink">{{ $visa->country }} — {{ $visa->visa_type }}</p>
+                        <p class="text-sm text-ink-muted">
+                            @if($visa->processing_days){{ trans_choice('messages.About :count working day|About :count working days', $visa->processing_days, ['count' => $visa->processing_days]) }}@endif
+                            @if($visa->fee()) · {{ $visa->fee()->format() }}@endif
+                        </p>
+                        <p class="text-sm text-brand-body">{{ __('messages.You will need:') }} {{ implode(', ', $visa->documents) }}</p>
+                    </li>
+                @endforeach
+            </ul>
+            <p dir="auto" class="mt-3 text-sm text-ink-muted">{{ __('messages.Another country? Ask; we handle others on request.') }}</p>
+        </details>
+    @endif
+
     <form method="POST" action="{{ route('travel.store') }}" class="card space-y-4" novalidate>
         @csrf
 

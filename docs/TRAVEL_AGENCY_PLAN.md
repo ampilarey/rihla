@@ -20,8 +20,8 @@ becomes the `modules/Travel` module.
 |---|---|
 | **A1** ✅ | **Requests and quotes.** A "plan my trip" form (flight, hotel, visa or a mix). A staff board of requests. Quotes with several options and an expiry. The customer accepts one online. Payment against the accepted quote. |
 | **A2** ✅ | **Fulfilment.** Staff upload the issued e-ticket, hotel voucher or visa. The customer sees everything for the trip on one page, in the portal. |
-| **A3** | **Visa desk for other countries.** The country and visa-type list, the checklists, document collection through the wallet, and status (submitted, approved, refused). |
-| **A4** | **Online booking**, only when the owner signs up with a supplier: search and book flights or hotels from that supplier's API, with Rihla's margin added. |
+| **A3** ✅ | **Visa desk for other countries.** The country and visa-type list, the checklists, document collection through the wallet, and status (submitted, approved, refused). *Built with the wallet's encryption and disk rather than the Umrah wallet itself, which is tied to Umrah travellers and companies.* |
+| **A4** ⏸ | **Online booking**, only when the owner signs up with a supplier (not built: no supplier account exists yet): search and book flights or hotels from that supplier's API, with Rihla's margin added. |
 
 ## What the owner must supply
 - The travel agency licence, to switch it from "coming soon" to on.

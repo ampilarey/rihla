@@ -109,7 +109,14 @@ class TravelRequest extends Model implements NoticeSubject, TakesPayments
     /** @return HasMany<TravelDocument, $this> */
     public function documents(): HasMany
     {
-        return $this->hasMany(TravelDocument::class)->orderBy('id');
+        // What we issued; what the customer sent for a visa is on the application.
+        return $this->hasMany(TravelDocument::class)->where('from_customer', false)->orderBy('id');
+    }
+
+    /** @return HasMany<TravelVisaApplication, $this> */
+    public function visaApplications(): HasMany
+    {
+        return $this->hasMany(TravelVisaApplication::class)->orderBy('id');
     }
 
     /** @return HasMany<TravelRequestEvent, $this> */

@@ -4,6 +4,7 @@ namespace Modules\Transport\Filament\Resources\TransportRequests;
 
 use App\Exceptions\DeskRefusal;
 use App\Filament\Actions\RecordPayment;
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -28,6 +29,8 @@ use UnitEnum;
  */
 class TransportRequestResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = TransportRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';

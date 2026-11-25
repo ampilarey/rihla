@@ -174,7 +174,8 @@ final class Anonymisation
         'travel_request_events' => ['note' => 'text'],
         // The file it points at is deleted with the person, and the pointer
         // cannot be null.
-        'travel_documents' => ['original_name' => 'text', 'path' => 'gone'],
+        'travel_documents' => ['original_name' => 'text', 'path' => 'gone', 'label' => 'text'],
+        'travel_visa_applications' => ['applicant_name' => 'name', 'decision_note' => 'text'],
         'stay_guests' => [
             'full_name' => 'name', 'id_number' => 'name', 'nationality' => 'name',
             'date_of_birth' => 'null',
@@ -385,6 +386,8 @@ final class Anonymisation
         // money between businesses, as host_memberships and host_statements.
         'operator_memberships',
         'operator_statements',
+        // The visa list (A3): countries, types, fees — nobody's data.
+        'visa_products',
         'quiz_options',
         'quiz_questions',
         'role_has_permissions',

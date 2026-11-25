@@ -324,6 +324,10 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
         // A2: the issued ticket, voucher or visa, for whoever holds the key.
         Route::get('/travel/requests/{key}/documents/{document}', [TravelController::class, 'document'])
             ->where(['key' => '[A-Za-z0-9]{40}', 'document' => '[0-9]+'])->name('travel.requests.document');
+        // A3: one document on a visa checklist, sent by the customer.
+        Route::post('/travel/requests/{key}/visas/{application}/items/{item}', [TravelController::class, 'visaDocument'])
+            ->where(['key' => '[A-Za-z0-9]{40}', 'application' => '[0-9]+', 'item' => '[0-9]+'])
+            ->middleware('throttle:public-form')->name('travel.requests.visa-document');
     });
 
     // The guest's own stay — §16.7. Entered by a link that is spent for a

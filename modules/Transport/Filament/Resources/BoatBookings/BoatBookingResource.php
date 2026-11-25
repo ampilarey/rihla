@@ -4,6 +4,7 @@ namespace Modules\Transport\Filament\Resources\BoatBookings;
 
 use App\Exceptions\DeskRefusal;
 use App\Filament\Actions\RecordPayment;
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -26,6 +27,8 @@ use UnitEnum;
  */
 class BoatBookingResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = BoatBooking::class;
 
     /**
