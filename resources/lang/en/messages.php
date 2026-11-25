@@ -1120,4 +1120,6 @@ return [
     'Thank you, we have it.' => 'Thank you, we have it.',
     'Collecting documents' => 'Collecting documents',
     'Approved' => 'Approved',
+    'More passengers' => 'More passengers',
+    'Update' => 'Update',
 ];

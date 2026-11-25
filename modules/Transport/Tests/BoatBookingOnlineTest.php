@@ -80,7 +80,9 @@ class BoatBookingOnlineTest extends TestCase
         TelegramLink::create(['user_id' => $desk->id, 'chat_id' => 555, 'linked_at' => now()]);
 
         $this->get('/en/boats')->assertOk()->assertSee('3 seats left')->assertSee('Book seats');
-        $this->get('/en/boats/sailings/'.$this->sailing->id.'/book')->assertOk()->assertSee('Passenger 1, full name');
+        // Three seats left: three rows, nothing folded away.
+        $this->get('/en/boats/sailings/'.$this->sailing->id.'/book')->assertOk()
+            ->assertSee('Passenger 3, full name')->assertDontSee('Passenger 4, full name')->assertDontSee('More passengers');
 
         $response = $this->post('/en/boats/sailings/'.$this->sailing->id.'/book', $this->form());
 
@@ -138,5 +140,20 @@ class BoatBookingOnlineTest extends TestCase
         $this->post('/en/boats/sailings/'.$this->sailing->id.'/book', $this->form());
 
         $this->assertTrue(BoatBooking::query()->sole()->held_until->equalTo($this->sailing->departs_at));
+    }
+
+    public function test_a_big_boat_shows_three_rows_and_folds_the_rest_away_until_one_is_used(): void
+    {
+        Services::save(['transport' => Services::ON]);
+        $this->sailing->vessel()->firstOrFail()->forceFill(['seats' => 20])->save();
+        $this->sailing->forceFill(['seats_total' => 20])->save();
+        $url = '/en/boats/sailings/'.$this->sailing->id.'/book';
+
+        $page = $this->get($url)->assertOk()->assertSee('More passengers')->assertSee('Passenger 10, full name')->getContent();
+        $this->assertDoesNotMatchRegularExpression('/<details[^>]*\sopen/', (string) $page);
+
+        // Sent back with a fourth passenger typed in, the fold opens so it is seen.
+        $this->withSession(['_old_input' => ['passengers' => [3 => ['full_name' => 'Fourth Person']]]]);
+        $this->assertMatchesRegularExpression('/<details[^>]*\sopen/', (string) $this->get($url)->getContent());
     }
 }
