@@ -3,6 +3,7 @@
 namespace Modules\Transport\Tests;
 
 use App\Exceptions\DeskRefusal;
+use App\Filament\BottomNav;
 use App\Models\Island;
 use App\Models\Partner;
 use App\Models\User;
@@ -232,5 +233,19 @@ class OperatorPanelTest extends TestCase
 
         $this->expectException(DeskRefusal::class);
         app(OperatorTeam::class)->add($rihla, 'X', 'x@rihla.example', OperatorMembership::OWNER, null);
+    }
+
+    public function test_the_operators_phone_bar_carries_what_each_role_can_open(): void
+    {
+        $crew = app(OperatorTeam::class)->add($this->coral, 'Ali', 'ali@coral.example', OperatorMembership::CREW, $this->owner)->user()->firstOrFail();
+
+        $this->actingAs($this->owner);
+        $this->enter($this->coral);
+        $this->assertSame(['Sailings', 'Bookings', 'Board', 'Routes', 'Statements'], array_column(BottomNav::items(), 'label'));
+
+        $this->actingAs($crew);
+        $this->assertSame(['Sailings', 'Bookings', 'Board', 'Routes'], array_column(BottomNav::items(), 'label'), 'Crew read the routes but never the money.');
+
+        $this->get('/operator/'.$this->coral->slug.'/sailings')->assertOk()->assertSee('Board');
     }
 }

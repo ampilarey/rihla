@@ -2,7 +2,7 @@
 
 **Version:** 1.1
 **Date:** 2026-09-17
-**Status:** Design specification — **no code, no migrations, nothing executed**
+**Status:** Historical design specification, written before the build. *Most of it has since been implemented and parts were changed on the way: the code, `AGENTS.md` and the per-part plans (Umrah companies, Transport, travel agency) are the current truth, and this document is not kept in step with them.*
 **Applies to:** `ampilarey/rihla` @ `8880b0f`
 **Companion document:** [`WEBSITE_UPGRADE_PLAN.md`](WEBSITE_UPGRADE_PLAN.md) v1.1 (§31 maps this document against it)
 

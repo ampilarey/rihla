@@ -12,6 +12,12 @@ use Modules\Stays\Filament\Host\Pages\Housekeeping;
 use Modules\Stays\Filament\Host\Pages\Messages;
 use Modules\Stays\Filament\Host\Resources\Bookings\BookingResource as HostBookingResource;
 use Modules\Stays\Support\HostContext;
+use Modules\Transport\Filament\Pages\BoatScan;
+use Modules\Transport\Filament\Resources\BoatBookings\BoatBookingResource;
+use Modules\Transport\Filament\Resources\BoatRoutes\BoatRouteResource;
+use Modules\Transport\Filament\Resources\OperatorStatements\OperatorStatementResource;
+use Modules\Transport\Filament\Resources\Sailings\SailingResource;
+use Modules\Transport\Support\OperatorContext;
 use Modules\Umrah\Filament\Pages\DepartureBoard;
 use Modules\Umrah\Filament\Pages\Lists;
 use Modules\Umrah\Filament\Pages\Scan;
@@ -121,6 +127,22 @@ final class BottomNav
                 ['Calendar', Calendar::class, 'calendar'],
                 ['Rooms', Housekeeping::class, 'rooms'],
                 ['Messages', Messages::class, 'messages'],
+            ];
+        }
+
+        // A boat operator's panel (docs/TRANSPORT_PLAN.md, T5). Crew get the
+        // first four; only an owner sees the statements, which carry money.
+        if (Filament::getCurrentPanel()?->getId() === OperatorContext::PANEL) {
+            if (OperatorContext::current() === null) {
+                return [];
+            }
+
+            return [
+                ['Sailings', SailingResource::class, 'trips'],
+                ['Bookings', BoatBookingResource::class, 'bookings'],
+                ['Board', BoatScan::class, 'scan'],
+                ['Routes', BoatRouteResource::class, 'lists'],
+                ['Statements', OperatorStatementResource::class, 'documents'],
             ];
         }
 
