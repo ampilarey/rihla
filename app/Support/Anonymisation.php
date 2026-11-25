@@ -168,6 +168,10 @@ final class Anonymisation
         // and anything they or staff wrote about it.
         'transport_requests' => ['contact_name' => 'name', 'contact_phone' => 'phone', 'cargo_description' => 'text', 'notes' => 'text', 'quote_note' => 'text', 'cancelled_reason' => 'text'],
         'transport_request_events' => ['note' => 'text'],
+        // Trips we were asked to plan (travel agency A1).
+        'travel_requests' => ['contact_name' => 'name', 'contact_phone' => 'phone', 'contact_email' => 'email', 'notes' => 'text', 'cancelled_reason' => 'text'],
+        'travel_quote_options' => ['details' => 'text'],
+        'travel_request_events' => ['note' => 'text'],
         'stay_guests' => [
             'full_name' => 'name', 'id_number' => 'name', 'nationality' => 'name',
             'date_of_birth' => 'null',

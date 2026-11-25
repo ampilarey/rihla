@@ -3,11 +3,13 @@
 namespace Modules\Transport\Models;
 
 use App\Models\Concerns\HasNotices;
+use App\Models\Contracts\NoticeSubject;
 use App\Models\Customer;
 use App\Models\Island;
 use App\Models\Partner;
 use App\Services\Payments\TakesPayments;
 use App\Support\Money;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property int $paid_minor
  * @property Carbon|null $quoted_at
  */
-class TransportRequest extends Model implements TakesPayments
+class TransportRequest extends Model implements NoticeSubject, TakesPayments
 {
     use HasNotices;
 
@@ -178,5 +180,30 @@ class TransportRequest extends Model implements TakesPayments
         }
 
         $this->save();
+    }
+
+    public function noticeCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function noticeName(): string
+    {
+        return $this->contact_name;
+    }
+
+    public function noticePhone(): ?string
+    {
+        return $this->contact_phone;
+    }
+
+    public function noticeReference(): string
+    {
+        return $this->reference;
+    }
+
+    public function noticeDate(): ?CarbonInterface
+    {
+        return $this->wanted_on;
     }
 }

@@ -82,6 +82,7 @@ class StaffPanelProvider extends PanelProvider
             ->discoverPages(in: base_path('modules/Umrah/Filament/Pages'), for: 'Modules\\Umrah\\Filament\\Pages')
             ->discoverResources(in: base_path('modules/Transport/Filament/Resources'), for: 'Modules\\Transport\\Filament\\Resources')
             ->discoverPages(in: base_path('modules/Transport/Filament/Pages'), for: 'Modules\\Transport\\Filament\\Pages')
+            ->discoverResources(in: base_path('modules/Travel/Filament/Resources'), for: 'Modules\\Travel\\Filament\\Resources')
             ->pages([
                 Dashboard::class,
             ])

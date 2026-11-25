@@ -68,6 +68,10 @@ use Modules\Transport\Models\TransportRequest;
 use Modules\Transport\Models\TransportRequestEvent;
 use Modules\Transport\Models\Vessel;
 use Modules\Transport\TransportServiceProvider;
+use Modules\Travel\Models\TravelQuoteOption;
+use Modules\Travel\Models\TravelRequest;
+use Modules\Travel\Models\TravelRequestEvent;
+use Modules\Travel\TravelServiceProvider;
 use Modules\Umrah\Models\Agreement;
 use Modules\Umrah\Models\Announcement;
 use Modules\Umrah\Models\Booking;
@@ -133,6 +137,7 @@ class ModulesServiceProvider extends ServiceProvider
         StaysServiceProvider::class,
         UmrahServiceProvider::class,
         TransportServiceProvider::class,
+        TravelServiceProvider::class,
     ];
 
     /**
@@ -265,6 +270,9 @@ class ModulesServiceProvider extends ServiceProvider
         TransportRequestEvent::class,
         OperatorMembership::class,
         OperatorStatement::class,
+        TravelRequest::class,
+        TravelQuoteOption::class,
+        TravelRequestEvent::class,
     ];
 
     public function register(): void

@@ -110,6 +110,9 @@ final class Forgetting
         'boat_tickets' => 'boat_booking',
         'transport_requests' => 'customer',
         'transport_request_events' => 'transport_request',
+        'travel_requests' => 'customer',
+        'travel_quote_options' => 'travel_request',
+        'travel_request_events' => 'travel_request',
 
         // A stay's bill — §16.5. The host may have written the guest into
         // a line ("cake for Aishath"); reached through the stay, the way

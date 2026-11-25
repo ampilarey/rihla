@@ -69,6 +69,10 @@ final class Services
             // Boats between islands — docs/TRANSPORT_PLAN.md (T2). Off until
             // the owner has a timetable to sell.
             'transport' => ['label' => 'Boats', 'default' => self::OFF, 'route' => 'transport.index'],
+            // Flights, hotels and visas abroad — docs/TRAVEL_AGENCY_PLAN.md.
+            // Off until the owner turns it on; "coming soon" takes requests
+            // (decision 3: until the licence is confirmed).
+            'travel' => ['label' => 'Travel', 'default' => self::OFF, 'route' => 'travel.index'],
         ];
     }
 

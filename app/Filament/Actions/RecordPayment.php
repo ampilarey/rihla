@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Transport\Filament;
+namespace App\Filament\Actions;
 
 use App\Models\Payment;
 use App\Services\Payments\Gateways;
@@ -14,7 +14,8 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Record money for a boat booking or a cargo request, in its own currency.
+ * Record money for anything that takes payments (a boat booking, a cargo
+ * request, a trip), in its own currency.
  * It goes through the same gateways as every other payment, so it is only
  * *recorded*: Finance checks it on the payments screen, and only then does
  * the paid total move (and with it the status).
