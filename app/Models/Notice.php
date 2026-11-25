@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Models\Contracts\NoticeSubject;
 use App\Support\OfficeContact;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,8 +13,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use Modules\Stays\Models\Stay;
-use Modules\Transport\Models\BoatBooking;
-use Modules\Transport\Models\TransportRequest;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Departure;
 
@@ -104,7 +103,7 @@ class Notice extends Model
         self::VISA_ISSUED, self::PERMIT_ISSUED, self::DEPARTURE_SOON,
         self::STAY_CONFIRMED, self::DEPOSIT_DUE, self::BALANCE_DUE, self::CHECK_IN_SOON,
         self::STAY_REQUESTED, self::REVIEW_REQUESTED,
-        self::SAILING_CANCELLED, self::TRANSPORT_QUOTED,
+        self::SAILING_CANCELLED, self::TRANSPORT_QUOTED, self::TRAVEL_QUOTED,
     ];
 
     /**
@@ -129,6 +128,12 @@ class Notice extends Model
      */
     public const TRANSPORT_QUOTED = 'transport_quoted';
 
+    /**
+     * A trip we were asked to plan has priced options — docs/
+     * TRAVEL_AGENCY_PLAN.md (A1). They expire, so somebody chases it.
+     */
+    public const TRAVEL_QUOTED = 'travel_quoted';
+
     public const ONCE = [self::STAY_REQUESTED, self::REVIEW_REQUESTED, self::SAILING_CANCELLED];
 
     /**
@@ -148,8 +153,9 @@ class Notice extends Model
         self::DEPOSIT_DUE, self::BALANCE_DUE,
         // A boat that will not sail: somebody must move them or refund them.
         self::SAILING_CANCELLED,
-        // A price waiting to be paid.
+        // A price waiting to be paid, and options waiting to be chosen.
         self::TRANSPORT_QUOTED,
+        self::TRAVEL_QUOTED,
     ];
 
     /**
@@ -184,7 +190,11 @@ class Notice extends Model
     {
         $owner = $this->noticeable;
 
-        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking || $owner instanceof TransportRequest
+        if ($owner instanceof NoticeSubject) {
+            return $owner->noticeCustomer();
+        }
+
+        return $owner instanceof Booking || $owner instanceof Stay
             ? $owner->customer
             : null;
     }
@@ -198,7 +208,7 @@ class Notice extends Model
         $owner = $this->noticeable;
 
         return $this->customer()->name
-            ?? ($owner instanceof BoatBooking || $owner instanceof TransportRequest ? $owner->contact_name : null)
+            ?? ($owner instanceof NoticeSubject ? $owner->noticeName() : null)
             ?? 'Unknown';
     }
 
@@ -216,8 +226,7 @@ class Notice extends Model
         return match (true) {
             $owner instanceof Booking => $owner->departure?->date_start,
             $owner instanceof Stay => $owner->check_in,
-            $owner instanceof BoatBooking => $owner->sailing?->departs_at,
-            $owner instanceof TransportRequest => $owner->wanted_on,
+            $owner instanceof NoticeSubject => $owner->noticeDate(),
             default => null,
         };
     }
@@ -227,7 +236,11 @@ class Notice extends Model
     {
         $owner = $this->noticeable;
 
-        return $owner instanceof Booking || $owner instanceof Stay || $owner instanceof BoatBooking || $owner instanceof TransportRequest
+        if ($owner instanceof NoticeSubject) {
+            return $owner->noticeReference();
+        }
+
+        return $owner instanceof Booking || $owner instanceof Stay
             ? $owner->reference
             : null;
     }
@@ -328,7 +341,7 @@ class Notice extends Model
         $number = match (true) {
             $this->noticeable instanceof Booking => OfficeContact::forBooking($this->noticeable)->phone,
             // The phone the booker gave for this booking, customer or not.
-            $this->noticeable instanceof BoatBooking, $this->noticeable instanceof TransportRequest => $this->noticeable->contact_phone,
+            $this->noticeable instanceof NoticeSubject => $this->noticeable->noticePhone(),
             default => $this->customer()?->phone,
         };
 
@@ -360,6 +373,7 @@ class Notice extends Model
             self::REVIEW_REQUESTED => 'Ask for a review',
             self::SAILING_CANCELLED => 'Sailing cancelled',
             self::TRANSPORT_QUOTED => 'Cargo or charter quoted',
+            self::TRAVEL_QUOTED => 'Trip options ready',
             default => 'Unknown',
         };
     }

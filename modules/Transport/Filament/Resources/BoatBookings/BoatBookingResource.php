@@ -3,6 +3,7 @@
 namespace Modules\Transport\Filament\Resources\BoatBookings;
 
 use App\Exceptions\DeskRefusal;
+use App\Filament\Actions\RecordPayment;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -12,7 +13,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Transport\Filament\RecordPayment;
 use Modules\Transport\Filament\Resources\BoatBookings\Pages\ManageBoatBookings;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Services\TransportDesk;

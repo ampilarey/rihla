@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Stays\Models\Stay;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\TransportRequest;
+use Modules\Travel\Models\TravelRequest;
 use Modules\Umrah\Models\Booking;
 use Modules\Umrah\Models\Enquiry;
 use Modules\Umrah\Models\ExcursionBooking;
@@ -139,6 +140,7 @@ class ForgetCustomer extends Command
         $stayIds = DB::table('stays')->where('customer_id', $customer->getKey())->pluck('id')->all();
         $boatBookingIds = DB::table('boat_bookings')->where('customer_id', $customer->getKey())->pluck('id')->all();
         $transportRequestIds = DB::table('transport_requests')->where('customer_id', $customer->getKey())->pluck('id')->all();
+        $travelRequestIds = DB::table('travel_requests')->where('customer_id', $customer->getKey())->pluck('id')->all();
         // The third payable (companies plan, Phase 3e): an additional trip's
         // places, paid in riyal. Theirs as the booker, or through a booking.
         $excursionIds = DB::table('excursion_bookings')
@@ -163,6 +165,8 @@ class ForgetCustomer extends Command
             'boat_booking' => $boatBookingIds,
             // A cargo or charter request (T4): the customer's own.
             'transport_request' => $transportRequestIds,
+            // A trip they asked us to plan (travel agency A1).
+            'travel_request' => $travelRequestIds,
             'document' => $documentIds,
             'version' => $versionIds,
             'incident' => $incidentIds,
@@ -174,7 +178,7 @@ class ForgetCustomer extends Command
             'self' => 'id', 'customer' => 'customer_id', 'traveller' => 'traveller_id',
             'booking' => 'booking_id', 'enquiry' => 'enquiry_id', 'document' => 'document_id', 'version' => 'document_version_id',
             'incident' => 'incident_id', 'visa' => 'visa_application_id', 'permit' => 'nusuk_permit_id',
-            'stay' => 'stay_id', 'boat_booking' => 'boat_booking_id', 'transport_request' => 'transport_request_id',
+            'stay' => 'stay_id', 'boat_booking' => 'boat_booking_id', 'transport_request' => 'transport_request_id', 'travel_request' => 'travel_request_id',
         ];
 
         $this->line($dry ? 'Would erase:' : 'Erasing:');
@@ -407,6 +411,8 @@ class ForgetCustomer extends Command
             // A boat's seats, and a cargo or charter request (docs/TRANSPORT_PLAN.md).
             (new BoatBooking)->getMorphClass() => 'boat_booking',
             (new TransportRequest)->getMorphClass() => 'transport_request',
+            // A trip somebody asked us to plan (docs/TRAVEL_AGENCY_PLAN.md).
+            (new TravelRequest)->getMorphClass() => 'travel_request',
         ];
     }
 

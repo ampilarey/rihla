@@ -3,6 +3,7 @@
 namespace Modules\Transport\Filament\Resources\TransportRequests;
 
 use App\Exceptions\DeskRefusal;
+use App\Filament\Actions\RecordPayment;
 use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -15,7 +16,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Transport\Filament\RecordPayment;
 use Modules\Transport\Filament\Resources\TransportRequests\Pages\ManageTransportRequests;
 use Modules\Transport\Models\TransportRequest;
 use Modules\Transport\Services\TransportRequests;

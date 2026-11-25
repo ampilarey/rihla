@@ -39,6 +39,7 @@ use Modules\Stays\Http\Controllers\StaysController;
 use Modules\Transport\Http\Controllers\BoatController;
 use Modules\Transport\Http\Controllers\BoatScanRedirect;
 use Modules\Transport\Http\Controllers\TransportRequestController;
+use Modules\Travel\Http\Controllers\TravelController;
 use Modules\Umrah\Http\Controllers\BookingController;
 use Modules\Umrah\Http\Controllers\DocumentController;
 use Modules\Umrah\Http\Controllers\EnquiryController;
@@ -308,6 +309,18 @@ Route::prefix('{locale}')->where(['locale' => 'en|dv|ar'])->group(function () {
             ->middleware('throttle:public-form')->name('transport.requests.store');
         Route::get('/boats/requests/{key}', [TransportRequestController::class, 'show'])
             ->where('key', '[A-Za-z0-9]{40}')->name('transport.requests.show');
+    });
+
+    // Travel agency — docs/TRAVEL_AGENCY_PLAN.md (A1). Off is a 404; coming
+    // soon and on both take a "plan my trip" request.
+    Route::middleware('service:travel')->group(function () {
+        Route::get('/travel', [TravelController::class, 'index'])->name('travel.index');
+        Route::post('/travel', [TravelController::class, 'store'])
+            ->middleware('throttle:public-form')->name('travel.store');
+        Route::get('/travel/requests/{key}', [TravelController::class, 'show'])
+            ->where('key', '[A-Za-z0-9]{40}')->name('travel.requests.show');
+        Route::post('/travel/requests/{key}/accept', [TravelController::class, 'accept'])
+            ->where('key', '[A-Za-z0-9]{40}')->middleware('throttle:public-form')->name('travel.requests.accept');
     });
 
     // The guest's own stay — §16.7. Entered by a link that is spent for a

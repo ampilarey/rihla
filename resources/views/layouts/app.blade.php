@@ -321,6 +321,11 @@
                                     {{ __('messages.Boats') }}
                                 </x-site-nav-link>
                             @endunless
+                            @unless (\App\Support\Services::isOff('travel'))
+                                <x-site-nav-link href="{{ route('travel.index') }}" :active="request()->routeIs('travel.*')">
+                                    {{ __('messages.Travel') }}
+                                </x-site-nav-link>
+                            @endunless
                             <x-site-nav-link href="{{ route('trips.index') }}" :active="request()->routeIs('trips.*')">
                                 {{ __('Trips') }}
                             </x-site-nav-link>
@@ -429,6 +434,12 @@
                                 <a href="{{ route('transport.index') }}"
                                    class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
                                     {{ __('messages.Boats') }}
+                                </a>
+                            @endunless
+                            @unless (\App\Support\Services::isOff('travel'))
+                                <a href="{{ route('travel.index') }}"
+                                   class="text-left text-ink hover:text-wine-500 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-wine-500 focus:ring-offset-2 rounded px-2 py-2">
+                                    {{ __('messages.Travel') }}
                                 </a>
                             @endunless
                             <a href="{{ route('trips.index') }}"

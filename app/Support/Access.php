@@ -579,6 +579,12 @@ final class Access
         'transport.book',
         'transport.board',
 
+        // Travel agency — docs/TRAVEL_AGENCY_PLAN.md. Seeing trip requests;
+        // quoting them (options, sending, cancelling).
+        'travel.viewAny',
+        'travel.view',
+        'travel.quote',
+
         // Guests' reviews — §16.11. Read, and hide (with a reason the author
         // is shown) or unhide. No create — a review is a guest's — and no
         // delete: a hidden review is kept, the record of what was said.
@@ -925,6 +931,7 @@ final class Access
             self::OPERATIONS_MANAGER => array_merge(
                 ['admin.access', 'setting.view', 'setting.update', 'audit.viewAny', 'telegram.link'],
                 ['transport.viewAny', 'transport.view', 'transport.manage', 'transport.book', 'transport.board'],
+                ['travel.viewAny', 'travel.view', 'travel.quote'],
                 $bookings,
                 ['booking.discount'],
                 $documents,
@@ -1042,6 +1049,8 @@ final class Access
                 // Books seats on a boat for a caller; the timetable is the
                 // Operations Manager's.
                 ['transport.viewAny', 'transport.view', 'transport.book'],
+                // Quotes the trips people ask us to plan.
+                ['travel.viewAny', 'travel.view', 'travel.quote'],
                 $bookings,
                 // Collects documents and sends them back to the customer who
                 // mislaid them, so it uploads and downloads. Verifying is
