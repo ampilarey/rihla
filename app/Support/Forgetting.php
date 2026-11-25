@@ -80,6 +80,8 @@ final class Forgetting
         // surviving an erasure that reported itself honoured, and
         // `ForgetCustomerTest` now holds both.
         'notices' => 'booking',
+        // Where each of those was e-mailed (notices:email).
+        'notice_emails' => 'notice',
         'portal_accesses' => 'booking',
         'family_accesses' => 'booking',
         'quotations' => 'booking',

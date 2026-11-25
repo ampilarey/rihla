@@ -18,6 +18,9 @@ interface NoticeSubject
     /** The name they gave, used when there is no customer record. */
     public function noticeName(): string;
 
+    /** Where to e-mail them about this, customer or not; null when nobody gave one. */
+    public function noticeEmail(): ?string;
+
     /** The number they gave for this, customer or not. */
     public function noticePhone(): ?string;
 

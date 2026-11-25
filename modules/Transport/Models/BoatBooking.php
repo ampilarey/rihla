@@ -121,6 +121,11 @@ class BoatBooking extends Model implements NoticeSubject, TakesPayments
         return $this->contact_name;
     }
 
+    public function noticeEmail(): ?string
+    {
+        return $this->customer?->email;
+    }
+
     public function noticePhone(): ?string
     {
         return $this->contact_phone;
