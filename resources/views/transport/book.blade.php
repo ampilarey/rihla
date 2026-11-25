@@ -38,20 +38,22 @@
             · {{ __('messages.Leave the rows you do not need empty.') }}
         </p>
 
-        @for($i = 0; $i < min(10, max(1, $sailing->seatsLeft())); $i++)
-            <div class="grid items-end gap-3 sm:grid-cols-4">
-                <div class="sm:col-span-3">
-                    <label for="passenger-{{ $i }}" class="mb-1 block text-sm font-medium text-ink">{{ __('messages.Passenger :number, full name', ['number' => $i + 1]) }}</label>
-                    <input id="passenger-{{ $i }}" name="passengers[{{ $i }}][full_name]" type="text" maxlength="120" dir="auto"
-                           value="{{ old('passengers.'.$i.'.full_name') }}" @if($i === 0) required @endif
-                           class="w-full rounded-lg border border-gray-500 px-3 py-2 text-ink">
-                </div>
-                <label class="inline-flex items-center gap-2 pb-2 text-sm text-ink">
-                    <input type="checkbox" name="passengers[{{ $i }}][is_child]" value="1" @checked(old('passengers.'.$i.'.is_child'))>
-                    {{ __('messages.Child') }}
-                </label>
-            </div>
+        {{-- Three rows to start; the rest folded away so a phone is not handed
+             ten empty boxes. A <details>, so it needs no JavaScript, and it opens
+             itself when the form comes back with a later row filled in. --}}
+        @php($rows = min(10, max(1, $sailing->seatsLeft())))
+        @php($moreTyped = collect(range(3, 9))->contains(fn ($n) => filled(old('passengers.'.$n.'.full_name'))))
+        @for($i = 0; $i < min(3, $rows); $i++)
+            @include('transport._passenger', ['i' => $i])
         @endfor
+        @if($rows > 3)
+            <details class="space-y-4" @if($moreTyped) open @endif>
+                <summary dir="auto" class="cursor-pointer text-sm font-medium text-wine-700 underline">{{ __('messages.More passengers') }}</summary>
+                @for($i = 3; $i < $rows; $i++)
+                    @include('transport._passenger', ['i' => $i])
+                @endfor
+            </details>
+        @endif
 
         <h2 dir="auto" class="pt-2 text-lg font-bold text-ink">{{ __('messages.Your details') }}</h2>
         <div class="grid gap-4 sm:grid-cols-2">

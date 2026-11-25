@@ -142,7 +142,7 @@
         <ol dir="auto" class="space-y-2 text-sm text-ink">
             @foreach($made->events as $event)
                 <li class="flex justify-between gap-4">
-                    <span class="font-medium">{{ __('messages.'.($T::STATUSES[$event->status] ?? $event->status)) }}</span>
+                    <span class="font-medium">{{ __('messages.'.($T::EVENT_LABELS[$event->status] ?? 'Update')) }}@if($event->status === 'visa' && $event->note) <span class="font-normal text-ink-muted">· {{ $event->note }}</span>@endif</span>
                     <span class="text-ink-muted">{{ $event->created_at?->isoFormat('D MMM, HH:mm') }}</span>
                 </li>
             @endforeach

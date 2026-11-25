@@ -68,6 +68,14 @@ class TravelRequest extends Model implements NoticeSubject, TakesPayments
         self::CANCELLED => 'Cancelled',
     ];
 
+    /**
+     * Every step a request's history can show: its statuses, and the visa
+     * desk's own lines (A3), which move an application rather than the trip.
+     *
+     * @var array<string, string>
+     */
+    public const EVENT_LABELS = self::STATUSES + ['visa' => 'Visa'];
+
     /** Options can still be added and a quote sent. */
     public const QUOTABLE = [self::REQUESTED, self::QUOTED];
 

@@ -123,6 +123,8 @@ class VisaDeskTest extends TestCase
         $this->assertSame(TravelVisaApplication::APPROVED, $application->status);
         $this->assertTrue(Notice::query()->where('kind', Notice::TRAVEL_VISA_DECIDED)->exists());
         $this->get($page)->assertSee('Approved')->assertSee('Collect the passport from the VFS centre.');
+        // The visa desk's steps read as words in the trip's history, never as a raw key.
+        $this->get($page)->assertDontSee('messages.visa')->assertSee('Submitted for AISHATH NAZEER');
     }
 
     public function test_nothing_is_submitted_until_everything_is_in_and_a_refusal_says_why(): void

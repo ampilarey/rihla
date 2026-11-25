@@ -70,11 +70,12 @@
                             @endif
                         </p>
                     </div>
-                    <div class="text-end">
+                    {{-- A row under the details on a phone, a column beside them from sm up. --}}
+                    <div class="flex w-full items-center justify-between gap-3 sm:block sm:w-auto sm:text-end">
                         @if($sailing->seatsLeft() === 0)
                             <span dir="auto" class="text-sm font-medium text-ink-muted">{{ __('messages.Full') }}</span>
                         @else
-                            <p dir="auto" class="mb-2 text-sm text-ink-muted">{{ trans_choice('messages.:count seat left|:count seats left', $sailing->seatsLeft(), ['count' => $sailing->seatsLeft()]) }}</p>
+                            <p dir="auto" class="text-sm text-ink-muted sm:mb-2">{{ trans_choice('messages.:count seat left|:count seats left', $sailing->seatsLeft(), ['count' => $sailing->seatsLeft()]) }}</p>
                             @if($selling)
                                 <a href="{{ route('transport.book', ['sailing' => $sailing->getKey()]) }}" class="btn-primary">{{ __('messages.Book seats') }}</a>
                             @endif
