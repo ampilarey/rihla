@@ -1104,4 +1104,20 @@ return [
     'Thank you. Your choice is saved; pay as shown below.' => 'Thank you. Your choice is saved; pay as shown below.',
     'Travel' => 'Travel',
     'Accepted' => 'Accepted',
+    // Travel agency — fulfilment (A2).
+    'Your tickets and documents' => 'Your tickets and documents',
+    'Download' => 'Download',
+    'E-ticket' => 'E-ticket',
+    'Hotel voucher' => 'Hotel voucher',
+    'Other' => 'Other',
+    'Booked. Your tickets and documents are below.' => 'Booked. Your tickets and documents are below.',
+    // Travel agency — the visa desk (A3).
+    'Visas we handle' => 'Visas we handle',
+    'About :count working day|About :count working days' => 'About :count working day|About :count working days',
+    'You will need:' => 'You will need:',
+    'Another country? Ask; we handle others on request.' => 'Another country? Ask; we handle others on request.',
+    'Visa: :what for :name' => 'Visa: :what for :name',
+    'Thank you, we have it.' => 'Thank you, we have it.',
+    'Collecting documents' => 'Collecting documents',
+    'Approved' => 'Approved',
 ];

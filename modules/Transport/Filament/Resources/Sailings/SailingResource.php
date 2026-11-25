@@ -3,6 +3,7 @@
 namespace Modules\Transport\Filament\Resources\Sailings;
 
 use App\Exceptions\DeskRefusal;
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
@@ -35,6 +36,8 @@ use UnitEnum;
  */
 class SailingResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = Sailing::class;
 
     /**

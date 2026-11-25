@@ -113,6 +113,8 @@ final class Forgetting
         'travel_requests' => 'customer',
         'travel_quote_options' => 'travel_request',
         'travel_request_events' => 'travel_request',
+        'travel_documents' => 'travel_request',
+        'travel_visa_applications' => 'travel_request',
 
         // A stay's bill — §16.5. The host may have written the guest into
         // a line ("cake for Aishath"); reached through the stay, the way

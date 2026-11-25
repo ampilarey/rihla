@@ -2,6 +2,7 @@
 
 namespace Modules\Transport\Filament\Resources\BoatRoutes;
 
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use App\Filament\Support\IslandSelect;
 use App\Support\Money;
 use BackedEnum;
@@ -26,6 +27,8 @@ use UnitEnum;
 /** Operators' routes and fares — docs/TRANSPORT_PLAN.md, T1. */
 class BoatRouteResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = BoatRoute::class;
 
     /**

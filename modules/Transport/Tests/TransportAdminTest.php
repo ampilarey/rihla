@@ -10,7 +10,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Modules\Transport\Filament\Resources\BoatBookings\Pages\ManageBoatBookings;
+use Modules\Transport\Filament\Resources\BoatRoutes\Pages\ManageBoatRoutes;
 use Modules\Transport\Filament\Resources\Sailings\Pages\ManageSailings;
+use Modules\Transport\Filament\Resources\Vessels\Pages\ManageVessels;
 use Modules\Transport\Models\BoatBooking;
 use Modules\Transport\Models\BoatRoute;
 use Modules\Transport\Models\Sailing;
@@ -91,5 +93,24 @@ class TransportAdminTest extends TestCase
             ->get('/staff/sailings')->assertForbidden();
         $this->actingAs($this->staff(Access::OPERATIONS_MANAGER))
             ->get('/staff/sailings')->assertOk();
+    }
+
+    /**
+     * Filament 5 authorizes a page's create and edit buttons through the
+     * policy and never asked the resources' own canCreate(): Booking Staff
+     * were shown, and could use, "Add a boat", a route and a sailing.
+     */
+    public function test_only_the_timetable_owner_can_add_or_edit_boats_routes_and_sailings(): void
+    {
+        $desk = $this->staff(Access::BOOKING_STAFF);
+        $manager = $this->staff(Access::OPERATIONS_MANAGER);
+
+        foreach ([ManageVessels::class, ManageBoatRoutes::class, ManageSailings::class] as $page) {
+            Livewire::actingAs($desk)->test($page)->assertActionHidden('create');
+            Livewire::actingAs($manager)->test($page)->assertActionVisible('create');
+        }
+
+        Livewire::actingAs($desk)->test(ManageVessels::class)->assertTableActionHidden('edit', $this->boat);
+        Livewire::actingAs($manager)->test(ManageVessels::class)->assertTableActionVisible('edit', $this->boat);
     }
 }

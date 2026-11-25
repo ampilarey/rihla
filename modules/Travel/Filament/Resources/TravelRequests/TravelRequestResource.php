@@ -4,9 +4,12 @@ namespace Modules\Travel\Filament\Resources\TravelRequests;
 
 use App\Exceptions\DeskRefusal;
 use App\Filament\Actions\RecordPayment;
+use App\Filament\Concerns\AuthorizesThroughCanMethods;
 use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -17,9 +20,13 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Travel\Filament\Resources\TravelRequests\Pages\ManageTravelRequests;
+use Modules\Travel\Models\TravelDocument;
 use Modules\Travel\Models\TravelQuoteOption;
 use Modules\Travel\Models\TravelRequest;
+use Modules\Travel\Models\VisaProduct;
+use Modules\Travel\Services\TravelDocuments;
 use Modules\Travel\Services\TravelRequests;
+use Modules\Travel\Services\VisaDesk;
 use UnitEnum;
 
 /**
@@ -29,6 +36,8 @@ use UnitEnum;
  */
 class TravelRequestResource extends Resource
 {
+    use AuthorizesThroughCanMethods;
+
     protected static ?string $model = TravelRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
@@ -97,6 +106,7 @@ class TravelRequestResource extends Resource
                         TravelRequest::REQUESTED => 'warning',
                         TravelRequest::QUOTED => 'info',
                         TravelRequest::CANCELLED => 'gray',
+                        TravelRequest::ACCEPTED, TravelRequest::PAID => 'primary',
                         default => 'success',
                     }),
             ])
@@ -127,6 +137,47 @@ class TravelRequestResource extends Resource
                         self::attempt(fn () => app(TravelRequests::class)->sendQuote($record, (int) $data['days'], auth()->user()), 'Quote sent');
                     }),
                 RecordPayment::action(fn (Model $record): bool => $record instanceof TravelRequest && $record->status === TravelRequest::ACCEPTED),
+                Action::make('upload')
+                    ->label('Upload document')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->visible(fn (TravelRequest $record): bool => $canQuote() && in_array($record->status, [TravelRequest::PAID, TravelRequest::ISSUED], true))
+                    ->modalDescription('Encrypted on the documents disk. The customer downloads it from their trip page.')
+                    ->schema([
+                        Select::make('kind')->label('What it is')->options(TravelDocument::KINDS)->required()->default('ticket')->native(false),
+                        TextInput::make('label')->label('Name it')->maxLength(160)->placeholder('Return flight, Mariyam'),
+                        FileUpload::make('file')->label('File')->required()
+                            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
+                            ->maxSize((int) config('documents.max_kilobytes', 8192))
+                            // The service encrypts it; Filament never writes it in the clear.
+                            ->storeFiles(false),
+                    ])
+                    ->action(function (TravelRequest $record, array $data): void {
+                        self::attempt(fn () => app(TravelDocuments::class)->attach($record, $data['file'], (string) $data['kind'], (string) ($data['label'] ?? ''), auth()->user()), 'Uploaded');
+                    }),
+                Action::make('issue')
+                    ->label('Mark issued')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->visible(fn (TravelRequest $record): bool => $canQuote() && $record->status === TravelRequest::PAID && $record->documents()->exists())
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (TravelRequest $record): string => $record->documents()->count().' document(s) uploaded. The customer is told their documents are ready.')
+                    ->action(function (TravelRequest $record): void {
+                        self::attempt(fn () => app(TravelDocuments::class)->markIssued($record, auth()->user()), 'Issued');
+                    }),
+                Action::make('visa')
+                    ->label('Start visa application')
+                    ->icon('heroicon-o-identification')
+                    ->color('gray')
+                    ->visible(fn (TravelRequest $record): bool => $canQuote() && $record->wants_visa && $record->status !== TravelRequest::CANCELLED)
+                    ->schema([
+                        Select::make('product')->label('Visa')->required()->searchable()
+                            ->options(fn (): array => VisaProduct::query()->where('is_active', true)->orderBy('country')->get()
+                                ->mapWithKeys(fn (VisaProduct $v): array => [$v->id => $v->label()])->all()),
+                        TextInput::make('applicant')->label('Applicant, as on the passport')->required()->maxLength(120),
+                    ])
+                    ->action(function (TravelRequest $record, array $data): void {
+                        self::attempt(fn () => app(VisaDesk::class)->open($record, VisaProduct::query()->findOrFail($data['product']), (string) $data['applicant'], auth()->user()), 'Visa application started');
+                    }),
                 Action::make('cancel')
                     ->label('Cancel')
                     ->icon('heroicon-o-x-circle')

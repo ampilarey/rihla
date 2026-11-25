@@ -7,9 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Support\CompanyDetails;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
+use Modules\Travel\Models\TravelDocument;
 use Modules\Travel\Models\TravelRequest;
+use Modules\Travel\Models\TravelVisaApplication;
+use Modules\Travel\Models\VisaProduct;
+use Modules\Travel\Services\TravelDocuments;
 use Modules\Travel\Services\TravelRequests;
+use Modules\Travel\Services\VisaDesk;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 /**
  * "Plan my trip" — docs/TRAVEL_AGENCY_PLAN.md (A1). A request is an
@@ -21,7 +29,9 @@ class TravelController extends Controller
 {
     public function index(): View
     {
-        return view('travel.index');
+        return view('travel.index', [
+            'visas' => VisaProduct::query()->where('is_active', true)->orderBy('country')->orderBy('visa_type')->get(),
+        ]);
     }
 
     public function store(Request $request, TravelRequests $requests): RedirectResponse
@@ -74,7 +84,7 @@ class TravelController extends Controller
     public function show(string $key): View
     {
         $made = $this->find($key);
-        $made->load(['options', 'events', 'acceptedOption']);
+        $made->load(['options', 'events', 'acceptedOption', 'documents', 'visaApplications.product']);
         $bank = CompanyDetails::bank();
         $account = $bank['accounts'][$made->currency] ?? null;
 
@@ -96,6 +106,48 @@ class TravelController extends Controller
         }
 
         return redirect()->to(self::statusUrl($made))->with('status', __('messages.Thank you. Your choice is saved; pay as shown below.'));
+    }
+
+    /** One document on a visa checklist, sent by the customer (A3). */
+    public function visaDocument(Request $request, string $key, int $application, int $item, VisaDesk $desk): RedirectResponse
+    {
+        $made = $this->find($key);
+        /** @var TravelVisaApplication $visa */
+        $visa = $made->visaApplications()->whereKey($application)->firstOrFail();
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:'.(int) config('documents.max_kilobytes', 8192)],
+        ]);
+
+        try {
+            /** @var UploadedFile $file */
+            $file = $request->file('file');
+            $desk->receive($visa, $item, $file);
+        } catch (DeskRefusal $refusal) {
+            return redirect()->to(self::statusUrl($made))->withErrors(['file' => $refusal->getMessage()]);
+        }
+
+        return redirect()->to(self::statusUrl($made))->with('status', __('messages.Thank you, we have it.'));
+    }
+
+    /** A ticket, voucher or visa, for whoever holds the trip page's key. */
+    public function document(string $key, int $document, TravelDocuments $documents): Response
+    {
+        $made = $this->find($key);
+        /** @var TravelDocument $file */
+        $file = $made->documents()->whereKey($document)->firstOrFail();
+
+        try {
+            $download = $documents->download($file, null, 'customer');
+        } catch (DeskRefusal) {
+            abort(404);
+        }
+
+        return response($download['contents'], 200, [
+            'Content-Type' => $download['mime'],
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $download['name'], 'document'),
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     public static function statusUrl(TravelRequest $made): string

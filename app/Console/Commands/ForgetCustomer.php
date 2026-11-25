@@ -277,6 +277,11 @@ class ForgetCustomer extends Command
         // disk with its path nulled), and the slip each payment replaced —
         // SlipVault keeps the superseded file and records it in the
         // transaction's payload.
+        // The tickets, vouchers and visas issued for their trips (travel A2).
+        foreach (DB::table('travel_documents')->whereIn('travel_request_id', ($keys['travel_request'] ?? []) ?: [0])->get() as $issued) {
+            $files[] = [(string) $issued->disk, (string) $issued->path];
+        }
+
         $payments = Payment::query()->whereIn('id', self::paymentsOf($keys)->select('id'))->get();
 
         foreach ($payments as $payment) {
